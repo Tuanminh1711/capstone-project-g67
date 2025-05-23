@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlantCare - Chăm sóc cây cảnh thông minh</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      /* Reset CSS */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        background-color: #f5f5f5;
+      }
+
+      /* Header */
+      .header {
+        background-color: #2e7d32;
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 100;
+      }
+
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .nav-links a {
+        color: white;
+        text-decoration: none;
+        margin-left: 2rem;
+        transition: color 0.3s;
+      }
+
+      .nav-links a:hover {
+        color: #c8e6c9;
+      }
+
+      /* Hero Section */
+      .hero {
+        margin-top: 80px;
+        background: linear-gradient(
+            rgba(46, 125, 50, 0.9),
+            rgba(46, 125, 50, 0.8)
+          ),
+          url("https://images.unsplash.com/photo-1483794344563-d27a8d18014e")
+            center/cover;
+        color: white;
+        padding: 4rem 1rem;
+        text-align: center;
+      }
+
+      .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Technology Section */
+      .tech-section {
+        padding: 4rem 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #2e7d32;
+      }
+
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+      }
+
+      .tech-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+        text-align: center;
+      }
+
+      .tech-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .tech-icon {
+        font-size: 2.5rem;
+        color: #2e7d32;
+        margin-bottom: 1rem;
+      }
+
+      /* Footer */
+      .footer {
+        background-color: #1b5e20;
+        color: white;
+        padding: 2rem 1rem;
+        margin-top: 4rem;
+        text-align: center;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .tech-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <nav class="nav-container">
+        <div class="logo">
+          <i class="fas fa-leaf"></i>
+          PlantCare
+        </div>
+        <div class="nav-links">
+          <a href="#tech">Công nghệ</a>
+          <a href="#about">Giới thiệu</a>
+          <a href="/login.html">Đăng xuất</a>
+        </div>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content">
+        <h2>Hỗ trợ Chăm sóc cây cảnh thông minh tại nhà</h2>
+        <p>
+          Ứng dụng công nghệ 4.0 trong việc chăm sóc và theo dõi sức khỏe cây
+          trồng
+        </p>
+      </div>
+    </section>
+
+    <section class="tech-section" id="tech">
+      <h2 class="section-title">Công nghệ sử dụng</h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <i class="tech-icon fab fa-angular"></i>
+          <h3>Angular Framework</h3>
+          <p>Xây dựng giao diện người dùng mạnh mẽ và linh hoạt</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fab fa-java"></i>
+          <h3>Spring Boot</h3>
+          <p>Hệ thống backend an toàn và hiệu suất cao</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fas fa-database"></i>
+          <h3>MySQL</h3>
+          <p>Hệ quản trị cơ sở dữ liệu quan hệ</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fas fa-robot"></i>
+          <h3>AI/ML</h3>
+          <p>Dự đoán sức khỏe cây trồng bằng Machine Learning</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fab fa-github"></i>
+          <h3>Control Server - GitHub</h3>
+          <p>Quản lý mã nguồn và triển khai dự án qua GitHub</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fas fa-network-wired"></i>
+          <h3>RESTful API</h3>
+          <p>Giao tiếp giữa frontend và backend theo chuẩn REST</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fas fa-vials"></i>
+          <h3>Postman</h3>
+          <p>Công cụ kiểm thử và gửi request đến API backend</p>
+        </div>
+
+        <div class="tech-card">
+          <i class="tech-icon fab fa-docker"></i>
+          <h3>Docker</h3>
+          <p>Triển khai ứng dụng dễ dàng với container hóa</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Đồ án SU25_G67</p>
+    </footer>
+  </body>
+</html>
