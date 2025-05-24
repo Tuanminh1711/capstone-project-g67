@@ -5,29 +5,49 @@ import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 public class AccountRequestDTO implements Serializable {
-    @NotBlank (message = "Username must be not blank")
-    private String username;
-    @NotBlank (message = "Password must be not blank")
-    private String password;
+  @NotBlank(message = "Username must be not blank")
+  private String username;
 
-    public AccountRequestDTO(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+  @NotBlank(message = "Password must be not blank")
+  private String password;
 
-    public String getUsername() {
-        return username;
-    }
+  private String email;
 
-    public String getPassword() {
-        return password;
-    }
+  public AccountRequestDTO() {
+  }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public AccountRequestDTO(String username, String password, String email) {
+    this.username = username;
+    this.password = password;
+    this.email = email;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public AccountRequestDTO(String username, String password) {
+    this.username = username;
+    this.password = password;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
 }
