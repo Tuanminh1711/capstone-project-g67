@@ -1,0 +1,15 @@
+<app-top-navigator></app-top-navigator>
+
+<!-- Popup Login/Register -->
+<div *ngIf="showLogin || showRegister" class="modal-backdrop">
+  <div class="modal-content">
+    <button class="modal-close" (click)="closePopup()">&times;</button>
+    <app-login *ngIf="showLogin"></app-login>
+    <app-register *ngIf="showRegister"></app-register>
+  </div>
+</div>
+
+<!-- Nội dung trang home sẽ bị mờ khi có popup -->
+<div [class.blurred]="showLogin || showRegister">
+  <!-- Nội dung trang home thực tế ở đây (bạn có thể thêm vào sau) -->
+</div>

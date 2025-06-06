@@ -1,0 +1,77 @@
+body, .profile-page {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+}
+.profile-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 80px;
+}
+.profile-card {
+  background: #0d4d2d;
+  color: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(30, 174, 96, 0.13);
+  padding: 36px 32px 28px 32px;
+  min-width: 320px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.profile-avatar img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #178a4c;
+  background: #fff;
+}
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 8px 0 2px 0;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.profile-email {
+  font-size: 1.05rem;
+  color: #b2dfdb;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.profile-edit-btn {
+  background: linear-gradient(90deg, #178a4c 0%, #0d4d2d 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 32px;
+  margin-top: 8px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.07);
+}
+.profile-edit-btn:hover {
+  background: #178a4c;
+}
+@media (max-width: 600px) {
+  .profile-card {
+    min-width: 90vw;
+    padding: 18px 6vw 14px 6vw;
+  }
+  .profile-avatar img {
+    width: 64px;
+    height: 64px;
+  }
+}

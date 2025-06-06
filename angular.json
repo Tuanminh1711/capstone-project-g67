@@ -27,7 +27,7 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "@angular/material/prebuilt-themes/cyan-orange.css"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -86,11 +86,14 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "@angular/material/prebuilt-themes/cyan-orange.css"
             ]
           }
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "6d13021f-b15f-4886-9fff-f46001b7f452"
   }
 }
