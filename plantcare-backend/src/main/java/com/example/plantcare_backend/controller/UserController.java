@@ -17,8 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Create by TaHoang
+ */
+
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 @Slf4j
 @Tag(name = "User Controller")
 @RequiredArgsConstructor

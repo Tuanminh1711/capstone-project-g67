@@ -1,5 +1,9 @@
 package com.example.plantcare_backend.exception;
 
+/**
+ * Create by TaHoang
+ */
+
 public class InvalidDataException extends RuntimeException {
 
     public InvalidDataException(String message) {

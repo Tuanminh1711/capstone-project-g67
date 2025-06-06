@@ -4,6 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
+/**
+ * Create by TaHoang
+ */
+
 public class ResponseSuccess extends ResponseEntity<ResponseSuccess.payload> {
 
     // delete, patch, put

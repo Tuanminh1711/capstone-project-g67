@@ -7,6 +7,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 
+/**
+ * Create by TaHoang
+ */
+
 @Getter
 @Setter
 @NoArgsConstructor

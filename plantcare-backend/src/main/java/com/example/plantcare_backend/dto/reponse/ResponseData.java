@@ -2,6 +2,10 @@ package com.example.plantcare_backend.dto.reponse;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+/**
+ * Create by TaHoang
+ */
+
 public class ResponseData<T> {
     private final int status;
     private final String message;

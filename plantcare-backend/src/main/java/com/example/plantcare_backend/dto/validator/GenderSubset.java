@@ -1,22 +1,19 @@
 package com.example.plantcare_backend.dto.validator;
 
-
 import com.example.plantcare_backend.util.Gender;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Check enum by array
+ * Create by TaHoang
  */
+
 @Documented
 @Target({METHOD, FIELD})
 @Retention(RUNTIME)

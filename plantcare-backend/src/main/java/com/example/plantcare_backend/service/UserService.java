@@ -5,8 +5,11 @@ package com.example.plantcare_backend.service;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.dto.validator.UserStatus;
-
 import java.util.List;
+
+/**
+ * Create by TaHoang
+ */
 
 public interface UserService {
 
