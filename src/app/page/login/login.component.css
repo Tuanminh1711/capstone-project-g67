@@ -1,0 +1,13 @@
+.user-avatar,
+.login-logo,
+.login-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #4caf50;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  display: block;
+  margin: 0 auto 16px auto;
+}

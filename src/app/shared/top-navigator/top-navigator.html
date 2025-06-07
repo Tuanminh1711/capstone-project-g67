@@ -1,0 +1,29 @@
+
+<nav class="top-nav">
+  <div class="logo">
+    <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
+    <span>PLANTCARE</span>
+  </div>
+  <div class="nav-links-actions">
+    <div class="nav-links">
+      <a class="nav-link" routerLink="/home">Home</a>
+      <a class="nav-link" routerLink="/plant-info">Plant Information</a>
+      <a class="nav-link" routerLink="/my-green-space">My green space</a>
+      <a class="nav-link" routerLink="/care-with-experts">Care with experts</a>
+      <a class="nav-link" routerLink="/about-us">About us</a>
+    </div>
+    <div class="nav-actions">
+      <span class="nav-icon notification">
+        <span class="material-icons">notifications</span>
+      </span>
+      <span class="nav-icon user" tabindex="0" (click)="toggleUserMenu($event)">
+        <span class="material-icons">account_circle</span>
+        <div class="user-dropdown" *ngIf="showUserMenu">
+          <a class="dropdown-item" routerLink="/user-profile" (click)="closeUserMenu()">View Profile</a>
+          <a class="dropdown-item" routerLink="/edit-profile" (click)="closeUserMenu()">Edit Profile</a>
+          <div class="dropdown-item" (click)="logout(); closeUserMenu()">Log out</div>
+        </div>
+      </span>
+    </div>
+  </div>
+</nav>

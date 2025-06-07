@@ -1,0 +1,163 @@
+/* ==== Chung cho trang login/register ==== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+}
+.auth-card {
+  background: none;
+  border-radius: 18px;
+  padding: 40px 32px 32px;
+  min-width: 340px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==== Logo và tiêu đề ==== */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #178a4c;
+  box-shadow: 0 2px 8px rgba(34, 139, 34, 0.10);
+  margin-right: 12px;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.logo-img:hover {
+  box-shadow: 0 8px 32px rgba(34, 139, 34, 0.28);
+  border: 2.5px solid #0d4d2d;
+}
+.logo-text {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #178a4c;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  flex: 1;
+  text-align: center;
+}
+.auth-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ==== Header layout ==== */
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  color: #178a4c;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 12px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.close-btn:hover {
+  color: #d32f2f;
+}
+
+/* ==== Form và input ==== */
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.auth-input {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border: 1.2px solid #fff;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  outline: none;
+  background: #fff;
+  color: #232b47;
+  transition: border 0.2s;
+}
+.auth-input:focus {
+  border: 1.5px solid #ff9800;
+}
+.auth-btn {
+  width: 100%;
+  background: #178a4c;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  margin-top: 8px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  transition: background 0.2s;
+}
+.auth-btn:hover {
+  background: #0d4d2d;
+}
+
+/* ==== Link ==== */
+.auth-link {
+  margin-top: 12px;
+  font-size: 0.98rem;
+  color: #ffeb3b;
+  text-align: center;
+}
+.auth-link a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+/* ==== Logo riêng cho trang login/register (nếu có thêm ảnh to) ==== */
+.login-logo {
+  display: block;
+  margin: 0 auto 24px auto;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 16px;
+  background: #fff;
+  border: 2px solid #178a4c;
+  box-shadow: 0 4px 16px rgba(34, 139, 34, 0.18);
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.login-logo:hover {
+  box-shadow: 0 8px 32px rgba(34, 139, 34, 0.28);
+  border: 2.5px solid #0d4d2d;
+}
