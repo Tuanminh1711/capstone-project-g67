@@ -5,10 +5,13 @@ import com.example.plantcare_backend.dto.reponse.ResponseData;
 import com.example.plantcare_backend.dto.request.LoginRequestDTO;
 import com.example.plantcare_backend.dto.request.RegisterRequestDTO;
 import com.example.plantcare_backend.model.Role;
+import com.example.plantcare_backend.model.UserProfile;
 import com.example.plantcare_backend.model.Users;
 import com.example.plantcare_backend.repository.RoleRepository;
+import com.example.plantcare_backend.repository.UserProfileRepository;
 import com.example.plantcare_backend.repository.UserRepository;
 import com.example.plantcare_backend.service.AuthService;
+import com.example.plantcare_backend.util.Gender;
 import com.example.plantcare_backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +31,8 @@ public class AuthServiceImpl implements AuthService {
     private JwtUtil jwtUtil;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private UserProfileRepository userProfileRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -35,9 +40,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO) {
         Users user = userRepository.findByUsername(loginRequestDTO.getUsername())
-                .orElseThrow(() -> new RuntimeException("Username or password wrong!"));
-        if (!user.getPassword().equals(loginRequestDTO.getPassword())) {
-            throw new RuntimeException("Username or password wrong!");
+                .orElseThrow(() -> new RuntimeException("Username wrong!"));
+        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+            throw new RuntimeException("password wrong!");
         }
         String token = jwtUtil.generateToken(user.getUsername());
         LoginResponse loginResponse = new LoginResponse();
@@ -63,8 +68,6 @@ public class AuthServiceImpl implements AuthService {
             user.setUsername(registerRequestDTO.getUsername());
             user.setEmail(registerRequestDTO.getEmail());
             user.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
-            user.setFullName(registerRequestDTO.getFullName());
-            user.setPhone(registerRequestDTO.getPhone());
             user.setStatus(Users.UserStatus.ACTIVE);
 
             Role userRole = roleRepository.findByRoleName(Role.RoleName.USER)
@@ -73,10 +76,27 @@ public class AuthServiceImpl implements AuthService {
 
             Users savedUser = userRepository.save(user);
 
+            try {
+                UserProfile userProfile = new UserProfile();
+                userProfile.setUser(savedUser);
+                userProfile.setFullName(registerRequestDTO.getFullName());
+                userProfile.setPhone(registerRequestDTO.getPhone());
+                userProfile.setGender(null);
+                userProfile.setLivingEnvironment(null);
+                userProfile.setAvatarUrl(null);
+
+                userProfileRepository.save(userProfile);
+            } catch (Exception e) {
+                userRepository.delete(savedUser);
+                throw new RuntimeException("Failed to create user profile: " + e.getMessage());
+            }
+
             savedUser.setPassword(null);
+
             return new ResponseData<>(HttpStatus.CREATED.value(), "User registered successfully", savedUser);
         } catch (Exception e) {
-            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error registering user: " + e.getMessage());
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error registering user: " + e.getMessage());
         }
     }
 }

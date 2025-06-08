@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import java.io.Serializable;
 import static com.example.plantcare_backend.util.Gender.*;
@@ -16,6 +17,7 @@ import static com.example.plantcare_backend.util.Gender.*;
  */
 
 @Getter
+@AllArgsConstructor
 public class UserRequestDTO implements Serializable {
 
     @NotBlank(message = "username must be not blank")
@@ -40,14 +42,7 @@ public class UserRequestDTO implements Serializable {
     @GenderSubset(anyOf = {MALE, FEMALE, OTHER})
     private Gender gender;
 
-    public UserRequestDTO(String username, String email, String password, String fullName, String phoneNumber, String livingEnvironment, Gender gender) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.fullName = fullName;
-        this.phoneNumber = phoneNumber;
-        this.livingEnvironment = livingEnvironment;
-        this.gender = gender;
-    }
+    @NotNull(message = "roleId must not be null")
+    private Integer roleId;
 
 }

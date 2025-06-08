@@ -5,13 +5,18 @@ import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.dto.validator.UserStatus;
 import com.example.plantcare_backend.model.Role;
+import com.example.plantcare_backend.model.UserProfile;
 import com.example.plantcare_backend.model.Users;
 import com.example.plantcare_backend.repository.RoleRepository;
+import com.example.plantcare_backend.repository.UserProfileRepository;
 import com.example.plantcare_backend.repository.UserRepository;
 import com.example.plantcare_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 /**
@@ -22,9 +27,14 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final RoleRepository roleRepository;
+    @Autowired
+    private final UserProfileRepository userProfileRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
@@ -32,20 +42,29 @@ public class UserServiceImpl implements UserService {
             Users user = Users.builder()
                     .username(userRequestDTO.getUsername())
                     .email(userRequestDTO.getEmail())
-                    .password(userRequestDTO.getPassword())
-                    .fullName(userRequestDTO.getFullName())
+                    .password(passwordEncoder.encode(userRequestDTO.getPassword()))
+                    .status(Users.UserStatus.ACTIVE)
+                    .role(roleRepository.findById(userRequestDTO.getRoleId())
+                            .orElseThrow(() -> new RuntimeException("Role not found")))
+                    .build();
+
+            Users savedUser = userRepository.save(user);
+
+            UserProfile userProfile = UserProfile.builder()
+                    .user(savedUser)
                     .phone(userRequestDTO.getPhoneNumber())
                     .gender(userRequestDTO.getGender())
-                    .role(Role.builder().id(3).build())
-                    .status(Users.UserStatus.ACTIVE)
-                    .livingEnvironment(userRequestDTO.getLivingEnvironment())
+                    .fullName(userRequestDTO.getFullName())
                     .build();
-            userRepository.save(user);
 
-            log.info("user has save!");
-            return user.getId();
+            userProfileRepository.save(userProfile);
+
+            log.info("User created by admin with role and profile limited fields");
+
+            return savedUser.getId();
+
         } catch (Exception e) {
-            log.error("failed to save user", e);
+            log.error("Failed to create user by admin", e);
             throw e;
         }
     }

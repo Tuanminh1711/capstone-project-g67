@@ -19,50 +19,35 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "users")
 public class Users {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int id;
 
-    @Column(name = "username", unique = true, nullable = false, length = 50)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(name = "email", unique = true, nullable = false, length = 100)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "full_name", length = 100)
-    private String fullName;
-
-    @Column(name = "phone", length = 20)
-    private String phone;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
-    private Gender gender;
-
-    @Column(name = "avatar_url", length = 255)
-    private String avatarUrl;
-
-    @Column(name = "living_environment", columnDefinition = "TEXT")
-    private String livingEnvironment;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private UserStatus status;
+    private UserStatus status = UserStatus.ACTIVE;
 
-    @Column(name = "created_at")
     @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
 
-    @Column(name = "updated_at")
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Timestamp updatedAt;
 
     public enum UserStatus {
