@@ -1,15 +1,56 @@
 <app-top-navigator></app-top-navigator>
-
-<!-- Popup Login/Register -->
-<div *ngIf="showLogin || showRegister" class="modal-backdrop">
-  <div class="modal-content">
-    <button class="modal-close" (click)="closePopup()">&times;</button>
-    <app-login *ngIf="showLogin"></app-login>
-    <app-register *ngIf="showRegister"></app-register>
+<!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1>Giúp bạn yêu cây dễ dàng hơn</h1>
+      <p>Tìm cây phù hợp – Chăm cây đúng cách – Kết nối với chuyên gia</p>
+      <button routerLink="/explore" class="cta-btn">Bắt đầu ngay</button>
+    </div>
+    <div class="hero-image">
+      <img src="assets/image/img-hero-section.png" alt="Giới thiệu PlantCare" />
+    </div>
   </div>
-</div>
 
-<!-- Nội dung trang home sẽ bị mờ khi có popup -->
-<div [class.blurred]="showLogin || showRegister">
-  <!-- Nội dung trang home thực tế ở đây (bạn có thể thêm vào sau) -->
-</div>
+  <!-- Features Slider -->
+  <section class="features-slider">
+    <div class="slider-wrapper">
+      <button 
+        class="slider-btn left" 
+        (click)="prevFeature()" 
+        [disabled]="currentSlide === 0"
+        aria-label="Previous Feature"
+      >
+        ‹
+      </button>
+
+      <div class="slider-track" [style.transform]="'translateX(-' + currentSlide * 100 + '%)'">
+        <div class="feature" *ngFor="let feature of features">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+
+      <button 
+        class="slider-btn right" 
+        (click)="nextFeature()" 
+        [disabled]="currentSlide === features.length - 1"
+        aria-label="Next Feature"
+      >
+        ›
+      </button>
+    </div>
+  </section>
+
+  <!-- Expert Services Section -->
+  <section class="expert-section">
+    <h2>Dịch vụ chuyên gia</h2>
+    <p>Chúng tôi cung cấp hỗ trợ chăm cây chuyên sâu:</p>
+    <ul>
+      <li>Chat hoặc đặt lịch hẹn với chuyên gia</li>
+      <li>Dịch vụ chăm cây tại nhà</li>
+    </ul>
+    <button routerLink="/services" class="cta-btn">Đăng ký dịch vụ</button>
+  </section>
+
+  <app-footer></app-footer>
+

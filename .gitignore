@@ -26,7 +26,10 @@ yarn-error.log
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.history/*
+
+# Allow images in assets/image
+!src/assets/image/
+!src/assets/image/*
 
 # Miscellaneous
 /.angular/cache

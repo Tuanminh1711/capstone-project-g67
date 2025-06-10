@@ -1,0 +1,246 @@
+/* Reset margin, padding, and overflow for html and body to remove all whitespace */
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  background: #f8f9fa;
+}
+
+/* --- FINAL FIX: Remove all possible whitespace and ensure footer is flush with all edges --- */
+body > * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.footer {
+  background: linear-gradient(90deg, #0d4d2d, #178a4c);
+  color: #fff;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 38px 16px; /* Thêm padding trái/phải nhỏ để không dính sát mép, không tràn */
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  margin: 0;
+  box-shadow: 0 -2px 24px rgba(30, 174, 96, 0.13);
+  gap: 24px;
+  border-radius: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  left: 0;
+  right: 0;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 100;
+  border: none;
+}
+
+.footer-main {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.footer-left, .footer-right {
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 200px;
+}
+
+.footer-left h3 {
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: 0.12em;
+  color: #ffe066;
+}
+
+.footer-links {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  background: transparent;
+  padding: 8px 16px 6px 16px; /* Thêm padding trái/phải nhỏ */
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 1.04rem;
+  font-weight: 700;
+  z-index: 101;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Remove border/background from direct parent if any (for Angular apps) */
+:host {
+  display: block;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-sizing: border-box;
+}
+
+/* Remove border from html root if any */
+html {
+  border: none !important;
+}
+
+.footer-contact {
+  font-size: 0.98rem;
+  color: #fff;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.footer-contact span {
+  margin-bottom: 2px;
+}
+
+.footer-contact form {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.footer-contact input[type="email"] {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.98rem;
+  outline: none;
+  margin-right: 4px;
+}
+
+.footer-contact input[type="text"] {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.98rem;
+  outline: none;
+  margin-right: 4px;
+}
+
+.footer-contact button {
+  background: #43e97b;
+  color: #14532d;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.98rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.footer-contact button:hover {
+  background: #178a4c;
+  color: #fff;
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.footer-social a {
+  color: #178a4c;
+  background: #fff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.10);
+  text-decoration: none;
+}
+
+.footer-social a:hover {
+  background: #fff;
+  color: #ff9800;
+  box-shadow: 0 2px 12px rgba(255, 152, 0, 0.18);
+}
+
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 220px;
+  gap: 6px;
+}
+
+@media (max-width: 1200px) {
+  .footer-main {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .footer {
+    padding: 10px 6px 32px 6px;
+  }
+  .footer-main {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .footer-links {
+    gap: 16px;
+    font-size: 0.98rem;
+    padding: 8px 6px 4px 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .footer-links {
+    gap: 8px;
+    font-size: 0.92rem;
+    padding: 6px 2px 2px 2px;
+  }
+  .footer-main {
+    width: 100%;
+  }
+  .footer {
+    padding: 6px 2px 24px 2px;
+  }
+}
+
+app-root, .app-root, .main-content, .container, #main, #content {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}

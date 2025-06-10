@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Optional } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-register',
@@ -6,4 +7,12 @@ import { Component } from '@angular/core';
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
-export class Register {}
+export class Register {
+  constructor(@Optional() private dialogRef?: MatDialogRef<Register>) {}
+
+  close() {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
+  }
+}

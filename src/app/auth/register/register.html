@@ -1,15 +1,18 @@
-<div class="auth-logo">
-  <img src="/assets/logo.png" alt="PlantCare Logo" class="logo-img" />
-  <span class="logo-text">PLANTCARE</span>
-</div>
-<h2 class="auth-title">Đăng ký</h2>
-<form>
-  <input class="auth-input" type="text" placeholder="Tên đăng nhập" />
-  <input class="auth-input" type="email" placeholder="Email" />
-  <input class="auth-input" type="password" placeholder="Mật khẩu" />
-  <input class="auth-input" type="password" placeholder="Nhập lại mật khẩu" />
-  <button class="auth-btn" type="submit">Đăng ký</button>
-</form>
-<div class="auth-link">
-  Đã có tài khoản? <a routerLink="/login">Đăng nhập</a>
+<div class="dialog-wrapper">
+  <button class="dialog-close-x" (click)="close()">&times;</button>
+  <div class="auth-header">
+    <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
+    <span class="logo-text">PLANTCARE</span>
+  </div>
+  <h2 class="auth-title">Đăng ký</h2>
+  <form>
+    <input class="auth-input" type="text" placeholder="Tên đăng nhập" />
+    <input class="auth-input" type="email" placeholder="Email" />
+    <input class="auth-input" type="password" placeholder="Mật khẩu" />
+    <input class="auth-input" type="password" placeholder="Nhập lại mật khẩu" />
+    <button class="auth-btn" type="submit">Đăng ký</button>
+  </form>
+  <div class="auth-link">
+    Đã có tài khoản? <a routerLink="/login">Đăng nhập</a>
+  </div>
 </div>

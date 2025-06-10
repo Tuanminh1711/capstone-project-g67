@@ -1,4 +1,9 @@
-/* Định dạng chung cho trang login/register */
+/* ==== Chung cho trang login/register ==== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -9,99 +14,201 @@
 .auth-card {
   background: none;
   border-radius: 18px;
-  padding: 40px 32px 32px 32px;
+  padding: 40px 32px 32px;
   min-width: 340px;
   max-width: 95vw;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.auth-logo {
+
+/* ======= Layout chung ======= */
+:host-context(.mat-dialog-container),
+.dialog-panel-bg {
+  background: var(--auth-bg, #178a4c) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 32px rgba(30, 174, 96, 0.18) !important;
+  padding: 40px 48px 32px 48px !important; /* tăng padding để popup rộng hơn */
+  min-width: 400px; /* tăng min-width */
+  max-width: 99vw;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.dialog-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.auth-header {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 18px;
+  position: relative;
+  flex-direction: column;
+  margin-top: 18px;
 }
 .logo-img {
-  height: 38px;
-  width: 38px;
-  object-fit: contain;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #fff;
+  border: 2.5px solid #43e97b;
+  margin: 0 auto 4px auto;
+  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.10);
+  display: block;
 }
 .logo-text {
   font-size: 1.2rem;
   font-weight: 900;
-  letter-spacing: 0.25em;
   color: #fff;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 2px;
+  text-align: center;
+  display: block;
+}
+
+.auth-title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #ffe066;
+  margin-bottom: 22px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.13), 0 2px 8px #43e97b;
+  border-radius: 0; /* Bỏ bo góc */
+  background: none; /* Bỏ nền */
+  padding: 0; /* Bỏ padding */
+  margin-top: 8px;
+  display: block;
   text-transform: uppercase;
   font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
 }
-.auth-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-align: center;
+
+@media (max-width: 700px) {
+  :host-context(.mat-dialog-container), .dialog-panel-bg {
+    padding: 12px 2px 8px 2px !important;
+    min-width: 0;
+  }
+  .logo-img {
+    width: 36px;
+    height: 36px;
+  }
+  .logo-text {
+    font-size: 0.95rem;
+  }
+  .auth-title {
+    font-size: 1.1rem;
+    padding: 0;
+  }
+  form {
+    padding: 0 2px;
+  }
 }
+
 form {
   width: 100%;
-  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 8px; /* căn lề trái phải cho input */
   box-sizing: border-box;
 }
 .auth-input {
   width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  border: 1.2px solid #fff;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
-  outline: none;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 2px solid #43e97b;
   background: #fff;
-  color: #232b47;
-  transition: border 0.2s;
+  color: #14532d;
+  font-size: 1.08rem;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  margin-bottom: 14px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.08);
+  font-weight: 600;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 .auth-input:focus {
-  border: 1.5px solid #ff9800;
+  border: 2px solid #43e97b;
+  box-shadow: 0 0 0 2px #b9f6ca;
 }
+
 .auth-btn {
   width: 100%;
-  background: #178a4c;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
+  padding: 14px 0;
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  color: #14532d;
+  font-weight: 800;
+  font-size: 1.1rem;
   border: none;
-  border-radius: 8px;
-  padding: 10px 0;
-  margin-top: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  letter-spacing: 0.1em;
-  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
-  transition: background 0.2s;
+  margin-top: 8px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(34, 139, 34, 0.10);
+  word-break: break-word;
 }
 .auth-btn:hover {
-  background: #0d4d2d;
+  background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
+  color: #0d4d2d;
 }
+
 .auth-link {
-  margin-top: 12px;
-  font-size: 0.98rem;
-  color: #ffeb3b;
+  margin-top: 18px;
+  font-size: 1.05rem;
+  color: #fff;
   text-align: center;
+  word-break: break-word;
 }
 .auth-link a {
-  color: #fff;
+  color: #ffe066;
   font-weight: 700;
   text-decoration: underline;
   margin-left: 4px;
+  transition: color 0.2s;
 }
-/* Make sure modal-content and all children use border-box */
-:host, .modal-content, .auth-logo, .auth-title, form, .auth-input, .auth-btn, .auth-link {
+.auth-link a:hover {
+  color: #43e97b;
+}
+
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+.dialog-close-x {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: rgba(23,138,76,0.18);
+  border: none;
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s, background 0.2s;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dialog-close-x:hover {
+  color: #ffe066;
+  background: #178a4c;
 }

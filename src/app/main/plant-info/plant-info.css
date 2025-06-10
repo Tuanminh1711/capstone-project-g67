@@ -1,48 +1,52 @@
-/* Layout chia 4-8 cho sidebar và content */
-body, .plant-info-layout {
+/* ==== Cài đặt cơ bản ==== */
+*, *::before, *::after {
   box-sizing: border-box;
 }
+body, .plant-info-layout {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ==== Layout chính ==== */
 .plant-info-layout {
   max-width: 1200px;
-  margin: 60px auto 0 auto;
+  margin: 60px auto 0;
   width: 100%;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #e6f4ea;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  box-sizing: border-box;
 }
+
+/* ==== Grid chia Sidebar - Content ==== */
 .plant-info-inner {
   display: grid;
   grid-template-columns: 1fr minmax(280px, 340px) minmax(380px, 600px) 1fr;
   width: 100%;
   margin-top: 20px;
-  align-items: start;
   column-gap: 24px;
-  box-sizing: border-box;
+  align-items: start;
 }
+
+/* ==== Sidebar ==== */
 .sidebar {
   grid-column: 2 / 3;
-  grid-row: 1;
   background: #fff;
   color: #232b47;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 32px 0 0 0;
+  padding-top: 32px;
   height: 600px;
   min-width: 160px;
   max-width: 220px;
   box-shadow: 0 2px 16px rgba(30, 174, 96, 0.08);
   border-radius: 18px;
-  margin: 0;
 }
 .sidebar-title {
   font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 18px;
-  margin-left: 24px;
+  margin: 0 0 18px 24px;
   color: #232b47;
   letter-spacing: 0.04em;
 }
@@ -54,19 +58,20 @@ body, .plant-info-layout {
   padding-left: 12px;
 }
 .sidebar-item {
-  color: #232b47;
-  text-decoration: none;
-  font-size: 1.08rem;
-  font-weight: 600;
-  padding: 10px 0 10px 8px;
-  border-radius: 8px;
-  transition: background 0.18s, color 0.18s;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 12px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  padding: 10px 0 10px 8px;
+  color: #232b47;
+  text-decoration: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
 }
-.sidebar-item:hover, .sidebar-item.active {
+.sidebar-item:hover,
+.sidebar-item.active {
   background: #e0f2f1;
   color: #178a4c;
 }
@@ -76,32 +81,24 @@ body, .plant-info-layout {
   object-fit: contain;
   background: #f5f7fa;
   border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(30, 174, 96, 0.07);
   padding: 4px;
+  box-shadow: 0 1px 4px rgba(30, 174, 96, 0.07);
 }
+
+/* ==== Khu vực Content - Tìm kiếm ==== */
 .plant-search-section {
   grid-column: 3 / 4;
-  grid-row: 1;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 0;
-  height: 100%;
 }
 .plant-search-card {
   width: 100%;
-  min-width: 400px;
-  max-width: 100%;
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 4px 32px rgba(30, 174, 96, 0.13);
-  padding: 32px 32px 24px 32px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  margin: 0;
 }
 .plant-search-box {
   display: flex;
@@ -112,7 +109,6 @@ body, .plant-info-layout {
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(30, 174, 96, 0.08);
   padding: 8px 16px;
-  margin-bottom: 0;
 }
 .plant-search-input {
   flex: 1;
@@ -136,9 +132,11 @@ body, .plant-info-layout {
 .plant-search-btn:hover {
   color: #0d4d2d;
 }
+
+/* ==== Responsive Layout ==== */
 @media (max-width: 1200px) {
   .plant-info-inner {
-    grid-template-columns: 0.5fr 2fr 0.5fr 7fr 0.5fr;
+    grid-template-columns: 0.5fr 2fr 7fr 0.5fr;
   }
   .sidebar {
     min-width: 120px;
@@ -146,11 +144,11 @@ body, .plant-info-layout {
     height: 400px;
   }
   .plant-search-card {
-    min-width: 0;
-    padding: 18px 8px 12px 8px;
+    padding: 18px 8px 12px;
     border-radius: 12px;
   }
 }
+
 @media (max-width: 900px) {
   .plant-info-inner {
     display: flex;
@@ -158,7 +156,7 @@ body, .plant-info-layout {
   }
   .sidebar {
     border-radius: 12px 12px 0 0;
-    margin: 12px 8px 0 8px;
+    margin: 12px 8px 0;
     height: auto;
   }
   .plant-search-section {
@@ -166,7 +164,7 @@ body, .plant-info-layout {
   }
   .plant-search-card {
     border-radius: 0 0 12px 12px;
-    padding: 18px 8px 12px 8px;
+    padding: 18px 8px 12px;
     max-width: 98vw;
     margin-top: 12px;
   }

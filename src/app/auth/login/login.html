@@ -1,13 +1,17 @@
-<div class="auth-logo">
-  <img src="/assets/logo.png" alt="PlantCare Logo" class="logo-img" />
-  <span class="logo-text">PLANTCARE</span>
-</div>
-<h2 class="auth-title">Đăng nhập</h2>
-<form>
-  <input class="auth-input" type="text" placeholder="Tên đăng nhập" />
-  <input class="auth-input" type="password" placeholder="Mật khẩu" />
-  <button class="auth-btn" type="submit">Đăng nhập</button>
-</form>
-<div class="auth-link">
-  Chưa có tài khoản? <a routerLink="/register">Đăng ký</a>
+<div class="dialog-wrapper">
+  <button class="dialog-close-x" (click)="close()">&times;</button>
+  <div class="auth-header">
+    <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
+    <span class="logo-text">PLANTCARE</span>
+  </div>
+  <h2 class="auth-title">Đăng nhập</h2>
+  <form (ngSubmit)="onSubmit()" #loginForm="ngForm" autocomplete="off">
+    <input class="auth-input" type="text" placeholder="Tên đăng nhập" name="username" [(ngModel)]="username" required />
+    <input class="auth-input" type="password" placeholder="Mật khẩu" name="password" [(ngModel)]="password" required />
+    <button class="auth-btn" type="submit" [disabled]="loading">{{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}</button>
+    <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
+  </form>
+  <div class="auth-link">
+    Chưa có tài khoản? <a routerLink="/register">Đăng ký</a>
+  </div>
 </div>
