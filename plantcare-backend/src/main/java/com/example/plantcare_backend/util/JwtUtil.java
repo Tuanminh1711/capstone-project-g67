@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Create by TaHoang
@@ -17,6 +19,7 @@ import java.util.Date;
 public class JwtUtil {
     private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private static final long EXPIRATION_TIME = 864_000_000;
+    private final Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
 
     public String generateToken(String username) {
         return Jwts.builder()
@@ -43,5 +46,14 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+    // Thêm token vào blacklist
+    public void addToBlacklist(String token) {
+        tokenBlacklist.add(token);
+    }
+
+    // Kiểm tra token có trong blacklist không
+    public boolean isTokenBlacklisted(String token) {
+        return tokenBlacklist.contains(token);
     }
 }

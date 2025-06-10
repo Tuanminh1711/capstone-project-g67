@@ -15,12 +15,14 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // tắt CSRF cho API.
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // cho phép truy cập các endpoint.
+                        .requestMatchers("/api/auth/**").permitAll() // cho phép truy cập các endpoint auth.
+                        .requestMatchers("/api/user/**").permitAll() // cho phép truy cập các endpoint user.
                         .anyRequest().authenticated() // các endpoint khác yêu cầu xác thực.
                 );
         return http.build();

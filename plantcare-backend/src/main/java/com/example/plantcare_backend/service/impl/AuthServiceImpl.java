@@ -13,11 +13,16 @@ import com.example.plantcare_backend.repository.UserRepository;
 import com.example.plantcare_backend.service.AuthService;
 import com.example.plantcare_backend.util.Gender;
 import com.example.plantcare_backend.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import java.util.Random;
 
 /**
  * Create by TaHoang
@@ -33,7 +38,6 @@ public class AuthServiceImpl implements AuthService {
     private RoleRepository roleRepository;
     @Autowired
     private UserProfileRepository userProfileRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -97,6 +101,23 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Error registering user: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseData<?> logout(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid authorization header");
+            }
+            String token = authHeader.substring(7);
+            jwtUtil.addToBlacklist(token);
+            SecurityContextHolder.clearContext();
+            return new ResponseData<>(HttpStatus.OK.value(), "Logout successful");
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error during logout: " + e.getMessage());
         }
     }
 }
