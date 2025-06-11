@@ -11,7 +11,7 @@ import java.util.List;
  * Create by TaHoang
  */
 
-public interface UserService {
+public interface AdminService {
 
     long saveUser(UserRequestDTO userRequestDTO);
 
