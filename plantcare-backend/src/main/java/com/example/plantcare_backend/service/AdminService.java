@@ -5,6 +5,8 @@ package com.example.plantcare_backend.service;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.dto.validator.UserStatus;
+import com.example.plantcare_backend.model.Users;
+
 import java.util.List;
 
 /**
@@ -19,7 +21,8 @@ public interface AdminService {
 
     void deleteUser(int userId);
 
-    void changeStatus(int userId, UserStatus status);
+    void changeStatus(int userId, Users.UserStatus status);
+
 
     UserDetailResponse getUser(int userId);
 

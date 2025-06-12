@@ -3,6 +3,7 @@ package com.example.plantcare_backend.controller;
 import com.example.plantcare_backend.dto.reponse.ResponseData;
 import com.example.plantcare_backend.dto.reponse.ResponseError;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
+import com.example.plantcare_backend.dto.request.ChangeUserStatusRequestDTO;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.service.AdminService;
 import com.example.plantcare_backend.util.Translator;
@@ -21,7 +22,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/admin")
 @Slf4j
 @Tag(name = "User Controller")
 @RequiredArgsConstructor
@@ -69,6 +70,21 @@ public class AdminController {
         } catch (Exception e) {
             log.error("Delete user failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Delete user failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(method = "PATCH", summary = "change user status", description = "Change user status (ACTIVE/INACTIVE/BANNED)")
+    @PatchMapping("/changestatus/{userId}")
+    public ResponseData<?> changeUserStatus(
+            @PathVariable int userId,
+            @Valid @RequestBody ChangeUserStatusRequestDTO changeUserStatusRequestDTO) {
+        log.info("Request change user status, userId: {}, {}", userId, changeUserStatusRequestDTO.getStatus());
+        try{
+            adminService.changeStatus(userId, changeUserStatusRequestDTO.getStatus());
+            return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user.status.success"));
+        } catch (Exception e) {
+            log.error("Change user status failed", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change user status failed: " + e.getMessage());
         }
     }
 }

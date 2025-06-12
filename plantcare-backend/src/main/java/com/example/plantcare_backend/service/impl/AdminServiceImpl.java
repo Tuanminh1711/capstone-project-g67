@@ -83,8 +83,13 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public void changeStatus(int userId, UserStatus status) {
+    public void changeStatus(int userId, Users.UserStatus status) {
+        Users users = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        users.setStatus(Users.UserStatus.valueOf(status.toString()));
+        userRepository.save(users);
 
+        log.info("User status changed to " + status);
     }
 
     @Override
@@ -118,4 +123,6 @@ public class AdminServiceImpl implements AdminService {
                 })
                 .collect(Collectors.toList());
     }
+
+
 }
