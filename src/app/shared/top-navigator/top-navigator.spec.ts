@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TopNavigator } from './top-navigator';
+import { TopNavigatorComponent } from './top-navigator.component';
 
 describe('TopNavigator', () => {
-  let component: TopNavigator;
-  let fixture: ComponentFixture<TopNavigator>;
+  let component: TopNavigatorComponent;
+  let fixture: ComponentFixture<TopNavigatorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TopNavigator]
+      imports: [TopNavigatorComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TopNavigator);
+    fixture = TestBed.createComponent(TopNavigatorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,31 +1,28 @@
 import { Component, Optional, ChangeDetectorRef } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { AuthService } from '../auth.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
-import { AuthService, RegisterRequest, RegisterResponse } from '../auth.service';
 
 @Component({
-  selector: 'app-register-dialog',
+  selector: 'app-login',
   standalone: true,
   imports: [FormsModule, NgIf],
-  templateUrl: './register-dialog.html',
-  styleUrls: ['./register.scss']
+  styleUrl: './login.scss',
+  templateUrl: './login-dialog.html',
 })
-export class RegisterDialogComponent {
+export class LoginComponent {
   username = '';
-  email = '';
   password = '';
-  confirmPassword = '';
-  fullName = '';
-  phone = '';
+  rememberMe = false;
   loading = false;
   errorMsg = '';
   successMsg = '';
 
   constructor(
-    private authService: AuthService,
+    private auth: AuthService,
     private cdRef: ChangeDetectorRef,
-    @Optional() private dialogRef?: MatDialogRef<RegisterDialogComponent>
+    @Optional() private dialogRef?: MatDialogRef<LoginComponent>
   ) {}
 
   close() {
@@ -37,7 +34,7 @@ export class RegisterDialogComponent {
   onSubmit() {
     this.errorMsg = '';
     this.successMsg = '';
-    if (!this.username || !this.fullName || !this.phone || !this.email || !this.password || !this.confirmPassword) {
+    if (!this.username || !this.password) {
       this.errorMsg = 'Vui lòng nhập đầy đủ thông tin.';
       this.loading = false;
       this.cdRef.detectChanges();
@@ -45,24 +42,17 @@ export class RegisterDialogComponent {
     }
     this.loading = true;
     this.cdRef.detectChanges();
-    const registerData: RegisterRequest = {
-      username: this.username,
-      fullName: this.fullName,
-      phone: this.phone,
-      email: this.email,
-      password: this.password,
-      confirmPassword: this.confirmPassword
-    };
-    this.authService.register(registerData).subscribe({
+    this.auth.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
-        this.successMsg = res.message || 'Đăng ký thành công!';
+        this.successMsg = 'Đăng nhập thành công!';
+        localStorage.setItem('token', res.token);
         this.loading = false;
         this.cdRef.detectChanges();
         setTimeout(() => {
           if (this.dialogRef) {
             this.dialogRef.close();
           } else {
-            window.location.href = '/login';
+            window.location.href = '/home';
           }
         }, 600);
       },
@@ -73,9 +63,9 @@ export class RegisterDialogComponent {
         } else if (err && err.error && typeof err.error === 'string') {
           this.errorMsg = err.error;
         } else if (err && err.status) {
-          this.errorMsg = `Đăng ký thất bại (status: ${err.status})`;
+          this.errorMsg = `Đăng nhập thất bại (status: ${err.status})`;
         } else {
-          this.errorMsg = 'Đăng ký thất bại!';
+          this.errorMsg = 'Đăng nhập thất bại!';
         }
         this.cdRef.detectChanges();
       }

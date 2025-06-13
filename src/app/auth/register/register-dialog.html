@@ -1,0 +1,25 @@
+<div class="dialog-panel-bg">
+  <button class="dialog-close-x" (click)="close()">&times;</button>
+  <div class="auth-header">
+    <img src="assets/image/logo.png" alt="logo" class="logo-img" />
+    <span class="logo-text">PLANCARE</span>
+  </div>
+  <h2 class="auth-title">Đăng ký tài khoản</h2>
+  <form (ngSubmit)="onSubmit()" autocomplete="on">
+    <input class="auth-input" type="text" name="username" [(ngModel)]="username" placeholder="Tên đăng nhập" required />
+    <input class="auth-input" type="text" name="fullName" [(ngModel)]="fullName" placeholder="Họ và tên" required />
+
+   
+    <input class="auth-input" type="text" name="phone" [(ngModel)]="phone" placeholder="Số điện thoại" required />
+    <input class="auth-input" type="email" name="email" [(ngModel)]="email" placeholder="Email" required />
+      <input class="auth-input" type="password" name="password" [(ngModel)]="password" placeholder="Mật khẩu" required />
+    <input class="auth-input" type="password" name="confirmPassword" [(ngModel)]="confirmPassword" placeholder="Nhập lại mật khẩu" required />
+    <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
+    <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
+    <button class="auth-btn" type="submit">Đăng ký</button>
+  </form>
+  <div class="auth-link">
+    Đã có tài khoản?
+    <a routerLink="/login">Đăng nhập ngay</a>
+  </div>
+</div>

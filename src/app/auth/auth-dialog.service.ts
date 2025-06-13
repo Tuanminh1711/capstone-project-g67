@@ -23,9 +23,6 @@ export class AuthDialogService {
     });
     dialogRef.afterClosed().subscribe(() => {
       this.dialogOpened = false;
-      if (isPlatformBrowser(this.platformId) && window.history.length > 1) {
-        window.history.back();
-      }
     });
   }
 
@@ -39,9 +36,6 @@ export class AuthDialogService {
     });
     dialogRef.afterClosed().subscribe(() => {
       this.dialogOpened = false;
-      if (isPlatformBrowser(this.platformId) && window.history.length > 1) {
-        window.history.back();
-      }
     });
   }
 }

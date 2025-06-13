@@ -12,6 +12,20 @@ export interface LoginResponse {
   // Thêm các trường khác nếu backend trả về
 }
 
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  confirmPassword: string;
+  fullName: string;
+  phone: string;
+  email: string;
+}
+
+export interface RegisterResponse {
+  // Định nghĩa các trường backend trả về khi đăng ký thành công
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
@@ -21,5 +35,14 @@ export class AuthService {
   login(data: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, data);
   }
-  // Có thể thêm register, getProfile ...
+
+  register(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
+  }
+
+  // Kiểm tra kết nối API backend
+  ping(): Observable<string> {
+    return this.http.get(`${this.apiUrl}/ping`, { responseType: 'text' });
+  }
+  // Có thể thêm getProfile ...
 }

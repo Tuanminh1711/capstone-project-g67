@@ -14,7 +14,6 @@ export class DialogManager {
     if (this.dialogOpened) return;
     this.dialogOpened = true;
     const dialogRef = this.dialog.open(component, {
-      width: '420px',
       disableClose: true,
       panelClass: 'dialog-panel-bg'
     });

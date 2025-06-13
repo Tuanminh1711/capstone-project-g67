@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-my-green-space',
   imports: [],
   templateUrl: './my-green-space.html',
-  styleUrl: './my-green-space.css'
+  styleUrl: './my-green-space.scss'
 })
 export class MyGreenSpace {
 

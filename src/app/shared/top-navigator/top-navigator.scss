@@ -1,3 +1,6 @@
+@use '../../../styles/variables' as *;
+@use 'sass:color';
+
 /* Top Navigator CSS - Green gradient */
 body, .main, .content {
   margin: 0 !important;

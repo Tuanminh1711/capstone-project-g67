@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-edit-profile',
   imports: [],
   templateUrl: './edit-profile.html',
-  styleUrl: './edit-profile.css'
+  styleUrl: './edit-profile.scss'
 })
 export class EditProfile {
 

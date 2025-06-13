@@ -1,14 +1,16 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
+import { AuthDialogService } from '../../auth/auth-dialog.service';
 
 @Component({
   selector: 'app-top-navigator',
   imports: [NgIf],
   templateUrl: './top-navigator.html',
-  styleUrl: './top-navigator.css'
+  styleUrl: './top-navigator.scss'
 })
-export class TopNavigator {
+export class TopNavigatorComponent {
   showUserMenu = false;
+  private authDialog = inject(AuthDialogService);
 
   toggleUserMenu(event: MouseEvent) {
     event.stopPropagation();
@@ -24,8 +26,17 @@ export class TopNavigator {
     this.showUserMenu = false;
   }
 
+  openLogin() {
+    this.closeUserMenu();
+    this.authDialog.openLoginDialog();
+  }
+
+  openRegister() {
+    this.closeUserMenu();
+    this.authDialog.openRegisterDialog();
+  }
+
   logout() {
-    // TODO: Add logout logic here (e.g., clear token, redirect to login)
     alert('Logged out!');
   }
 }

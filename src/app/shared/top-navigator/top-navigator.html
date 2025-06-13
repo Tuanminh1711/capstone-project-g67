@@ -22,6 +22,9 @@
           <a class="dropdown-item" routerLink="/user-profile" (click)="closeUserMenu()">View Profile</a>
           <a class="dropdown-item" routerLink="/edit-profile" (click)="closeUserMenu()">Edit Profile</a>
           <div class="dropdown-item" (click)="logout(); closeUserMenu()">Log out</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" (click)="openLogin()">Đăng nhập</div>
+          <div class="dropdown-item" (click)="openRegister()">Đăng ký</div>
         </div>
       </span>
     </div>

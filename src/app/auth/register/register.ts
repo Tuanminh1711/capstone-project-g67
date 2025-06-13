@@ -1,18 +1,9 @@
-import { Component, Optional } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  templateUrl: './register.html',
-  styleUrl: './register.css'
+  template: '',
+  styleUrls: ['./register.scss']
 })
-export class Register {
-  constructor(@Optional() private dialogRef?: MatDialogRef<Register>) {}
-
-  close() {
-    if (this.dialogRef) {
-      this.dialogRef.close();
-    }
-  }
-}
+export class RegisterComponent {}
