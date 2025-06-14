@@ -3,6 +3,8 @@ import { HomeComponent } from './main/home/home.component';
 import { PlantInfoComponent } from './main/plant-info/plant-info';
 import { AboutUsComponent } from './main/about-us/about-us';
 import { AuthPopupHolderComponent } from './shared/empty.component';
+import { ViewUserProfileComponent } from './profile/view-user-profile/view-user-profile.component';
+import { EditUserProfileComponent } from './profile/edit-user-profile/edit-user-profile.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -11,4 +13,6 @@ export const routes: Routes = [
   { path: 'register', component: AuthPopupHolderComponent, data: { showRegister: true } },
   { path: 'plant-info', component: PlantInfoComponent },
   { path: 'about-us', component: AboutUsComponent },
+  { path: 'view-user-profile', component: ViewUserProfileComponent },
+  { path: 'edit-profile', component: EditUserProfileComponent },
 ];

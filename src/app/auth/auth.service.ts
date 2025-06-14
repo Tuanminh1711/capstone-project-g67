@@ -44,5 +44,8 @@ export class AuthService {
   ping(): Observable<string> {
     return this.http.get(`${this.apiUrl}/ping`, { responseType: 'text' });
   }
-  // Có thể thêm getProfile ...
+  // Lấy thông tin profile user
+  getProfile(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/profile`);
+  }
 }

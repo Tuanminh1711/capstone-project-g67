@@ -1,0 +1,117 @@
+.edit-profile-page {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #e0fff4 0%, #c6f6ff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  border-top-left-radius: 24px;
+}
+
+.edit-profile-card-wrapper {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: row;
+  gap: 48px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.edit-profile-card {
+  background: #21a366;
+  border-radius: 24px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.08);
+  padding: 40px 48px 32px 48px;
+  min-width: 400px;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.edit-profile-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #ffd600;
+  letter-spacing: 1px;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 16px;
+}
+
+.edit-field label, .edit-field input {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  font-size: 1.1rem;
+  background: #f8fafc;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+  padding: 0 18px;
+  border: none;
+}
+
+.edit-field label {
+  color: #ff6600;
+  font-weight: 700;
+  border-radius: 12px 0 0 12px;
+  justify-content: flex-end;
+  border-right: 2px solid #fff;
+  font-family: 'Inter', 'Roboto', Arial, sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.edit-field input {
+  color: #888;
+  font-weight: 500;
+  border-radius: 0 12px 12px 0;
+  justify-content: flex-start;
+  border-left: 2px solid #fff;
+  font-family: 'Inter', 'Roboto', Arial, sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.edit-profile-card button {
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #2ee59d 0%, #21a366 100%);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.edit-profile-card button:hover {
+  background: linear-gradient(90deg, #21a366 0%, #2ee59d 100%);
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.12);
+}
+
+@media (max-width: 900px) {
+  .edit-profile-card-wrapper {
+    flex-direction: column;
+    align-items: center;
+    min-width: 90vw;
+    max-width: 98vw;
+    padding: 18px 2vw 18px 2vw;
+    gap: 24px;
+  }
+  .edit-profile-card {
+    min-width: 90vw;
+    max-width: 98vw;
+    padding: 18px 2vw 18px 2vw;
+  }
+}

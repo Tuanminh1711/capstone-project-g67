@@ -1,5 +1,4 @@
 @use '../../../styles/variables' as *;
-@use 'sass:color';
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -26,13 +25,16 @@
 
 :host-context(.mat-dialog-container),
 .dialog-panel-bg {
-  background: #178a4c !important;
-  border-radius: 28px !important;
-  box-shadow: 0 12px 40px rgba(30, 174, 96, 0.22) !important;
-  padding: 28px 18px 18px 18px !important;
-  min-width: 280px;
-  max-width: 95vw;
-  border-radius: 18px !important;
+  background: var(--auth-bg, #178a4c) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 32px rgba(30, 174, 96, 0.18) !important;
+  padding: 40px 48px 32px !important;
+  min-width: 400px;
+  max-width: 99vw;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
 
   @media (max-width: 700px) {
     padding: 12px 2px 8px 2px !important;
@@ -58,50 +60,60 @@ body .mat-dialog-container {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 18px;
+  margin: 18px 0;
   flex-direction: column;
-  margin-top: 18px;
+  position: relative;
 }
 
 .logo-img {
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
   border-radius: 50%;
   background: #fff;
-  border: 3px solid #43e97b;
-  margin: 0 auto 4px auto;
+  border: 2.5px solid #43e97b;
+  margin: 0 auto 4px;
   box-shadow: 0 2px 8px rgba(30, 174, 96, 0.10);
+  display: block;
+
+  @media (max-width: 700px) {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .logo-text {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   font-weight: 900;
   color: #fff;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 2px;
   text-align: center;
   display: block;
+
+  @media (max-width: 700px) {
+    font-size: 0.95rem;
+  }
 }
 
 .auth-title {
   font-size: 1.15rem;
   font-weight: 900;
   color: #ffe066;
-  margin-bottom: 12px;
+  margin: 8px 0 22px;
   letter-spacing: 0.12em;
   text-align: center;
   text-shadow: 0 4px 16px rgba(0,0,0,0.13), 0 2px 8px #43e97b;
-  border-radius: 0;
-  background: none;
-  padding: 0;
-  margin-top: 8px;
-  display: block;
   text-transform: uppercase;
   font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+
+  @media (max-width: 700px) {
+    font-size: 1rem;
+    padding: 0;
+  }
 }
 
 form {
@@ -119,17 +131,17 @@ form {
   .auth-input {
     width: 100%;
     padding: 14px 18px;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 2px solid #43e97b;
     background: #fff;
-    color: orange !important;
-    font-size: 0.95rem !important;
+    color: #14532d;
+    font-size: 0.8rem;
     font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
     margin-bottom: 14px;
     outline: none;
     transition: border 0.2s, box-shadow 0.2s;
     box-shadow: 0 2px 8px rgba(30, 174, 96, 0.08);
-    font-weight: 600;
+    font-weight: 500;
     word-break: break-word;
     box-sizing: border-box;
 
@@ -147,7 +159,7 @@ form {
     font-weight: 800;
     font-size: 1.1rem;
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     cursor: pointer;
     margin-top: 8px;
     transition: background 0.2s, color 0.2s, box-shadow 0.2s;
@@ -181,33 +193,31 @@ form {
   }
 }
 
-.auth-error {
-  color: #e53935;
+.auth-error,
+.auth-success {
   font-weight: 700;
-  margin: 0 0 10px 0;
   text-align: center;
   font-size: 1.08rem;
   letter-spacing: 0.01em;
+  margin: 10px 0;
+}
+
+.auth-error {
+  color: #e53935;
 }
 
 .auth-success {
   color: #ff9800;
-  font-weight: 700;
-  margin: 10px 0 10px 0;
-  text-align: center;
-  font-size: 1.08rem;
-  letter-spacing: 0.01em;
 }
 
 .auth-remember-label {
-  color: $auth-orange;
+  color: #ff9800;
   font-weight: 600;
   font-size: 1rem;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
-  margin-top: 2px;
+  margin: 2px 0 10px;
   user-select: none;
 }
 

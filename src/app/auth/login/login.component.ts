@@ -3,6 +3,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../auth.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +23,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private cdRef: ChangeDetectorRef,
+    private cookieService: CookieService,
     @Optional() private dialogRef?: MatDialogRef<LoginComponent>
   ) {}
 
@@ -45,7 +47,8 @@ export class LoginComponent {
     this.auth.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.successMsg = 'Đăng nhập thành công!';
-        localStorage.setItem('token', res.token);
+         localStorage.setItem('token', res.token);
+        this.cookieService.set('token', res.token, 7, '/'); // Lưu cookie 7 ngày
         this.loading = false;
         this.cdRef.detectChanges();
         setTimeout(() => {

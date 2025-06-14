@@ -15,40 +15,28 @@
   <section class="features-slider features-slider-double">
     <div class="slider-double-wrapper">
       <!-- Bên trái: Slide 1 -->
-      <div class="slider-single left">
+      <div class="slider-single">
         <div class="slider-track-single">
-          <button class="slider-btn prev" (click)="leftSlideIndex = (leftSlideIndex - 1 + leftSlides.length) % leftSlides.length">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <div class="feature-slide" *ngFor="let feature of leftSlides; let i = index" [class.active]="leftSlideIndex === i" [style.display]="leftSlideIndex === i ? 'flex' : 'none'">
+          <div class="feature-slide" *ngFor="let feature of leftSlides; let i = index" [class.active]="leftSlideIndex === i">
             <div class="feature">
               <h3>{{ feature.title }}</h3>
               <p>{{ feature.description }}</p>
             </div>
           </div>
-          <button class="slider-btn next" (click)="leftSlideIndex = (leftSlideIndex + 1) % leftSlides.length">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
-          </button>
         </div>
         <div class="slider-dots">
           <span *ngFor="let f of leftSlides; let i = index" class="dot" [class.active]="leftSlideIndex === i" (click)="leftSlideIndex = i"></span>
         </div>
       </div>
       <!-- Bên phải: Slide 2 -->
-      <div class="slider-single right">
+      <div class="slider-single">
         <div class="slider-track-single">
-          <button class="slider-btn prev" (click)="rightSlideIndex = (rightSlideIndex - 1 + rightSlides.length) % rightSlides.length">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <div class="feature-slide" *ngFor="let feature of rightSlides; let i = index" [class.active]="rightSlideIndex === i" [style.display]="rightSlideIndex === i ? 'flex' : 'none'">
+          <div class="feature-slide" *ngFor="let feature of rightSlides; let i = index" [class.active]="rightSlideIndex === i">
             <div class="feature">
               <h3>{{ feature.title }}</h3>
               <p>{{ feature.description }}</p>
             </div>
           </div>
-          <button class="slider-btn next" (click)="rightSlideIndex = (rightSlideIndex + 1) % rightSlides.length">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
-          </button>
         </div>
         <div class="slider-dots">
           <span *ngFor="let f of rightSlides; let i = index" class="dot" [class.active]="rightSlideIndex === i" (click)="rightSlideIndex = i"></span>
