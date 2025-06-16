@@ -4,6 +4,7 @@ import com.example.plantcare_backend.dto.reponse.LoginResponse;
 import com.example.plantcare_backend.dto.reponse.ResponseData;
 import com.example.plantcare_backend.dto.request.LoginRequestDTO;
 import com.example.plantcare_backend.dto.request.RegisterRequestDTO;
+import com.example.plantcare_backend.dto.request.ChangePasswordRequestDTO;
 import com.example.plantcare_backend.model.Role;
 import com.example.plantcare_backend.model.UserProfile;
 import com.example.plantcare_backend.model.Users;
@@ -48,12 +49,14 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("password wrong!");
         }
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString());
+
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
         loginResponse.setUsername(user.getUsername());
         loginResponse.setMessage("Login successful");
         loginResponse.setStatus(HttpStatus.OK.value());
+        loginResponse.setRole(user.getRole().getRoleName().toString());
         return loginResponse;
     }
 
@@ -118,6 +121,31 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Error during logout: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, String username) {
+        try {
+            Users user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!passwordEncoder.matches(requestDTO.getCurrentPassword(), user.getPassword())) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Current password is incorrect");
+            }
+
+            if (!requestDTO.getNewPassword().equals(requestDTO.getConfirmPassword())) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
+                        "New password and confirm password do not match");
+            }
+
+            user.setPassword(passwordEncoder.encode(requestDTO.getNewPassword()));
+            userRepository.save(user);
+
+            return new ResponseData<>(HttpStatus.OK.value(), "Password changed successfully");
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Error changing password: " + e.getMessage());
         }
     }
 }

@@ -5,7 +5,7 @@ import com.example.plantcare_backend.dto.reponse.ResponseData;
 import com.example.plantcare_backend.dto.request.ForgotPasswordRequestDTO;
 import com.example.plantcare_backend.dto.request.LoginRequestDTO;
 import com.example.plantcare_backend.dto.request.RegisterRequestDTO;
-import com.example.plantcare_backend.dto.request.UserRequestDTO;
+import com.example.plantcare_backend.dto.request.ChangePasswordRequestDTO;
 import com.example.plantcare_backend.service.PasswordResetService;
 import com.example.plantcare_backend.service.impl.AuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,7 +56,8 @@ public class AuthController {
     public ResponseEntity<ResponseData<?>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
         try {
             passwordResetService.createPasswordResetToken(request.getEmail());
-            return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "Reset code has been sent to your email"));
+            return ResponseEntity
+                    .ok(new ResponseData<>(HttpStatus.OK.value(), "Reset code has been sent to your email"));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
@@ -96,5 +97,14 @@ public class AuthController {
             return ResponseEntity.badRequest()
                     .body(new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
+    }
+
+    @Operation(summary = "Change Password", description = "Change user password")
+    @PostMapping("/change-password")
+    public ResponseEntity<ResponseData<?>> changePassword(
+            @Valid @RequestBody ChangePasswordRequestDTO requestDTO,
+            @RequestAttribute("username") String username) {
+        ResponseData<?> response = authService.changePassword(requestDTO, username);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

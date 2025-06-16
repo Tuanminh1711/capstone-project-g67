@@ -21,9 +21,10 @@ public class JwtUtil {
     private static final long EXPIRATION_TIME = 864_000_000;
     private final Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key)
@@ -39,6 +40,15 @@ public class JwtUtil {
         return claims.getSubject();
     }
 
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role", String.class);
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -47,6 +57,7 @@ public class JwtUtil {
             return false;
         }
     }
+
     // Thêm token vào blacklist
     public void addToBlacklist(String token) {
         tokenBlacklist.add(token);

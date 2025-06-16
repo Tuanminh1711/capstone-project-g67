@@ -3,8 +3,9 @@ package com.example.plantcare_backend.controller;
 import com.example.plantcare_backend.dto.reponse.ResponseData;
 import com.example.plantcare_backend.dto.reponse.ResponseError;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
+import com.example.plantcare_backend.dto.request.ChangeUserStatusRequestDTO;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
-import com.example.plantcare_backend.service.UserService;
+import com.example.plantcare_backend.service.AdminService;
 import com.example.plantcare_backend.util.Translator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,13 +22,13 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/admin")
 @Slf4j
 @Tag(name = "User Controller")
 @RequiredArgsConstructor
-public class UserController {
+public class AdminController {
 
-    private final UserService userService;
+    private final AdminService adminService;
 
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
     @PostMapping(value = "/adduser")
@@ -36,7 +36,7 @@ public class UserController {
         log.info("Request add user, {} {}", userRequestDTO.getUsername(), userRequestDTO.getPassword());
 
         try {
-            long userId = userService.saveUser(userRequestDTO);
+            long userId = adminService.saveUser(userRequestDTO);
             return new ResponseData<>(HttpStatus.CREATED.value(), Translator.toLocale("user.add.success"), userId);
         } catch (Exception e) {
             log.error("add user failed", e);
@@ -52,7 +52,7 @@ public class UserController {
         log.info("Request get list account, pageNo: {}, pageSize: {}", pageNo, pageSize);
 
         try {
-            List<UserDetailResponse> users = userService.getAllUsers(pageNo, pageSize);
+            List<UserDetailResponse> users = adminService.getAllUsers(pageNo, pageSize);
             return new ResponseData<>(HttpStatus.OK.value(), "Get list users successfully", users);
         } catch (Exception e) {
             log.error("Get list users failed", e);
@@ -65,11 +65,26 @@ public class UserController {
     public ResponseData<?> deleteUser(@RequestParam int userId) {
         log.info("Request delete user with ID: {}", userId);
         try {
-            userService.deleteUser(userId);
+            adminService.deleteUser(userId);
             return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user.del.success"));
         } catch (Exception e) {
             log.error("Delete user failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Delete user failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(method = "PATCH", summary = "change user status", description = "Change user status (ACTIVE/INACTIVE/BANNED)")
+    @PatchMapping("/changestatus/{userId}")
+    public ResponseData<?> changeUserStatus(
+            @PathVariable int userId,
+            @Valid @RequestBody ChangeUserStatusRequestDTO changeUserStatusRequestDTO) {
+        log.info("Request change user status, userId: {}, {}", userId, changeUserStatusRequestDTO.getStatus());
+        try{
+            adminService.changeStatus(userId, changeUserStatusRequestDTO.getStatus());
+            return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user.status.success"));
+        } catch (Exception e) {
+            log.error("Change user status failed", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change user status failed: " + e.getMessage());
         }
     }
 }

@@ -5,13 +5,15 @@ package com.example.plantcare_backend.service;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.dto.validator.UserStatus;
+import com.example.plantcare_backend.model.Users;
+
 import java.util.List;
 
 /**
  * Create by TaHoang
  */
 
-public interface UserService {
+public interface AdminService {
 
     long saveUser(UserRequestDTO userRequestDTO);
 
@@ -19,7 +21,8 @@ public interface UserService {
 
     void deleteUser(int userId);
 
-    void changeStatus(int userId, UserStatus status);
+    void changeStatus(int userId, Users.UserStatus status);
+
 
     UserDetailResponse getUser(int userId);
 

@@ -1,15 +1,15 @@
 package com.example.plantcare_backend.service.impl;
 
+
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.dto.validator.UserStatus;
-import com.example.plantcare_backend.model.Role;
 import com.example.plantcare_backend.model.UserProfile;
 import com.example.plantcare_backend.model.Users;
 import com.example.plantcare_backend.repository.RoleRepository;
 import com.example.plantcare_backend.repository.UserProfileRepository;
 import com.example.plantcare_backend.repository.UserRepository;
-import com.example.plantcare_backend.service.UserService;
+import com.example.plantcare_backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class AdminServiceImpl implements AdminService {
     @Autowired
     private final UserRepository userRepository;
     @Autowired
@@ -79,26 +79,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(int userId) {
-        try {
-            Users user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            UserProfile profile = userProfileRepository.findByUser(user);
-            if (profile != null) {
-                userProfileRepository.delete(profile);
-            }
-            userRepository.delete(user);
-
-            log.info("User and profile deleted successfully with ID: {}", userId);
-        } catch (Exception e) {
-            log.error("Failed to delete user with ID: {}", userId, e);
-            throw new RuntimeException("Failed to delete user: " + e.getMessage());
-        }
     }
 
     @Override
-    public void changeStatus(int userId, UserStatus status) {
+    public void changeStatus(int userId, Users.UserStatus status) {
+        Users users = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        users.setStatus(Users.UserStatus.valueOf(status.toString()));
+        userRepository.save(users);
 
+        log.info("User status changed to " + status);
     }
 
     @Override
@@ -108,21 +99,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDetailResponse> getAllUsers(int pageNo, int pageSize) {
-        // Sử dụng Pageable để phân trang
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<Users> usersPage = userRepository.findAll(pageable);
 
         return usersPage.getContent().stream()
                 .map(user -> {
                     UserDetailResponse response = new UserDetailResponse();
-                    // Map các trường từ Users
                     response.setId(user.getId());
                     response.setUsername(user.getUsername());
                     response.setEmail(user.getEmail());
                     response.setStatus(user.getStatus());
                     response.setRole(user.getRole().getRoleName());
 
-                    // Lấy thông tin từ UserProfile
                     UserProfile profile = userProfileRepository.findByUser(user);
                     if (profile != null) {
                         response.setFullName(profile.getFullName());
@@ -131,9 +119,10 @@ public class UserServiceImpl implements UserService {
                         response.setAvatarUrl(profile.getAvatarUrl());
                         response.setLivingEnvironment(profile.getLivingEnvironment());
                     }
-
                     return response;
                 })
                 .collect(Collectors.toList());
     }
+
+
 }
