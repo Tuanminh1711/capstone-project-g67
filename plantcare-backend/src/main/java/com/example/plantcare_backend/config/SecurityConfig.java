@@ -22,7 +22,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // tắt CSRF cho API.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // cho phép truy cập các endpoint auth.
-                        .requestMatchers("/api/admin/**").permitAll() // cho phép truy cập các endpoint admin.
+                        .requestMatchers("/api/admin/**").permitAll()
+                        .requestMatchers("/api/user/**").permitAll()// cho phép truy cập các endpoint admin.
                         .anyRequest().authenticated() // các endpoint khác yêu cầu xác thực.
                 );
         return http.build();

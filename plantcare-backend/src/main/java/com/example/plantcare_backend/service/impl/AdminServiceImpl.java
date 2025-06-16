@@ -4,8 +4,10 @@ package com.example.plantcare_backend.service.impl;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
 import com.example.plantcare_backend.dto.validator.UserStatus;
+import com.example.plantcare_backend.model.Plants;
 import com.example.plantcare_backend.model.UserProfile;
 import com.example.plantcare_backend.model.Users;
+import com.example.plantcare_backend.repository.PlantRepository;
 import com.example.plantcare_backend.repository.RoleRepository;
 import com.example.plantcare_backend.repository.UserProfileRepository;
 import com.example.plantcare_backend.repository.UserRepository;
@@ -38,6 +40,8 @@ public class AdminServiceImpl implements AdminService {
     private final UserProfileRepository userProfileRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PlantRepository plantRepository;
 
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
@@ -124,5 +128,21 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public long getTotalPlants() {
+        return plantRepository.count();
+    }
+
+    @Override
+    public long getTotalPlantsByStatus(Plants.PlantStatus status) {
+        return plantRepository.countByStatus(status);
+    }
+
+    @Override
+    public List<Plants> getAllPlants(int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return plantRepository.findAll(pageable).getContent();
+    }
 
 }

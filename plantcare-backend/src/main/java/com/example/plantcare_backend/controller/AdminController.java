@@ -5,6 +5,7 @@ import com.example.plantcare_backend.dto.reponse.ResponseError;
 import com.example.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.example.plantcare_backend.dto.request.ChangeUserStatusRequestDTO;
 import com.example.plantcare_backend.dto.request.UserRequestDTO;
+import com.example.plantcare_backend.model.Plants;
 import com.example.plantcare_backend.service.AdminService;
 import com.example.plantcare_backend.util.Translator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,11 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    /**
+     *
+     * @param userRequestDTO
+     * @return
+     */
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
     @PostMapping(value = "/adduser")
     public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
@@ -44,6 +50,12 @@ public class AdminController {
         }
     }
 
+    /**
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
     @Operation(method = "POST", summary = "Get list of users", description = "Get paginated list of users")
     @PostMapping("/listaccount")
     public ResponseData<List<UserDetailResponse>> getListAccount(
@@ -60,6 +72,11 @@ public class AdminController {
         }
     }
 
+    /**
+     *
+     * @param userId
+     * @return
+     */
     @Operation(method = "POST", summary = "Delete user", description = "Delete user by ID")
     @PostMapping("/deleteuser")
     public ResponseData<?> deleteUser(@RequestParam int userId) {
@@ -73,6 +90,12 @@ public class AdminController {
         }
     }
 
+    /**
+     *
+     * @param userId
+     * @param changeUserStatusRequestDTO
+     * @return
+     */
     @Operation(method = "PATCH", summary = "change user status", description = "Change user status (ACTIVE/INACTIVE/BANNED)")
     @PatchMapping("/changestatus/{userId}")
     public ResponseData<?> changeUserStatus(
@@ -87,4 +110,56 @@ public class AdminController {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change user status failed: " + e.getMessage());
         }
     }
+
+    /**
+     * get total list of plants.
+     *
+     * @return total plants.
+     */
+    @GetMapping("/plants/total")
+    public ResponseData<Long> getTotalPlants() {
+        try {
+            long total = adminService.getTotalPlants();
+            return new ResponseData<>(HttpStatus.OK.value(), "Total plants retrieved successfully", total);
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get total plants");
+        }
+    }
+
+    /**
+     * get total list following status.
+     *
+     * @param status ACTIVE, INACTIVE.
+     * @return total list plants of status.
+     */
+    @GetMapping("/plants/total/status/{status}")
+    public ResponseData<Long> getTotalPlantsByStatus(@PathVariable Plants.PlantStatus status) {
+        try {
+            long total = adminService.getTotalPlantsByStatus(status);
+            return new ResponseData<>(HttpStatus.OK.value(), "Total plants by status retrieved successfully", total);
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get total plants by status");
+        }
+    }
+
+    /**
+     *
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @GetMapping("/plants")
+    public ResponseData<List<Plants>> getAllPlants(
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            List<Plants> plants = adminService.getAllPlants(pageNo, pageSize);
+            return new ResponseData<>(HttpStatus.OK.value(), "Plants retrieved successfully", plants);
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get plants");
+        }
+    }
+
+
 }
