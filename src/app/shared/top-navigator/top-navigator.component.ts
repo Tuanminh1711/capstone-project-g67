@@ -15,6 +15,7 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class TopNavigatorComponent {
   showUserMenu = false;
+  showGreenSpaceDropdown = false;
   private authDialog = inject(AuthDialogService);
 
   constructor(public cookieService: CookieService, public router: Router, public authService: AuthService) {}
@@ -23,14 +24,15 @@ export class TopNavigatorComponent {
     event.stopPropagation();
     this.showUserMenu = !this.showUserMenu;
   }
-
   closeUserMenu() {
     this.showUserMenu = false;
   }
-
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
-    this.showUserMenu = false;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.nav-icon.user')) {
+      this.showUserMenu = false;
+    }
   }
 
   openLogin() {

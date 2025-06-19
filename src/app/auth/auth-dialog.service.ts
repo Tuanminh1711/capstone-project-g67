@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { isPlatformBrowser } from '@angular/common';
 import { LoginDialogComponent } from '../auth/login/login-dialog';
 import { RegisterDialogComponent } from '../auth/register/register-dialog';
+import { ForgotPasswordDialogComponent } from '../auth/forgot-password/forgot-password-dialog';
 
 @Injectable({ providedIn: 'root' })
 export class AuthDialogService {
@@ -30,6 +31,19 @@ export class AuthDialogService {
     if (this.dialogOpened) return;
     this.dialogOpened = true;
     const dialogRef = this.dialog.open(RegisterDialogComponent, {
+      width: '420px',
+      disableClose: true,
+      panelClass: 'dialog-panel-bg'
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.dialogOpened = false;
+    });
+  }
+
+  openForgotPasswordDialog(): void {
+    if (this.dialogOpened) return;
+    this.dialogOpened = true;
+    const dialogRef = this.dialog.open(ForgotPasswordDialogComponent, {
       width: '420px',
       disableClose: true,
       panelClass: 'dialog-panel-bg'

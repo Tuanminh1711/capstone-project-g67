@@ -112,6 +112,15 @@ body .mat-dialog-container {
   font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
 }
 
+.auth-desc {
+  color: #fffbe6;
+  font-size: 0.98rem;
+  margin-bottom: 18px;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
 form {
   width: 100%;
   display: flex;
@@ -123,24 +132,18 @@ form {
 
 .auth-input {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: 14px;
-  border: 2px solid #43e97b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #43e97b;
+  margin-bottom: 10px;
+  font-size: 1rem;
   background: #fff;
-  color: orange !important;
-  font-size: 0.95rem !important;
-  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
-  margin-bottom: 14px;
+  color: #222;
   outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.08);
-  font-weight: 600;
-  word-break: break-word;
-  box-sizing: border-box;
+  transition: border 0.2s;
 
   &:focus {
-    border: 2px solid #43e97b;
-    box-shadow: 0 0 0 2px #b9f6ca;
+    border: 1.5px solid #178a4c;
   }
 }
 
@@ -148,20 +151,19 @@ form {
   width: 100%;
   padding: 14px 0;
   background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-  color: #14532d;
-  font-weight: 800;
-  font-size: 1.1rem; /* Giảm cỡ chữ */
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
+  color: #222;
+  font-weight: 700;
+  font-size: 1.08rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #43e97b33;
   margin-top: 8px;
+  margin-bottom: 4px;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(34, 139, 34, 0.10);
-  word-break: break-word;
 
   &:hover {
     background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
-    color: #0d4d2d;
+    color: #178a4c;
+    box-shadow: 0 4px 16px #38f9d733;
   }
 }
 
@@ -195,12 +197,14 @@ form {
 }
 
 .auth-success {
-  color: #ff9800;
-  font-weight: 700;
-  margin: 10px 0 10px 0;
+  color: #178a4c;
+  background: #e6fff7;
+  border-radius: 6px;
+  padding: 7px 10px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.98rem;
   text-align: center;
-  font-size: 1.08rem;
-  letter-spacing: 0.01em;
 }
 
 .auth-remember-label {
@@ -217,4 +221,17 @@ form {
 
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+@media (max-width: 500px) {
+  .auth-header .logo-img {
+    width: 28px;
+    height: 28px;
+  }
+  .auth-title {
+    font-size: 1rem;
+  }
+  .auth-desc {
+    font-size: 0.92rem;
+  }
 }

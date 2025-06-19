@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { AuthDialogService } from './auth/auth-dialog.service';
+import { FooterComponent } from './shared/footer/footer.component';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, FooterComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

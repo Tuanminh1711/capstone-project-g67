@@ -3,6 +3,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { AuthService, RegisterRequest, RegisterResponse } from '../auth.service';
+import { AuthDialogService } from '../auth-dialog.service';
 
 @Component({
   selector: 'app-register-dialog',
@@ -25,6 +26,7 @@ export class RegisterDialogComponent {
   constructor(
     private authService: AuthService,
     private cdRef: ChangeDetectorRef,
+    private authDialogService: AuthDialogService,
     @Optional() private dialogRef?: MatDialogRef<RegisterDialogComponent>
   ) {}
 
@@ -80,5 +82,16 @@ export class RegisterDialogComponent {
         this.cdRef.detectChanges();
       }
     });
+  }
+
+  openLoginDialog() {
+    if (this.dialogRef) {
+      this.dialogRef.afterClosed().subscribe(() => {
+        this.authDialogService.openLoginDialog();
+      });
+      this.dialogRef.close();
+    } else {
+      this.authDialogService.openLoginDialog();
+    }
   }
 }

@@ -47,7 +47,7 @@ export class LoginComponent {
     this.auth.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.successMsg = 'Đăng nhập thành công!';
-         localStorage.setItem('token', res.token);
+        localStorage.setItem('token', res.token);
         this.cookieService.set('token', res.token, 7, '/'); // Lưu cookie 7 ngày
         this.loading = false;
         this.cdRef.detectChanges();

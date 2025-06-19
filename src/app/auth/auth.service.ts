@@ -9,6 +9,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  userId?: string;
   // Thêm các trường khác nếu backend trả về
 }
 
@@ -46,6 +47,6 @@ export class AuthService {
   }
   // Lấy thông tin profile user
   getProfile(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/profile`);
+    return this.http.get<any>(`${this.apiUrl}/profile`, { withCredentials: true });
   }
 }
