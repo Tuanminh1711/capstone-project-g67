@@ -52,4 +52,7 @@ public class Users {
     public enum UserStatus {
         ACTIVE, INACTIVE, BANNED
     }
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserProfile userProfile;
 }

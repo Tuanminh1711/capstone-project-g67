@@ -1,9 +1,10 @@
 package com.plantcare_backend.service.impl;
 
-
 import com.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
+import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.UserProfile;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.PlantRepository;
@@ -17,11 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -62,6 +67,7 @@ public class AdminServiceImpl implements AdminService {
                     .phone(userRequestDTO.getPhoneNumber())
                     .gender(userRequestDTO.getGender())
                     .fullName(userRequestDTO.getFullName())
+                    .livingEnvironment(null)
                     .build();
 
             userProfileRepository.save(userProfile);
@@ -127,6 +133,72 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<UserDetailResponse> searchUsers(SearchAccountRequestDTO searchAccountRequestDTO) {
+        Pageable pageable = PageRequest.of(searchAccountRequestDTO.getPageNo(), searchAccountRequestDTO.getPageSize());
+
+        // Tạo specification cho search
+        Specification<Users> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Keyword search
+            if (searchAccountRequestDTO.getKeyword() != null
+                    && !searchAccountRequestDTO.getKeyword().trim().isEmpty()) {
+                String keyword = "%" + searchAccountRequestDTO.getKeyword().toLowerCase() + "%";
+
+                // Join với UserProfile để search theo fullName và phone
+                Join<Users, UserProfile> profileJoin = root.join("userProfile", JoinType.LEFT);
+
+                Predicate usernamePred = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("username")), keyword);
+                Predicate emailPred = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("email")), keyword);
+                Predicate fullNamePred = criteriaBuilder.like(
+                        criteriaBuilder.lower(profileJoin.get("fullName")), keyword);
+                Predicate phonePred = criteriaBuilder.like(
+                        profileJoin.get("phone"), "%" + searchAccountRequestDTO.getKeyword() + "%");
+
+                predicates.add(criteriaBuilder.or(usernamePred, emailPred, fullNamePred, phonePred));
+            }
+
+            // Role filter
+            if (searchAccountRequestDTO.getRole() != null) {
+                predicates.add(
+                        criteriaBuilder.equal(root.get("role").get("roleName"), searchAccountRequestDTO.getRole()));
+            }
+
+            // Status filter
+            if (searchAccountRequestDTO.getUserStatus() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), searchAccountRequestDTO.getUserStatus()));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Users> usersPage = userRepository.findAll(spec, pageable);
+
+        return usersPage.getContent().stream()
+                .map(this::convertToUserDetailResponse)
+                .collect(Collectors.toList());
+    }
+
+    private UserDetailResponse convertToUserDetailResponse(Users user) {
+        UserDetailResponse response = new UserDetailResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setStatus(user.getStatus());
+        response.setRole(user.getRole().getRoleName());
+
+        userProfileRepository.findByUser(user).ifPresent(profile -> {
+            response.setFullName(profile.getFullName());
+            response.setPhone(profile.getPhone());
+            response.setGender(profile.getGender());
+            response.setAvatarUrl(profile.getAvatarUrl());
+            response.setLivingEnvironment(profile.getLivingEnvironment());
+        });
+        return response;
+    }
 
     @Override
     public long getTotalPlants() {

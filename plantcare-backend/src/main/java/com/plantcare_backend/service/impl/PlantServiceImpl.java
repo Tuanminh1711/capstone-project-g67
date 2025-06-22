@@ -2,7 +2,7 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.reponse.PlantResponseDTO;
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
-import com.plantcare_backend.dto.request.PlantSearchRequestDTO;
+import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.model.PlantCategory;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.repository.PlantCategoryRepository;

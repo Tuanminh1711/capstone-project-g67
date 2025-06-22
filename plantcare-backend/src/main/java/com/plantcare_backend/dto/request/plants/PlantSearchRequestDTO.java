@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.request;
+package com.plantcare_backend.dto.request.plants;
 
 import com.plantcare_backend.model.Plants;
 import jakarta.validation.constraints.Max;

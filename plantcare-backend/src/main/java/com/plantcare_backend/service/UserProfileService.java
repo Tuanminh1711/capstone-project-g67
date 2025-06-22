@@ -1,6 +1,6 @@
 package com.plantcare_backend.service;
 
-import com.plantcare_backend.dto.request.UserProfileRequestDTO;
+import com.plantcare_backend.dto.request.auth.UserProfileRequestDTO;
 
 public interface UserProfileService {
     UserProfileRequestDTO getUserProfile(Integer userId);

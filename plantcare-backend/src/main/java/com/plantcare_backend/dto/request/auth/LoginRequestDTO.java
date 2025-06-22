@@ -1,6 +1,5 @@
-package com.plantcare_backend.dto.request;
+package com.plantcare_backend.dto.request.auth;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 

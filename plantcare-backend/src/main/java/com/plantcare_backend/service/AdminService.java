@@ -4,6 +4,7 @@ package com.plantcare_backend.service;
 
 import com.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
+import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.model.Users;
 
@@ -23,18 +24,25 @@ public interface AdminService {
 
     void changeStatus(int userId, Users.UserStatus status);
 
-
     UserDetailResponse getUser(int userId);
 
     List<UserDetailResponse> getAllUsers(int pageNo, int pageSize);
 
-    // Get total number of plants
     long getTotalPlants();
 
-    // Get total plants by status (ACTIVE/INACTIVE)
     long getTotalPlantsByStatus(Plants.PlantStatus status);
 
-    // Get paginated list of plants
     List<Plants> getAllPlants(int pageNo, int pageSize);
 
+    /**
+     * Searches for users based on the provided search criteria.
+     * <p>
+     * Criteria may include keyword (username, email, full name, phone number),
+     * role, and account status.
+     * </p>
+     *
+     * @param searchAccountRequestDTO the DTO containing search filters such as keyword, role, and status
+     * @return a list of matching users as {@link UserDetailResponse}
+     */
+    List<UserDetailResponse> searchUsers(SearchAccountRequestDTO searchAccountRequestDTO);
 }

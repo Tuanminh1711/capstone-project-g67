@@ -24,7 +24,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // cho phép truy cập các endpoint auth.
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/user/**").permitAll()// cho phép truy cập các endpoint admin.
-                        .requestMatchers("/api/plants/**").permitAll() // cho phép truy cập các endpoint plants (tìm
+                        .requestMatchers("/api/plants/**").permitAll()// cho phép truy cập các endpoint plants (tìm
                                                                        // kiếm cây).
                         .anyRequest().authenticated() // các endpoint khác yêu cầu xác thực.
                 );

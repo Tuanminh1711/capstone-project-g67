@@ -3,8 +3,9 @@ package com.plantcare_backend.controller;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
 import com.plantcare_backend.dto.reponse.UserDetailResponse;
-import com.plantcare_backend.dto.request.ChangeUserStatusRequestDTO;
+import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.UserRequestDTO;
+import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.service.AdminService;
 import com.plantcare_backend.util.Translator;
@@ -108,6 +109,20 @@ public class AdminController {
         } catch (Exception e) {
             log.error("Change user status failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change user status failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/search-account")
+    public ResponseData<List<UserDetailResponse>> searchAccount(
+            @Valid @RequestBody SearchAccountRequestDTO searchAccountRequestDTO) {
+        log.info("Admin {} searching users with criteria: {}", searchAccountRequestDTO);
+
+        try {
+            List<UserDetailResponse> users = adminService.searchUsers(searchAccountRequestDTO);
+            return new ResponseData<>(HttpStatus.OK.value(), "Search completed successfully", users);
+        } catch (Exception e) {
+            log.error("Search users failed", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Search failed: " + e.getMessage());
         }
     }
 

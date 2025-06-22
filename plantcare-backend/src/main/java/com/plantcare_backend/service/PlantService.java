@@ -1,7 +1,7 @@
 package com.plantcare_backend.service;
 
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
-import com.plantcare_backend.dto.request.PlantSearchRequestDTO;
+import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.model.PlantCategory;
 
 import java.util.List;

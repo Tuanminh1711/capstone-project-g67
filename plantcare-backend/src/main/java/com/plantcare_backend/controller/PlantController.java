@@ -3,7 +3,7 @@ package com.plantcare_backend.controller;
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
-import com.plantcare_backend.dto.request.PlantSearchRequestDTO;
+import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.model.PlantCategory;
 import com.plantcare_backend.service.PlantService;
 import io.swagger.v3.oas.annotations.Operation;
