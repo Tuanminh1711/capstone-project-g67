@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.request;
+package com.plantcare_backend.dto.request.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

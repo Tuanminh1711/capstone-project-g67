@@ -1,6 +1,6 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.request.ResetPasswordRequestDTO;
+import com.plantcare_backend.dto.request.auth.ResetPasswordRequestDTO;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.EmailService;

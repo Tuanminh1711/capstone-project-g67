@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.request;
+package com.plantcare_backend.dto.request.admin;
 
 import com.plantcare_backend.model.Users;
 import jakarta.validation.constraints.NotNull;

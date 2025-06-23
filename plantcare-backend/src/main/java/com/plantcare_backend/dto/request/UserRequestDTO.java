@@ -36,7 +36,6 @@ public class UserRequestDTO implements Serializable {
     @PhoneNumber(message = "phone invalid format! please try again")
     private String phoneNumber;
 
-    @NotBlank(message = "livingEnvironment must be not blank")
     private String livingEnvironment;
 
     @GenderSubset(anyOf = {MALE, FEMALE, OTHER})

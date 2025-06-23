@@ -1,6 +1,6 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.request.UserProfileRequestDTO;
+import com.plantcare_backend.dto.request.auth.UserProfileRequestDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.UserProfile;
 import com.plantcare_backend.model.Users;
@@ -11,8 +11,6 @@ import com.plantcare_backend.util.Gender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Slf4j

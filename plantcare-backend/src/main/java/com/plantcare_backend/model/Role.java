@@ -40,6 +40,6 @@ public class Role {
     private Timestamp updatedAt;
 
     public enum RoleName {
-        ADMIN, STAFF, USER, GUEST
+        ADMIN, STAFF, USER, GUEST, EXPERT
     }
 }
