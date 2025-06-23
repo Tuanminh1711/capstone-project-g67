@@ -6,17 +6,17 @@
   </div>
   <div class="nav-links-actions">
     <div class="nav-links">
-      <a class="nav-link" routerLink="/home">Home</a>
-      <a class="nav-link" routerLink="/plant-info">Plant Information</a>
+      <a class="nav-link" routerLink="/home">Trang chủ</a>
+      <a class="nav-link" routerLink="/plant-info">Tìm kiếm cây cảnh</a>
       <div class="nav-link dropdown" (mouseenter)="showGreenSpaceDropdown=true" (mouseleave)="showGreenSpaceDropdown=false">
-        <span>My green space <span class="arrow" [class.open]="showGreenSpaceDropdown">▼</span></span>
+        <span>Không gian xanh<span class="arrow" [class.open]="showGreenSpaceDropdown">▼</span></span>
         <div class="dropdown-menu" *ngIf="showGreenSpaceDropdown">
-          <a class="dropdown-item" routerLink="/my-green-space/add-tree">PLant A New Tree</a>
-          <a class="dropdown-item" routerLink="/my-green-space/my-garden">My Garden</a>
+          <a class="dropdown-item" routerLink="/my-green-space/add-tree">Trồng cây mới</a>
+          <a class="dropdown-item" routerLink="/my-green-space/my-garden">Khu vườn của tôi</a>
         </div>
       </div>
-      <a class="nav-link" routerLink="/care-with-experts">Care with experts</a>
-      <a class="nav-link" routerLink="/about-us">About us</a>
+      <a class="nav-link" routerLink="/care-with-experts">Chăm sóc cùng chuyên gia</a>
+      <a class="nav-link" routerLink="/about-us">Về chúng tôi</a>
     </div>
     <div class="nav-actions">
       <span class="nav-icon notification">
@@ -26,50 +26,8 @@
         <span class="material-icons" (click)="toggleUserMenu($event)">account_circle</span>
         <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
           <ng-container *ngIf="isLoggedIn; else guestMenu">
-            <a class="dropdown-item" routerLink="/view-user-profile" (click)="closeUserMenu()">View Profile</a>
-            <a class="dropdown-item" routerLink="/edit-profile" (click)="closeUserMenu()">Edit Profile</a>
-            <div class="dropdown-item" (click)="logout(); closeUserMenu()">Log out</div>
-          </ng-container>
-          <ng-template #guestMenu>
-            <div class="dropdown-item" (click)="openLogin(); closeUserMenu()">Đăng nhập</div>
-            <div class="dropdown-item" (click)="openRegister(); closeUserMenu()">Đăng ký</div>
-          </ng-template>
-        </div>
-      </span>
-    </div>
-  </div>
-</nav>
-<!-- Top Navigator HTML -->
-<nav class="top-nav">
-  <div class="logo">
-    <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
-    <span>PLANTCARE</span>
-  </div>
-  <div class="nav-links-actions">
-    <div class="nav-links">
-      <a class="nav-link" routerLink="/home">Home</a>
-      <a class="nav-link" routerLink="/plant-info">Plant Information</a>
-      <div class="nav-link dropdown" (mouseenter)="showGreenSpaceDropdown=true" (mouseleave)="showGreenSpaceDropdown=false">
-        <span>My green space <span class="arrow" [class.open]="showGreenSpaceDropdown">▼</span></span>
-        <div class="dropdown-menu" *ngIf="showGreenSpaceDropdown">
-          <a class="dropdown-item" routerLink="/my-green-space/add-tree">PLant A New Tree</a>
-          <a class="dropdown-item" routerLink="/my-green-space/my-garden">My Garden</a>
-        </div>
-      </div>
-      <a class="nav-link" routerLink="/care-with-experts">Care with experts</a>
-      <a class="nav-link" routerLink="/about-us">About us</a>
-    </div>
-    <div class="nav-actions">
-      <span class="nav-icon notification">
-        <span class="material-icons">notifications</span>
-      </span>
-      <span class="nav-icon user" tabindex="0">
-        <span class="material-icons" (click)="toggleUserMenu($event)">account_circle</span>
-        <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
-          <ng-container *ngIf="isLoggedIn; else guestMenu">
-            <a class="dropdown-item" routerLink="/view-user-profile" (click)="closeUserMenu()">View Profile</a>
-            <a class="dropdown-item" routerLink="/edit-profile" (click)="closeUserMenu()">Edit Profile</a>
-            <div class="dropdown-item" (click)="logout(); closeUserMenu()">Log out</div>
+            <a class="dropdown-item" routerLink="/view-user-profile" (click)="closeUserMenu()">Hồ sơ của tôi</a>
+            <div class="dropdown-item" (click)="logout(); closeUserMenu()">Đăng xuất</div>
           </ng-container>
           <ng-template #guestMenu>
             <div class="dropdown-item" (click)="openLogin(); closeUserMenu()">Đăng nhập</div>

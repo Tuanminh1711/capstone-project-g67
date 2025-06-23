@@ -1,0 +1,101 @@
+.admin-home-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+.admin-sidebar-footer-wrapper {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 260px;
+  min-width: 180px;
+  max-width: 400px;
+  height: calc(100vh - 64px);
+  z-index: 100;
+}
+.admin-sidebar {
+  flex: 1 1 auto;
+  position: static;
+  height: auto;
+  margin: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: auto;
+  transition: width 0.2s;
+}
+.admin-home-content {
+  flex: 1;
+  padding: 80px 48px 40px 48px;
+  background: #f1f5f9;
+  margin-left: 260px;
+  min-height: calc(100vh - 64px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.2s;
+}
+.admin-top-nav {
+  width: 100vw;
+  height: 64px;
+  background: linear-gradient(90deg, #3bb77e 0%, #1e824c 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+footer {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+.admin-home-container.sidebar-closed .admin-home-content {
+  margin-left: 0;
+}
+.admin-home-container.sidebar-closed .admin-sidebar {
+  display: none;
+}
+.admin-home-container.sidebar-closed footer {
+  margin-left: 0;
+  width: 100%;
+}
+.admin-home-content h1 {
+  font-size: 2.2em;
+  margin-bottom: 16px;
+  color: #0f172a;
+}
+@media (max-width: 900px) {
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    min-width: unset;
+    max-width: unset;
+    resize: none;
+    margin-top: 56px;
+    top: 56px;
+  }
+  .admin-home-content {
+    margin-left: 0;
+    padding: 80px 16px 16px 16px;
+  }
+  .admin-top-nav {
+    height: 56px;
+    padding: 0 8px;
+  }
+  footer {
+    margin-left: 0;
+    width: 100%;
+  }
+}

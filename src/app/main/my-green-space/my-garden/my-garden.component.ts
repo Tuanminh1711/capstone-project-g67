@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 export interface Plant {
   id: string;
@@ -14,7 +15,7 @@ export interface Plant {
 @Component({
   selector: 'app-my-garden',
   standalone: true,
-  imports: [CommonModule, TopNavigatorComponent],
+  imports: [CommonModule, TopNavigatorComponent, HttpClientModule],
   templateUrl: './my-garden.component.html',
   styleUrls: ['./my-garden.component.scss']
 })
@@ -24,29 +25,7 @@ export class MyGardenComponent implements OnInit {
   layout: 'grid' | 'list' = 'grid';
   filter: 'all' | 'indoor' | 'outdoor' = 'all';
 
-  private samplePlants: Plant[] = [
-    {
-      id: '1',
-      name: 'Bonsai Ficus',
-      image: '',
-      description: 'A classic Ficus bonsai, easy to care for and popular among beginners.',
-      tags: ['Ficus', 'Indoor', 'Classic']
-    },
-    {
-      id: '2',
-      name: 'Juniper Bonsai',
-      image: '',
-      description: 'Juniper bonsai with beautiful needle-like foliage',
-      tags: ['Juniper', 'Outdoor', 'Evergreen']
-    },
-    {
-      id: '3',
-      name: 'Japanese Maple Bonsai',
-      image: '',
-      description: 'Stunning Japanese Maple bonsai with vibrant red leaves in autumn.',
-      tags: ['Maple', 'Seasonal', 'Colorful']
-    }
-  ];
+  constructor(private http: HttpClient) {}
 
   get filteredPlants(): Plant[] {
     if (this.filter === 'all') return this.plants;
@@ -56,6 +35,32 @@ export class MyGardenComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.plants = this.samplePlants;
+    this.loadAllPlants();
+  }
+
+  loadAllPlants() {
+    this.apiError = false;
+    this.http.get<any>('/api/plants/search?pageNo=0&pageSize=1000').subscribe({
+      next: (res) => {
+        const data = res?.data;
+        if (!data || !Array.isArray(data.plants)) {
+          this.plants = [];
+          this.apiError = true;
+          return;
+        }
+        // Map dữ liệu backend sang Plant[]
+        this.plants = data.plants.map((p: any) => ({
+          id: p.id?.toString() ?? '',
+          name: p.commonName || p.name || '',
+          image: p.imageUrls?.[0] || '',
+          description: p.description || '',
+          tags: [p.categoryName, p.lightRequirement, p.careDifficulty, p.status].filter(Boolean)
+        }));
+      },
+      error: () => {
+        this.apiError = true;
+        this.plants = [];
+      }
+    });
   }
 }

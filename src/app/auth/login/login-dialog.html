@@ -1,19 +1,22 @@
-<div class="dialog-panel-bg">
-  <button class="dialog-close-x" (click)="close()">&times;</button>
-  <div class="auth-header">
-    <img src="assets/image/logo.png" alt="logo" class="logo-img" />
-    <span class="logo-text">PLANCARE</span>
+  <div class="dialog-panel-bg">
+    <button class="dialog-close-x" (click)="close()">&times;</button>
+    <div class="auth-header">
+      <img src="assets/image/logo.png" alt="logo" class="logo-img" />
+      <span class="logo-text">PLANCARE</span>
+    </div>
+    <h2 class="auth-title">Đăng nhập</h2>
+    <form (ngSubmit)="onSubmit()" autocomplete="on">
+      <input class="auth-input" type="text" name="username" [(ngModel)]="username" placeholder="Tên đăng nhập hoặc Email" required />
+      <input class="auth-input" type="password" name="password" [(ngModel)]="password" placeholder="Mật khẩu" required />
+      <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
+      <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
+      <button class="auth-btn" type="submit">Đăng nhập</button>
+    </form>
+    <div class="auth-link">
+      <a (click)="openForgotPasswordDialog()">Quên mật khẩu?</a>
+    </div>
+    <div class="auth-link">
+      Chưa có tài khoản?
+      <a (click)="openRegisterDialog()">Đăng ký ngay</a>
+    </div>
   </div>
-  <h2 class="auth-title">Đăng nhập</h2>
-  <form (ngSubmit)="onSubmit()" autocomplete="on">
-    <input class="auth-input" type="text" name="username" [(ngModel)]="username" placeholder="Tên đăng nhập hoặc Email" required />
-    <input class="auth-input" type="password" name="password" [(ngModel)]="password" placeholder="Mật khẩu" required />
-    <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
-    <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
-    <button class="auth-btn" type="submit">Đăng nhập</button>
-  </form>
-  <div class="auth-link">
-    Chưa có tài khoản?
-    <a routerLink="/register">Đăng ký ngay</a>
-  </div>
-</div>

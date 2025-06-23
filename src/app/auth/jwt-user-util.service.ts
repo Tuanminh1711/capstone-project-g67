@@ -22,4 +22,19 @@ export class JwtUserUtilService {
       return null;
     }
   }
+
+  getRoleFromToken(): string | null {
+    let token = this.cookieService.get('token');
+    if (!token && typeof document !== 'undefined') {
+      const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
+      token = match ? match[2] : '';
+    }
+    if (!token) return null;
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.role || null;
+    } catch (e) {
+      return null;
+    }
+  }
 }

@@ -1,2 +1,3 @@
 <router-outlet />
-<app-footer></app-footer>
+<!-- Footer chỉ hiển thị nếu không phải trang admin -->
+<app-footer *ngIf="!isAdminPage()"></app-footer>

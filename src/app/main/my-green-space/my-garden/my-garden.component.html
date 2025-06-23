@@ -1,14 +1,14 @@
 <app-top-navigator></app-top-navigator>
 <div class="garden-collection">
-  <h2 class="collection-title">MY PLANT GARDEN</h2>
+  <h2 class="collection-title">KHU VƯỜN CỦA TÔI</h2>
   <div class="layout-switcher">
-    <button [class.active]="layout==='grid'" (click)="layout='grid'">Grid</button>
-    <button [class.active]="layout==='list'" (click)="layout='list'">List</button>
+    <button [class.active]="layout==='grid'" (click)="layout='grid'">BẢNG</button>
+    <button [class.active]="layout==='list'" (click)="layout='list'">DANH SÁCH</button>
   </div>
   <div class="filter-switcher">
-    <button [class.active]="filter==='all'" (click)="filter='all'">All</button>
-    <button [class.active]="filter==='indoor'" (click)="filter='indoor'">Indoor</button>
-    <button [class.active]="filter==='outdoor'" (click)="filter='outdoor'">Outdoor</button>
+    <button [class.active]="filter==='all'" (click)="filter='all'">TẤT CẢ</button>
+    <button [class.active]="filter==='indoor'" (click)="filter='indoor'">TRONG NHÀ</button>
+    <button [class.active]="filter==='outdoor'" (click)="filter='outdoor'">NGOÀI TRỜI</button>
   </div>
   <div *ngIf="!apiError; else emptyList">
     <div *ngIf="plants.length; else emptyList">

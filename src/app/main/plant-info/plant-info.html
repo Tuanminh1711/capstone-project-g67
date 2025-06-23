@@ -2,44 +2,104 @@
 
 <div class="plant-info-layout">
   <div class="plant-info-inner">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-title">Danh mục</div>
       <nav class="sidebar-menu">
-        <a class="sidebar-item" href="#">
-          <img src="" class="sidebar-icon" alt="ABCD" />
-          ABCD
-        </a>
-        <a class="sidebar-item" href="#">
-          <img src="" class="sidebar-icon" alt="ABCD" />
-          ABCD
-        </a>
-        <a class="sidebar-item" href="#">
-          <img src="" class="sidebar-icon" alt="ABCD" />
-          ABCD
-        </a>
-        <a class="sidebar-item" href="#">
-          <img src="" class="sidebar-icon" alt="ABCD" />
-          ABCD
-        </a>
-        <a class="sidebar-item" href="#">
-          <img src="" class="sidebar-icon" alt="ABCD" />
-          ABCD
-        </a>
-        <a class="sidebar-item" href="#">
+        <a class="sidebar-item" href="#" *ngFor="let item of [1,2,3,4,5,6]">
           <img src="" class="sidebar-icon" alt="ABCD" />
           ABCD
         </a>
       </nav>
     </aside>
+
+    <!-- Main content -->
     <section class="plant-search-section">
       <div class="plant-search-card">
-        <div class="plant-search-box">
-          <input type="text" class="plant-search-input" placeholder="Tìm kiếm cây..." />
-          <button class="plant-search-btn">
+
+        <!-- Search box -->
+        <form class="plant-search-box" (ngSubmit)="onSearch()">
+          <input
+            type="text"
+            class="plant-search-input"
+            placeholder="Tìm kiếm cây..."
+            [(ngModel)]="searchText"
+            name="searchText"
+            (ngModelChange)="onSearchInputChange()"
+          />
+          <button class="plant-search-btn" type="submit">
             <span class="material-icons">search</span>
           </button>
+        </form>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="status-msg">Đang tải dữ liệu...</div>
+
+        <!-- Error -->
+        <div *ngIf="!loading && error" class="status-msg error">
+          {{ error }}
         </div>
-        <!-- Có thể thêm nội dung phụ bên dưới nếu muốn -->
+
+        <!-- Nội dung chính -->
+        <ng-container *ngIf="!loading && !error">
+          <ng-container *ngIf="plants$ | async as plants">
+            
+            <!-- Không có cây -->
+            <div *ngIf="plants.length === 0" class="status-msg empty">
+              Không có cây nào phù hợp.
+            </div>
+
+            <!-- Danh sách cây -->
+            <div class="plant-list" *ngIf="plants.length > 0">
+              <div *ngFor="let plant of plants" class="plant-card">
+                <img
+                  *ngIf="plant.imageUrls?.length"
+                  [src]="plant.imageUrls[0]"
+                  [alt]="plant.commonName"
+                  class="plant-img"
+                />
+                <div class="plant-info">
+                  <div class="plant-title">
+                    {{ plant.commonName }}
+                    <span class="plant-scientific">
+                      ({{ plant.scientificName }})
+                    </span>
+                  </div>
+                  <div class="plant-category">
+                    Phân loại: {{ plant.categoryName }}
+                  </div>
+                  <div class="plant-desc">{{ plant.description }}</div>
+                  <div class="plant-meta">
+                    <span>Ánh sáng: {{ plant.lightRequirement }}</span> |
+                    <span>Nước: {{ plant.waterRequirement }}</span> |
+                    <span>Độ khó: {{ plant.careDifficulty }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" *ngIf="totalPages > 1">
+              <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
+                &laquo;
+              </button>
+              <button
+                *ngFor="let page of [].constructor(totalPages); let i = index"
+                (click)="goToPage(i)"
+                [class.active]="i === currentPage"
+              >
+                {{ i + 1 }}
+              </button>
+              <button
+                (click)="goToPage(currentPage + 1)"
+                [disabled]="currentPage === totalPages - 1"
+              >
+                &raquo;
+              </button>
+            </div>
+
+          </ng-container>
+        </ng-container>
       </div>
     </section>
   </div>

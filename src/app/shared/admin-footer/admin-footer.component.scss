@@ -1,0 +1,24 @@
+.admin-footer {
+  width: 100vw;
+  background: #fff; /* Đổi nền thành màu trắng */
+  color: #fff;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 110;
+  box-shadow: 0 -2px 8px #ff980022; /* Giữ shadow cam nhạt */
+  padding: 0;
+  margin: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-footer-content {
+  width: 100%;
+  text-align: center;
+  font-size: 1.05em;
+  color: #f27123; /* Đổi chữ thành màu cam đậm hơn */
+  font-weight: 800; /* Đổi độ đậm của chữ thành 800 */
+  letter-spacing: 0.5px;
+}

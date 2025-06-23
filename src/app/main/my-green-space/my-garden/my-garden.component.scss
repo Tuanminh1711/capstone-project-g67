@@ -16,7 +16,7 @@
   text-align: center;
   font-size: 2.2rem;
   font-weight: 800;
-  color: #000;
+  color: #26734d;
   margin-bottom: 32px;
   letter-spacing: 1.2px;
   text-shadow: none;
@@ -37,7 +37,7 @@
 .layout-switcher button {
   background: transparent;
   border: none;
-  color: #000;
+  color: #f27123;
   font-weight: 600;
   font-size: 1.08rem;
   border-radius: 0;
@@ -53,8 +53,8 @@
 .layout-switcher button.active,
 .layout-switcher button:focus,
 .layout-switcher button:hover {
-  background: #232e22;
-  color: #e6f4ea;
+  background: #fff;
+  color: #f27123;
 }
 
 .filter-switcher {
@@ -71,7 +71,7 @@
 .filter-switcher button {
   background: transparent;
   border: none;
-  color: #000;
+  color: #f27123;
   font-weight: 600;
   font-size: 1.08rem;
   border-radius: 0;
@@ -82,13 +82,13 @@
   outline: none;
 }
 .filter-switcher button:not(:last-child) {
-  border-right: 1.5px solid #b2d8c5;
+  border-right: 1.5px ;
 }
 .filter-switcher button.active,
 .filter-switcher button:focus,
 .filter-switcher button:hover {
-  background: #232e22 40%;
-  color: #fff;
+  background: #fff 40%;
+  color: #f27123;
 }
 
 .plant-list {

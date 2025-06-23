@@ -1,0 +1,18 @@
+<nav class="admin-sidebar">
+  <ul>
+    <li *ngFor="let section of sidebarSections">
+      <div class="sidebar-section-title" (click)="toggleSection(section)">
+        <span>{{ section.title }}</span>
+        <span class="arrow" [class.open]="section.open">&#9660;</span>
+      </div>
+      <ul *ngIf="section.open">
+        <li *ngFor="let item of section.items" class="sidebar-item">
+          <a [routerLink]="item.link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <span class="sidebar-item-dot"></span>
+            <span class="sidebar-item-label">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>

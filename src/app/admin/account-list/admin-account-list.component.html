@@ -1,0 +1,70 @@
+<div class="admin-account-list-layout">
+  <app-admin-top-navigator></app-admin-top-navigator>
+  <div class="admin-account-list-main">
+    <app-admin-sidebar></app-admin-sidebar>
+    <div class="admin-account-list-content">
+      <div class="admin-account-list-container" *ngIf="accounts$ | async as accounts">
+        <div class="account-list-header">
+          <h2>Danh sách tài khoản</h2>
+          <button class="reload-btn" (click)="reloadAccounts()" title="Tải lại danh sách">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+              <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
+              <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
+            </svg>
+            Cập nhật
+          </button>
+        </div>
+        <div class="message-bar-wrapper">
+          <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
+          <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
+        </div>
+        <table class="account-table">
+          <thead>
+            <tr>
+              <th (click)="sortBy('username')">Tên đăng nhập</th>
+              <th (click)="sortBy('fullName')">Họ tên</th>
+              <th (click)="sortBy('email')">Email</th>
+              <th (click)="sortBy('phone')">Điện thoại</th>
+              <th (click)="sortBy('role')">Vai trò</th>
+              <th (click)="sortBy('status')">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let acc of accounts">
+              <td>
+                <a (click)="viewDetail(acc)" class="account-link">{{ acc.username }}</a>
+              </td>
+              <td>
+                <a (click)="viewDetail(acc)" class="account-link">{{ acc.fullName }}</a>
+              </td>
+              <td>{{ acc.email }}</td>
+              <td>{{ acc.phone }}</td>
+              <td>{{ acc.role | titlecase }}</td>
+              <td colspan="2">
+                <select class="status-dropdown" [ngClass]="{
+                  'active': acc.status.toLowerCase() === 'active',
+                  'inactive': acc.status.toLowerCase() === 'inactive',
+                  'banned': acc.status.toLowerCase() === 'banned'
+                }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)">
+                  <option value="ACTIVE">Hoạt động</option>
+                  <option value="INACTIVE">Đã khóa</option>
+                  <option value="BANNED">Cấm</option>
+                </select>
+                <button class="delete-btn" (click)="deleteAccount(acc)" title="Xóa tài khoản">
+                  🗑 Xóa
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination-bar" *ngIf="accounts.length > 0">
+          <button (click)="prevPage()" [disabled]="pageNo === 0">&lt; Trước</button>
+          <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
+          <button (click)="nextPage()" [disabled]="pageNo + 1 >= totalPages">Sau &gt;</button>
+        </div>
+        <div *ngIf="loading" class="loading-bar">Đang tải...</div>
+      </div>
+    </div>
+  </div>
+  <app-admin-footer></app-admin-footer>
+</div>
