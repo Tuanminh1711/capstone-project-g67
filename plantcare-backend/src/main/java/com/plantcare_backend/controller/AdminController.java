@@ -6,6 +6,7 @@ import com.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
+import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.service.AdminService;
 import com.plantcare_backend.util.Translator;
@@ -14,9 +15,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -103,7 +106,7 @@ public class AdminController {
             @PathVariable int userId,
             @Valid @RequestBody ChangeUserStatusRequestDTO changeUserStatusRequestDTO) {
         log.info("Request change user status, userId: {}, {}", userId, changeUserStatusRequestDTO.getStatus());
-        try{
+        try {
             adminService.changeStatus(userId, changeUserStatusRequestDTO.getStatus());
             return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user.status.success"));
         } catch (Exception e) {
@@ -136,9 +139,29 @@ public class AdminController {
     public ResponseData<UserDetailResponse> getAccountDetail(@PathVariable int userId) {
         try {
             UserDetailResponse userDetail = adminService.getUserDetail(userId);
-            return new ResponseData<>(HttpStatus.OK.value(), "User detail retrieved successfully", userDetail);
+            return new ResponseData<>(HttpStatus.OK.value(), "User detail get successfully", userDetail);
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get user detail");
+        }
+    }
+
+    /**
+     *
+     * @param userId
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @GetMapping("/activity-logs-user/{userId}")
+    public ResponseData<Page<UserActivityLogRequestDTO>> getUserActivityLogs(
+            @PathVariable int userId,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            Page<UserActivityLogRequestDTO> logs = adminService.getUserActivityLogs(userId, pageNo, pageSize);
+            return new ResponseData<>(HttpStatus.OK.value(), "User activity logs get successfully", logs);
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get user activity logs");
         }
     }
 
@@ -191,6 +214,5 @@ public class AdminController {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get plants");
         }
     }
-
 
 }

@@ -41,6 +41,13 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO) {
         Users user = userRepository.findByUsername(loginRequestDTO.getUsername())
                 .orElseThrow(() -> new RuntimeException("Username wrong!"));
+        if(user.getStatus() == Users.UserStatus.BANNED) {
+            throw new RuntimeException("tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.");
+        }
+        if(user.getStatus() == Users.UserStatus.INACTIVE) {
+           throw new RuntimeException("tài khoản của bạn hiện bị khóa do vi phạm chính sách.");
+        }
+
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("password wrong!");
         }

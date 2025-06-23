@@ -5,8 +5,10 @@ package com.plantcare_backend.service;
 import com.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
+import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.model.Users;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -45,4 +47,6 @@ public interface AdminService {
      * @return a list of matching users as {@link UserDetailResponse}
      */
     List<UserDetailResponse> searchUsers(SearchAccountRequestDTO searchAccountRequestDTO);
+
+    Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize);
 }

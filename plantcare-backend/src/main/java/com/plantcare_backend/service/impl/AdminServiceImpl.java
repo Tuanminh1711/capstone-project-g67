@@ -3,14 +3,9 @@ package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
-import com.plantcare_backend.model.Plants;
-import com.plantcare_backend.model.Role;
-import com.plantcare_backend.model.UserProfile;
-import com.plantcare_backend.model.Users;
-import com.plantcare_backend.repository.PlantRepository;
-import com.plantcare_backend.repository.RoleRepository;
-import com.plantcare_backend.repository.UserProfileRepository;
-import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
+import com.plantcare_backend.model.*;
+import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +42,8 @@ public class AdminServiceImpl implements AdminService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private PlantRepository plantRepository;
+    @Autowired
+    private UserActivityLogRepository userActivityLogRepository;
 
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
@@ -182,6 +179,19 @@ public class AdminServiceImpl implements AdminService {
         return usersPage.getContent().stream()
                 .map(this::convertToUserDetailResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<UserActivityLog> logs = userActivityLogRepository.findByUser_Id(userId, pageable);
+        return logs.map(log -> UserActivityLogRequestDTO.builder()
+                .id(log.getId())
+                .action(log.getAction())
+                .timestamp(log.getTimestamp())
+                .ipAddress(log.getIpAddress())
+                .description(log.getDescription())
+                .build());
     }
 
     private UserDetailResponse convertToUserDetailResponse(Users user) {
