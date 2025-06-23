@@ -24,7 +24,7 @@ public interface AdminService {
 
     void changeStatus(int userId, Users.UserStatus status);
 
-    UserDetailResponse getUser(int userId);
+    UserDetailResponse getUserDetail(int userId);
 
     List<UserDetailResponse> getAllUsers(int pageNo, int pageSize);
 

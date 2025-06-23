@@ -127,6 +127,22 @@ public class AdminController {
     }
 
     /**
+     * get account detail of user
+     *
+     * @param userId get id by account
+     * @return detail account by id
+     */
+    @GetMapping("/userdetail/{userId}")
+    public ResponseData<UserDetailResponse> getAccountDetail(@PathVariable int userId) {
+        try {
+            UserDetailResponse userDetail = adminService.getUserDetail(userId);
+            return new ResponseData<>(HttpStatus.OK.value(), "User detail retrieved successfully", userDetail);
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get user detail");
+        }
+    }
+
+    /**
      * get total list of plants.
      *
      * @return total plants.

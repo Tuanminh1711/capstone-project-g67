@@ -103,8 +103,10 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public UserDetailResponse getUser(int userId) {
-        return null;
+    public UserDetailResponse getUserDetail(int userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return convertToUserDetailResponse(user);
     }
 
     @Override
