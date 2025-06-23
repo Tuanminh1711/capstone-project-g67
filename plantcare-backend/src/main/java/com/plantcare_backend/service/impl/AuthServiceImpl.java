@@ -6,12 +6,15 @@ import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
 import com.plantcare_backend.model.Role;
+import com.plantcare_backend.model.UserActivityLog;
 import com.plantcare_backend.model.UserProfile;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.RoleRepository;
+import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.repository.UserProfileRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.AuthService;
+import com.plantcare_backend.service.IpLocationService;
 import com.plantcare_backend.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 /**
  * Create by TaHoang
@@ -36,9 +41,13 @@ public class AuthServiceImpl implements AuthService {
     private UserProfileRepository userProfileRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserActivityLogRepository userActivityLogRepository;
+    @Autowired
+    private IpLocationService ipLocationService;
 
     @Override
-    public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO) {
+    public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
         Users user = userRepository.findByUsername(loginRequestDTO.getUsername())
                 .orElseThrow(() -> new RuntimeException("Username wrong!"));
         if(user.getStatus() == Users.UserStatus.BANNED) {
@@ -51,6 +60,18 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("password wrong!");
         }
+        String ipAddress = getClientIp(request);
+        String location = ipLocationService.getLocationFromIp(ipAddress);
+
+        UserActivityLog log = UserActivityLog.builder()
+                .user(user)
+                .action("LOGIN")
+                .ipAddress(ipAddress)
+                .timestamp(LocalDateTime.now())
+                .description("User logged in successfully " + location)
+                .build();
+        userActivityLogRepository.save(log);
+
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString());
 
         LoginResponse loginResponse = new LoginResponse();
@@ -60,6 +81,14 @@ public class AuthServiceImpl implements AuthService {
         loginResponse.setStatus(HttpStatus.OK.value());
         loginResponse.setRole(user.getRole().getRoleName().toString());
         return loginResponse;
+    }
+    // hàm lấy IP
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
     }
 
     @Override
@@ -150,4 +179,5 @@ public class AuthServiceImpl implements AuthService {
                     "Error changing password: " + e.getMessage());
         }
     }
+
 }

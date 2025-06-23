@@ -6,6 +6,7 @@ import com.plantcare_backend.dto.request.auth.ForgotPasswordRequestDTO;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
+import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.service.PasswordResetService;
 import com.plantcare_backend.service.impl.AuthServiceImpl;
 import com.plantcare_backend.util.JwtUtil;
@@ -38,8 +39,8 @@ public class AuthController {
 
     @Operation(summary = "User Login", description = "Login with username and password")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
-        LoginResponse loginResponse = authService.loginForUser(loginRequestDTO);
+    public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
+        LoginResponse loginResponse = authService.loginForUser(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }
 

@@ -8,7 +8,7 @@ import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthService {
-    LoginResponse loginForUser(LoginRequestDTO loginRequestDTO);
+    LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request);
 
     ResponseData<?> registerForUser(RegisterRequestDTO registerRequestDTO);
 
