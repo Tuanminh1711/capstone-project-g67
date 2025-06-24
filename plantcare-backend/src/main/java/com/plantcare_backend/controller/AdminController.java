@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -163,6 +164,31 @@ public class AdminController {
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get user activity logs");
         }
+    }
+
+    /**
+     * update user by admin.
+     *
+     * @param id id of user update.
+     * @param userRequestDTO entity of user update.
+     * @return profile new of user.
+     */
+    @PutMapping("/updateuser/{userId}")
+    public ResponseData<?> updateUser(@PathVariable("userId") int id, @RequestBody UserRequestDTO userRequestDTO) {
+        log.info("Request update user with ID: {}", id);
+        adminService.updateUser(id, userRequestDTO);
+        return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user.update.success"));
+    }
+
+    /**
+     *
+     * @param userId
+     * @return
+     */
+    @PutMapping("/reset-password/{userId}")
+    public ResponseEntity<?> resetPassword(@PathVariable int userId) {
+        adminService.resetPassword(userId);
+        return ResponseEntity.ok("Password reset and sent to user's email successfully");
     }
 
     /**

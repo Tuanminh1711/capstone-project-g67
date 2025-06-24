@@ -49,4 +49,6 @@ public interface AdminService {
     List<UserDetailResponse> searchUsers(SearchAccountRequestDTO searchAccountRequestDTO);
 
     Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize);
+
+    void resetPassword(int userId);
 }
