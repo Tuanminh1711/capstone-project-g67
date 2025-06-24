@@ -1,0 +1,169 @@
+<div class="admin-send-response-layout">
+  <app-admin-top-navigator></app-admin-top-navigator>
+  <div class="admin-send-response-main">
+    <app-admin-sidebar></app-admin-sidebar>
+    <div class="admin-send-response-content">
+      <div class="admin-send-response-container" *ngIf="ticket">
+        <div class="response-header">
+          <div class="header-navigation">
+            <button class="back-btn" (click)="goBack()">
+              ← Quay lại ticket
+            </button>
+            <button class="list-btn" (click)="goToList()">
+              📋 Danh sách
+            </button>
+          </div>
+          <h2>Gửi phản hồi - Ticket #{{ ticket.id }}</h2>
+        </div>
+
+        <div class="message-bar-wrapper">
+          <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
+          <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
+        </div>
+
+        <div class="ticket-summary">
+          <h3>Thông tin ticket</h3>
+          <div class="ticket-info-grid">
+            <div class="info-item">
+              <label>Tiêu đề:</label>
+              <span class="ticket-title">{{ ticket.title }}</span>
+            </div>
+            <div class="info-item">
+              <label>Trạng thái:</label>
+              <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
+                {{ getStatusText(ticket.status) }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Độ ưu tiên:</label>
+              <span class="priority-badge" [ngClass]="getPriorityClass(ticket.priority)">
+                {{ getPriorityText(ticket.priority) }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Danh mục:</label>
+              <span class="category-badge">{{ getCategoryText(ticket.category) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Người tạo:</label>
+              <span>{{ ticket.createdBy }}</span>
+            </div>
+            <div class="info-item">
+              <label>Ngày tạo:</label>
+              <span>{{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="response-form-section">
+          <h3>Nội dung phản hồi</h3>
+          
+          <div class="form-group">
+            <label for="template-select">Chọn template (tùy chọn):</label>
+            <select 
+              id="template-select"
+              [(ngModel)]="selectedTemplate" 
+              (change)="onTemplateChange()"
+              class="template-select"
+            >
+              <option value="0">-- Chọn template --</option>
+              <option *ngFor="let template of responseTemplates" [value]="template.id">
+                {{ template.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="response-content">Nội dung phản hồi: <span class="required">*</span></label>
+            <textarea 
+              id="response-content"
+              [(ngModel)]="responseContent"
+              placeholder="Nhập nội dung phản hồi..."
+              class="response-textarea"
+              rows="8"
+            ></textarea>
+            <div class="char-count">
+              {{ responseContent.length }} ký tự
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="response-type">Loại phản hồi:</label>
+              <select id="response-type" [(ngModel)]="responseType" class="form-select">
+                <option value="public">Công khai (user có thể thấy)</option>
+                <option value="internal">Nội bộ (chỉ admin thấy)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="priority-select">Độ ưu tiên:</label>
+              <select id="priority-select" [(ngModel)]="priority" class="form-select">
+                <option value="low">Thấp</option>
+                <option value="medium">Trung bình</option>
+                <option value="high">Cao</option>
+                <option value="urgent">Khẩn cấp</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="file-upload">Tệp đính kèm:</label>
+            <div class="file-upload-area">
+              <input 
+                type="file" 
+                id="file-upload"
+                (change)="onFileSelected($event)"
+                multiple
+                class="file-input"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+              >
+              <div class="upload-placeholder">
+                <span class="upload-icon">📎</span>
+                <span>Kéo thả file vào đây hoặc click để chọn</span>
+                <small>Hỗ trợ: PDF, DOC, TXT, JPG, PNG (tối đa 5MB/file)</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="attachments-list" *ngIf="attachments.length > 0">
+            <h4>Tệp đã chọn:</h4>
+            <div class="attachment-item" *ngFor="let file of attachments; let i = index">
+              <span class="file-icon">📄</span>
+              <div class="file-info">
+                <span class="file-name">{{ file.name }}</span>
+                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+              </div>
+              <button class="remove-btn" (click)="removeAttachment(i)" title="Xóa file">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <div class="action-buttons">
+            <button 
+              class="save-draft-btn" 
+              (click)="saveAsDraft()"
+              [disabled]="loading"
+            >
+              💾 Lưu nháp
+            </button>
+            <button 
+              class="send-btn" 
+              (click)="sendResponse()"
+              [disabled]="loading"
+            >
+              <span *ngIf="!loading">📤 Gửi phản hồi</span>
+              <span *ngIf="loading">⏳ Đang gửi...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading && !ticket" class="loading-bar">Đang tải thông tin ticket...</div>
+    </div>
+  </div>
+  <app-admin-footer></app-admin-footer>
+</div> 

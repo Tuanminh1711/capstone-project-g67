@@ -1,0 +1,178 @@
+<div class="admin-ticket-detail-layout">
+  <app-admin-top-navigator></app-admin-top-navigator>
+  <div class="admin-ticket-detail-main">
+    <app-admin-sidebar></app-admin-sidebar>
+    <div class="admin-ticket-detail-content">
+      <div class="admin-ticket-detail-container" *ngIf="ticket">
+        <div class="detail-header">
+          <button class="back-btn" (click)="goBack()">
+            ← Quay lại danh sách
+          </button>
+          <h2>Ticket #{{ ticket.id }} - {{ ticket.title }}</h2>
+          <a [routerLink]="['/admin/tickets', ticket.id, 'response']" class="send-response-btn">
+            📤 Gửi phản hồi
+          </a>
+        </div>
+
+        <div class="message-bar-wrapper">
+          <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
+          <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
+        </div>
+
+        <div class="ticket-info-section">
+          <div class="ticket-meta">
+            <div class="meta-row">
+              <div class="meta-item">
+                <label>Trạng thái:</label>
+                <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
+                  {{ getStatusText(ticket.status) }}
+                </span>
+              </div>
+              <div class="meta-item">
+                <label>Độ ưu tiên:</label>
+                <span class="priority-badge" [ngClass]="getPriorityClass(ticket.priority)">
+                  {{ getPriorityText(ticket.priority) }}
+                </span>
+              </div>
+              <div class="meta-item">
+                <label>Danh mục:</label>
+                <span class="category-badge">{{ getCategoryText(ticket.category) }}</span>
+              </div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-item">
+                <label>Người tạo:</label>
+                <span>{{ ticket.createdBy }}</span>
+              </div>
+              <div class="meta-item">
+                <label>Người được giao:</label>
+                <span *ngIf="ticket.assignedTo; else unassigned" class="assigned-to">
+                  {{ ticket.assignedTo }}
+                </span>
+                <ng-template #unassigned>
+                  <span class="unassigned">Chưa giao</span>
+                </ng-template>
+              </div>
+              <div class="meta-item">
+                <label>Ngày tạo:</label>
+                <span>{{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-description">
+            <h3>Mô tả vấn đề</h3>
+            <div class="description-content">
+              <p>{{ ticket.description }}</p>
+            </div>
+          </div>
+
+          <div class="ticket-attachments" *ngIf="ticket.attachments && ticket.attachments.length > 0">
+            <h3>Tệp đính kèm</h3>
+            <div class="attachments-list">
+              <div class="attachment-item" *ngFor="let attachment of ticket.attachments">
+                <span class="attachment-icon">📎</span>
+                <span>{{ attachment }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-tags" *ngIf="ticket.tags && ticket.tags.length > 0">
+            <h3>Tags</h3>
+            <div class="tags-list">
+              <span class="tag" *ngFor="let tag of ticket.tags">#{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="responses-section">
+          <h3>Lịch sử phản hồi ({{ ticket.responses.length }})</h3>
+          
+          <div class="responses-list">
+            <div class="response-item" *ngFor="let response of ticket.responses" 
+                 [ngClass]="{'admin-response': response.isAdminResponse, 'user-response': !response.isAdminResponse}">
+              <div class="response-header">
+                <span class="response-author">{{ response.createdBy }}</span>
+                <span class="response-date">{{ response.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span class="response-type" *ngIf="response.isAdminResponse">Admin</span>
+              </div>
+              <div class="response-content">
+                <p>{{ response.content }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="add-response-section">
+            <h4>Thêm phản hồi</h4>
+            <div class="response-form">
+              <textarea 
+                [(ngModel)]="newResponse"
+                placeholder="Nhập nội dung phản hồi..."
+                class="response-textarea"
+                rows="4"
+              ></textarea>
+              <div class="response-actions">
+                <button class="send-btn" (click)="sendResponse()">
+                  📤 Gửi phản hồi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-actions">
+          <h3>Hành động</h3>
+          <div class="action-buttons">
+            <div class="action-group">
+              <label>Cập nhật trạng thái:</label>
+              <div class="status-buttons">
+                <button 
+                  class="status-btn" 
+                  [ngClass]="{'active': ticket.status === 'open'}"
+                  (click)="updateStatus('open')"
+                >
+                  Mở
+                </button>
+                <button 
+                  class="status-btn" 
+                  [ngClass]="{'active': ticket.status === 'in_progress'}"
+                  (click)="updateStatus('in_progress')"
+                >
+                  Đang xử lý
+                </button>
+                <button 
+                  class="status-btn" 
+                  [ngClass]="{'active': ticket.status === 'resolved'}"
+                  (click)="updateStatus('resolved')"
+                >
+                  Đã giải quyết
+                </button>
+                <button 
+                  class="status-btn" 
+                  [ngClass]="{'active': ticket.status === 'closed'}"
+                  (click)="updateStatus('closed')"
+                >
+                  Đã đóng
+                </button>
+              </div>
+            </div>
+            
+            <div class="action-group">
+              <label>Giao ticket:</label>
+              <select class="assign-select" (change)="onAssignChange($event)">
+                <option value="">Chọn người xử lý</option>
+                <option value="admin1" [selected]="ticket.assignedTo === 'admin1'">Admin 1</option>
+                <option value="admin2" [selected]="ticket.assignedTo === 'admin2'">Admin 2</option>
+                <option value="admin3" [selected]="ticket.assignedTo === 'admin3'">Admin 3</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="loading-bar">Đang tải...</div>
+      <div *ngIf="errorMsg" class="error-bar">{{ errorMsg }}</div>
+    </div>
+  </div>
+  <app-admin-footer></app-admin-footer>
+</div> 
