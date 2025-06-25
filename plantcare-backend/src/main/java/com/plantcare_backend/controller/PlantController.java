@@ -25,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Plant Controller", description = "APIs for plant search and management")
+@CrossOrigin(origins = "http://localhost:4200/")
 public class PlantController {
 
     private final PlantService plantService;

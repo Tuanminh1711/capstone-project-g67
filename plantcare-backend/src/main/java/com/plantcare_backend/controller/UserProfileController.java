@@ -21,13 +21,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 @Slf4j
 @Tag(name = "User Profile Controller")
+@CrossOrigin(origins = "http://localhost:4200/")
 public class UserProfileController {
     @Autowired
     private UserProfileService userProfileService;
 
 
-    @GetMapping("/profile/{userId}")
-    public ResponseEntity<UserProfileRequestDTO> getUserProfile(@PathVariable Integer userId) {
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileRequestDTO> getCurrentUserProfile(@RequestAttribute("userId") Integer userId) {
         UserProfileRequestDTO profile = userProfileService.getUserProfile(userId);
         return ResponseEntity.ok(profile);
     }
@@ -35,11 +36,10 @@ public class UserProfileController {
     @Operation(summary = "Update current user profile")
     @PutMapping("/updateprofile")
     public ResponseEntity<ResponseData<UserProfileRequestDTO>> updateProfile(
+            @RequestAttribute("userId") Integer userId,
             @RequestBody @Valid UserProfileRequestDTO profileDTO) {
 
         try {
-
-            Integer userId = profileDTO.getId().intValue();
 
             UserProfileRequestDTO updatedProfile = userProfileService.updateUserProfile(userId, profileDTO);
 

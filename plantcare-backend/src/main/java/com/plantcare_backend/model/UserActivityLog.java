@@ -1,5 +1,6 @@
 package com.plantcare_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name="user_activity_log")
+@Table(name = "user_activity_log")
 public class UserActivityLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +25,7 @@ public class UserActivityLog {
     // Liên kết với bảng Users
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private Users user;
 
     // Loại hành động: LOGIN, LOGOUT, UPDATE_PROFILE, CHANGE_PASSWORD, ...

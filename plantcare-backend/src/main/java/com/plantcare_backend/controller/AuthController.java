@@ -8,7 +8,7 @@ import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
 import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.service.PasswordResetService;
-import com.plantcare_backend.service.impl.AuthServiceImpl;
+import com.plantcare_backend.service.AuthService;
 import com.plantcare_backend.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,9 +29,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Authentication APIs")
+@CrossOrigin(origins = "http://localhost:4200/")
 public class AuthController {
     @Autowired
-    private AuthServiceImpl authService;
+    private AuthService authService;
     @Autowired
     private PasswordResetService passwordResetService;
     @Autowired
@@ -39,7 +40,8 @@ public class AuthController {
 
     @Operation(summary = "User Login", description = "Login with username and password")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
+    public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
+            HttpServletRequest request) {
         LoginResponse loginResponse = authService.loginForUser(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }
@@ -118,12 +120,15 @@ public class AuthController {
         }
     }
 
+    /**
+     * Đổi mật khẩu cho user đã đăng nhập.
+     */
     @Operation(summary = "Change Password", description = "Change user password")
     @PostMapping("/change-password")
     public ResponseEntity<ResponseData<?>> changePassword(
             @Valid @RequestBody ChangePasswordRequestDTO requestDTO,
-            @RequestAttribute("username") String username) {
-        ResponseData<?> response = authService.changePassword(requestDTO, username);
+            @RequestAttribute("userId") Integer userId) {
+        ResponseData<?> response = authService.changePassword(requestDTO, userId);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

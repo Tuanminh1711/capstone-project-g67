@@ -1,6 +1,7 @@
 package com.plantcare_backend.model;
 
 import com.plantcare_backend.util.Gender;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,6 +24,7 @@ public class UserProfile {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true, nullable = false)
+    @JsonBackReference
     private Users user;
 
     @Column(name = "full_name", length = 100)

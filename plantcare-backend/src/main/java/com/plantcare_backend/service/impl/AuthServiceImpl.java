@@ -50,11 +50,11 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
         Users user = userRepository.findByUsername(loginRequestDTO.getUsername())
                 .orElseThrow(() -> new RuntimeException("Username wrong!"));
-        if(user.getStatus() == Users.UserStatus.BANNED) {
+        if (user.getStatus() == Users.UserStatus.BANNED) {
             throw new RuntimeException("tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.");
         }
-        if(user.getStatus() == Users.UserStatus.INACTIVE) {
-           throw new RuntimeException("tài khoản của bạn hiện bị khóa do vi phạm chính sách.");
+        if (user.getStatus() == Users.UserStatus.INACTIVE) {
+            throw new RuntimeException("tài khoản của bạn hiện bị khóa do vi phạm chính sách.");
         }
 
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
@@ -72,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         userActivityLogRepository.save(log);
 
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString(), user.getId());
 
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
@@ -82,6 +82,7 @@ public class AuthServiceImpl implements AuthService {
         loginResponse.setRole(user.getRole().getRoleName().toString());
         return loginResponse;
     }
+
     // hàm lấy IP
     private String getClientIp(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");
@@ -156,9 +157,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, String username) {
+    public ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, Integer userId) {
         try {
-            Users user = userRepository.findByUsername(username)
+            Users user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!passwordEncoder.matches(requestDTO.getCurrentPassword(), user.getPassword())) {

@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
 /**
  * created bt Tahoang
@@ -25,10 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class JwtUtilImpl implements JwtUtil {
-    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private static final long EXPIRATION_TIME = 864_000_000; // 10 ngày
     private static final Logger log = LoggerFactory.getLogger(JwtUtilImpl.class);
     private final Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
 
     @Override
     public void addToBlacklist(String token) {
@@ -42,14 +48,21 @@ public class JwtUtilImpl implements JwtUtil {
     }
 
     @Override
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role, int userId) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(key)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey())
                 .compact();
+    }
+
+    @Override
+    public Integer getUserIdFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("userId", Integer.class);
     }
 
     @Override
@@ -80,9 +93,13 @@ public class JwtUtilImpl implements JwtUtil {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
     private Claims parseToken(String token) throws JwtException {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

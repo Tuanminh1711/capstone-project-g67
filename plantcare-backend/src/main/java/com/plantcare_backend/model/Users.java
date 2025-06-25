@@ -1,10 +1,13 @@
 package com.plantcare_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Create by TaHoang
@@ -35,6 +38,7 @@ public class Users {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
+    @JsonBackReference
     private Role role;
 
     @Enumerated(EnumType.STRING)
@@ -54,5 +58,10 @@ public class Users {
     }
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private UserProfile userProfile;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<UserActivityLog> userActivityLogs;
 }

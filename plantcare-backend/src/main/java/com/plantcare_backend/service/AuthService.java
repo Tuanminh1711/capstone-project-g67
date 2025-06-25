@@ -14,5 +14,5 @@ public interface AuthService {
 
     ResponseData<?> logout(HttpServletRequest httpServletRequest);
 
-    ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, String username);
+    ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, Integer userId);
 }

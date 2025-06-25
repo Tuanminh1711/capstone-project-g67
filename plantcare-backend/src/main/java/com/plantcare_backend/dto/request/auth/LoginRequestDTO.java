@@ -1,7 +1,6 @@
 package com.plantcare_backend.dto.request.auth;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * Create by TaHoang
@@ -9,6 +8,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class LoginRequestDTO {
 
     private String username;

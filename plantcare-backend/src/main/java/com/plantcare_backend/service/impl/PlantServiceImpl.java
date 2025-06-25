@@ -2,12 +2,17 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.reponse.PlantResponseDTO;
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
+import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
+import com.plantcare_backend.exception.InvalidDataException;
+import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.PlantCategory;
+import com.plantcare_backend.model.PlantImage;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.service.PlantService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +80,54 @@ public class PlantServiceImpl implements PlantService {
     public List<PlantCategory> getAllCategories() {
         log.info("Getting all plant categories");
         return categoryRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Long createPlant(CreatePlantRequestDTO request) {
+        log.info("Creating new plant with scientific name: {}", request.getScientificName());
+
+        PlantCategory category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+
+        if (plantRepository.existsByScientificNameIgnoreCase(request.getScientificName())) {
+            throw new InvalidDataException("Plant with scientific name already exists: " + request.getScientificName());
+        }
+
+        Plants plant = Plants.builder()
+                .scientificName(request.getScientificName())
+                .commonName(request.getCommonName())
+                .category(category)
+                .description(request.getDescription())
+                .careInstructions(request.getCareInstructions())
+                .lightRequirement(request.getLightRequirement())
+                .waterRequirement(request.getWaterRequirement())
+                .careDifficulty(request.getCareDifficulty())
+                .suitableLocation(request.getSuitableLocation())
+                .commonDiseases(request.getCommonDiseases())
+                .status(Plants.PlantStatus.ACTIVE)
+                .build();
+
+        Plants savedPlant = plantRepository.save(plant);
+
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            List<PlantImage> images = request.getImageUrls().stream()
+                    .map(url -> PlantImage.builder()
+                            .plant(savedPlant)
+                            .imageUrl(url)
+                            .isPrimary(false)
+                            .build())
+                    .collect(Collectors.toList());
+
+            if (!images.isEmpty()) {
+                images.get(0).setIsPrimary(true);
+            }
+            savedPlant.setImages(images);
+            plantRepository.save(savedPlant);
+        }
+
+        log.info("Plant created successfully with ID: {}", savedPlant.getId());
+        return savedPlant.getId();
     }
 
     /**

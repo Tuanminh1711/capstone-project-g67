@@ -7,8 +7,12 @@ import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
+import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
+import com.plantcare_backend.exception.InvalidDataException;
+import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.service.AdminService;
+import com.plantcare_backend.service.PlantService;
 import com.plantcare_backend.util.Translator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,14 +36,20 @@ import java.util.List;
 @Slf4j
 @Tag(name = "User Controller")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200/")
 public class AdminController {
 
     private final AdminService adminService;
+    private final PlantService plantService;
 
     /**
+     * Creates a new user account in the system.
      *
-     * @param userRequestDTO
-     * @return
+     * @param userRequestDTO Contains the user details including username and password (must be valid).
+     * @return ResponseData containing:
+     *            - HTTP 201 (Created) status with new user's ID if successful.
+     *            - HTTP 400 (Bad Request) status with error message if creation fails.
+     *  @throws Exception If any unexpected error occurs during user creation.
      */
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
     @PostMapping(value = "/adduser")
@@ -238,6 +248,30 @@ public class AdminController {
             return new ResponseData<>(HttpStatus.OK.value(), "Plants retrieved successfully", plants);
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get plants");
+        }
+    }
+
+    @Operation(method = "POST", summary = "Create new plant", description = "Admin creates a new plant in the system")
+    @PostMapping("/createplants")
+    public ResponseData<Long> createPlant(@Valid @RequestBody CreatePlantRequestDTO createPlantRequestDTO) {
+        log.info("Admin request to create new plant: {}", createPlantRequestDTO.getScientificName());
+
+        try {
+            Long plantId = plantService.createPlant(createPlantRequestDTO);
+            return new ResponseData<>(
+                    HttpStatus.CREATED.value(),
+                    Translator.toLocale("plant.create.success"),
+                    plantId
+            );
+        } catch (ResourceNotFoundException e) {
+            log.error("Category not found for plant creation", e);
+            return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        } catch (InvalidDataException e) {
+            log.error("Invalid data for plant creation", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        } catch (Exception e) {
+            log.error("Create plant failed", e);
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Create plant failed");
         }
     }
 
