@@ -2,7 +2,6 @@ import { Component, HostListener, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
-import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 
@@ -18,7 +17,7 @@ export class TopNavigatorComponent {
   showGreenSpaceDropdown = false;
   private authDialog = inject(AuthDialogService);
 
-  constructor(public cookieService: CookieService, public router: Router, public authService: AuthService) {}
+  constructor(public router: Router, public authService: AuthService) {}
 
   toggleUserMenu(event: MouseEvent) {
     event.stopPropagation();
@@ -46,11 +45,11 @@ export class TopNavigatorComponent {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.cookieService.get('token');
+    return this.authService.isLoggedIn();
   }
 
   logout() {
-    this.cookieService.delete('token', '/');
+    this.authService.logout();
     this.router.navigate(['/home']);
   }
 }

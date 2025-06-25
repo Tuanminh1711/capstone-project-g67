@@ -73,7 +73,8 @@
               "buildTarget": "fe_code:build:production"
             },
             "development": {
-              "buildTarget": "fe_code:build:development"
+              "buildTarget": "fe_code:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
@@ -112,4 +113,3 @@
     "analytics": "6d13021f-b15f-4886-9fff-f46001b7f452"
   }
 }
- 

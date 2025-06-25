@@ -228,7 +228,8 @@
 
 .cta-btn {
   background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-  color: #14532d;
+  background: #14532d;
+  color: #fff;
   font-weight: 900;
   font-size: 1.12rem;
   border: none;
@@ -243,8 +244,8 @@
   font-weight: bold;
 }
 .cta-btn:hover {
-  background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
-  color: #0d4d2d;
+  background: linear-gradient(90deg, #fff 0%, #9bc672 100%);
+  color: #000;
   transform: scale(1.06);
   box-shadow: 0 8px 32px #43e97b44;
 }
@@ -311,7 +312,7 @@
 }
 .slider-single:hover {
   box-shadow: 0 8px 32px #43e97b33;
-  background: #eafff2;
+  background: #eafff2;  
 }
 .slider-track, .slider-track-single {
   display: flex;
@@ -365,7 +366,8 @@
 .feature-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #43e97b 60%, #38f9d7 100%);
+  // background: linear-gradient(135deg, #43e97b 60%, #38f9d7 100%);
+  background: #178a4c;
   border-radius: 50%;
   display: flex;
   align-items: center;

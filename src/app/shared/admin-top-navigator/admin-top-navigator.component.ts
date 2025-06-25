@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-top-navigator',
@@ -13,17 +14,20 @@ export class AdminTopNavigatorComponent {
   @Input() sidebarOpen = true;
   @Output() sidebarToggle = new EventEmitter<void>();
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   toggleSidebar() {
     this.sidebarToggle.emit();
   }
 
   logout() {
-    // Xóa token ở localStorage/cookie
-    localStorage.removeItem('token');
-    document.cookie = 'token=; Max-Age=0; path=/;';
-    // Chuyển hướng về trang login
+    // Sử dụng AuthService để logout đúng cách
+    this.authService.logout();
+    
+    // Chuyển hướng về trang home
     this.router.navigate(['/home']);
   }
 }

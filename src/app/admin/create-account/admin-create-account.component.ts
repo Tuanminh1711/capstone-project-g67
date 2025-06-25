@@ -1,16 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminTopNavigatorComponent } from '../../shared/admin-top-navigator/admin-top-navigator.component';
-import { AdminSidebarComponent } from '../../shared/admin-sidebar/admin-sidebar.component';
-import { AdminFooterComponent } from '../../shared/admin-footer/admin-footer.component';
+import { AdminLayoutComponent } from '../../shared/admin-layout/admin-layout.component';
 import { AdminCreateAccountService } from './admin-create-account.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-create-account',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminTopNavigatorComponent, AdminSidebarComponent, AdminFooterComponent],
+  imports: [CommonModule, FormsModule, AdminLayoutComponent],
   templateUrl: './admin-create-account.component.html',
   styleUrls: ['./admin-create-account.component.scss']
 })

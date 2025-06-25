@@ -1,4 +1,4 @@
-<nav class="admin-sidebar">
+<nav class="admin-sidebar" [class.collapsed]="collapsed">
   <ul>
     <li *ngFor="let section of sidebarSections">
       <div class="sidebar-section-title" (click)="toggleSection(section)">

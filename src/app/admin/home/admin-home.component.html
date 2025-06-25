@@ -1,11 +1,6 @@
-<div class="admin-home-container" [class.sidebar-closed]="!sidebarOpen">
-  <app-admin-top-navigator [sidebarOpen]="sidebarOpen" (sidebarToggle)="toggleSidebar()"></app-admin-top-navigator>
-  <div class="admin-sidebar-footer-wrapper">
-    <app-admin-sidebar *ngIf="sidebarOpen"></app-admin-sidebar>
-    <app-admin-footer></app-admin-footer>
-  </div>
+<app-admin-layout>
   <div class="admin-home-content">
     <h1>Welcome to Admin Dashboard</h1>
     <p>Select a function from the sidebar to get started.</p>
   </div>
-</div>
+</app-admin-layout>

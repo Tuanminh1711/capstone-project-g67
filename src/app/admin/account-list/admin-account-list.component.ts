@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminTopNavigatorComponent } from '../../shared/admin-top-navigator/admin-top-navigator.component';
-import { AdminSidebarComponent } from '../../shared/admin-sidebar/admin-sidebar.component';
+import { AdminLayoutComponent } from '../../shared/admin-layout/admin-layout.component';
 import { AdminFooterComponent } from '../../shared/admin-footer/admin-footer.component';
 import { AdminAccountService, Account } from './admin-account.service';
 import { HttpClientModule } from '@angular/common/http';
@@ -11,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-admin-account-list',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, AdminTopNavigatorComponent, AdminSidebarComponent, AdminFooterComponent],
+  imports: [CommonModule, HttpClientModule, AdminLayoutComponent],
   templateUrl: './admin-account-list.component.html',
   styleUrls: ['./admin-account-list.component.scss']
 })

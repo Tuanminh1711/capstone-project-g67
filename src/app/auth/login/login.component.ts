@@ -3,7 +3,6 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../auth.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
-import { CookieService } from 'ngx-cookie-service';
 import { AuthDialogService } from '../auth-dialog.service';
 import { JwtUserUtilService } from '../jwt-user-util.service';
 import { jwtDecode } from 'jwt-decode';
@@ -26,7 +25,6 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private cdRef: ChangeDetectorRef,
-    private cookieService: CookieService,
     private authDialogService: AuthDialogService,
     private jwtUserUtil: JwtUserUtilService,
     @Optional() private dialogRef?: MatDialogRef<LoginComponent>
@@ -52,29 +50,13 @@ export class LoginComponent {
     this.auth.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.successMsg = 'Đăng nhập thành công!';
-        localStorage.setItem('token', res.token);
-        this.cookieService.set('token', res.token, 7, '/'); // Lưu cookie 7 ngày
-        if (res.userId) {
-          localStorage.setItem('userId', res.userId);
-          this.cookieService.set('userId', res.userId, 7, '/');
-        }
+        // AuthService đã tự động lưu token vào cookie rồi, không cần lưu thủ công
         this.loading = false;
         this.cdRef.detectChanges();
         setTimeout(() => {
-          let role: string | null = null;
-          try {
-            const decoded: any = jwtDecode(res.token);
-            // Một số backend có thể trả về role là mảng hoặc object, kiểm tra kỹ
-            if (Array.isArray(decoded.role)) {
-              role = decoded.role.includes('admin') ? 'admin' : decoded.role[0];
-            } else if (typeof decoded.role === 'object' && decoded.role !== null) {
-              role = decoded.role.name || null;
-            } else {
-              role = decoded.role || null;
-            }
-          } catch (e) {
-            role = this.jwtUserUtil.getRoleFromToken();
-          }
+          // Lấy role từ token để điều hướng
+          const role = this.jwtUserUtil.getRoleFromToken();
+          
           if (role && role.toLowerCase() === 'admin') {
             window.location.href = '/admin';
           } else {

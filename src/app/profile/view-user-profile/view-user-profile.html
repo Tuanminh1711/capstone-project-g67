@@ -1,62 +1,57 @@
 <!-- View User Profile: Avatar on top, info below, compact layout -->
 <app-top-navigator></app-top-navigator>
 <div class="view-profile-page">
-  <div class="view-profile-card">
-    <div class="profile-avatar-section">
+  <!-- Loading Indicator -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Đang tải thông tin hồ sơ...</p>
+  </div>
+
+  <!-- Error Display -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="retryLoadProfile()">Thử lại</button>
+    <button class="retry-btn" (click)="checkAuthState()" style="margin-left: 10px; background: #2196F3;">Debug Auth</button>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && !error" class="view-profile-card split-layout">
+    <div class="left-section">
       <div class="profile-avatar">
-        <ng-container *ngIf="userProfile$ | async as profile; else avatarSkeleton">
-          <img *ngIf="profile.avatar" [src]="profile.avatar" alt="avatar" />
-          <span *ngIf="!profile.avatar" class="avatar-placeholder">{{ profile.fullName ? profile.fullName.charAt(0) : '👤' }}</span>
+        <ng-container *ngIf="userProfile; else avatarSkeleton">
+          <img *ngIf="userProfile.avatar" [src]="userProfile.avatar" alt="avatar" />
+          <span *ngIf="!userProfile.avatar" class="avatar-placeholder">{{ userProfile.fullName ? userProfile.fullName.charAt(0) : '👤' }}</span>
         </ng-container>
         <ng-template #avatarSkeleton>
           <div class="avatar-skeleton"></div>
         </ng-template>
       </div>
-      <label class="avatar-upload-label">
-        <span class="material-icons">cloud_upload</span> Đổi ảnh đại diện
-        <input type="file" accept="image/*" (change)="onAvatarChange($event)" class="avatar-upload-input" />
-      </label>
     </div>
-    <div class="profile-info">
+    <div class="right-section">
       <h2 class="profile-title">HỒ SƠ NGƯỜI DÙNG</h2>
-      <ng-container *ngIf="userProfile$ | async as profile; else skeletonFields">
-        <div class="profile-field">
-          <span class="profile-label">ID</span>
-          <span class="profile-value">{{ profile.id }}</span>
-        </div>
-        <div class="profile-field">
-          <span class="profile-label">Tên đăng nhập</span>
-          <span class="profile-value">{{ profile.username }}</span>
-        </div>
-        <div class="profile-field">
-          <span class="profile-label">Họ tên</span>
-          <span class="profile-value">{{ profile.fullName }}</span>
-        </div>
-        <div class="profile-field">
-          <span class="profile-label">Email</span>
-          <span class="profile-value">{{ profile.email }}</span>
-        </div>
-        <div class="profile-field">
-          <span class="profile-label">Số điện thoại</span>
-          <span class="profile-value">{{ profile.phoneNumber }}</span>
-        </div>
-        <div class="profile-field">
-          <span class="profile-label">Giới tính</span>
-          <span class="profile-value">{{ profile.gender || '-' }}</span>
-        </div>
-        <div class="profile-field">
-          <span class="profile-label">Môi trường sống</span>
-          <span class="profile-value">{{ profile.livingEnvironment || '-' }}</span>
+      <ng-container *ngIf="userProfile; else skeletonFields">
+        <div class="info">
+          <p><strong>ID:</strong> {{ userProfile.id }}</p>
+          <p><strong>Tên đăng nhập:</strong> {{ userProfile.username }}</p>
+          <p><strong>Họ tên:</strong> {{ userProfile.fullName }}</p>
+          <p><strong>Email:</strong> {{ userProfile.email }}</p>
+          <p><strong>Số điện thoại:</strong> {{ userProfile.phoneNumber }}</p>
+          <p><strong>Giới tính:</strong> {{ userProfile.gender || '-' }}</p>
+          <p><strong>Môi trường sống:</strong> {{ userProfile.livingEnvironment || '-' }}</p>
+          <a class="edit-profile-btn" routerLink="/edit-profile">Chỉnh sửa hồ sơ</a>
         </div>
       </ng-container>
       <ng-template #skeletonFields>
-        <div class="profile-field"><span class="profile-label">ID</span><span class="skeleton skeleton-text"></span></div>
-        <div class="profile-field"><span class="profile-label">Tên đăng nhập</span><span class="skeleton skeleton-text"></span></div>
-        <div class="profile-field"><span class="profile-label">Họ tên</span><span class="skeleton skeleton-text"></span></div>
-        <div class="profile-field"><span class="profile-label">Email</span><span class="skeleton skeleton-text"></span></div>
-        <div class="profile-field"><span class="profile-label">Số điện thoại</span><span class="skeleton skeleton-text"></span></div>
-        <div class="profile-field"><span class="profile-label">Giới tính</span><span class="skeleton skeleton-text"></span></div>
-        <div class="profile-field"><span class="profile-label">Môi trường sống</span><span class="skeleton skeleton-text"></span></div>
+        <div class="info">
+          <p><span class="skeleton skeleton-text"></span></p>
+          <p><span class="skeleton skeleton-text"></span></p>
+          <p><span class="skeleton skeleton-text"></span></p>
+          <p><span class="skeleton skeleton-text"></span></p>
+          <p><span class="skeleton skeleton-text"></span></p>
+          <p><span class="skeleton skeleton-text"></span></p>
+          <p><span class="skeleton skeleton-text"></span></p>
+        </div>
       </ng-template>
     </div>
   </div>

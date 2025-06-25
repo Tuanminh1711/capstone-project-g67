@@ -1,0 +1,260 @@
+.admin-layout {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #f6fcf3 0%, #e3f2fd 100%);
+  display: flex;
+  flex-direction: column;
+}
+.admin-main-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: calc(100vh - 128px);
+}
+.admin-main-content {
+  flex: 1 1 auto;
+  margin-left: 320px;
+  margin-top: 64px;
+  margin-bottom: 64px;
+  padding: 20px 24px 20px 24px;
+  background: transparent;
+  min-height: calc(100vh - 128px);
+  box-sizing: border-box;
+  transition: margin-left 0.25s cubic-bezier(.4,2,.6,1);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.admin-layout.sidebar-collapsed .admin-main-content {
+  margin-left: 0;
+  align-items: center;
+}
+.admin-plant-list-container {
+  max-width: 95vw;
+  width: 100%;
+  margin: 20px auto 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #b2dfdb33, 0 2px 8px #7ed95722;
+  position: relative;
+  padding: 24px 32px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 400px;
+  overflow-x: auto;
+  transition: margin-left 0.25s cubic-bezier(.4,2,.6,1);
+}
+
+/* Adjustments when sidebar is collapsed */
+:host-context(.sidebar-collapsed) .admin-plant-list-container {
+  margin-left: 40px;
+}
+.admin-plant-list-container h2 {
+  font-size: 1.8em;
+  font-weight: 800;
+  color: #222;
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  input {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1.5px solid #c8e6c9;
+    font-size: 1.08em;
+    background: #f6fcf3;
+    transition: border 0.2s;
+    &:focus {
+      border: 2px solid #388e3c;
+      outline: none;
+    }
+  }
+  button {
+    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 32px;
+    font-weight: 800;
+    font-size: 1.08em;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #43e97b22;
+    transition: background 0.18s;
+    &:hover {
+      background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
+    }
+  }
+}
+.plant-table {
+  width: 100%;
+  min-width: 1400px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 16px #7ed95722;
+  overflow: hidden;
+  margin-bottom: 18px;  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1.5px solid #eafbe6;
+    vertical-align: top;
+    font-size: 0.95em;
+    white-space: nowrap;
+    min-width: 120px;
+  }
+  th {
+    background: #f6fcf3;
+    color: #388e3c;
+    font-size: 1.08em;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    border-bottom: 2.5px solid #b2dfdb;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  tr:hover {
+    background: #f6fcf3;
+    transition: background 0.18s;
+  }
+  td img {
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #b2dfdb44;
+    background: #f6fcf3;
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+  }
+  td button {
+    margin-right: 8px;
+    background: #fff;
+    color: #388e3c;
+    border: 1.5px solid #b2dfdb;
+    border-radius: 6px;
+    padding: 7px 18px;
+    font-weight: 700;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 2px 8px #b2dfdb33;
+    &:hover {
+      background: #eafbe6;
+      color: #f27123;
+      box-shadow: 0 4px 16px #7ed95733;
+    }
+    &:last-child {
+      margin-right: 0;
+      background: #e53935;
+      color: #fff;
+      border: none;
+      &:hover {
+        background: #b71c1c;
+        color: #fff;
+      }
+    }
+  }
+
+  // Specific column widths for better layout
+  th:nth-child(1), td:nth-child(1) { min-width: 80px; } // Ảnh
+  th:nth-child(2), td:nth-child(2) { min-width: 150px; } // Tên thường gọi
+  th:nth-child(3), td:nth-child(3) { min-width: 180px; } // Tên khoa học
+  th:nth-child(4), td:nth-child(4) { min-width: 120px; } // Danh mục
+  th:nth-child(5), td:nth-child(5) { min-width: 200px; white-space: normal; } // Mô tả
+  th:nth-child(6), td:nth-child(6) { min-width: 100px; } // Độ khó
+  th:nth-child(7), td:nth-child(7) { min-width: 120px; } // Ánh sáng
+  th:nth-child(8), td:nth-child(8) { min-width: 100px; } // Nước
+  th:nth-child(9), td:nth-child(9) { min-width: 120px; } // Vị trí
+  th:nth-child(10), td:nth-child(10) { min-width: 180px; white-space: normal; } // Bệnh thường gặp
+  th:nth-child(11), td:nth-child(11) { min-width: 100px; } // Trạng thái
+  th:nth-child(12), td:nth-child(12) { min-width: 120px; } // Ngày tạo
+  th:nth-child(13), td:nth-child(13) { min-width: 140px; } // Hành động
+}
+.loading-bar, .error-bar {
+  margin: 12px 0;
+  font-weight: 700;
+  color: #e53935;
+  text-align: center;
+  font-size: 1.08em;
+}
+.pagination-bar {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  button {
+    background: #388e3c;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 22px;
+    font-weight: 700;
+    font-size: 1.05em;
+    cursor: pointer;
+    transition: background 0.18s;
+    &:disabled {
+      background: #c8e6c9;
+      color: #888;
+      cursor: not-allowed;
+    }
+  }
+  span {
+    font-weight: 700;
+    color: #388e3c;
+    font-size: 1.08em;
+  }
+}
+
+// Add custom scrollbar styling for better UX
+.admin-plant-list-container::-webkit-scrollbar {
+  height: 8px;
+}
+.admin-plant-list-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.admin-plant-list-container::-webkit-scrollbar-thumb {
+  background: #c8e6c9;
+  border-radius: 4px;
+  &:hover {
+    background: #a5d6a7;
+  }
+}
+
+@media (max-width: 1200px) {
+  .admin-plant-list-container {
+    max-width: 98vw;
+    padding: 20px 16px 20px 16px;
+    border-radius: 14px;
+    overflow-x: auto;
+  }
+  .plant-table {
+    min-width: 1400px; // Giữ nguyên chiều rộng để scroll ngang
+  }
+}
+@media (max-width: 900px) {
+  .admin-main-content {
+    margin-left: 0;
+    padding: 12px 8px 12px 8px;
+  }
+  .admin-plant-list-container {
+    margin: 16px 0 0 0;
+    padding: 16px 12px 16px 12px;
+    border-radius: 10px;
+    min-height: 400px;
+    max-width: 98vw;
+    overflow-x: auto;
+  }
+  .plant-table {
+    min-width: 1400px; // Giữ nguyên để scroll ngang trên mobile
+  }
+  
+  /* Remove extra margin on mobile when sidebar is collapsed */
+  :host-context(.sidebar-collapsed) .admin-plant-list-container {
+    margin-left: 0;
+  }
+}
