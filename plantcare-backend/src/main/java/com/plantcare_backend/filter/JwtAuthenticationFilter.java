@@ -53,13 +53,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtUtil.validateToken(token)) {
                     String username = jwtUtil.getUsernameFromToken(token);
                     List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(token);
+                    Long userId = jwtUtil.getUserIdFromToken(token);
 
                     // 3. Tạo Authentication object
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-
                     request.setAttribute("username", username);
+                    request.setAttribute("userId", userId);
                 } else {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                     return;

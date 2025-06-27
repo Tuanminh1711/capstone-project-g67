@@ -42,14 +42,20 @@ public class JwtUtilImpl implements JwtUtil {
     }
 
     @Override
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role, Long userId) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key)
                 .compact();
+    }
+
+    @Override
+    public String generateToken(String username, String role) {
+        return generateToken(username, role, null);
     }
 
     @Override
@@ -78,6 +84,20 @@ public class JwtUtilImpl implements JwtUtil {
     public List<GrantedAuthority> getAuthoritiesFromToken(String token) {
         String role = getRoleFromToken(token);
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+    }
+
+    @Override
+    public Long getUserIdFromToken(String token) {
+        Claims claims = parseToken(token);
+        Object userIdObj = claims.get("userId");
+        if (userIdObj instanceof Integer) {
+            return ((Integer) userIdObj).longValue();
+        } else if (userIdObj instanceof Long) {
+            return (Long) userIdObj;
+        } else if (userIdObj != null) {
+            return Long.valueOf(userIdObj.toString());
+        }
+        return null;
     }
 
     private Claims parseToken(String token) throws JwtException {
