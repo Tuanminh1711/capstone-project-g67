@@ -1,0 +1,64 @@
+<app-admin-layout>
+  <div class="admin-plant-list-container">
+    <div class="header-section">
+      <h2>Danh sách cây trồng</h2>
+      <button class="create-btn" (click)="goToCreatePlant()">
+        <i class="fas fa-plus"></i>
+        Tạo Cây Mới
+      </button>
+    </div>
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm tên, danh mục..." />
+      <button (click)="onSearch()">Tìm kiếm</button>
+    </div>
+    <div *ngIf="errorMsg" class="error-bar">{{ errorMsg }}</div>
+    <div *ngIf="loading" class="loading-bar">Đang tải...</div>
+    <div class="table-wrapper" *ngIf="!loading">
+      <table class="plant-table">
+        <thead>
+          <tr>
+            <th class="sortable-header" (click)="onSort('id')" [class.active]="sortField === 'id'">
+              ID <i [class]="getSortIcon('id')"></i>
+            </th>
+            <th class="sortable-header" (click)="onSort('commonName')" [class.active]="sortField === 'commonName'">
+              Tên thường gọi <i [class]="getSortIcon('commonName')"></i>
+            </th>
+            <th class="sortable-header" (click)="onSort('categoryName')" [class.active]="sortField === 'categoryName'">
+              Danh mục <i [class]="getSortIcon('categoryName')"></i>
+            </th>
+            <th class="sortable-header" (click)="onSort('status')" [class.active]="sortField === 'status'">
+              Trạng thái <i [class]="getSortIcon('status')"></i>
+            </th>
+            <th class="sortable-header" (click)="onSort('createdAt')" [class.active]="sortField === 'createdAt'">
+              Ngày tạo <i [class]="getSortIcon('createdAt')"></i>
+            </th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let plant of plants$ | async">
+            <td>{{ plant.id }}</td>
+            <td>{{ plant.commonName }}</td>
+            <td>{{ plant.categoryName }}</td>
+            <td>{{ plant.status }}</td>
+            <td>{{ plant.createdAt || '-' }}</td>
+            <td>
+              <button (click)="viewPlantDetail(plant)" class="view-btn">Chi tiết</button>
+              <button (click)="deletePlant(plant)" class="delete-btn">Xóa</button>
+            </td>
+          </tr>
+          <tr *ngIf="!(plants$ | async)?.length && !loading">
+            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+              Không có dữ liệu cây trồng.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-bar" *ngIf="totalPages > 1">
+      <button (click)="goToPage(pageNo-1)" [disabled]="pageNo === 0">&lt; Trước</button>
+      <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
+      <button (click)="goToPage(pageNo+1)" [disabled]="pageNo + 1 >= totalPages">Sau &gt;</button>
+    </div>
+  </div>
+</app-admin-layout>

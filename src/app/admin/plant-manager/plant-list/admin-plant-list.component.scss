@@ -1,0 +1,385 @@
+.admin-layout {
+  height: 60vh; // Sử dụng toàn bộ chiều cao màn hình
+  background: linear-gradient(120deg, #f6fcf3 0%, #e3f2fd 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // Ngăn scroll của layout chính
+}
+
+.admin-main-wrapper {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 64px); // Trừ đi header height
+  overflow: hidden;
+}
+
+.admin-main-content {
+  flex: 1;
+  margin-left: 320px; // Chỉ cần margin-left cho sidebar
+  padding: 16px 20px; // Giảm padding
+  background: transparent;
+  height: 50%; // Sử dụng toàn bộ chiều cao
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // Ngăn scroll của main content
+}
+
+.admin-layout.sidebar-collapsed .admin-main-content {
+  margin-left: 0;
+  align-items: center;
+}
+
+.admin-plant-list-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #b2dfdb33;
+  padding: 16px 20px; // Giảm padding
+  display: flex;
+  flex-direction: column;
+  height: 100%; // Sử dụng toàn bộ chiều cao
+  overflow: hidden; // Container không scroll
+  
+  // Force normal table display for all table elements
+  table, thead, tbody, tr, th, td {
+    display: revert !important;
+  }
+}
+
+:host-context(.sidebar-collapsed) .admin-plant-list-container {
+  margin-left: 40px;
+}
+
+.admin-plant-list-container h2 {
+  font-size: 1.6em; // Tăng từ 1.5em lên 1.6em
+  font-weight: 800;
+  color: #222;
+  margin-bottom: 12px; // Giảm margin
+  flex-shrink: 0; // Không cho phép thu nhỏ
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+
+  h2 {
+    margin: 0;
+  }
+
+  .create-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 1.0em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+
+    &:hover {
+      background: linear-gradient(135deg, #218838, #1ea584);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    i {
+      font-size: 1.1em;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+
+    .create-btn {
+      justify-content: center;
+    }
+  }
+}
+
+.search-bar {
+  display: flex;
+  gap: 12px; // Tăng từ 10px lên 12px
+  margin-bottom: 14px; // Tăng từ 12px lên 14px
+  flex-shrink: 0; // Không cho phép thu nhỏ
+
+  input {
+    flex: 0.7; // Tăng từ 0.6 lên 0.7
+    max-width: 280px; // Tăng từ 250px lên 280px
+    padding: 10px 16px; // Tăng từ 8px 14px lên 10px 16px
+    border-radius: 8px; // Giảm border-radius
+    border: 1px solid #c8e6c9; // Giảm border width
+    font-size: 1.05em; // Tăng từ 1.0em lên 1.05em
+    background: #f6fcf3;
+
+    &:focus {
+      border: 2px solid #388e3c;
+      outline: none;
+    }
+  }
+
+  button {
+    background: #43e97b;
+    color: #fff;
+    border: none;
+    border-radius: 8px; // Giảm border-radius
+    padding: 10px 24px; // Tăng từ 8px 20px lên 10px 24px
+    font-weight: 700; // Giảm font-weight
+    font-size: 1.05em; // Tăng từ 1.0em lên 1.05em
+    cursor: pointer;
+
+    &:hover {
+      background: #38f9d7;
+    }
+  }
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  max-height: calc(100vh - 280px);
+  
+  // Reset all table display properties
+  * {
+    display: initial !important;
+  }
+}
+
+.plant-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 8px #7ed95722;
+  min-width: 740px;
+  table-layout: fixed !important;
+  display: table !important; // Force table display
+  
+  thead {
+    display: table-header-group !important;
+  }
+
+  tbody {
+    display: table-row-group !important;
+  }
+
+  tr {
+    display: table-row !important;
+  }
+
+  th, td {
+    display: table-cell !important;
+    padding: 8px 8px;
+    border-bottom: 1px solid #eafbe6;
+    font-size: 0.95em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    box-sizing: border-box;
+    text-align: left !important;
+  }
+
+  th {
+    background: #f6fcf3;
+    color: #388e3c;
+    font-weight: 800;
+    border-bottom: 2px solid #b2dfdb;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover {
+    background: #f6fcf3;
+  }
+
+  td img {
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #b2dfdb44;
+    background: #f6fcf3;
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+  }
+
+  td button {
+    margin-right: 4px; // Tăng từ 2px lên 4px
+    border-radius: 4px; // Tăng từ 2px lên 4px
+    padding: 4px 8px; // Tăng từ 2px 4px lên 4px 8px
+    font-weight: 600;
+    font-size: 0.82em; // Tăng từ 0.77em lên 0.82em
+    cursor: pointer;
+
+    &.view-btn {
+      background: #2196f3;
+      color: #fff;
+      border: 1px solid #2196f3;
+
+      &:hover {
+        background: #1976d2;
+      }
+    }
+
+    &.delete-btn {
+      background: #e53935;
+      color: #fff;
+      border: 1px solid #e53935;
+      margin-right: 0;
+
+      &:hover {
+        background: #b71c1c;
+      }
+    }
+  }
+  // Column widths - simplified
+  th:nth-child(1), td:nth-child(1) { width: 60px !important; }  // ID
+  th:nth-child(2), td:nth-child(2) { width: 180px !important; } // Tên thường gọi
+  th:nth-child(3), td:nth-child(3) { width: 120px !important; } // Danh mục
+  th:nth-child(4), td:nth-child(4) { width: 100px !important; } // Trạng thái
+  th:nth-child(5), td:nth-child(5) { width: 140px !important; } // Ngày tạo
+  th:nth-child(6), td:nth-child(6) { width: 140px !important; } // Hành động
+}
+
+.loading-bar, .error-bar {
+  margin: 12px 0;
+  font-weight: 700;
+  color: #e53935;
+  text-align: center;
+  font-size: 1.08em;
+}
+
+.pagination-bar {
+  margin-top: 12px; // Tăng từ 8px lên 12px
+  display: flex;
+  align-items: center;
+  gap: 10px; // Tăng từ 8px lên 10px
+  justify-content: flex-end;
+  flex-shrink: 0; // Không cho phép thu nhỏ
+
+  button {
+    background: #388e3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px; // Tăng từ 4px lên 6px
+    padding: 8px 18px; // Tăng từ 6px 16px lên 8px 18px
+    font-weight: 600; // Giảm font-weight
+    font-size: 0.95em; // Tăng từ 0.9em lên 0.95em
+    cursor: pointer;
+
+    &:disabled {
+      background: #c8e6c9;
+      color: #888;
+      cursor: not-allowed;
+    }
+  }
+
+  span {
+    font-weight: 600; // Giảm font-weight
+    color: #388e3c;
+    font-size: 1.0em; // Tăng từ 0.95em lên 1.0em
+  }
+}
+
+// Sortable header styles - NO FLEXBOX
+.sortable-header {
+  cursor: pointer !important;
+  user-select: none;
+  transition: all 0.2s ease;
+  position: relative;
+  display: table-cell !important; // Force table-cell display
+  text-align: left !important;
+  
+  &:hover {
+    background: #e8f5e8 !important;
+    color: #2e7d32 !important;
+  }
+  
+  &.active {
+    background: #e0f2e0 !important;
+    color: #2e7d32 !important;
+    font-weight: 900;
+  }
+  
+  i {
+    font-size: 0.8em;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    margin-left: 6px;
+  }
+  
+  &:hover i {
+    opacity: 1;
+  }
+  
+  &.active i {
+    opacity: 1;
+    color: #2e7d32;
+  }
+  
+  // Sort icons styling
+  .fa-sort {
+    color: #999;
+  }
+  
+  .fa-sort-up {
+    color: #2e7d32;
+  }
+  
+  .fa-sort-down {
+    color: #2e7d32;
+  }
+}
+
+// Loại bỏ scrollbar styling vì không cần thiết
+
+@media (max-width: 1200px) {
+  .admin-main-content {
+    margin-left: 0; // Bỏ sidebar trên màn hình nhỏ
+    padding: 12px 16px;
+  }
+  
+  .admin-plant-list-container {
+    padding: 12px 16px;
+  }
+
+  .plant-table tbody {
+    height: calc(100vh - 300px); // Điều chỉnh chiều cao cho responsive
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-plant-list-container {
+    padding: 8px 12px;
+  }
+  
+  .plant-table tbody {
+    height: calc(100vh - 320px);
+  }
+  
+  .search-bar input {
+    max-width: 200px;
+    font-size: 0.95em; // Tăng từ 0.9em lên 0.95em
+  }
+  
+  // Adjust table columns for smaller screens
+  .plant-table {
+    th:nth-child(1), td:nth-child(1) { width: 50px; } // ID
+    th:nth-child(2), td:nth-child(2) { width: 150px; } // Tên thường gọi
+    th:nth-child(3), td:nth-child(3) { width: 100px; } // Danh mục
+    th:nth-child(4), td:nth-child(4) { width: 80px; } // Trạng thái
+    th:nth-child(5), td:nth-child(5) { width: 120px; } // Ngày tạo
+    th:nth-child(6), td:nth-child(6) { width: 120px; } // Hành động
+  }
+}

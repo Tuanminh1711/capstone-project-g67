@@ -38,15 +38,13 @@ export class UserProfileService {
     private jwtUserUtil: JwtUserUtilService
   ) {}
 
-  getUserProfile(userId: number): Observable<UserProfile> {
-    console.log('Loading user profile via proxy for userId:', userId);
-    
-    // Sử dụng relative URL để tận dụng proxy configuration
-    return this.http.get<UserProfile>(`/api/user/profile/${userId}`, {
+  getUserProfile(): Observable<UserProfile> {
+    // Sử dụng endpoint mới với JWT Authorization header
+    // Backend sẽ lấy userId từ JWT token trong request attribute
+    return this.http.get<UserProfile>('/api/user/profile', {
       withCredentials: true
     }).pipe(
       tap(profile => {
-        console.log('User profile loaded:', profile);
         // Cache profile data
         this.profileCache.next(profile);
       }),
@@ -59,13 +57,8 @@ export class UserProfileService {
     if (userId) {
       updateData.id = parseInt(userId, 10);
     } else {
-      console.error('User ID not found in token. Cannot update profile.');
-      alert('Error: Unable to update profile. User ID is missing.');
       return throwError(() => new Error('User ID not found in token'));
     }
-
-    console.log('Sending update profile request to: /api/user/updateprofile (via proxy)');
-    console.log('Update data:', updateData);
 
     return this.http.put<any>('/api/user/updateprofile', updateData, {
       withCredentials: true,
@@ -74,23 +67,18 @@ export class UserProfileService {
       }
     }).pipe(
       tap(response => {
-        console.log('Update profile response:', response);
         this.profileCache.next(null);
       }),
       catchError(error => {
-        console.error('Failed to update profile:', error);
-        alert('Error: Failed to update profile. Please try again later.');
         return throwError(() => error);
       })
     );
   }
 
   changePassword(passwordData: any): Observable<any> {
-    console.log('Sending password change request to: /api/auth/changepassword (via proxy)');
-    console.log('Password data:', { oldPassword: '***', newPassword: '***' });
-    
-    // Sử dụng relative URL để tận dụng proxy configuration
-    return this.http.post<any>('/api/auth/changepassword', passwordData, {
+    // Sử dụng endpoint mới với JWT Authorization header
+    // Backend sẽ lấy userId từ JWT token trong request attribute
+    return this.http.post<any>('/api/auth/change-password', passwordData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
@@ -115,8 +103,6 @@ export class UserProfileService {
 
   // Error handling
   private handleError = (error: HttpErrorResponse): Observable<never> => {
-    console.error('UserProfileService Error:', error);
-    
     let errorMessage = 'Đã xảy ra lỗi không mong muốn.';
     
     if (error.error instanceof ErrorEvent) {
@@ -138,7 +124,7 @@ export class UserProfileService {
           errorMessage = 'Không tìm thấy thông tin người dùng.';
           break;
         case 500:
-          errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau.';
+          errorMessage = 'Lỗi máy chủ. API chưa sẵn sàng hoặc có lỗi xử lý.';
           break;
         default:
           errorMessage = `Lỗi ${error.status}: ${error.error?.message || 'Không xác định'}`;

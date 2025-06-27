@@ -2,12 +2,13 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { AuthDialogService } from './auth/auth-dialog.service';
 import { FooterComponent } from './shared/footer/footer.component';
+import { ToastComponent } from './shared/toast/toast.component';
 import { NgIf } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FooterComponent, NgIf],
+  imports: [RouterOutlet, FooterComponent, ToastComponent, NgIf],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

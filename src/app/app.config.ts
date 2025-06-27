@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { MatDialogModule } from '@angular/material/dialog';
 
@@ -11,7 +11,11 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideRouter(routes),
+    provideRouter(routes, 
+      withRouterConfig({
+        onSameUrlNavigation: 'reload'        // ✅ Cần thiết để reload component khi URL giống nhau
+      })
+    ),
     provideClientHydration(withEventReplay()),
     provideHttpClient(
       withFetch(),

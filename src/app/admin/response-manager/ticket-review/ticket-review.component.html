@@ -1,0 +1,42 @@
+<div class="ticket-review-container">
+  <h1>Xử lý Ticket #{{ ticketId }}</h1>
+  
+  <div *ngIf="loading">Đang tải...</div>
+  
+  <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="success">{{ successMsg }}</div>
+  
+  <div *ngIf="ticket && !loading">
+    <div class="ticket-summary">
+      <h2>{{ ticket.title }}</h2>
+      <p>{{ ticket.description }}</p>
+      <p><strong>Trạng thái hiện tại:</strong> {{ getStatusText(ticket.status) }}</p>
+      <p><strong>Độ ưu tiên:</strong> {{ getPriorityText(ticket.priority) }}</p>
+    </div>
+    
+    <form (ngSubmit)="submitUpdate()" class="update-form">
+      <div class="form-group">
+        <label for="status">Trạng thái mới:</label>
+        <select id="status" [(ngModel)]="newStatus" name="status">
+          <option value="OPEN">Mở</option>
+          <option value="IN_PROGRESS">Đang xử lý</option>
+          <option value="RESOLVED">Đã giải quyết</option>
+          <option value="CLOSED">Đã đóng</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="comment">Comment:</label>
+        <textarea id="comment" [(ngModel)]="comment" name="comment" 
+                  placeholder="Nhập comment..." rows="4" required></textarea>
+      </div>
+      
+      <div class="actions">
+        <button type="button" (click)="goBack()">Quay lại</button>
+        <button type="submit" [disabled]="submitting">
+          {{ submitting ? 'Đang cập nhật...' : 'Cập nhật' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

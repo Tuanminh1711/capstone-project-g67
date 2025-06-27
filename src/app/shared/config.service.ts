@@ -53,20 +53,14 @@ export class ConfigService {
   }
 
   logApiCall(method: string, url: string, data?: any): void {
-    if (this.isDevelopment) {
-      console.log(`🔗 API ${method}:`, url, data ? data : '');
-    }
+    // API logging disabled for production
   }
 
   logError(error: any, context?: string): void {
-    if (this.isDevelopment) {
-      console.error(`❌ Error${context ? ` in ${context}` : ''}:`, error);
-    }
+    // Error logging disabled for production
   }
 
   logSuccess(message: string, data?: any): void {
-    if (this.isDevelopment) {
-      console.log(`✅ ${message}`, data ? data : '');
-    }
+    // Success logging disabled for production
   }
 }

@@ -1,0 +1,290 @@
+<app-admin-layout>
+  <div class="create-plant-container">
+    <div class="header-section">
+      <h1 class="page-title">
+        <i class="fas fa-plus-circle"></i>
+        Tạo Cây Mới
+      </h1>
+      <p class="page-description">Thêm thông tin chi tiết cho cây mới vào hệ thống</p>
+    </div>
+
+    <div class="form-container">
+      <form [formGroup]="createPlantForm" (ngSubmit)="onSubmit()" class="create-plant-form">
+        <!-- Basic Information Section -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Thông Tin Cơ Bản
+          </h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="scientificName" class="form-label">
+                Tên Khoa Học <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="scientificName"
+                formControlName="scientificName"
+                class="form-control"
+                placeholder="Ví dụ: Ficus lyrata"
+                [class.is-invalid]="createPlantForm.get('scientificName')?.touched && createPlantForm.get('scientificName')?.errors"
+              />
+              <div class="error-message" *ngIf="getFieldError('scientificName')">
+                {{ getFieldError('scientificName') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="commonName" class="form-label">
+                Tên Thường Gọi <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="commonName"
+                formControlName="commonName"
+                class="form-control"
+                placeholder="Ví dụ: Cây bàng Singapore"
+                [class.is-invalid]="createPlantForm.get('commonName')?.touched && createPlantForm.get('commonName')?.errors"
+              />
+              <div class="error-message" *ngIf="getFieldError('commonName')">
+                {{ getFieldError('commonName') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="categoryId" class="form-label">
+                Danh Mục <span class="required">*</span>
+              </label>
+              <select
+                id="categoryId"
+                formControlName="categoryId"
+                class="form-control"
+                [class.is-invalid]="createPlantForm.get('categoryId')?.touched && createPlantForm.get('categoryId')?.errors"
+              >
+                <option value="">-- Chọn danh mục --</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <div class="error-message" *ngIf="getFieldError('categoryId')">
+                {{ getFieldError('categoryId') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="suitableLocation" class="form-label">
+                Vị Trí Phù Hợp <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="suitableLocation"
+                formControlName="suitableLocation"
+                class="form-control"
+                placeholder="Ví dụ: Trong nhà, gần cửa sổ"
+                [class.is-invalid]="createPlantForm.get('suitableLocation')?.touched && createPlantForm.get('suitableLocation')?.errors"
+              />
+              <div class="error-message" *ngIf="getFieldError('suitableLocation')">
+                {{ getFieldError('suitableLocation') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="description" class="form-label">
+              Mô Tả <span class="required">*</span>
+            </label>
+            <textarea
+              id="description"
+              formControlName="description"
+              class="form-control textarea"
+              rows="4"
+              placeholder="Mô tả chi tiết về cây..."
+              [class.is-invalid]="createPlantForm.get('description')?.touched && createPlantForm.get('description')?.errors"
+            ></textarea>
+            <div class="error-message" *ngIf="getFieldError('description')">
+              {{ getFieldError('description') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Care Requirements Section -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-heart"></i>
+            Yêu Cầu Chăm Sóc
+          </h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lightRequirement" class="form-label">
+                Yêu Cầu Ánh Sáng <span class="required">*</span>
+              </label>
+              <select
+                id="lightRequirement"
+                formControlName="lightRequirement"
+                class="form-control"
+                [class.is-invalid]="createPlantForm.get('lightRequirement')?.touched && createPlantForm.get('lightRequirement')?.errors"
+              >
+                <option value="">-- Chọn yêu cầu ánh sáng --</option>
+                <option *ngFor="let option of lightOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <div class="error-message" *ngIf="getFieldError('lightRequirement')">
+                {{ getFieldError('lightRequirement') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="waterRequirement" class="form-label">
+                Yêu Cầu Nước <span class="required">*</span>
+              </label>
+              <select
+                id="waterRequirement"
+                formControlName="waterRequirement"
+                class="form-control"
+                [class.is-invalid]="createPlantForm.get('waterRequirement')?.touched && createPlantForm.get('waterRequirement')?.errors"
+              >
+                <option value="">-- Chọn yêu cầu nước --</option>
+                <option *ngFor="let option of waterOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <div class="error-message" *ngIf="getFieldError('waterRequirement')">
+                {{ getFieldError('waterRequirement') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="careDifficulty" class="form-label">
+                Độ Khó Chăm Sóc <span class="required">*</span>
+              </label>
+              <select
+                id="careDifficulty"
+                formControlName="careDifficulty"
+                class="form-control"
+                [class.is-invalid]="createPlantForm.get('careDifficulty')?.touched && createPlantForm.get('careDifficulty')?.errors"
+              >
+                <option value="">-- Chọn độ khó --</option>
+                <option *ngFor="let option of difficultyOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <div class="error-message" *ngIf="getFieldError('careDifficulty')">
+                {{ getFieldError('careDifficulty') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="commonDiseases" class="form-label">
+                Bệnh Thường Gặp
+              </label>
+              <input
+                type="text"
+                id="commonDiseases"
+                formControlName="commonDiseases"
+                class="form-control"
+                placeholder="Ví dụ: Thối rễ, vàng lá..."
+              />
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="careInstructions" class="form-label">
+              Hướng Dẫn Chăm Sóc <span class="required">*</span>
+            </label>
+            <textarea
+              id="careInstructions"
+              formControlName="careInstructions"
+              class="form-control textarea"
+              rows="5"
+              placeholder="Hướng dẫn chi tiết cách chăm sóc cây..."
+              [class.is-invalid]="createPlantForm.get('careInstructions')?.touched && createPlantForm.get('careInstructions')?.errors"
+            ></textarea>
+            <div class="error-message" *ngIf="getFieldError('careInstructions')">
+              {{ getFieldError('careInstructions') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Images Section -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-images"></i>
+            Hình Ảnh
+          </h3>
+          
+          <div formArrayName="imageUrls" class="image-urls-container">
+            <div *ngFor="let imageUrl of imageUrls.controls; let i = index" 
+                 class="image-url-group">
+              <div class="form-group">
+                <label class="form-label">
+                  URL Hình Ảnh {{ i + 1 }} <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    [formControlName]="i"
+                    class="form-control"
+                    placeholder="url1, url2, hoặc https://example.com/image.jpg"
+                    [class.is-invalid]="imageUrl.touched && imageUrl.errors"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    (click)="removeImageUrl(i)"
+                    [disabled]="imageUrls.length <= 1"
+                    title="Xóa URL"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div class="error-message" *ngIf="getImageUrlError(i)">
+                  {{ getImageUrlError(i) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            (click)="addImageUrl()"
+            title="Thêm URL hình ảnh"
+          >
+            <i class="fas fa-plus"></i>
+            Thêm Hình Ảnh
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="onCancel()"
+            [disabled]="isSubmitting"
+          >
+            <i class="fas fa-times"></i>
+            Hủy
+          </button>
+          
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="createPlantForm.invalid || isSubmitting"
+          >
+            <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+            <i class="fas fa-save" *ngIf="!isSubmitting"></i>
+            {{ isSubmitting ? 'Đang tạo...' : 'Tạo Cây Mới' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</app-admin-layout>

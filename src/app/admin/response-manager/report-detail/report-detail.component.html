@@ -1,0 +1,121 @@
+<div class="report-detail-container">
+  <div class="page-header">
+    <h1>Chi tiết báo cáo</h1>
+    <div class="breadcrumb">
+      <span routerLink="/admin/response-manager/report-list" class="breadcrumb-link">Danh sách báo cáo</span>
+      <span class="breadcrumb-separator">></span>
+      <span>Chi tiết</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải chi tiết báo cáo...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMsg" class="error-container">
+    <div class="error-message">{{ errorMsg }}</div>
+    <button (click)="loadReport()" class="btn-retry">Thử lại</button>
+  </div>
+
+  <!-- Report Detail Content -->
+  <div *ngIf="report && !loading" class="report-detail-content">
+    <!-- Report Info Card -->
+    <div class="info-card">
+      <div class="card-header">
+        <h2>Thông tin báo cáo #{{ report.id }}</h2>
+        <div class="status-badge" [ngClass]="getStatusClass(report.status)">
+          {{ getStatusText(report.status) }}
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Tiêu đề:</label>
+            <span>{{ report.title }}</span>
+          </div>
+          
+          <div class="info-item">
+            <label>Loại báo cáo:</label>
+            <span>{{ getTypeText(report.type) }}</span>
+          </div>
+          
+          <div class="info-item">
+            <label>Mức độ ưu tiên:</label>
+            <span class="priority-badge" [ngClass]="getPriorityClass(report.priority)">
+              {{ getPriorityText(report.priority) }}
+            </span>
+          </div>
+          
+          <div class="info-item">
+            <label>Ngày tạo:</label>
+            <span>{{ formatDate(report.createdAt) }}</span>
+          </div>
+          
+          <div class="info-item">
+            <label>Người tạo:</label>
+            <span>{{ report.createdBy.username }} ({{ report.createdBy.email }})</span>
+          </div>
+          
+          <div class="info-item" *ngIf="report.reviewedBy">
+            <label>Người xem xét:</label>
+            <span>{{ report.reviewedBy.username }} ({{ report.reviewedBy.email }})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Content -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3>Nội dung báo cáo</h3>
+      </div>
+      <div class="card-body">
+        <div class="report-content">{{ report.content }}</div>
+      </div>
+    </div>
+
+    <!-- Review Note (if exists) -->
+    <div *ngIf="report.reviewNote" class="review-card">
+      <div class="card-header">
+        <h3>Ghi chú xem xét</h3>
+      </div>
+      <div class="card-body">
+        <div class="review-note">{{ report.reviewNote }}</div>
+      </div>
+    </div>
+
+    <!-- Attachments -->
+    <div *ngIf="report.attachments && report.attachments.length > 0" class="attachments-card">
+      <div class="card-header">
+        <h3>Tệp đính kèm</h3>
+      </div>
+      <div class="card-body">
+        <div class="attachments-list">
+          <div *ngFor="let attachment of report.attachments" class="attachment-item">
+            <img [src]="attachment" [alt]="'Attachment'" class="attachment-preview">
+            <button (click)="downloadAttachment(attachment)" class="btn-download">
+              Tải xuống
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button (click)="goBack()" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+      </button>
+      
+      <button *ngIf="report.status === 'PENDING'" 
+              (click)="goToReview()" 
+              class="btn btn-primary">
+        <i class="fas fa-edit"></i> Xem xét báo cáo
+      </button>
+    </div>
+  </div>
+</div>

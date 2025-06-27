@@ -44,11 +44,7 @@ export class AuthService {
       tap(response => {
         // Lưu token vào cookie khi login thành công
         if (response.token) {
-          console.log('Token received from login response:', response.token);
           this.cookieService.setAuthToken(response.token, 7); // 7 ngày
-          console.log('Token successfully saved in cookie.');
-        } else {
-          console.error('No token found in login response.');
         }
       })
     );

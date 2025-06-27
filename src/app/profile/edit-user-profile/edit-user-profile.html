@@ -59,18 +59,9 @@
                 <strong>Hướng dẫn:</strong><br>
                 • Kích thước tối đa: 5MB<br>
                 • Định dạng: JPG, PNG, GIF<br>
-                • Tỷ lệ khuyến nghị: 1:1 (vuông)
+                • Tỷ lệ khuyến nghị: 1:1 (vuông)<br>
+                • <em>Ảnh sẽ được lưu tự động khi chọn</em>
               </p>
-            </div>
-
-            <!-- Change Password Link -->
-            <div class="password-section">
-              <button type="button" class="change-password-btn" (click)="goToChangePassword()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
-                </svg>
-                Đổi mật khẩu
-              </button>
             </div>
           </div>
         </div>
@@ -91,7 +82,8 @@
                     placeholder="Nhập họ và tên đầy đủ" 
                     required 
                     #fullNameInput="ngModel"
-                    maxlength="100" />
+                    maxlength="100"
+                    (blur)="validateFullName()" />
                   <div *ngIf="fullNameInput.invalid && fullNameInput.touched" class="field-error">
                     Họ tên là bắt buộc
                   </div>
@@ -121,7 +113,8 @@
                     required 
                     #phoneInput="ngModel"
                     pattern="[0-9]{10,11}"
-                    maxlength="11" />
+                    maxlength="11"
+                    (blur)="validatePhoneNumber()" />
                   <div *ngIf="phoneInput.invalid && phoneInput.touched" class="field-error">
                     Số điện thoại không hợp lệ (10-11 số)
                   </div>
@@ -164,6 +157,13 @@
               </div>
 
               <div class="form-actions">
+                <button type="button" class="change-password-btn" (click)="goToChangePassword()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                  </svg>
+                  Đổi mật khẩu
+                </button>
+
                 <button 
                   type="submit" 
                   class="save-button"
@@ -173,7 +173,7 @@
                     <path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
                   </svg>
                   <span *ngIf="saving">Đang lưu...</span>
-                  <span *ngIf="!saving">Lưu thay đổi</span>
+                  <span *ngIf="!saving">Lưu thông tin</span>
                 </button>
               </div>
             </form>
