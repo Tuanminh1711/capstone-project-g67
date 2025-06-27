@@ -33,4 +33,8 @@ public interface JwtUtil {
 
     // Thêm method mới để phù hợp với Spring Security
     List<GrantedAuthority> getAuthoritiesFromToken(String token);
+
+    String generateToken(String username, String role, Long userId);
+
+    Long getUserIdFromToken(String token);
 }
