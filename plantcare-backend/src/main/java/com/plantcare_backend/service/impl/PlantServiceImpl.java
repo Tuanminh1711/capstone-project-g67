@@ -2,6 +2,8 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.reponse.PlantResponseDTO;
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.reponse.plantsManager.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.exception.InvalidDataException;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +54,7 @@ public class PlantServiceImpl implements PlantService {
                 sortBy);
 
         Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize(), sort);
+        request.setStatus(Plants.PlantStatus.ACTIVE);
 
         Page<Plants> plantsPage = plantRepository.searchPlants(
                 request.getKeyword(),
@@ -128,6 +132,61 @@ public class PlantServiceImpl implements PlantService {
 
         log.info("Plant created successfully with ID: {}", savedPlant.getId());
         return savedPlant.getId();
+    }
+
+    public PlantDetailResponseDTO getPlantDetail(Long plantId) {
+        Plants plant = plantRepository.findById(plantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found"));
+
+        PlantDetailResponseDTO dto = new PlantDetailResponseDTO();
+        dto.setId(plant.getId());
+        dto.setScientificName(plant.getScientificName());
+        dto.setCommonName(plant.getCommonName());
+        dto.setDescription(plant.getDescription());
+        dto.setCareInstructions(plant.getCareInstructions());
+        dto.setSuitableLocation(plant.getSuitableLocation());
+        dto.setCommonDiseases(plant.getCommonDiseases());
+        dto.setStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
+        dto.setStatusDisplay(getStatusDisplay(plant.getStatus()));
+        dto.setCreatedAt(plant.getCreatedAt());
+        dto.setUpdatedAt(plant.getUpdatedAt());
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
+
+        // Lấy danh sách ảnh
+        List<String> imageUrls = new ArrayList<>();
+        if (plant.getImages() != null) {
+            for (PlantImage img : plant.getImages()) {
+                imageUrls.add(img.getImageUrl());
+            }
+        }
+        dto.setImageUrls(imageUrls);
+
+        return dto;
+    }
+
+    @Override
+    public UserPlantDetailResponseDTO toUserPlantDetailDTO(PlantDetailResponseDTO dto) {
+        UserPlantDetailResponseDTO userDto = new UserPlantDetailResponseDTO();
+        userDto.setId(dto.getId());
+        userDto.setScientificName(dto.getScientificName());
+        userDto.setCommonName(dto.getCommonName());
+        userDto.setDescription(dto.getDescription());
+        userDto.setCareInstructions(dto.getCareInstructions());
+        userDto.setSuitableLocation(dto.getSuitableLocation());
+        userDto.setCommonDiseases(dto.getCommonDiseases());
+        userDto.setStatus(dto.getStatus());
+        userDto.setCategoryName(dto.getCategoryName());
+        userDto.setImageUrls(dto.getImageUrls());
+        return userDto;
+    }
+
+    private String getStatusDisplay(Plants.PlantStatus status) {
+        if (status == null) return "";
+        switch (status) {
+            case ACTIVE: return "Đang hoạt động";
+            case INACTIVE: return "Không hoạt động";
+            default: return status.name();
+        }
     }
 
     /**

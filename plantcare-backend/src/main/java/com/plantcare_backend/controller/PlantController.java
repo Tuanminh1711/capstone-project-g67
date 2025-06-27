@@ -1,9 +1,12 @@
 package com.plantcare_backend.controller;
 
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
+import com.plantcare_backend.dto.reponse.plantsManager.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
+import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.PlantCategory;
 import com.plantcare_backend.service.PlantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,5 +69,15 @@ public class PlantController {
             log.error("Get categories failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Get categories failed: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseData<UserPlantDetailResponseDTO> getPlantDetailForUser(@PathVariable Long id) {
+        PlantDetailResponseDTO fullDto = plantService.getPlantDetail(id);
+        if (!"ACTIVE".equals(fullDto.getStatus())) {
+            throw new ResourceNotFoundException("Plant not available");
+        }
+        UserPlantDetailResponseDTO userDto = plantService.toUserPlantDetailDTO(fullDto);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get plant detail successfully", userDto);
     }
 }
