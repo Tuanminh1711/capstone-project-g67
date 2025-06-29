@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { HomeComponent } from './main/home/home.component';
 import { PlantInfoComponent } from './main/plant-info/plant-info.component';
+import { PlantDetailComponent } from './main/plant-detail/index';
 import { AboutUsComponent } from './main/about-us/about-us.component';
 import { AuthPopupHolderComponent } from './shared/empty.component';
 import { ViewUserProfileComponent } from './profile/view-user-profile/view-user-profile.component';
@@ -29,6 +30,7 @@ const routes: Routes = [
   { path: 'login', component: AuthPopupHolderComponent, data: { showLogin: true } },
   { path: 'register', component: AuthPopupHolderComponent, data: { showRegister: true } },
   { path: 'plant-info', component: PlantInfoComponent },
+  { path: 'plant-info/detail/:id', component: PlantDetailComponent },
   { path: 'about-us', component: AboutUsComponent },
   { path: 'view-user-profile', component: ViewUserProfileComponent },
   { path: 'edit-profile', component: EditUserProfileComponent },
