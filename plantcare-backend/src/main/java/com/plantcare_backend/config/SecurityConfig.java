@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/auth/change-password"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").permitAll()
+
                         .requestMatchers("/api/plants/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/manager/**").permitAll()

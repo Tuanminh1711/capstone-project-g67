@@ -53,6 +53,7 @@ public class JwtUtilImpl implements JwtUtil {
                 .setSubject(username)
                 .claim("userId", userId)
                 .claim("role", role)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey())
@@ -92,7 +93,6 @@ public class JwtUtilImpl implements JwtUtil {
         String role = getRoleFromToken(token);
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
     }
-
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }

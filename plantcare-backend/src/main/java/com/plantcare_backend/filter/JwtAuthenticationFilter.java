@@ -49,7 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Integer userId = jwtUtil.getUserIdFromToken(jwtToken);
                     System.out.println("userId from token: " + userId);
                     List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(jwtToken);
-
                     // Đặt authentication vào context
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userId, null, authorities);
