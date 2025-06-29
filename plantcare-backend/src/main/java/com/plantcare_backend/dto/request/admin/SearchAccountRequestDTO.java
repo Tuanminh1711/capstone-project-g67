@@ -2,15 +2,13 @@ package com.plantcare_backend.dto.request.admin;
 
 import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.Users;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class SearchAccountRequestDTO {
     private String keyword;
     private Role.RoleName role;

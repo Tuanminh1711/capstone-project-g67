@@ -27,50 +27,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
+        System.out.println("JWT Filter is running for: " + request.getRequestURI());
 
-        String authHeader = request.getHeader("Authorization");
-//        // Bỏ qua các request OPTIONS cho CORS
-//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String jwtToken = authorizationHeader.substring(7);
+            System.out.println("jwtToken: " + jwtToken);
             try {
-                // 1. Kiểm tra blacklist
-                if (jwtUtil.isTokenBlacklisted(token)) {
+                System.out.println("Is token blacklisted? " + jwtUtil.isTokenBlacklisted(jwtToken));
+                System.out.println("Is token valid? " + jwtUtil.validateToken(jwtToken));
+                // Kiểm tra token có bị thu hồi không
+                if (jwtUtil.isTokenBlacklisted(jwtToken)) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token revoked");
                     return;
                 }
-
-                // 2. Validate token
-                if (jwtUtil.validateToken(token)) {
-                    String username = jwtUtil.getUsernameFromToken(token);
-                    List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(token);
-                    Long userId = jwtUtil.getUserIdFromToken(token);
-
-                    // 3. Tạo Authentication object
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                // Kiểm tra token hợp lệ
+                if (jwtUtil.validateToken(jwtToken)) {
+                    Integer userId = jwtUtil.getUserIdFromToken(jwtToken);
+                    System.out.println("userId from token: " + userId);
+                    List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(jwtToken);
+                    // Đặt authentication vào context
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userId, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    request.setAttribute("username", username);
+
+                    // Đặt thông tin user vào request attribute
                     request.setAttribute("userId", userId);
                 } else {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                     return;
                 }
             } catch (Exception e) {
+                System.out.println("Exception in filter: " + e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token verification failed");
                 return;
             }
         }
-
+        // Tiếp tục filter chain
         filterChain.doFilter(request, response);
     }
 }

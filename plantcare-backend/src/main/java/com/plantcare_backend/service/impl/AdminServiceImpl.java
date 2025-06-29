@@ -3,15 +3,11 @@ package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.reponse.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
-import com.plantcare_backend.model.Plants;
-import com.plantcare_backend.model.Role;
-import com.plantcare_backend.model.UserProfile;
-import com.plantcare_backend.model.Users;
-import com.plantcare_backend.repository.PlantRepository;
-import com.plantcare_backend.repository.RoleRepository;
-import com.plantcare_backend.repository.UserProfileRepository;
-import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
+import com.plantcare_backend.model.*;
+import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.AdminService;
+import com.plantcare_backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +23,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +44,10 @@ public class AdminServiceImpl implements AdminService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private PlantRepository plantRepository;
+    @Autowired
+    private UserActivityLogRepository userActivityLogRepository;
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
@@ -84,7 +85,21 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void updateUser(int userId, UserRequestDTO userRequestDTO) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        user.setStatus(userRequestDTO.getStatus());
+        user.setEmail(userRequestDTO.getEmail());
+
+        userRepository.save(user);
+
+        UserProfile userProfile = userProfileRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Profile not found for user ID: " + userId));
+        userProfile.setFullName(userRequestDTO.getFullName());
+        userProfile.setPhone(userRequestDTO.getPhoneNumber());
+        userProfile.setGender(userRequestDTO.getGender());
+
+        userProfileRepository.save(userProfile);
     }
 
     @Override
@@ -103,8 +118,10 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public UserDetailResponse getUser(int userId) {
-        return null;
+    public UserDetailResponse getUserDetail(int userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return convertToUserDetailResponse(user);
     }
 
     @Override
@@ -182,6 +199,19 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<UserActivityLog> logs = userActivityLogRepository.findByUser_Id(userId, pageable);
+        return logs.map(log -> UserActivityLogRequestDTO.builder()
+                .id(log.getId())
+                .action(log.getAction())
+                .timestamp(log.getTimestamp())
+                .ipAddress(log.getIpAddress())
+                .description(log.getDescription())
+                .build());
+    }
+
     private UserDetailResponse convertToUserDetailResponse(Users user) {
         UserDetailResponse response = new UserDetailResponse();
         response.setId(user.getId());
@@ -214,6 +244,20 @@ public class AdminServiceImpl implements AdminService {
     public List<Plants> getAllPlants(int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         return plantRepository.findAll(pageable).getContent();
+    }
+
+    @Override
+    public void resetPassword(int userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String newPassword = generateRandomPassword();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        emailService.sendEmail(user.getEmail(), "Your password has been reset",
+                "Your new password is: " + newPassword);
+    }
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
     }
 
 }

@@ -16,22 +16,18 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
 
         long countByStatus(Plants.PlantStatus status);
 
-        // Tìm kiếm theo tên thường hoặc tên khoa học
         Page<Plants> findByCommonNameContainingIgnoreCaseOrScientificNameContainingIgnoreCase(
                         String commonName, String scientificName, Pageable pageable);
 
-        // Tìm kiếm theo category và keyword
         Page<Plants> findByCategoryIdAndCommonNameContainingIgnoreCase(
                         Long categoryId, String keyword, Pageable pageable);
 
-        // Tìm kiếm theo các tiêu chí bộ lọc
         Page<Plants> findByLightRequirementAndWaterRequirementAndCareDifficulty(
                         Plants.LightRequirement lightRequirement,
                         Plants.WaterRequirement waterRequirement,
                         Plants.CareDifficulty careDifficulty,
                         Pageable pageable);
 
-        // Method tổng hợp tìm kiếm với tất cả tiêu chí
         @Query("SELECT p FROM Plants p WHERE " +
                         "(:keyword IS NULL OR p.commonName LIKE %:keyword% OR p.scientificName LIKE %:keyword%) AND " +
                         "(:categoryId IS NULL OR p.category.id = :categoryId) AND " +
@@ -47,4 +43,6 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
                         @Param("careDifficulty") Plants.CareDifficulty careDifficulty,
                         @Param("status") Plants.PlantStatus status,
                         Pageable pageable);
+
+        boolean existsByScientificNameIgnoreCase(String scientificName);
 }

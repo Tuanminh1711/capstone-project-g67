@@ -4,8 +4,13 @@ import com.plantcare_backend.dto.validator.PhoneNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Data
 public class RegisterRequestDTO {
     @NotBlank(message = "Username is required")

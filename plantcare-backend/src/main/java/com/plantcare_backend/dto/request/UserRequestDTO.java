@@ -2,13 +2,14 @@ package com.plantcare_backend.dto.request;
 
 import com.plantcare_backend.dto.validator.GenderSubset;
 import com.plantcare_backend.dto.validator.PhoneNumber;
+import com.plantcare_backend.model.Users;
 import com.plantcare_backend.util.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
+
 import java.io.Serializable;
 import static com.plantcare_backend.util.Gender.*;
 
@@ -17,7 +18,10 @@ import static com.plantcare_backend.util.Gender.*;
  */
 
 @Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UserRequestDTO implements Serializable {
 
     @NotBlank(message = "username must be not blank")
@@ -44,4 +48,5 @@ public class UserRequestDTO implements Serializable {
     @NotNull(message = "roleId must not be null")
     private Integer roleId;
 
+    private Users.UserStatus status;
 }

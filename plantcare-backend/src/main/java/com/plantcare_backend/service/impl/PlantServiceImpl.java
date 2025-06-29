@@ -2,12 +2,19 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.reponse.PlantResponseDTO;
 import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.reponse.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
+import com.plantcare_backend.exception.InvalidDataException;
+import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.PlantCategory;
+import com.plantcare_backend.model.PlantImage;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.service.PlantService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +54,7 @@ public class PlantServiceImpl implements PlantService {
                 sortBy);
 
         Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize(), sort);
+        request.setStatus(Plants.PlantStatus.ACTIVE);
 
         Page<Plants> plantsPage = plantRepository.searchPlants(
                 request.getKeyword(),
@@ -75,6 +84,109 @@ public class PlantServiceImpl implements PlantService {
     public List<PlantCategory> getAllCategories() {
         log.info("Getting all plant categories");
         return categoryRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Long createPlant(CreatePlantRequestDTO request) {
+        log.info("Creating new plant with scientific name: {}", request.getScientificName());
+
+        PlantCategory category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+
+        if (plantRepository.existsByScientificNameIgnoreCase(request.getScientificName())) {
+            throw new InvalidDataException("Plant with scientific name already exists: " + request.getScientificName());
+        }
+
+        Plants plant = Plants.builder()
+                .scientificName(request.getScientificName())
+                .commonName(request.getCommonName())
+                .category(category)
+                .description(request.getDescription())
+                .careInstructions(request.getCareInstructions())
+                .lightRequirement(request.getLightRequirement())
+                .waterRequirement(request.getWaterRequirement())
+                .careDifficulty(request.getCareDifficulty())
+                .suitableLocation(request.getSuitableLocation())
+                .commonDiseases(request.getCommonDiseases())
+                .status(Plants.PlantStatus.ACTIVE)
+                .build();
+
+        Plants savedPlant = plantRepository.save(plant);
+
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            List<PlantImage> images = request.getImageUrls().stream()
+                    .map(url -> PlantImage.builder()
+                            .plant(savedPlant)
+                            .imageUrl(url)
+                            .isPrimary(false)
+                            .build())
+                    .collect(Collectors.toList());
+
+            if (!images.isEmpty()) {
+                images.get(0).setIsPrimary(true);
+            }
+            savedPlant.setImages(images);
+            plantRepository.save(savedPlant);
+        }
+
+        log.info("Plant created successfully with ID: {}", savedPlant.getId());
+        return savedPlant.getId();
+    }
+
+    public PlantDetailResponseDTO getPlantDetail(Long plantId) {
+        Plants plant = plantRepository.findById(plantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found"));
+
+        PlantDetailResponseDTO dto = new PlantDetailResponseDTO();
+        dto.setId(plant.getId());
+        dto.setScientificName(plant.getScientificName());
+        dto.setCommonName(plant.getCommonName());
+        dto.setDescription(plant.getDescription());
+        dto.setCareInstructions(plant.getCareInstructions());
+        dto.setSuitableLocation(plant.getSuitableLocation());
+        dto.setCommonDiseases(plant.getCommonDiseases());
+        dto.setStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
+        dto.setStatusDisplay(getStatusDisplay(plant.getStatus()));
+        dto.setCreatedAt(plant.getCreatedAt());
+        dto.setUpdatedAt(plant.getUpdatedAt());
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
+
+        // Lấy danh sách ảnh
+        List<String> imageUrls = new ArrayList<>();
+        if (plant.getImages() != null) {
+            for (PlantImage img : plant.getImages()) {
+                imageUrls.add(img.getImageUrl());
+            }
+        }
+        dto.setImageUrls(imageUrls);
+
+        return dto;
+    }
+
+    @Override
+    public UserPlantDetailResponseDTO toUserPlantDetailDTO(PlantDetailResponseDTO dto) {
+        UserPlantDetailResponseDTO userDto = new UserPlantDetailResponseDTO();
+        userDto.setId(dto.getId());
+        userDto.setScientificName(dto.getScientificName());
+        userDto.setCommonName(dto.getCommonName());
+        userDto.setDescription(dto.getDescription());
+        userDto.setCareInstructions(dto.getCareInstructions());
+        userDto.setSuitableLocation(dto.getSuitableLocation());
+        userDto.setCommonDiseases(dto.getCommonDiseases());
+        userDto.setStatus(dto.getStatus());
+        userDto.setCategoryName(dto.getCategoryName());
+        userDto.setImageUrls(dto.getImageUrls());
+        return userDto;
+    }
+
+    private String getStatusDisplay(Plants.PlantStatus status) {
+        if (status == null) return "";
+        switch (status) {
+            case ACTIVE: return "Đang hoạt động";
+            case INACTIVE: return "Không hoạt động";
+            default: return status.name();
+        }
     }
 
     /**

@@ -1,12 +1,11 @@
 package com.plantcare_backend.model;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
-
 
 @Getter
 @Setter
@@ -23,6 +22,7 @@ public class PlantImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plant_id", nullable = false)
+    @JsonBackReference
     private Plants plant;
 
     @Column(name = "image_url", nullable = false, length = 255)

@@ -22,15 +22,8 @@ server:
 springdoc:
   api-docs:
     enabled: true
-    path: /v3/api-docs
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
-    operationsSorter: method
-    tagsSorter: alpha
-    tryItOutEnabled: true
-    filter: true
-  packages-to-scan: com.example.PlantCare_Website_Backend.controller
   paths-to-match: /api/**
 
 openapi:

@@ -1,5 +1,7 @@
 package com.plantcare_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -33,6 +35,7 @@ public class Plants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonBackReference
     private PlantCategory category;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -64,6 +67,7 @@ public class Plants {
     private PlantStatus status = PlantStatus.ACTIVE;
 
     @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<PlantImage> images;
 
     @CreationTimestamp

@@ -14,12 +14,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Create by TaHoang
+ * JWT Utility interface: generate, parse, validate, blacklist token, lấy thông
+ * tin user từ token
  */
 
 @Component
 public interface JwtUtil {
-    String generateToken(String username, String role);
+    String generateToken(String username, String role, int userId);
+
+    Integer getUserIdFromToken(String token);
 
     String getUsernameFromToken(String token);
 
@@ -33,8 +36,4 @@ public interface JwtUtil {
 
     // Thêm method mới để phù hợp với Spring Security
     List<GrantedAuthority> getAuthoritiesFromToken(String token);
-
-    String generateToken(String username, String role, Long userId);
-
-    Long getUserIdFromToken(String token);
 }
