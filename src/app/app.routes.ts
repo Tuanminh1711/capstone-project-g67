@@ -24,6 +24,8 @@ import { AdminPlantListComponent } from './admin/plant-manager/plant-list/admin-
 import { AdminEditPlantComponent } from './admin/plant-manager/plant-list/admin-edit-plant.component';
 import { AdminCreatePlantComponent } from './admin/plant-manager/create-plant/admin-create-plant.component';
 import { TotalPlantsStatisticsComponent } from './admin/statistics/total-plants.component';
+import { TotalUsersStatisticsComponent } from './admin/statistics/total-users.component';
+import { TotalBrowseUsersStatisticsComponent } from './admin/statistics/total-browse-users.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -53,6 +55,8 @@ const routes: Routes = [
   { path: 'admin/plants/edit/:id', component: AdminEditPlantComponent },
   { path: 'admin/plants/create', component: AdminCreatePlantComponent },
   { path: 'admin/statistics/total-plants', component: TotalPlantsStatisticsComponent },
+  { path: 'admin/statistics/total-users', component: TotalUsersStatisticsComponent },
+  { path: 'admin/statistics/total-browse', component: TotalBrowseUsersStatisticsComponent },
 
   { path: 'care-with-experts', component: HomeComponent },
 
