@@ -8,4 +8,5 @@ import java.util.List;
 public interface UserPlantsService {
     UserPlantsSearchResponseDTO searchUserPlants(UserPlantsSearchRequestDTO request);
     List<UserPlants> getAllUserPlants();
+    void deleteUserPlant(Long userPlantId, Long userId);
 } 

@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserPlantRepository extends JpaRepository<UserPlants, Long> {
     Page<UserPlants> findAll(Pageable pageable);
@@ -17,4 +19,7 @@ public interface UserPlantRepository extends JpaRepository<UserPlants, Long> {
     Page<UserPlants> findByUserId(Long userId, Pageable pageable);
     Page<UserPlants> findByPlantNameContainingIgnoreCase(String plantName, Pageable pageable);
     Page<UserPlants> findByUserIdAndPlantNameContainingIgnoreCase(Long userId, String plantName, Pageable pageable);
+    
+    // Find user plant by userPlantId and userId for security validation
+    Optional<UserPlants> findByUserPlantIdAndUserId(Long userPlantId, Long userId);
 }

@@ -3,6 +3,7 @@ package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.reponse.UserPlantsResponseDTO;
 import com.plantcare_backend.dto.reponse.UserPlantsSearchResponseDTO;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
+import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.repository.UserPlantRepository;
 import com.plantcare_backend.service.UserPlantsService;
@@ -63,6 +64,19 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     @Override
     public List<UserPlants> getAllUserPlants() {
         return userPlantRepository.findAll();
+    }
+
+    @Override
+    public void deleteUserPlant(Long userPlantId, Long userId) {
+        log.info("Attempting to delete user plant with ID: {} for user ID: {}", userPlantId, userId);
+        
+        // Find the user plant and verify ownership
+        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User plant not found or you don't have permission to delete it"));
+        
+        // Delete the user plant
+        userPlantRepository.delete(userPlant);
+        log.info("Successfully deleted user plant with ID: {} for user ID: {}", userPlantId, userId);
     }
 
     private UserPlantsResponseDTO convertToUserPlantsResponseDTO(UserPlants userPlant) {
