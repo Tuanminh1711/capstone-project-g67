@@ -16,13 +16,13 @@ public class UserPlants {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_plant_id")
-    private long UserPlantId;
+    private Long userPlantId;
 
     @Column(name = "user_id")
-    private long userId;
+    private Long userId;
 
     @Column(name = "plant_id")
-    private long plantId;
+    private Long plantId;
 
     @Column(name = "nickname")
     private String plantName;
