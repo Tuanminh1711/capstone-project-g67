@@ -1,0 +1,65 @@
+.total-plants-statistics-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(178, 223, 219, 0.26);
+  padding: 32px 24px;
+  max-width: 480px;
+  margin: 40px auto;
+  text-align: center;
+}
+
+h2 {
+  color: #178a4c;
+  margin-bottom: 24px;
+  font-size: 1.8rem;
+}
+
+.refresh-btn {
+  background: linear-gradient(90deg, #3bb77e 0%, #1e824c 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.statistic-value {
+  margin-top: 24px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e824c;
+}
+
+.stat-label {
+  margin-right: 8px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  color: #178a4c;
+  font-weight: bold;
+}
+
+.error-msg {
+  color: #f44336;
+  margin-top: 16px;
+  font-weight: 500;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 8px;
+} 

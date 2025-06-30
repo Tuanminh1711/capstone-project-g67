@@ -23,6 +23,7 @@ import { TicketReviewComponent } from './admin/response-manager/ticket-review/ti
 import { AdminPlantListComponent } from './admin/plant-manager/plant-list/admin-plant-list.component';
 import { AdminEditPlantComponent } from './admin/plant-manager/plant-list/admin-edit-plant.component';
 import { AdminCreatePlantComponent } from './admin/plant-manager/create-plant/admin-create-plant.component';
+import { TotalPlantsStatisticsComponent } from './admin/statistics/total-plants.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -50,7 +51,8 @@ const routes: Routes = [
   { path: 'admin/tickets/:id/review', component: TicketReviewComponent },
   { path: 'admin/plants', component: AdminPlantListComponent },
   { path: 'admin/plants/edit/:id', component: AdminEditPlantComponent },
-  { path: 'admin/plants/create', component: AdminCreatePlantComponent }, // Nếu bạn có trang tạo cây
+  { path: 'admin/plants/create', component: AdminCreatePlantComponent },
+  { path: 'admin/statistics/total-plants', component: TotalPlantsStatisticsComponent },
 
   { path: 'care-with-experts', component: HomeComponent },
 
