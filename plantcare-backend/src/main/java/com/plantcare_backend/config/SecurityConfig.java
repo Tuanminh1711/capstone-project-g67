@@ -4,6 +4,7 @@ import com.plantcare_backend.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -46,8 +47,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/manager/**").permitAll()
                                 .requestMatchers("/api/user-plants/**").permitAll()
+//                                .requestMatchers(HttpMethod.DELETE, "/api/user-plants/delete/**").authenticated()
 //                        .requestMatchers("/api/user-plants/**").authenticated()
-//                        .anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // <--- DÒNG NÀY RẤT QUAN TRỌNG
 

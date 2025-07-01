@@ -19,7 +19,7 @@ public interface UserPlantRepository extends JpaRepository<UserPlants, Long> {
     Page<UserPlants> findByUserId(Long userId, Pageable pageable);
     Page<UserPlants> findByPlantNameContainingIgnoreCase(String plantName, Pageable pageable);
     Page<UserPlants> findByUserIdAndPlantNameContainingIgnoreCase(Long userId, String plantName, Pageable pageable);
-    
-    // Find user plant by userPlantId and userId for security validation
+
     Optional<UserPlants> findByUserPlantIdAndUserId(Long userPlantId, Long userId);
+    Optional<UserPlants> findByUserPlantId(Long userPlantId);
 }

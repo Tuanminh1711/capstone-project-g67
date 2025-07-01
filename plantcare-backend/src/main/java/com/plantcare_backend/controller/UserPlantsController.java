@@ -5,6 +5,7 @@ import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
 import com.plantcare_backend.dto.reponse.ResponseSuccess;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
+import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.service.UserPlantsService;
@@ -57,7 +58,9 @@ public class UserPlantsController {
     @DeleteMapping("/delete/{userPlantId}")
     public ResponseData<ResponseSuccess> deleteUserPlant(
             @PathVariable Long userPlantId,
-            HttpServletRequest request) {
+            HttpServletRequest request
+//            @RequestAttribute("userId") Integer userId
+            ) {
         log.info("Request to delete user plant with ID: {}", userPlantId);
         try {
             // Lấy ID người dùng từ request
@@ -65,15 +68,33 @@ public class UserPlantsController {
             if (userId == null) {
                 return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
             }
-            
+            log.info("User ID: {}", userId);
+            log.info("User plant ID: {}", userPlantId);
             userPlantsService.deleteUserPlant(userPlantId, userId.longValue());
-            return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("userplant.delete.success"));
+            return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user plant delete success"));
         } catch (ResourceNotFoundException e) {
             log.error("User plant not found: {}", e.getMessage());
-            return new ResponseError(HttpStatus.NOT_FOUND.value(), Translator.toLocale("userplant.not.found"));
+            return new ResponseError(HttpStatus.NOT_FOUND.value(), Translator.toLocale("user plant not found"));
         } catch (Exception e) {
             log.error("Delete user plant failed", e);
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), Translator.toLocale("userplant.delete.failed"));
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), Translator.toLocale("user plant delete failed"));
+        }
+    }
+
+    @PostMapping("/add")
+    public ResponseData<?> addUserPlant(
+            @RequestBody AddUserPlantRequestDTO requestDTO,
+            HttpServletRequest request
+    ) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        if (userId == null) {
+            return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
+        }
+        try {
+            userPlantsService.addUserPlant(requestDTO, userId.longValue());
+            return new ResponseData<>(HttpStatus.OK.value(), "Plant added to user collection successfully");
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to add plant to user collection: " + e.getMessage());
         }
     }
 }
