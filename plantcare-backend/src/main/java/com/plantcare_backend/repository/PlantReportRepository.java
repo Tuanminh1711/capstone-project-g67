@@ -24,4 +24,5 @@ public interface PlantReportRepository extends JpaRepository<PlantReport, Long> 
             @Param("reporterName") String reporterName,
             Pageable pageable
     );
+    int countByPlantId(Long plantId);
 }
