@@ -9,26 +9,25 @@ import com.plantcare_backend.dto.reponse.plantsManager.PlantReportListResponseDT
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Plants;
-import com.plantcare_backend.service.AdminService;
 import com.plantcare_backend.service.PlantManagementService;
 import com.plantcare_backend.service.PlantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/manager")
 @RequiredArgsConstructor
 public class PlantManagementController {
+    @Autowired
     private final PlantManagementService plantManagementService;
+    @Autowired
     private final PlantService plantService;
-    private final AdminService adminService;
+
 
     @PostMapping("/create-plant")
     //@PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
@@ -37,7 +36,7 @@ public class PlantManagementController {
         try {
             Long plantId = plantManagementService.createPlantByManager(createPlantManagementRequestDTO);
             return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created successfully", plantId);
-        }catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
@@ -108,10 +107,18 @@ public class PlantManagementController {
         try {
             PlantReportListResponseDTO response = plantManagementService.getReportList(request);
             return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "get report list successfully", response));
-        }catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             ResponseError error = new ResponseError(HttpStatus.BAD_REQUEST.value(), "get report failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
 
+    }
+
+    @PostMapping("/report-plant-reason")
+    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('STAFF')")
+    public ResponseEntity<?> reportPlant(@RequestBody PlantReportRequestDTO request,
+                                         @RequestAttribute("userId") Long userId) {
+        plantManagementService.reportPlant(request, userId);
+        return ResponseEntity.ok(new ResponseSuccess(HttpStatus.CREATED, "báo cáo của bạn đã được ghi nhận ! "));
     }
 }
