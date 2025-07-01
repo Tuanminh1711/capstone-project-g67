@@ -74,7 +74,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         // Find the user plant
 //        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
 //                .orElseThrow(() -> new ResourceNotFoundException("User plant not found or you don't have permission to delete it"));
-        UserPlants userPlant = userPlantRepository.findByUserPlantId(userPlantId)
+        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         // Delete the user plant
         userPlantRepository.delete(userPlant);

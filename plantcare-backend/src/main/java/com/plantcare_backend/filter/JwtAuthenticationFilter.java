@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 // Kiểm tra token hợp lệ
                 if (jwtUtil.validateToken(jwtToken)) {
-                    Integer userId = jwtUtil.getUserIdFromToken(jwtToken);
+                    Long userId = jwtUtil.getUserIdFromToken(jwtToken);
                     System.out.println("userId from token: " + userId);
                     List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(jwtToken);
                     // Đặt authentication vào context

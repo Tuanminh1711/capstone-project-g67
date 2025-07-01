@@ -61,9 +61,9 @@ public class JwtUtilImpl implements JwtUtil {
     }
 
     @Override
-    public Integer getUserIdFromToken(String token) {
+    public Long getUserIdFromToken(String token) {
         Claims claims = parseToken(token);
-        return claims.get("userId", Integer.class);
+        return claims.get("userId", Long.class);
     }
 
     @Override
