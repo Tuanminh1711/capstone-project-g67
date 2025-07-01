@@ -2,7 +2,7 @@ package com.plantcare_backend.controller;
 
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
-import com.plantcare_backend.dto.reponse.UserDetailResponse;
+import com.plantcare_backend.dto.reponse.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**

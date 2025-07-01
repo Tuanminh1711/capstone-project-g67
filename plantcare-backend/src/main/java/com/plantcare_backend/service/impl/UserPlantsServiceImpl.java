@@ -1,7 +1,7 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.UserPlantsResponseDTO;
-import com.plantcare_backend.dto.reponse.UserPlantsSearchResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.UserPlantsResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.UserPlantsSearchResponseDTO;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
 import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.repository.UserPlantRepository;

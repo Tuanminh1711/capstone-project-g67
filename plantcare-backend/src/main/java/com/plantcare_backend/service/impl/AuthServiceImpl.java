@@ -1,6 +1,6 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.LoginResponse;
+import com.plantcare_backend.dto.reponse.auth.LoginResponse;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;

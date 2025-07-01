@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.reponse;
+package com.plantcare_backend.dto.reponse.Plants;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

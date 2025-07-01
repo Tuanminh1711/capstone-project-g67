@@ -1,12 +1,11 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.reponse.LoginResponse;
+import com.plantcare_backend.dto.reponse.auth.LoginResponse;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.request.auth.ForgotPasswordRequestDTO;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
-import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.service.PasswordResetService;
 import com.plantcare_backend.service.AuthService;
 import com.plantcare_backend.util.JwtUtil;

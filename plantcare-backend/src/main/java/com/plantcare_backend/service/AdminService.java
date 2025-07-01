@@ -2,7 +2,7 @@ package com.plantcare_backend.service;
 
 
 
-import com.plantcare_backend.dto.reponse.UserDetailResponse;
+import com.plantcare_backend.dto.reponse.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;

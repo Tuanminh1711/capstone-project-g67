@@ -20,4 +20,5 @@ public class PlantDetailResponseDTO {
     private Timestamp updatedAt;
     private String categoryName;
     private List<String> imageUrls;
+    private List<PlantImageDetailDTO> images;
 }

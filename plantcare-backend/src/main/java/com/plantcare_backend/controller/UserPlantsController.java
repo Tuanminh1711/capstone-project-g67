@@ -1,6 +1,6 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.reponse.UserPlantsSearchResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.UserPlantsSearchResponseDTO;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
@@ -20,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "UserPlants Controller", description = "APIs for user plants management")
+@CrossOrigin(origins = "http://localhost:4200/")
 public class UserPlantsController {
     private final UserPlantsService userPlantsService;
 

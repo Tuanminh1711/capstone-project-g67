@@ -1,6 +1,6 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.reponse.PlantSearchResponseDTO;
+import com.plantcare_backend.dto.reponse.Plants.PlantSearchResponseDTO;
 import com.plantcare_backend.dto.reponse.Plants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.reponse.ResponseData;
 import com.plantcare_backend.dto.reponse.ResponseError;
@@ -80,4 +80,6 @@ public class PlantController {
         UserPlantDetailResponseDTO userDto = plantService.toUserPlantDetailDTO(fullDto);
         return new ResponseData<>(HttpStatus.OK.value(), "Get plant detail successfully", userDto);
     }
+
+
 }

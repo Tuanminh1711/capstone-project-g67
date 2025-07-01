@@ -1,6 +1,6 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.UserDetailResponse;
+import com.plantcare_backend.dto.reponse.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
@@ -49,6 +49,13 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private EmailService emailService;
 
+    /**
+     * Creates a new user along with their profile based on the provided data.
+     *
+     * @param userRequestDTO DTO containing user information (username, email, password, role ID, phone, etc.)
+     * @return the ID of the newly created user
+     * @throws RuntimeException if the specified role is not found or any error occurs during saving
+     */
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
         try {
@@ -83,6 +90,14 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    /**
+     * Updates basic information (email, status) and profile (full name, phone, gender)
+     * for an existing user.
+     *
+     * @param userId ID of the user to update
+     * @param userRequestDTO DTO containing updated user and profile data
+     * @throws RuntimeException if the user or profile is not found
+     */
     @Override
     public void updateUser(int userId, UserRequestDTO userRequestDTO) {
         Users user = userRepository.findById(userId)
@@ -102,11 +117,24 @@ public class AdminServiceImpl implements AdminService {
         userProfileRepository.save(userProfile);
     }
 
+    /**
+     * Deletes a user by their ID.
+     *
+     * @param userId ID of the user to delete
+     * (Currently not implemented)
+     */
     @Override
     public void deleteUser(int userId) {
 
     }
 
+    /**
+     * Changes the status (e.g., ACTIVE, INACTIVE) of a user.
+     *
+     * @param userId ID of the user
+     * @param status New status to be applied
+     * @throws RuntimeException if the user is not found
+     */
     @Override
     public void changeStatus(int userId, Users.UserStatus status) {
         Users users = userRepository.findById(userId)
@@ -117,6 +145,13 @@ public class AdminServiceImpl implements AdminService {
         log.info("User status changed to " + status);
     }
 
+    /**
+     * Retrieves detailed information of a user by their ID.
+     *
+     * @param userId ID of the user
+     * @return UserDetailResponse containing user and profile information
+     * @throws RuntimeException if the user is not found
+     */
     @Override
     public UserDetailResponse getUserDetail(int userId) {
         Users user = userRepository.findById(userId)
@@ -124,6 +159,13 @@ public class AdminServiceImpl implements AdminService {
         return convertToUserDetailResponse(user);
     }
 
+    /**
+     * Retrieves a paginated list of all users with their detailed information.
+     *
+     * @param pageNo Page number (starting from 0)
+     * @param pageSize Number of records per page
+     * @return List of UserDetailResponse
+     */
     @Override
     public List<UserDetailResponse> getAllUsers(int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
@@ -150,6 +192,13 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Searches users based on keyword (username, email, full name, phone),
+     * and optionally filters by role and status.
+     *
+     * @param searchAccountRequestDTO DTO containing search keyword, role, status, and pagination
+     * @return List of UserDetailResponse matching the search criteria
+     */
     @Override
     public List<UserDetailResponse> searchUsers(SearchAccountRequestDTO searchAccountRequestDTO) {
         Pageable pageable = PageRequest.of(searchAccountRequestDTO.getPageNo(), searchAccountRequestDTO.getPageSize());
@@ -199,6 +248,14 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a paginated list of activity logs for a specific user.
+     *
+     * @param userId ID of the user
+     * @param pageNo Page number
+     * @param pageSize Number of logs per page
+     * @return Page of UserActivityLogRequestDTO
+     */
     @Override
     public Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
@@ -212,6 +269,12 @@ public class AdminServiceImpl implements AdminService {
                 .build());
     }
 
+    /**
+     * Converts a Users entity to a UserDetailResponse DTO, including profile data if available.
+     *
+     * @param user Users entity
+     * @return UserDetailResponse
+     */
     private UserDetailResponse convertToUserDetailResponse(Users user) {
         UserDetailResponse response = new UserDetailResponse();
         response.setId(user.getId());
@@ -230,22 +293,46 @@ public class AdminServiceImpl implements AdminService {
         return response;
     }
 
+    /**
+     * Gets the total number of plant records.
+     *
+     * @return total number of plants
+     */
     @Override
     public long getTotalPlants() {
         return plantRepository.count();
     }
 
+    /**
+     * Gets the total number of plants by a specific status.
+     *
+     * @param status The status to filter (e.g., AVAILABLE, UNAVAILABLE)
+     * @return count of plants matching the status
+     */
     @Override
     public long getTotalPlantsByStatus(Plants.PlantStatus status) {
         return plantRepository.countByStatus(status);
     }
 
+    /**
+     * Retrieves a paginated list of all plants.
+     *
+     * @param pageNo Page number
+     * @param pageSize Number of records per page
+     * @return List of Plants
+     */
     @Override
     public List<Plants> getAllPlants(int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         return plantRepository.findAll(pageable).getContent();
     }
 
+    /**
+     * Resets the password of a user to a new randomly generated one and sends it via email.
+     *
+     * @param userId ID of the user whose password is to be reset
+     * @throws RuntimeException if the user is not found
+     */
     @Override
     public void resetPassword(int userId) {
         Users user = userRepository.findById(userId)
@@ -256,6 +343,12 @@ public class AdminServiceImpl implements AdminService {
         emailService.sendEmail(user.getEmail(), "Your password has been reset",
                 "Your new password is: " + newPassword);
     }
+
+    /**
+     * Generates a random 8-character alphanumeric password.
+     *
+     * @return a new random password
+     */
     private String generateRandomPassword() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
     }

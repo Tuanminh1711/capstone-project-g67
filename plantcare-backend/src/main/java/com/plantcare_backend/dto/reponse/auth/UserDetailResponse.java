@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.reponse;
+package com.plantcare_backend.dto.reponse.auth;
 
 import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.Users;

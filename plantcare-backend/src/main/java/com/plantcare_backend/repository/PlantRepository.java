@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface PlantRepository extends JpaRepository<Plants, Long> {
         long count();
@@ -15,18 +18,6 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
         Page<Plants> findAll(Pageable pageable);
 
         long countByStatus(Plants.PlantStatus status);
-
-        Page<Plants> findByCommonNameContainingIgnoreCaseOrScientificNameContainingIgnoreCase(
-                        String commonName, String scientificName, Pageable pageable);
-
-        Page<Plants> findByCategoryIdAndCommonNameContainingIgnoreCase(
-                        Long categoryId, String keyword, Pageable pageable);
-
-        Page<Plants> findByLightRequirementAndWaterRequirementAndCareDifficulty(
-                        Plants.LightRequirement lightRequirement,
-                        Plants.WaterRequirement waterRequirement,
-                        Plants.CareDifficulty careDifficulty,
-                        Pageable pageable);
 
         @Query("SELECT p FROM Plants p WHERE " +
                         "(:keyword IS NULL OR p.commonName LIKE %:keyword% OR p.scientificName LIKE %:keyword%) AND " +
@@ -43,6 +34,7 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
                         @Param("careDifficulty") Plants.CareDifficulty careDifficulty,
                         @Param("status") Plants.PlantStatus status,
                         Pageable pageable);
-
         boolean existsByScientificNameIgnoreCase(String scientificName);
+
+        Optional<Plants> findById(Long id);
 }
