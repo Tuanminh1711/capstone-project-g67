@@ -58,26 +58,20 @@ public class UserPlantsController {
     @DeleteMapping("/delete/{userPlantId}")
     public ResponseData<ResponseSuccess> deleteUserPlant(
             @PathVariable Long userPlantId,
-            HttpServletRequest request
-//            @RequestAttribute("userId") Integer userId
-            ) {
-        log.info("Request to delete user plant with ID: {}", userPlantId);
+            HttpServletRequest request) {
         try {
-            // Lấy ID người dùng từ request
-            Integer userId = (Integer) request.getAttribute("userId");
+            Long userId = (Long) request.getAttribute("userId");
             if (userId == null) {
                 return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
             }
-            log.info("User ID: {}", userId);
-            log.info("User plant ID: {}", userPlantId);
-            userPlantsService.deleteUserPlant(userPlantId, userId.longValue());
-            return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user plant delete success"));
+            userPlantsService.deleteUserPlant(userPlantId, userId);
+            return new ResponseData<>(HttpStatus.OK.value(), "User plant deleted successfully");
         } catch (ResourceNotFoundException e) {
             log.error("User plant not found: {}", e.getMessage());
-            return new ResponseError(HttpStatus.NOT_FOUND.value(), Translator.toLocale("user plant not found"));
+            return new ResponseError(HttpStatus.NOT_FOUND.value(), "User plant not found");
         } catch (Exception e) {
             log.error("Delete user plant failed", e);
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), Translator.toLocale("user plant delete failed"));
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Delete user plant failed");
         }
     }
 
@@ -86,12 +80,12 @@ public class UserPlantsController {
             @RequestBody AddUserPlantRequestDTO requestDTO,
             HttpServletRequest request
     ) {
-        Integer userId = (Integer) request.getAttribute("userId");
+        Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
         try {
-            userPlantsService.addUserPlant(requestDTO, userId.longValue());
+            userPlantsService.addUserPlant(requestDTO, userId);
             return new ResponseData<>(HttpStatus.OK.value(), "Plant added to user collection successfully");
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to add plant to user collection: " + e.getMessage());
