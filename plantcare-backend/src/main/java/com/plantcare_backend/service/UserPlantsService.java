@@ -9,4 +9,5 @@ public interface UserPlantsService {
     UserPlantsSearchResponseDTO searchUserPlants(UserPlantsSearchRequestDTO request);
     List<UserPlants> getAllUserPlants();
     void deleteUserPlant(Long userPlantId, Long userId);
+    void addUserPlant(com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO requestDTO, Long userId);
 } 
