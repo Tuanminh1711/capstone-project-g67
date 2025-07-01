@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public interface JwtUtil {
     String generateToken(String username, String role, int userId);
 
-    Integer getUserIdFromToken(String token);
+    Long getUserIdFromToken(String token);
 
     String getUsernameFromToken(String token);
 

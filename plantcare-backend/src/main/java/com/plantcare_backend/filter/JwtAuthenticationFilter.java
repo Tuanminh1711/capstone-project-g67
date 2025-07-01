@@ -32,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         System.out.println("JWT Filter is running for: " + request.getRequestURI());
 
+
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String jwtToken = authorizationHeader.substring(7);
@@ -46,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 // Kiểm tra token hợp lệ
                 if (jwtUtil.validateToken(jwtToken)) {
-                    Integer userId = jwtUtil.getUserIdFromToken(jwtToken);
+                    Long userId = jwtUtil.getUserIdFromToken(jwtToken);
                     System.out.println("userId from token: " + userId);
                     List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(jwtToken);
                     // Đặt authentication vào context
