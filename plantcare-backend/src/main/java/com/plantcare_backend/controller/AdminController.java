@@ -1,8 +1,8 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.reponse.ResponseData;
-import com.plantcare_backend.dto.reponse.ResponseError;
-import com.plantcare_backend.dto.reponse.auth.UserDetailResponse;
+import com.plantcare_backend.dto.response.ResponseData;
+import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;

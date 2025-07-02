@@ -1,6 +1,6 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.plantsManager.*;
+import com.plantcare_backend.dto.response.plantsManager.*;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.PlantCategory;

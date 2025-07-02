@@ -1,11 +1,10 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.reponse.ResponseData;
-import com.plantcare_backend.dto.reponse.ResponseError;
-import com.plantcare_backend.dto.reponse.ResponseSuccess;
-import com.plantcare_backend.dto.reponse.plantsManager.PlantDetailResponseDTO;
-import com.plantcare_backend.dto.reponse.plantsManager.PlantListResponseDTO;
-import com.plantcare_backend.dto.reponse.plantsManager.PlantReportListResponseDTO;
+import com.plantcare_backend.dto.response.ResponseData;
+import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.plantsManager.PlantListResponseDTO;
+import com.plantcare_backend.dto.response.plantsManager.PlantReportListResponseDTO;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Plants;
@@ -17,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/manager")
