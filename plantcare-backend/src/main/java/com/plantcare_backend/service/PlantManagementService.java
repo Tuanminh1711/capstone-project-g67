@@ -1,8 +1,12 @@
 package com.plantcare_backend.service;
 
-import com.plantcare_backend.dto.reponse.plantsManager.PlantDetailResponseDTO;
-import com.plantcare_backend.dto.reponse.plantsManager.PlantListResponseDTO;
-import com.plantcare_backend.dto.reponse.plantsManager.PlantReportListResponseDTO;
+import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.plantsManager.PlantListResponseDTO;
+import com.plantcare_backend.dto.response.plantsManager.PlantReportListResponseDTO;
+import com.plantcare_backend.dto.request.plantsManager.CreatePlantManagementRequestDTO;
+import com.plantcare_backend.dto.request.plantsManager.PlantReportSearchRequestDTO;
+import com.plantcare_backend.dto.request.plantsManager.PlantSearchRequestDTO;
+import com.plantcare_backend.dto.request.plantsManager.UpdatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.model.Plants;
 import org.springframework.data.domain.Page;
