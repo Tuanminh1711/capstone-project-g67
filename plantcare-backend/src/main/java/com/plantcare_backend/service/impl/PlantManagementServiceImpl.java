@@ -3,13 +3,12 @@ package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.response.plantsManager.*;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
-import com.plantcare_backend.model.PlantCategory;
-import com.plantcare_backend.model.PlantImage;
-import com.plantcare_backend.model.PlantReport;
-import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantReportRepository;
 import com.plantcare_backend.repository.PlantRepository;
+import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.PlantManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,10 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     private final PlantCategoryRepository plantCategoryRepository;
     @Autowired
     private final PlantReportRepository plantReportRepository;
+    @Autowired
+    private final UserRepository userRepository;
+    @Autowired
+    private final EmailService emailService;
 
     /**
      * Creates a new plant entry in the system by an admin or staff member.
@@ -259,6 +262,52 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         return response;
     }
 
+
+    @Override
+    public void reportPlant(PlantReportRequestDTO request, Long reporterId) {
+        // 1. Lấy thông tin user
+        Users reporter = userRepository.findById(Math.toIntExact(reporterId))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // 2. Lấy thông tin plant
+        Plants plant = plantRepository.findById(request.getPlantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found"));
+
+        // 3. Tạo report mới
+        PlantReport report = PlantReport.builder()
+                .plant(plant)
+                .reporter(reporter)
+                .reason(request.getReason())
+                .status(PlantReport.ReportStatus.PENDING)
+                .build();
+        plantReportRepository.save(report);
+
+        // 4. Đếm số lượng report của plant này
+        int reportCount = plantReportRepository.countByPlantId(plant.getId());
+
+        // 5. Nếu >= 2, chuyển plant sang INACTIVE
+        if (reportCount >= 2 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
+            plant.setStatus(Plants.PlantStatus.INACTIVE);
+            plantRepository.save(plant);
+        }
+
+        // 6. Gửi email cho staff và admin
+        List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN", "STAFF"));
+        for (Users user : staffAndAdmins) {
+            emailService.sendEmail(
+                    user.getEmail(),
+                    "Có báo cáo mới về cây cảnh",
+                    "Xin chào " + user.getUsername() + ",\n\n" +
+                            "Cây: " + plant.getCommonName() + "\n" +
+                            "Người báo cáo: " + reporter.getUsername() + "\n" +
+                            "Lý do báo cáo:\n" +
+                            request.getReason() + "\n\n" +
+                            "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
+                            "Trân trọng,\n" +
+                            "Hệ thống PlantCare"
+            );
+        }
+    }
     /**
      * Xử lý update ảnh linh hoạt - cho phép update từng ảnh cụ thể
      */
