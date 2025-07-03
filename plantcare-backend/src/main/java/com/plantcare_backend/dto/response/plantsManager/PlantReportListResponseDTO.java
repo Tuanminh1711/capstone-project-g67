@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.reponse.plantsManager;
+package com.plantcare_backend.dto.response.plantsManager;
 
 import lombok.Data;
 

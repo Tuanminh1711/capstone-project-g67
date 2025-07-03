@@ -1,15 +1,14 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.reponse.Plants.UserPlantsSearchResponseDTO;
-import com.plantcare_backend.dto.reponse.ResponseData;
-import com.plantcare_backend.dto.reponse.ResponseError;
-import com.plantcare_backend.dto.reponse.ResponseSuccess;
+import com.plantcare_backend.dto.response.Plants.UserPlantsSearchResponseDTO;
+import com.plantcare_backend.dto.response.ResponseData;
+import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.ResponseSuccess;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
 import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.service.UserPlantsService;
-import com.plantcare_backend.util.Translator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;

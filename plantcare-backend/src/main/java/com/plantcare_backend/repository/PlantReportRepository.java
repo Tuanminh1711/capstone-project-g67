@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 /**
  * Create by TaHoang.
  */
@@ -25,4 +27,10 @@ public interface PlantReportRepository extends JpaRepository<PlantReport, Long> 
             Pageable pageable
     );
     int countByPlantId(Long plantId);
+    // Kiểm tra user đã report plant chưa
+    boolean existsByPlant_IdAndReporter_Id(Long plantId, Integer reporterId);
+    // Đếm số report theo status
+    int countByPlantIdAndStatusIn(Long plantId, List<PlantReport.ReportStatus> statuses);
+
+    List<PlantReport> findByPlant_Id(Long plantId);
 }

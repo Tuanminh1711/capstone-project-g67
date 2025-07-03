@@ -1,13 +1,10 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.plantsManager.*;
+import com.plantcare_backend.dto.response.plantsManager.*;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.*;
-import com.plantcare_backend.repository.PlantCategoryRepository;
-import com.plantcare_backend.repository.PlantReportRepository;
-import com.plantcare_backend.repository.PlantRepository;
-import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.PlantManagementService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +14,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +36,8 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     private final UserRepository userRepository;
     @Autowired
     private final EmailService emailService;
+    @Autowired
+    private final PlantReportLogRepository plantReportLogRepository;
 
     /**
      * Creates a new plant entry in the system by an admin or staff member.
@@ -262,7 +263,12 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         return response;
     }
 
-
+    /**
+     * Process a plant report from a user.
+     *
+     * @param request The DTO contains report information, including plant ID and reason.
+     * @param reporterId User ID of the report.
+     */
     @Override
     public void reportPlant(PlantReportRequestDTO request, Long reporterId) {
         // 1. Lấy thông tin user
@@ -272,6 +278,15 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         // 2. Lấy thông tin plant
         Plants plant = plantRepository.findById(request.getPlantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Plant not found"));
+        // Kiểm tra trạng thái plant
+        if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
+            throw new IllegalArgumentException("Cây này đã bị khóa do bị report quá nhiều!");
+        }
+
+        // 4. Kiểm tra user đã report chưa
+        if (plantReportRepository.existsByPlant_IdAndReporter_Id(request.getPlantId(), reporter.getId())) {
+            throw new IllegalArgumentException("Bạn đã report cây này rồi!");
+        }
 
         // 3. Tạo report mới
         PlantReport report = PlantReport.builder()
@@ -286,26 +301,98 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         int reportCount = plantReportRepository.countByPlantId(plant.getId());
 
         // 5. Nếu >= 2, chuyển plant sang INACTIVE
-        if (reportCount >= 2 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
+        if (reportCount >= 1 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
             plant.setStatus(Plants.PlantStatus.INACTIVE);
             plantRepository.save(plant);
         }
 
         // 6. Gửi email cho staff và admin
-        List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN", "STAFF"));
-        for (Users user : staffAndAdmins) {
-            emailService.sendEmail(
-                    user.getEmail(),
-                    "Có báo cáo mới về cây cảnh",
-                    "Xin chào " + user.getUsername() + ",\n\n" +
-                            "Cây: " + plant.getCommonName() + "\n" +
-                            "Người báo cáo: " + reporter.getUsername() + "\n" +
-                            "Lý do báo cáo:\n" +
-                            request.getReason() + "\n\n" +
-                            "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
-                            "Trân trọng,\n" +
-                            "Hệ thống PlantCare"
-            );
+//        List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN", "STAFF"));
+//        for (Users user : staffAndAdmins) {
+//            emailService.sendEmail(
+//                    user.getEmail(),
+//                    "Có báo cáo mới về cây cảnh",
+//                    "Xin chào " + user.getUsername() + ",\n\n" +
+//                            "Cây: " + plant.getCommonName() + "\n" +
+//                            "Người báo cáo: " + reporter.getUsername() + "\n" +
+//                            "Lý do báo cáo:\n" +
+//                            request.getReason() + "\n\n" +
+//                            "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
+//                            "Trân trọng,\n" +
+//                            "Hệ thống PlantCare"
+//            );
+        }
+    @Override
+    public void claimReport(Long reportId, Integer userId) {
+        PlantReport plantReport = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+        if (plantReport.getClaimedBy() != null) {
+            throw new IllegalArgumentException("Report đã được nhận sử lý bởi người khác!");
+        }
+        Users staff = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+        plantReport.setClaimedBy(staff);
+        plantReport.setClaimedAt(new Timestamp(System.currentTimeMillis()));
+        plantReport.setStatus(PlantReport.ReportStatus.CLAIMED);
+        plantReportRepository.save(plantReport);
+
+        PlantReportLog log = new PlantReportLog();
+        log.setReport(plantReport);
+        log.setAction(PlantReportLog.Action.CLAIM);
+        log.setUser(staff);
+        log.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        plantReportLogRepository.save(log);
+    }
+
+    @Override
+    public void handleReport(Long reportId, String status, String adminNotes, Integer userId) {
+        PlantReport report = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+        if (report.getClaimedBy() == null || report.getClaimedBy().getId() != userId.intValue()) {
+            throw new IllegalStateException("Bạn không phải là người nhận xử lý report này!");
+        }
+        report.setStatus(PlantReport.ReportStatus.valueOf(status));
+        report.setAdminNotes(adminNotes);
+        report.setHandledBy(report.getClaimedBy());
+        report.setHandledAt(new Timestamp(System.currentTimeMillis()));
+        plantReportRepository.save(report);
+
+        // Gửi email cho tất cả user đã report plant này
+        List<PlantReport> allReports = plantReportRepository.findByPlant_Id(report.getPlant().getId());
+        Set<Users> reporters = allReports.stream()
+                .map(PlantReport::getReporter)
+                .collect(Collectors.toSet());
+        for (Users user : reporters) {
+            String subject = "Báo cáo của bạn về cây " + report.getPlant().getCommonName() + " đã được xử lý";
+            String content = "Chào " + user.getUsername() + ",\n\n"
+                    + "Báo cáo của bạn về cây \"" + report.getPlant().getCommonName() + "\" đã được xử lý với kết quả: "
+                    + report.getStatus().name() + ".\n"
+                    + "Ghi chú từ admin/staff: " + report.getAdminNotes() + "\n\n"
+                    + "Cảm ơn bạn đã đóng góp cho hệ thống PlantCare!";
+            emailService.sendEmailAsync(user.getEmail(), subject, content);
+        }
+
+        // Ghi log
+        PlantReportLog log = new PlantReportLog();
+        log.setReport(report);
+        log.setAction(PlantReportLog.Action.HANDLE);
+        log.setUser(report.getClaimedBy());
+        log.setNote(adminNotes);
+        log.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        plantReportLogRepository.save(log);
+
+        // Kiểm tra nếu không còn report nào ở trạng thái PENDING hoặc CLAIMED
+        Long plantId = report.getPlant().getId();
+        int pendingCount = plantReportRepository.countByPlantIdAndStatusIn(
+                plantId,
+                List.of(PlantReport.ReportStatus.PENDING, PlantReport.ReportStatus.CLAIMED)
+        );
+        if (pendingCount == 0) {
+            Plants plant = report.getPlant();
+            if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
+                plant.setStatus(Plants.PlantStatus.ACTIVE);
+                plantRepository.save(plant);
+            }
         }
     }
     /**

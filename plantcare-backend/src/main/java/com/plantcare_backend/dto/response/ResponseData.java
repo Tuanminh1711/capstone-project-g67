@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.reponse;
+package com.plantcare_backend.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
