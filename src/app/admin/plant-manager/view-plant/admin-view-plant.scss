@@ -1,0 +1,599 @@
+/* Admin View Plant - Giao diện chuyên nghiệp */
+
+:host {
+  display: block;
+  background: #f5f7fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.view-plant-container {
+  background: #f5f7fa;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+// Header chuyên nghiệp
+.page-header {
+  margin-bottom: 30px;
+  
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .breadcrumb {
+    .breadcrumb-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #6c757d;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid #e9ecef;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+      &:hover {
+        background: #28a745;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+      }
+
+      i {
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+  }
+  
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .navigation-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .plant-id {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(40,167,69,0.3);
+  }
+  
+  .nav-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .nav-button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    color: #6c757d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    &:hover:not(:disabled) {
+      background: #28a745;
+      color: white;
+      border-color: #28a745;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Loading và Error states chuyên nghiệp
+.state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-state, .error-state {
+  text-align: center;
+  background: white;
+  padding: 50px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+  max-width: 450px;
+  width: 100%;
+}
+
+.spinner {
+  width: 45px;
+  height: 45px;
+  border: 4px solid #f8f9fa;
+  border-top-color: #28a745;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-icon {
+  font-size: 50px;
+  color: #dc3545;
+  margin-bottom: 20px;
+}
+
+.error-state h3 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.error-state p {
+  color: #6c757d;
+  margin: 0 0 25px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+// Button styles chuyên nghiệp
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  &.btn-primary {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+
+    &:hover {
+      background: linear-gradient(135deg, #1e7e34, #155724);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+    }
+  }
+
+  &.btn-secondary {
+    background: #6c757d;
+    color: white;
+
+    &:hover {
+      background: #545b62;
+      transform: translateY(-1px);
+    }
+  }
+
+  &.btn-outline {
+    background: transparent;
+    color: #28a745;
+    border: 2px solid #28a745;
+
+    &:hover {
+      background: #28a745;
+      color: white;
+      transform: translateY(-1px);
+    }
+  }
+
+  &.btn-large {
+    padding: 15px 25px;
+    font-size: 16px;
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+// Main content chuyên nghiệp
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+// Overview Card đẹp
+.overview-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 35px;
+}
+
+.plant-showcase {
+  display: grid;
+  grid-template-columns: 320px 1fr auto;
+  gap: 35px;
+  align-items: start;
+}
+
+// Image column đẹp
+.image-column {
+  .plant-image {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+    img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+      font-size: 14px;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+
+      i {
+        font-size: 55px;
+        margin-bottom: 15px;
+        opacity: 0.6;
+        color: #adb5bd;
+      }
+    }
+  }
+}
+
+// Info column chuyên nghiệp
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  min-height: 320px;
+  justify-content: space-between;
+}
+
+.plant-title {
+  h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .scientific-name {
+    font-size: 18px;
+    color: #6c757d;
+    font-style: italic;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.plant-tags {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  &.category {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+  }
+
+  &.status {
+    &.ACTIVE {
+      background: linear-gradient(135deg, #28a745, #1e7e34);
+      color: white;
+    }
+
+    &.INACTIVE {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: white;
+    }
+  }
+
+  i {
+    font-size: 12px;
+  }
+}
+
+.plant-description {
+  p {
+    color: #495057;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// Actions column chuyên nghiệp
+.actions-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 180px;
+}
+
+// Details Grid đẹp
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 25px;
+}
+
+.detail-section {
+  .section-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    height: 100%;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 25px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 1px solid #dee2e6;
+
+    i {
+      color: #28a745;
+      font-size: 20px;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+    }
+  }
+
+  .section-content {
+    padding: 25px;
+
+    p {
+      color: #495057;
+      font-size: 15px;
+      line-height: 1.7;
+      margin: 0;
+    }
+  }
+}
+
+// Info Rows chuyên nghiệp (cho system info)
+.info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .label {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .value {
+    color: #2c3e50;
+    font-size: 15px;
+    text-align: right;
+    word-break: break-word;
+    font-weight: 500;
+
+    &.scientific {
+      font-style: italic;
+      color: #28a745;
+    }
+  }
+}
+
+// Image Gallery đẹp
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 18px;
+}
+
+.gallery-image {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+  &:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+
+    .image-overlay {
+      opacity: 1;
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(40, 167, 69, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    i {
+      color: white;
+      font-size: 28px;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .plant-showcase {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .actions-column {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .view-plant-container {
+    padding: 15px;
+  }
+
+  .title-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+
+  .navigation-controls {
+    justify-content: space-between;
+  }
+
+  .card-body {
+    padding: 25px;
+  }
+
+  .plant-showcase {
+    gap: 20px;
+  }
+
+  .image-column .plant-image {
+    img, .no-image {
+      height: 250px;
+    }
+  }
+
+  .plant-title h2 {
+    font-size: 28px;
+  }
+
+  .actions-column {
+    flex-direction: column;
+  }
+
+  .details-grid {
+    gap: 20px;
+  }
+
+  .section-header, .section-content {
+    padding: 18px 20px;
+  }
+}

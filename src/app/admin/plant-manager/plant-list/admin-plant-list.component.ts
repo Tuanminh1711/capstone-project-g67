@@ -4,26 +4,27 @@ import { Router } from '@angular/router';
 import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AdminTopNavigatorComponent } from '../../../shared/admin-top-navigator/admin-top-navigator.component';
-import { AdminSidebarComponent } from '../../../shared/admin-sidebar/admin-sidebar.component';
-import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
+import { shareReplay } from 'rxjs/operators';
 import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 interface Plant {
   id: number;
   scientificName: string;
   commonName: string;
-  categoryName: string;
+  categoryName?: string;
   description: string;
-  careInstructions: string;
-  lightRequirement: string;
-  waterRequirement: string;
-  careDifficulty: string;
-  suitableLocation: string;
-  commonDiseases: string;
+  careInstructions?: string;
+  lightRequirement?: string;
+  waterRequirement?: string;
+  careDifficulty?: string;
+  suitableLocation?: string;
+  commonDiseases?: string;
   status: string;
-  imageUrls: string[];
+  imageUrl?: string;
+  imageUrls?: string[];
   createdAt: string | null;
+  locked?: boolean;
+  isUpdating?: boolean;
 }
 
 @Component({
@@ -38,7 +39,7 @@ interface Plant {
 export class AdminPlantListComponent implements OnInit, AfterViewInit {
   sidebarCollapsed = false;
   plantsSubject = new BehaviorSubject<Plant[]>([]);
-  plants$ = this.plantsSubject.asObservable();
+  plants$ = this.plantsSubject.asObservable().pipe(shareReplay(1));
   loading = false;
   errorMsg = '';
   pageNo = 0;
@@ -48,11 +49,12 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
   currentKeyword = '';
   searchText = '';
   searchDebounce: any;
+  private dataLoaded = false; // Track if data has been loaded
   
   // Sort properties
   sortField: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-  sortableFields = ['id', 'commonName', 'categoryName', 'status', 'createdAt'];
+  sortableFields = ['id', 'commonName', 'categoryName', 'createdAt'];
 
   constructor(
     private http: HttpClient, 
@@ -61,26 +63,28 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    // We'll call fetchPlants in ngAfterViewInit to ensure the view is ready
+    // Load plants immediately if not already loaded
+    if (!this.dataLoaded) {
+      this.fetchPlants(0, '');
+    }
   }
 
   ngAfterViewInit() {
-    // Use setTimeout to ensure the view is fully initialized
-    setTimeout(() => {
-      this.fetchPlants(0, '');
-    }, 0);
+    // Ensure change detection after view init
+    this.cdr.detectChanges();
   }
 
   private buildUrl(page: number, keyword: string): string {
     const apiBase = '/api'; // Always use proxy path
-    let url = `${apiBase}/plants/search?pageNo=${page}&pageSize=${this.pageSize}`;
+    let url = `${apiBase}/manager/get-all-plants?page=${page}&size=${this.pageSize}`;
     if (keyword.trim()) {
-      url += `&keyword=${encodeURIComponent(keyword.trim())}`;
+      url += `&search=${encodeURIComponent(keyword.trim())}`;
     }
-    // Add sort parameters if sorting is active
+    // Spring Boot standard sort format
     if (this.sortField) {
-      url += `&sortBy=${this.sortField}&sortDirection=${this.sortDirection}`;
+      url += `&sort=${this.sortField},${this.sortDirection}`;
     }
+    console.log('API URL:', url); // Debug log
     return url;
   }
 
@@ -92,25 +96,37 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
     this.http.get<any>(url).subscribe({
       next: (res) => {
         const data = res?.data;
-        if (!data || !Array.isArray(data.plants)) {
+        const plants = data?.content || data?.plants;
+        if (!data || !Array.isArray(plants)) {
           this.plantsSubject.next([]);
           this.errorMsg = 'Không có dữ liệu cây.';
           this.loading = false;
+          this.cdr.detectChanges();
           return;
         }
-        this.plantsSubject.next(data.plants);
-        this.totalElements = data.totalElements || data.plants.length;
-        this.totalPages = data.totalPages || 1;
-        this.pageNo = data.currentPage ?? page;
+        
+        // Show all plants (both ACTIVE and INACTIVE) for admin management
+        const plantsWithDefaults = plants.map((plant: Plant) => ({
+          ...plant,
+          locked: plant.locked ?? false,
+          isUpdating: false
+        }));
+        
+        this.plantsSubject.next(plantsWithDefaults);
+        this.totalElements = data.totalElements || data.totalElements || plants.length;
+        this.totalPages = data.totalPages || Math.ceil(plants.length / this.pageSize);
+        this.pageNo = data.number || data.page || page;
         this.loading = false;
         this.currentKeyword = keyword;
-        this.cdr.detectChanges(); // Force change detection
+        this.dataLoaded = true;
+        
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        this.errorMsg = 'Không thể tải danh sách cây.';
+        this.errorMsg = `Không thể tải danh sách cây. ${error.status ? `(${error.status})` : ''}`;
         this.plantsSubject.next([]);
         this.loading = false;
-        this.cdr.detectChanges(); // Force change detection
+        this.cdr.detectChanges();
       }
     });
   }
@@ -155,8 +171,8 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
   }
 
   viewPlantDetail(plant: Plant) {
-    // Chuyển sang trang xem chi tiết plant
-    window.location.href = `/admin/plants/detail/${plant.id}`;
+    // Navigate to the plant detail view page
+    this.router.navigate(['/admin/plants/view', plant.id]);
   }
 
   deletePlant(plant: Plant) {
@@ -202,4 +218,87 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
   isSortable(field: string): boolean {
     return this.sortableFields.includes(field);
   }
+
+  // Lock/Unlock functionality
+  lockUnlockPlant(plant: Plant): void {
+    if (plant.isUpdating) {
+      return; // Prevent multiple clicks
+    }
+
+    const isCurrentlyActive = plant.status === 'ACTIVE';
+    const action = isCurrentlyActive ? 'lock' : 'unlock';
+    const actionText = isCurrentlyActive ? 'khóa' : 'mở khóa';
+    const newStatus = isCurrentlyActive ? 'INACTIVE' : 'ACTIVE';
+    
+    if (!confirm(`Bạn có chắc chắn muốn ${actionText} cây "${plant.commonName}"?`)) {
+      return;
+    }
+
+    // Set updating state
+    plant.isUpdating = true;
+
+    const lockData = {
+      plantId: plant.id,
+      lock: isCurrentlyActive // true = khóa (INACTIVE), false = mở khóa (ACTIVE)
+    };
+
+    this.http.post('/api/manager/lock-unlock', lockData).subscribe({
+      next: (response: any) => {
+        // Update the plant status locally
+        plant.status = newStatus;
+        plant.isUpdating = false;
+        
+        // Update the plants in BehaviorSubject
+        const currentPlants = this.plantsSubject.getValue();
+        const updatedPlants = currentPlants.map((p: Plant) => 
+          p.id === plant.id ? { ...p, status: newStatus, isUpdating: false } : p
+        );
+        this.plantsSubject.next(updatedPlants);
+        
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        // Reset updating state
+        plant.isUpdating = false;
+        
+        let errorMessage = `Không thể ${actionText} cây. `;
+        
+        if (error.status === 401) {
+          errorMessage += 'Bạn không có quyền thực hiện thao tác này.';
+        } else if (error.status === 404) {
+          errorMessage += 'Không tìm thấy cây này.';
+        } else if (error.error?.message) {
+          errorMessage += error.error.message;
+        } else {
+          errorMessage += 'Vui lòng thử lại sau.';
+        }
+        
+        alert(errorMessage);
+      }
+    });
+  }
+
+  getLockButtonText(plant: Plant): string {
+    // Nếu cây INACTIVE, hiển thị "Mở khóa", nếu ACTIVE thì hiển thị "Khóa"
+    return plant.status === 'INACTIVE' ? 'Mở khóa' : 'Khóa';
+  }
+
+  getLockButtonClass(plant: Plant): string {
+    // Nếu cây INACTIVE, style như unlock button, nếu ACTIVE thì style như lock button
+    return plant.status === 'INACTIVE' ? 'btn-unlock' : 'btn-lock';
+  }
+
+  getLockIcon(plant: Plant): string {
+    // Nếu cây INACTIVE, icon unlock, nếu ACTIVE thì icon lock
+    return plant.status === 'INACTIVE' ? 'fas fa-unlock' : 'fas fa-lock';
+  }
+
+  getStatusClass(status: string): string {
+    return status === 'ACTIVE' ? 'status-active' : 'status-inactive';
+  }
+
+  trackByPlant(index: number, plant: Plant): number {
+    return plant.id;
+  }
+
 }

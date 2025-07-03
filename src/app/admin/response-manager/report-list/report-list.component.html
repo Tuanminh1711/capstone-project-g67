@@ -1,23 +1,19 @@
-<div class="admin-report-list-layout">
-  <app-admin-top-navigator></app-admin-top-navigator>
-  <div class="admin-report-list-main">
-    <app-admin-sidebar></app-admin-sidebar>
-    <div class="admin-report-list-content">
-      <div class="admin-report-list-container" *ngIf="reports$ | async as reports">
-        <div class="report-list-header">
-          <h2>Danh sách báo cáo vi phạm</h2>
-          <button class="reload-btn" (click)="reloadReports()" title="Tải lại danh sách">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
-              <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
-              <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
-            </svg>
-            Cập nhật
-          </button>
-        </div>
-        
-        <div class="message-bar-wrapper">
-          <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
-          <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
+<app-admin-layout>
+  <div class="admin-report-list-container" *ngIf="reports$ | async as reports">
+    <div class="report-list-header">
+      <h2>Danh sách báo cáo vi phạm</h2>
+      <button class="reload-btn" (click)="reloadReports()" title="Tải lại danh sách">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+          <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
+          <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
+        </svg>
+        Cập nhật
+      </button>
+    </div>
+    
+    <div class="message-bar-wrapper">
+      <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
+      <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
         </div>
 
         <div class="search-bar">
@@ -76,7 +72,4 @@
           <p>Không có báo cáo nào.</p>
         </div>
       </div>
-    </div>
-  </div>
-  <app-admin-footer></app-admin-footer>
-</div> 
+</app-admin-layout>

@@ -1,13 +1,14 @@
-<div class="ticket-detail-container">
-  <h1>Chi tiết Ticket #{{ ticketId }}</h1>
-  
-  <div *ngIf="loading">Đang tải...</div>
-  
-  <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
-  
-  <div *ngIf="ticket && !loading">
-    <div class="ticket-info">
-      <h2>{{ ticket.title }}</h2>
+<app-admin-layout>
+  <div class="ticket-detail-container">
+    <h1>Chi tiết Ticket #{{ ticketId }}</h1>
+    
+    <div *ngIf="loading">Đang tải...</div>
+    
+    <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+    
+    <div *ngIf="ticket && !loading">
+      <div class="ticket-info">
+        <h2>{{ ticket.title }}</h2>
       <p><strong>Mô tả:</strong> {{ ticket.description }}</p>
       <p><strong>Trạng thái:</strong> {{ getStatusText(ticket.status) }}</p>
       <p><strong>Độ ưu tiên:</strong> {{ getPriorityText(ticket.priority) }}</p>
@@ -21,4 +22,5 @@
       <button (click)="goToReview()">Xử lý ticket</button>
     </div>
   </div>
-</div>
+  </div>
+</app-admin-layout>

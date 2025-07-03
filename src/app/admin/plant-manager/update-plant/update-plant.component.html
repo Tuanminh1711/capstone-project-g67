@@ -1,0 +1,386 @@
+<app-admin-layout>
+  <div class="plant-detail-container">
+    <!-- Header với gradient đẹp -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">
+            <i class="fas fa-leaf"></i>
+            Chi tiết thông tin cây cảnh
+          </h1>
+          <p class="page-subtitle">Quản lý và cập nhật thông tin chi tiết</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-icon" (click)="navigateBack()">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại danh sách</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State với animation đẹp -->
+    <div *ngIf="isLoading" class="loading-section">
+      <div class="loading-card">
+        <div class="loading-spinner-large"></div>
+        <h3>Đang tải thông tin cây cảnh...</h3>
+        <p>Vui lòng đợi trong giây lát</p>
+      </div>
+    </div>
+
+    <!-- Error Messages với design đẹp -->
+    <div *ngIf="errorMessage" class="alert-card alert-error">
+      <div class="alert-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="alert-content">
+        <h4>Có lỗi xảy ra</h4>
+        <p>{{ errorMessage }}</p>
+        <button 
+          class="btn btn-outline btn-small" 
+          (click)="redirectToEditPage()"
+        >
+          <i class="fas fa-external-link-alt"></i>
+          Chuyển đến trang chỉnh sửa khác
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Messages -->
+    <div *ngIf="successMessage" class="alert-card alert-success">
+      <div class="alert-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="alert-content">
+        <h4>Thành công!</h4>
+        <p>{{ successMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Validation Errors -->
+    <div *ngIf="validationErrors.length > 0" class="alert-card alert-warning">
+      <div class="alert-icon">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <div class="alert-content">
+        <h4>Vui lòng kiểm tra các lỗi sau:</h4>
+        <ul class="error-list">
+          <li *ngFor="let error of validationErrors">{{ error }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Form chính với design card đẹp -->
+    <div *ngIf="plant && !isLoading" class="form-container">
+      <!-- Hiển thị ảnh cây cảnh (nếu có) -->
+      <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="image-gallery-card">
+        <div class="card-header">
+          <div class="card-icon gallery-icon">
+            <i class="fas fa-images"></i>
+          </div>
+          <div class="card-title">
+            <h3>Hình ảnh cây cảnh</h3>
+            <p>Xem trước hình ảnh hiện tại của cây</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="image-gallery">
+            <div 
+              *ngFor="let imageUrl of plant.imageUrls; let i = index" 
+              class="image-item"
+              [class.active]="i === 0"
+            >
+              <img 
+                [src]="imageUrl" 
+                [alt]="'Hình ảnh ' + (i + 1) + ' của ' + plant.commonName"
+                loading="lazy"
+                (error)="onImageError($event)"
+              />
+              <div class="image-overlay">
+                <i class="fas fa-search-plus"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" #plantForm="ngForm" class="plant-form">
+        
+        <!-- Thông tin cơ bản -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-icon">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="card-title">
+              <h3>Thông tin cơ bản</h3>
+              <p>Các thông tin chính về cây cảnh</p>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group" [class.has-validation]="true" [class.is-valid]="commonName.valid && commonName.touched" [class.is-invalid]="commonName.invalid && commonName.touched">
+                <label for="commonName" class="form-label">
+                  <i class="fas fa-tag"></i>
+                  Tên thường gọi *
+                </label>
+                <input 
+                  id="commonName"
+                  type="text" 
+                  [(ngModel)]="updateForm.commonName" 
+                  name="commonName" 
+                  required 
+                  class="form-input"
+                  placeholder="Nhập tên thường gọi của cây"
+                  #commonName="ngModel"
+                />
+              </div>
+              
+              <div class="form-group" [class.has-validation]="true" [class.is-valid]="scientificName.valid && scientificName.touched" [class.is-invalid]="scientificName.invalid && scientificName.touched">
+                <label for="scientificName" class="form-label">
+                  <i class="fas fa-microscope"></i>
+                  Tên khoa học *
+                </label>
+                <input 
+                  id="scientificName"
+                  type="text" 
+                  [(ngModel)]="updateForm.scientificName" 
+                  name="scientificName" 
+                  required 
+                  class="form-input"
+                  placeholder="Nhập tên khoa học"
+                  #scientificName="ngModel"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="categoryId" class="form-label">
+                  <i class="fas fa-folder"></i>
+                  ID Danh mục *
+                </label>
+                <input 
+                  id="categoryId"
+                  type="number" 
+                  [(ngModel)]="updateForm.categoryId" 
+                  name="categoryId" 
+                  required 
+                  class="form-input"
+                  min="1"
+                  placeholder="Nhập ID danh mục"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="status" class="form-label">
+                  <i class="fas fa-toggle-on"></i>
+                  Trạng thái *
+                </label>
+                <select 
+                  id="status"
+                  [(ngModel)]="updateForm.status" 
+                  name="status" 
+                  required 
+                  class="form-select"
+                >
+                  <option *ngFor="let option of statusOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Yêu cầu chăm sóc -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-icon care-icon">
+              <i class="fas fa-heart"></i>
+            </div>
+            <div class="card-title">
+              <h3>Yêu cầu chăm sóc</h3>
+              <p>Điều kiện môi trường và chăm sóc</p>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="lightRequirement" class="form-label">
+                  <i class="fas fa-sun"></i>
+                  Yêu cầu ánh sáng *
+                </label>
+                <div class="select-wrapper">
+                  <select 
+                    id="lightRequirement"
+                    [(ngModel)]="updateForm.lightRequirement" 
+                    name="lightRequirement" 
+                    required 
+                    class="form-select"
+                  >
+                    <option *ngFor="let option of lightRequirementOptions" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="waterRequirement" class="form-label">
+                  <i class="fas fa-tint"></i>
+                  Yêu cầu nước *
+                </label>
+                <div class="select-wrapper">
+                  <select 
+                    id="waterRequirement"
+                    [(ngModel)]="updateForm.waterRequirement" 
+                    name="waterRequirement" 
+                    required 
+                    class="form-select"
+                  >
+                    <option *ngFor="let option of waterRequirementOptions" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="careDifficulty" class="form-label">
+                  <i class="fas fa-chart-line"></i>
+                  Độ khó chăm sóc *
+                </label>
+                <div class="select-wrapper">
+                  <select 
+                    id="careDifficulty"
+                    [(ngModel)]="updateForm.careDifficulty" 
+                    name="careDifficulty" 
+                    required 
+                    class="form-select"
+                  >
+                    <option *ngFor="let option of careDifficultyOptions" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="suitableLocation" class="form-label">
+                  <i class="fas fa-map-marker-alt"></i>
+                  Vị trí phù hợp
+                </label>
+                <input 
+                  id="suitableLocation"
+                  type="text" 
+                  [(ngModel)]="updateForm.suitableLocation" 
+                  name="suitableLocation" 
+                  class="form-input"
+                  placeholder="Nhập vị trí phù hợp cho cây"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thông tin chi tiết -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-icon detail-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="card-title">
+              <h3>Thông tin chi tiết</h3>
+              <p>Mô tả và hướng dẫn chi tiết</p>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <div class="form-group full-width">
+              <label for="description" class="form-label">
+                <i class="fas fa-align-left"></i>
+                Mô tả về cây
+              </label>
+              <textarea 
+                id="description"
+                [(ngModel)]="updateForm.description" 
+                name="description" 
+                class="form-textarea"
+                rows="4"
+                placeholder="Nhập mô tả chi tiết về cây cảnh..."
+              ></textarea>
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="careInstructions" class="form-label">
+                <i class="fas fa-clipboard-list"></i>
+                Hướng dẫn chăm sóc
+              </label>
+              <textarea 
+                id="careInstructions"
+                [(ngModel)]="updateForm.careInstructions" 
+                name="careInstructions" 
+                class="form-textarea"
+                rows="4"
+                placeholder="Nhập hướng dẫn chăm sóc chi tiết..."
+              ></textarea>
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="commonDiseases" class="form-label">
+                <i class="fas fa-bug"></i>
+                Bệnh thường gặp
+              </label>
+              <input 
+                id="commonDiseases"
+                type="text" 
+                [(ngModel)]="updateForm.commonDiseases" 
+                name="commonDiseases" 
+                class="form-input"
+                placeholder="Nhập các bệnh thường gặp và cách phòng tránh"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions với design đẹp -->
+        <div class="form-actions">
+          <div class="actions-left">
+            <button 
+              type="button" 
+              (click)="resetForm()" 
+              [disabled]="isUpdating"
+              class="btn btn-ghost"
+            >
+              <i class="fas fa-undo"></i>
+              <span>Đặt lại</span>
+            </button>
+          </div>
+          
+          <div class="actions-right">
+            <button 
+              type="button" 
+              (click)="onCancel()" 
+              [disabled]="isUpdating"
+              class="btn btn-secondary"
+            >
+              <i class="fas fa-times"></i>
+              <span>Hủy bỏ</span>
+            </button>
+            
+            <button 
+              type="submit" 
+              [disabled]="!plantForm.valid || isUpdating" 
+              class="btn btn-primary btn-gradient"
+            >
+              <span *ngIf="isUpdating" class="loading-spinner-small"></span>
+              <i *ngIf="!isUpdating" class="fas fa-save"></i>
+              <span>{{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin' }}</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</app-admin-layout>

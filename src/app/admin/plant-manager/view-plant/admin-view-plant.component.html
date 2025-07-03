@@ -1,0 +1,230 @@
+<app-admin-layout>
+  <div class="view-plant-container">
+    
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="breadcrumb">
+          <a routerLink="/admin/plants" class="breadcrumb-link">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại danh sách
+          </a>
+        </div>
+        
+        <div class="title-section">
+          <h1 class="page-title">Chi tiết cây cảnh</h1>
+          <div class="navigation-controls">
+            <span class="plant-id">ID: {{plantId}}</span>
+            <div class="nav-buttons">
+              <button class="nav-button prev" 
+                      (click)="goToPrevious()" 
+                      [disabled]="plantId <= 1"
+                      title="Cây trước (ID: {{plantId - 1}})">
+                <i class="fas fa-chevron-left"></i>
+                <span class="nav-label"></span>
+              </button>
+              <button class="nav-button next" 
+                      (click)="goToNext()" 
+                      title="Cây tiếp theo (ID: {{plantId + 1}})">
+                <i class="fas fa-chevron-right"></i>
+                <span class="nav-label"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="state-container">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Đang tải thông tin cây...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="state-container">
+      <div class="error-state">
+        <i class="fas fa-exclamation-triangle error-icon"></i>
+        <h3>Có lỗi xảy ra</h3>
+        <p>{{error}}</p>
+        <div class="action-buttons">
+          <button class="btn btn-primary" (click)="loadPlantDetail()">
+            <i class="fas fa-redo"></i>
+            Thử lại
+          </button>
+          <button class="btn btn-secondary" (click)="testAPI()">
+            <i class="fas fa-flask"></i>
+            Test API
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div *ngIf="plant && !loading && !error" class="main-content">
+      
+      <!-- Plant Overview Card -->
+      <div class="overview-card">
+        <div class="card-body">
+          
+          <div class="plant-showcase">
+            <!-- Image Column -->
+            <div class="image-column">
+              <div class="plant-image">
+                <img *ngIf="plant.imageUrls && plant.imageUrls.length > 0" 
+                     [src]="plant.imageUrls[0]" 
+                     [alt]="plant.commonName"
+                     (error)="onImageError($event)">
+                <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
+                  <i class="fas fa-seedling"></i>
+                  <span>Chưa có ảnh</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Info Column -->
+            <div class="info-column">
+              <div class="plant-title">
+                <h2>{{plant.commonName}}</h2>
+                <p class="scientific-name">{{plant.scientificName}}</p>
+              </div>
+              
+              <div class="plant-tags">
+                <span class="tag category">
+                  <i class="fas fa-tag"></i>
+                  {{plant.categoryName}}
+                </span>
+                <span class="tag status" [class]="getStatusClass(plant.status)">
+                  <i class="fas fa-circle"></i>
+                  {{plant.statusDisplay || plant.status}}
+                </span>
+              </div>
+              
+              <div class="plant-description" *ngIf="plant.description">
+                <p>{{plant.description}}</p>
+              </div>
+            </div>
+            
+            <!-- Actions Column -->
+            <div class="actions-column">
+              <button class="btn btn-primary btn-large" (click)="editPlant()">
+                <i class="fas fa-edit"></i>
+                Chỉnh sửa
+              </button>
+              <button class="btn btn-secondary" (click)="deletePlant()">
+                <i class="fas fa-trash"></i>
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Details Grid -->
+      <div class="details-grid">
+        
+        <!-- Care Instructions -->
+        <div class="detail-section" *ngIf="plant.careInstructions">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="fas fa-hands-helping"></i>
+              <h3>Hướng dẫn chăm sóc</h3>
+            </div>
+            <div class="section-content">
+              <p>{{plant.careInstructions}}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Suitable Location -->
+        <div class="detail-section" *ngIf="plant.suitableLocation">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="fas fa-map-marker-alt"></i>
+              <h3>Vị trí phù hợp</h3>
+            </div>
+            <div class="section-content">
+              <p>{{plant.suitableLocation}}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Common Diseases -->
+        <div class="detail-section" *ngIf="plant.commonDiseases">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="fas fa-bug"></i>
+              <h3>Bệnh thường gặp</h3>
+            </div>
+            <div class="section-content">
+              <p>{{plant.commonDiseases}}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- System Info -->
+        <div class="detail-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="fas fa-info-circle"></i>
+              <h3>Thông tin hệ thống</h3>
+            </div>
+            <div class="section-content">
+              <div class="info-rows">
+                <div class="info-row">
+                  <span class="label">ID:</span>
+                  <span class="value">{{plant.id}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Tên thông thường:</span>
+                  <span class="value">{{plant.commonName}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Tên khoa học:</span>
+                  <span class="value scientific">{{plant.scientificName}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Danh mục:</span>
+                  <span class="value">{{plant.categoryName}}</span>
+                </div>
+                <div class="info-row" *ngIf="plant.createdAt">
+                  <span class="label">Ngày tạo:</span>
+                  <span class="value">{{formatDate(plant.createdAt)}}</span>
+                </div>
+                <div class="info-row" *ngIf="plant.updatedAt">
+                  <span class="label">Cập nhật cuối:</span>
+                  <span class="value">{{formatDate(plant.updatedAt)}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Image Gallery -->
+        <div class="detail-section" *ngIf="plant.imageUrls && plant.imageUrls.length > 1">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="fas fa-images"></i>
+              <h3>Thư viện ảnh ({{plant.imageUrls.length}})</h3>
+            </div>
+            <div class="section-content">
+              <div class="image-gallery">
+                <div *ngFor="let imageUrl of plant.imageUrls; let i = index" 
+                     class="gallery-image" 
+                     (click)="openImageModal(imageUrl, i)">
+                  <img [src]="imageUrl" [alt]="plant.commonName + ' - Ảnh ' + (i+1)">
+                  <div class="image-overlay">
+                    <i class="fas fa-search-plus"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</app-admin-layout>

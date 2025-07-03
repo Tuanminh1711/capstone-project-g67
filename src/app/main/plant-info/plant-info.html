@@ -72,9 +72,9 @@
                   </div>
                   <div class="plant-desc">{{ plant.description }}</div>
                   <div class="plant-meta">
-                    <span>Ánh sáng: {{ plant.lightRequirement }}</span> |
-                    <span>Nước: {{ plant.waterRequirement }}</span> |
-                    <span>Độ khó: {{ plant.careDifficulty }}</span>
+                    <span>Ánh sáng: {{ translateLightRequirement(plant.lightRequirement) }}</span> |
+                    <span>Nước: {{ translateWaterRequirement(plant.waterRequirement) }}</span> |
+                    <span>Độ khó: {{ translateCareDifficulty(plant.careDifficulty) }}</span>
                   </div>
                   <div class="plant-actions">
                     <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">

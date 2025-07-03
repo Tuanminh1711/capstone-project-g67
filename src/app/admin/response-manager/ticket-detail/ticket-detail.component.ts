@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 // Models cho ticket-detail
 export interface TicketDetail {
@@ -84,7 +85,7 @@ export class TicketDetailService {
 @Component({
   selector: 'app-ticket-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AdminLayoutComponent],
   templateUrl: './ticket-detail.component.html',
   styleUrls: ['./ticket-detail.component.scss']
 })

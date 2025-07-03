@@ -1,0 +1,192 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="edit-profile-page">
+  <div class="edit-profile-container">
+    <!-- Header -->
+    <div class="page-header">
+      <h1>Chỉnh sửa hồ sơ</h1>
+      <p>Cập nhật thông tin cá nhân và ảnh đại diện của bạn</p>
+    </div>
+
+    <div *ngIf="!loading; else loadingTpl">
+      <!-- Show error message if load failed -->
+      <div *ngIf="saveError && !user.id" class="error-message" style="margin: 20px 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M13,13H11V7H13M11,15H13V17H11M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
+        </svg>
+        {{ saveError }}
+        
+        <!-- Thêm button đăng nhập nếu chưa đăng nhập -->
+        <div style="margin-top: 15px;" *ngIf="saveError.includes('đăng nhập')">
+          <button type="button" class="login-button" (click)="showLoginDialog()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10,17V14H3V10H10V7L15,12L10,17M10,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H10A2,2 0 0,1 8,20V18H10V20H19V4H10V6H8V4A2,2 0 0,1 10,2Z"/>
+            </svg>
+            Đăng nhập ngay
+          </button>
+        </div>
+      </div>
+
+      <!-- Show profile content if user loaded -->
+      <div *ngIf="user.id" class="edit-profile-content">
+        <!-- Avatar Section -->
+        <div class="avatar-section">
+          <div class="avatar-card">
+            <h3>Ảnh đại diện</h3>
+            <div class="avatar-upload-area">
+              <div class="avatar-preview" (click)="avatarInput.click()" [class.uploading]="avatarUploading">
+                <img *ngIf="avatarPreview && !avatarUploading" [src]="avatarPreview" alt="avatar" />
+                <div *ngIf="!avatarPreview && !avatarUploading" class="avatar-placeholder">
+                  <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                  </svg>
+                </div>
+                <div *ngIf="avatarUploading" class="avatar-loading">
+                  <div class="loading-spinner"></div>
+                  <span>Đang tải...</span>
+                </div>
+                <div *ngIf="!avatarUploading" class="upload-overlay">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
+                  <span>Thay đổi ảnh</span>
+                </div>
+              </div>
+              <input #avatarInput type="file" accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onAvatarChange($event)" style="display:none" [disabled]="avatarUploading" />
+            </div>
+            <div class="avatar-info">
+              <p class="avatar-guidelines">
+                <strong>Hướng dẫn:</strong><br>
+                • Kích thước tối đa: 5MB<br>
+                • Định dạng: JPG, PNG, GIF<br>
+                • Tỷ lệ khuyến nghị: 1:1 (vuông)<br>
+                • <em>Ảnh sẽ được lưu tự động khi chọn</em>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Information Section -->
+        <div class="profile-info-section">
+          <div class="profile-info-card">
+            <h3>Thông tin cá nhân</h3>
+            <form (ngSubmit)="save();" #profileForm="ngForm">
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="fullName">Họ và tên <span class="required">*</span></label>
+                  <input 
+                    type="text" 
+                    id="fullName"
+                    [(ngModel)]="user.fullName" 
+                    name="fullName" 
+                    placeholder="Nhập họ và tên đầy đủ" 
+                    required 
+                    #fullNameInput="ngModel"
+                    maxlength="100"
+                    (blur)="validateFullName()" />
+                  <div *ngIf="fullNameInput.invalid && fullNameInput.touched" class="field-error">
+                    Họ tên là bắt buộc
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input 
+                    type="email" 
+                    id="email"
+                    [(ngModel)]="user.email" 
+                    name="email" 
+                    placeholder="Email" 
+                    readonly 
+                    class="readonly-input" />
+                  <small class="field-note">Email không thể thay đổi</small>
+                </div>
+
+                <div class="form-group">
+                  <label for="phoneNumber">Số điện thoại <span class="required">*</span></label>
+                  <input 
+                    type="text" 
+                    id="phoneNumber"
+                    [(ngModel)]="user.phoneNumber" 
+                    name="phoneNumber" 
+                    placeholder="Nhập số điện thoại" 
+                    required 
+                    #phoneInput="ngModel"
+                    pattern="[0-9]{10,11}"
+                    maxlength="11"
+                    (blur)="validatePhoneNumber()" />
+                  <div *ngIf="phoneInput.invalid && phoneInput.touched" class="field-error">
+                    Số điện thoại không hợp lệ (10-11 số)
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="gender">Giới tính</label>
+                  <select id="gender" [(ngModel)]="user.gender" name="gender">
+                    <option value="MALE">Nam</option>
+                    <option value="FEMALE">Nữ</option>
+                    <option value="OTHER">Khác</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="livingEnvironment">Môi trường sống</label>
+                  <input 
+                    type="text" 
+                    id="livingEnvironment"
+                    [(ngModel)]="user.livingEnvironment" 
+                    name="livingEnvironment" 
+                    placeholder="VD: Chung cư, Nhà riêng, Biệt thự..." 
+                    maxlength="50" />
+                  <small class="field-note">Giúp chúng tôi đưa ra gợi ý phù hợp với không gian sống của bạn</small>
+                </div>
+              </div>
+
+              <!-- Success/Error Messages -->
+              <div *ngIf="saveMessage" class="success-message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                </svg>
+                {{ saveMessage }}
+              </div>
+              <div *ngIf="saveError" class="error-message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13,13H11V7H13M11,15H13V17H11M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
+                </svg>
+                {{ saveError }}
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="change-password-btn" (click)="goToChangePassword()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                  </svg>
+                  Đổi mật khẩu
+                </button>
+
+                <button 
+                  type="submit" 
+                  class="save-button"
+                  [disabled]="saving || profileForm.invalid">
+                  <span *ngIf="saving" class="loading-spinner"></span>
+                  <svg *ngIf="!saving" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
+                  </svg>
+                  <span *ngIf="saving">Đang lưu...</span>
+                  <span *ngIf="!saving">Lưu thông tin</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #loadingTpl>
+      <div class="loading-container">
+        <div class="loading-spinner large"></div>
+        <p>Đang tải thông tin hồ sơ...</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

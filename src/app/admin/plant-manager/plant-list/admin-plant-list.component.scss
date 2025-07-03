@@ -15,6 +15,9 @@
 
 .admin-main-content {
   flex: 1;
+  height: auto;         // hoặc 100vh
+  overflow: auto;       // Cho phép scroll
+
   margin-left: 320px; // Chỉ cần margin-left cho sidebar
   padding: 16px 20px; // Giảm padding
   background: transparent;
@@ -22,7 +25,6 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  overflow: hidden; // Ngăn scroll của main content
 }
 
 .admin-layout.sidebar-collapsed .admin-main-content {
@@ -242,13 +244,59 @@
         background: #b71c1c;
       }
     }
+
+    &.lock-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8em;
+      padding: 6px 10px;
+      min-width: 80px;
+      justify-content: center;
+
+      &.btn-lock {
+        background: #ff9800;
+        color: #fff;
+        border: 1px solid #ff9800;
+
+        &:hover {
+          background: #f57c00;
+        }
+
+        &:disabled {
+          background: #ffcc80;
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+      }
+
+      &.btn-unlock {
+        background: #4caf50;
+        color: #fff;
+        border: 1px solid #4caf50;
+
+        &:hover {
+          background: #388e3c;
+        }
+
+        &:disabled {
+          background: #a5d6a7;
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+      }
+
+      i {
+        font-size: 0.9em;
+      }
+    }
   }
-  // Column widths - simplified
+  // Column widths - updated for 6 columns (removed status column)
   th:nth-child(1), td:nth-child(1) { width: 60px !important; }  // ID
   th:nth-child(2), td:nth-child(2) { width: 180px !important; } // Tên thường gọi
-  th:nth-child(3), td:nth-child(3) { width: 120px !important; } // Danh mục
-  th:nth-child(4), td:nth-child(4) { width: 100px !important; } // Trạng thái
-  th:nth-child(5), td:nth-child(5) { width: 140px !important; } // Ngày tạo
+  th:nth-child(3), td:nth-child(3) { width: 140px !important; } // Danh mục
+  th:nth-child(4), td:nth-child(4) { width: 120px !important; } // Khóa
+  th:nth-child(5), td:nth-child(5) { width: 120px !important; } // Ngày tạo
   th:nth-child(6), td:nth-child(6) { width: 140px !important; } // Hành động
 }
 
@@ -258,6 +306,26 @@
   color: #e53935;
   text-align: center;
   font-size: 1.08em;
+  
+  .retry-btn {
+    margin-left: 12px;
+    background: #ff5722;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    
+    &:hover {
+      background: #d84315;
+    }
+    
+    i {
+      margin-right: 4px;
+    }
+  }
 }
 
 .pagination-bar {
@@ -342,6 +410,27 @@
   }
 }
 
+// Status styling
+.status-active {
+  background-color: #4caf50;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-inactive {
+  background-color: #f44336;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 // Loại bỏ scrollbar styling vì không cần thiết
 
 @media (max-width: 1200px) {
@@ -376,10 +465,10 @@
   // Adjust table columns for smaller screens
   .plant-table {
     th:nth-child(1), td:nth-child(1) { width: 50px; } // ID
-    th:nth-child(2), td:nth-child(2) { width: 150px; } // Tên thường gọi
-    th:nth-child(3), td:nth-child(3) { width: 100px; } // Danh mục
-    th:nth-child(4), td:nth-child(4) { width: 80px; } // Trạng thái
-    th:nth-child(5), td:nth-child(5) { width: 120px; } // Ngày tạo
+    th:nth-child(2), td:nth-child(2) { width: 160px; } // Tên thường gọi
+    th:nth-child(3), td:nth-child(3) { width: 120px; } // Danh mục
+    th:nth-child(4), td:nth-child(4) { width: 100px; } // Khóa
+    th:nth-child(5), td:nth-child(5) { width: 100px; } // Ngày tạo
     th:nth-child(6), td:nth-child(6) { width: 120px; } // Hành động
   }
 }

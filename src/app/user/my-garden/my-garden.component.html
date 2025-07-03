@@ -1,0 +1,142 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="garden-collection">
+  <h2 class="collection-title">KHU VƯỜN CỦA TÔI</h2>
+  
+  <div class="layout-switcher">
+    <button [class.active]="layout==='grid'" (click)="layout='grid'">BẢNG</button>
+    <button [class.active]="layout==='list'" (click)="layout='list'">DANH SÁCH</button>
+  </div>
+  
+  <div class="filter-switcher">
+    <button [class.active]="filter==='all'" (click)="filter='all'">TẤT CẢ</button>
+    <button [class.active]="filter==='reminder'" (click)="filter='reminder'">CÓ NHẮC NHỞ</button>
+    <button [class.active]="filter==='no-reminder'" (click)="filter='no-reminder'">KHÔNG NHẮC NHỞ</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-message">
+    <p>Đang tải bộ sưu tập của bạn...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="loadUserPlants()">Thử lại</button>
+  </div>
+
+  <!-- Plants display -->
+  <div *ngIf="!loading && !error && userPlants.length > 0">
+    <!-- Grid layout -->
+    <div *ngIf="layout==='grid'">
+      <div class="plant-list">
+        <div class="plant-card" *ngFor="let userPlant of filteredPlants">
+          <div class="plant-image">
+            <img 
+              [src]="userPlant.plant.imageUrls[0] || '/assets/image/default-plant.png'" 
+              [alt]="userPlant.nickname"
+              onerror="this.src='/assets/image/default-plant.png'"
+              (click)="viewPlantDetail(userPlant.plant.id)"
+            />
+          </div>
+          <div class="plant-info">
+            <div class="plant-row plant-row-title">
+              <h3>{{ userPlant.nickname }}</h3>
+            </div>
+            <div class="plant-row plant-row-desc">
+              <p>{{ userPlant.plant.commonName || userPlant.plant.scientificName }}</p>
+            </div>
+            <div class="plant-row plant-row-location">
+              <p>📍 {{ userPlant.locationInHouse }}</p>
+            </div>
+            <div class="plant-row plant-row-tags">
+              <div class="plant-tags">
+                <span class="plant-tag">💡 {{ translateLightRequirement(userPlant.plant.lightRequirement) }}</span>
+                <span class="plant-tag">💧 {{ translateWaterRequirement(userPlant.plant.waterRequirement) }}</span>
+                <span class="plant-tag" *ngIf="userPlant.reminderEnabled">🔔 Nhắc nhở</span>
+              </div>
+            </div>
+            <div class="plant-actions">
+              <button 
+                class="view-btn"
+                (click)="viewPlantDetail(userPlant.plant.id)"
+                title="Xem chi tiết"
+              >
+                👁️ Chi tiết
+              </button>
+              <button 
+                class="remove-btn"
+                (click)="removePlantFromCollection(userPlant.id)"
+                title="Xóa khỏi bộ sưu tập"
+              >
+                🗑️ Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- List layout -->
+    <div *ngIf="layout==='list'">
+      <div class="plant-list-listview">
+        <div class="plant-list-item" *ngFor="let userPlant of filteredPlants">
+          <div class="plant-list-img">
+            <img 
+              [src]="userPlant.plant.imageUrls[0] || '/assets/image/default-plant.png'" 
+              [alt]="userPlant.nickname"
+              onerror="this.src='/assets/image/default-plant.png'"
+              (click)="viewPlantDetail(userPlant.plant.id)"
+            />
+          </div>
+          <div class="plant-list-info">
+            <div class="plant-row plant-row-title">
+              <h3>{{ userPlant.nickname }}</h3>
+            </div>
+            <div class="plant-row plant-row-desc">
+              <p>{{ userPlant.plant.commonName || userPlant.plant.scientificName }}</p>
+            </div>
+            <div class="plant-row plant-row-location">
+              <p>📍 {{ userPlant.locationInHouse }} | 📅 Từ {{ formatDate(userPlant.plantingDate) }}</p>
+            </div>
+            <div class="plant-row plant-row-tags">
+              <div class="plant-tags">
+                <span class="plant-tag">💡 {{ translateLightRequirement(userPlant.plant.lightRequirement) }}</span>
+                <span class="plant-tag">💧 {{ translateWaterRequirement(userPlant.plant.waterRequirement) }}</span>
+                <span class="plant-tag" *ngIf="userPlant.reminderEnabled">🔔 Nhắc nhở</span>
+              </div>
+            </div>
+            <div class="plant-actions">
+              <button 
+                class="view-btn"
+                (click)="viewPlantDetail(userPlant.plant.id)"
+                title="Xem chi tiết"
+              >
+                👁️ Chi tiết
+              </button>
+              <button 
+                class="remove-btn"
+                (click)="removePlantFromCollection(userPlant.id)"
+                title="Xóa khỏi bộ sưu tập"
+              >
+                🗑️ Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && userPlants.length === 0" class="empty-list">
+    <div class="empty-content">
+      <div class="empty-icon">🌿</div>
+      <h3>Chưa có cây nào trong bộ sưu tập</h3>
+      <p>Hãy bắt đầu thêm những cây yêu thích vào bộ sưu tập của bạn!</p>
+      <button class="browse-plants-btn" (click)="router.navigate(['/plant-info'])">
+        Khám phá cây cảnh
+      </button>
+    </div>
+  </div>
+</div>

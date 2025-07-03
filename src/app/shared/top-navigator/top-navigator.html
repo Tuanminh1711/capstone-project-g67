@@ -8,13 +8,7 @@
     <div class="nav-links">
       <a class="nav-link" routerLink="/home">Trang chủ</a>
       <a class="nav-link" routerLink="/plant-info">Tìm kiếm cây cảnh</a>
-      <div class="nav-link dropdown" (mouseenter)="showGreenSpaceDropdown=true" (mouseleave)="showGreenSpaceDropdown=false">
-        <span>Không gian xanh<span class="arrow" [class.open]="showGreenSpaceDropdown">▼</span></span>
-        <div class="dropdown-menu" *ngIf="showGreenSpaceDropdown">
-          <a class="dropdown-item" routerLink="/my-green-space/add-tree">Trồng cây mới</a>
-          <a class="dropdown-item" routerLink="/my-green-space/my-garden">Khu vườn của tôi</a>
-        </div>
-      </div>
+      <a class="nav-link" routerLink="/user/my-garden">Khu vườn của tôi</a>
       <a class="nav-link" routerLink="/care-with-experts">Chăm sóc cùng chuyên gia</a>
       <a class="nav-link" routerLink="/about-us">Về chúng tôi</a>
     </div>

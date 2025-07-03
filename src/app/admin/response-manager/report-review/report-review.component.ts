@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 // Models cho report-review
 export interface ReportReview {
@@ -69,7 +70,7 @@ export class ReportReviewService {
 @Component({
   selector: 'app-report-review',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AdminLayoutComponent],
   templateUrl: './report-review.component.html',
   styleUrls: ['./report-review.component.scss']
 })

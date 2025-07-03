@@ -240,4 +240,51 @@ export class PlantInfoComponent implements OnInit {
     this.plantsSubject.next([]);
     this.fetchPlants(0, '');
   }
+
+  /**
+   * Translate light requirement enum to Vietnamese
+   */
+  translateLightRequirement(value: string): string {
+    const translations: { [key: string]: string } = {
+      'LOW': 'Ít ánh sáng',
+      'MEDIUM': 'Ánh sáng vừa phải',
+      'HIGH': 'Nhiều ánh sáng'
+    };
+    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+  }
+
+  /**
+   * Translate water requirement enum to Vietnamese
+   */
+  translateWaterRequirement(value: string): string {
+    const translations: { [key: string]: string } = {
+      'LOW': 'Ít nước',
+      'MEDIUM': 'Nước vừa phải',
+      'HIGH': 'Nhiều nước'
+    };
+    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+  }
+
+  /**
+   * Translate care difficulty enum to Vietnamese
+   */
+  translateCareDifficulty(value: string): string {
+    const translations: { [key: string]: string } = {
+      'EASY': 'Dễ chăm sóc',
+      'MODERATE': 'Trung bình',
+      'DIFFICULT': 'Khó chăm sóc'
+    };
+    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+  }
+
+  /**
+   * Translate plant status enum to Vietnamese
+   */
+  translatePlantStatus(value: string): string {
+    const translations: { [key: string]: string } = {
+      'ACTIVE': 'Đang hoạt động',
+      'INACTIVE': 'Ngưng hoạt động'
+    };
+    return translations[value?.toUpperCase()] || value || 'Không rõ';
+  }
 }

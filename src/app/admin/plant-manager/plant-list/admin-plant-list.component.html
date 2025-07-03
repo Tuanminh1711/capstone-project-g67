@@ -11,9 +11,18 @@
       <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm tên, danh mục..." />
       <button (click)="onSearch()">Tìm kiếm</button>
     </div>
-    <div *ngIf="errorMsg" class="error-bar">{{ errorMsg }}</div>
-    <div *ngIf="loading" class="loading-bar">Đang tải...</div>
-    <div class="table-wrapper" *ngIf="!loading">
+    <div *ngIf="errorMsg" class="error-bar">
+      {{ errorMsg }}
+      <button class="retry-btn" (click)="fetchPlants(pageNo, currentKeyword)">
+        <i class="fas fa-redo"></i>
+        Thử lại
+      </button>
+    </div>
+    <div *ngIf="loading" class="loading-bar">
+      <i class="fas fa-spinner fa-spin"></i>
+      Đang tải dữ liệu...
+    </div>
+    <div class="table-wrapper" *ngIf="!loading || (plants$ | async)?.length">
       <table class="plant-table">
         <thead>
           <tr>
@@ -26,9 +35,7 @@
             <th class="sortable-header" (click)="onSort('categoryName')" [class.active]="sortField === 'categoryName'">
               Danh mục <i [class]="getSortIcon('categoryName')"></i>
             </th>
-            <th class="sortable-header" (click)="onSort('status')" [class.active]="sortField === 'status'">
-              Trạng thái <i [class]="getSortIcon('status')"></i>
-            </th>
+            <th>Khóa</th>
             <th class="sortable-header" (click)="onSort('createdAt')" [class.active]="sortField === 'createdAt'">
               Ngày tạo <i [class]="getSortIcon('createdAt')"></i>
             </th>
@@ -36,11 +43,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let plant of plants$ | async">
+          <tr *ngFor="let plant of plants$ | async; trackBy: trackByPlant">
             <td>{{ plant.id }}</td>
             <td>{{ plant.commonName }}</td>
-            <td>{{ plant.categoryName }}</td>
-            <td>{{ plant.status }}</td>
+            <td>{{ plant.categoryName || '-' }}</td>
+            <td>
+              <button 
+                (click)="lockUnlockPlant(plant)" 
+                [class]="getLockButtonClass(plant)"
+                class="lock-btn"
+                [disabled]="plant.isUpdating"
+              >
+                <i [class]="getLockIcon(plant)"></i>
+                {{ getLockButtonText(plant) }}
+              </button>
+            </td>
             <td>{{ plant.createdAt || '-' }}</td>
             <td>
               <button (click)="viewPlantDetail(plant)" class="view-btn">Chi tiết</button>

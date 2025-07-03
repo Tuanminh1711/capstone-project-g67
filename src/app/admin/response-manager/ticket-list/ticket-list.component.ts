@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 // Models cho ticket-list
 export interface TicketSummary {
@@ -102,12 +103,13 @@ export class TicketListService {
 @Component({
   selector: 'app-ticket-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminLayoutComponent],
   template: `
-    <div class="ticket-list-container">
-      <h1>Danh sách Ticket</h1>
-      
-      <div class="search-section">
+    <app-admin-layout>
+      <div class="ticket-list-container">
+        <h1>Danh sách Ticket</h1>
+        
+        <div class="search-section">
         <input 
           type="text" 
           [(ngModel)]="searchKeyword" 

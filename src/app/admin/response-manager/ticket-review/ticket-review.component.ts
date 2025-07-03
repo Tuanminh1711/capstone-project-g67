@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 // Models cho ticket-review
 export interface TicketReview {
@@ -66,7 +67,7 @@ export class TicketReviewService {
 @Component({
   selector: 'app-ticket-review',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminLayoutComponent],
   templateUrl: './ticket-review.component.html',
   styleUrls: ['./ticket-review.component.scss']
 })

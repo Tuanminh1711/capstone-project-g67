@@ -1,14 +1,15 @@
-<div class="report-review-container">
-  <div class="page-header">
-    <h1>Xem xét báo cáo</h1>
-    <div class="breadcrumb">
-      <span routerLink="/admin/response-manager/report-list" class="breadcrumb-link">Danh sách báo cáo</span>
-      <span class="breadcrumb-separator">></span>
-      <span routerLink="/admin/response-manager/report-detail/{{reportId}}" class="breadcrumb-link">Chi tiết</span>
-      <span class="breadcrumb-separator">></span>
-      <span>Xem xét</span>
+<app-admin-layout>
+  <div class="report-review-container">
+    <div class="page-header">
+      <h1>Xem xét báo cáo</h1>
+      <div class="breadcrumb">
+        <span routerLink="/admin/response-manager/report-list" class="breadcrumb-link">Danh sách báo cáo</span>
+        <span class="breadcrumb-separator">></span>
+        <span routerLink="/admin/response-manager/report-detail/{{reportId}}" class="breadcrumb-link">Chi tiết</span>
+        <span class="breadcrumb-separator">></span>
+        <span>Xem xét</span>
+      </div>
     </div>
-  </div>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
@@ -154,5 +155,6 @@
         </div>
       </form>
     </div>
+    </div>
   </div>
-</div>
+</app-admin-layout>

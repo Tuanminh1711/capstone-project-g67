@@ -1,0 +1,87 @@
+<!-- View User Profile - Similar to Edit Profile -->
+<app-top-navigator></app-top-navigator>
+<div class="edit-profile-page">
+  <!-- Loading Indicator -->
+  <div *ngIf="loading" class="loading-section">
+    <div class="spinner"></div>
+    <p class="loading-text">Đang tải thông tin hồ sơ...</p>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading" class="edit-profile-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>HỒ SƠ NGƯỜI DÙNG</h1>
+      <p>Thông tin cá nhân của bạn</p>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="edit-profile-content">
+      <!-- Avatar Section -->
+      <div class="avatar-section">
+        <div class="avatar-card">
+          <h3>Ảnh đại diện</h3>
+          <div class="avatar-upload-area">
+            <div class="avatar-preview">
+              <ng-container *ngIf="userProfile; else avatarPlaceholder">
+                <img *ngIf="userProfile.avatar" [src]="userProfile.avatar" alt="Avatar" />
+                <div *ngIf="!userProfile.avatar" class="avatar-initial">
+                  {{ userProfile.fullName ? userProfile.fullName.charAt(0).toUpperCase() : '👤' }}
+                </div>
+              </ng-container>
+              <ng-template #avatarPlaceholder>
+                <div class="avatar-skeleton"></div>
+              </ng-template>
+            </div>
+            <div class="profile-badges">
+              <span class="badge verified">✓ Đã xác thực</span>
+              <span class="badge member">👤 Thành viên</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Section -->
+      <div class="form-section">
+        <div class="form-card">
+          <h3>Thông tin cá nhân</h3>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Họ và tên</label>
+              <input type="text" [value]="userProfile?.fullName || 'Đang tải...'" readonly>
+            </div>
+            
+            <div class="form-field">
+              <label>Email</label>
+              <input type="email" [value]="userProfile?.email || 'Đang tải...'" readonly>
+            </div>
+            
+            <div class="form-field">
+              <label>Số điện thoại</label>
+              <input type="tel" [value]="userProfile?.phoneNumber || 'Chưa cập nhật'" readonly>
+            </div>
+            
+            <div class="form-field">
+              <label>Giới tính</label>
+              <input type="text" [value]="getGenderText(userProfile?.gender || undefined)" readonly>
+            </div>
+            
+            <div class="form-field" style="grid-column: 1 / -1;">
+              <label>Môi trường sống</label>
+              <input type="text" [value]="userProfile?.livingEnvironment || 'Chưa cập nhật'" readonly>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button class="action-btn primary" routerLink="/edit-profile">
+              ✏️ Chỉnh sửa hồ sơ
+            </button>
+            <button class="action-btn secondary" routerLink="/profile/change-password">
+              🔐 Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

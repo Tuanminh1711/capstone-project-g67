@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 // Models cho report-detail
 export interface ReportDetail {
@@ -71,7 +72,7 @@ export class ReportDetailService {
 @Component({
   selector: 'app-report-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AdminLayoutComponent],
   templateUrl: './report-detail.component.html',
   styleUrls: ['./report-detail.component.scss']
 })

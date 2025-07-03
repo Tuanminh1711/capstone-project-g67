@@ -2,31 +2,9 @@
 
 <div class="plant-detail-container">
   <div class="plant-detail-content">
-    <!-- Back button -->
-    <button class="back-btn" (click)="goBack()">
-      <span class="material-icons">arrow_back</span>
-      Quay lại danh sách
-    </button>
-
-    <!-- Loading with skeleton -->
-    <div *ngIf="loading" class="loading-container">
-      <div class="skeleton-card">
-        <div class="plant-images">
-          <div class="skeleton skeleton-image"></div>
-        </div>
-        <div class="plant-info">
-          <div class="skeleton skeleton-header"></div>
-          <div class="skeleton skeleton-text" style="width: 80%;"></div>
-          <div class="skeleton skeleton-text" style="width: 60%;"></div>
-          <div class="skeleton skeleton-text" style="width: 90%;"></div>
-          <div class="skeleton skeleton-text" style="width: 70%;"></div>
-        </div>
-      </div>
-      <div class="loading-text">Đang tải thông tin cây...</div>
-    </div>
 
     <!-- Authentication required message -->
-    <div *ngIf="!loading && requiresAuth" class="auth-required-msg">
+    <div *ngIf="requiresAuth" class="auth-required-msg">
       <div class="auth-card">
         <h3>Yêu cầu đăng nhập</h3>
         <p>Để xem thông tin chi tiết của cây này, bạn cần đăng nhập vào hệ thống.</p>
@@ -38,18 +16,17 @@
     </div>
 
     <!-- Error -->
-    <div *ngIf="!loading && !requiresAuth && error" class="status-msg error">
+    <div *ngIf="!requiresAuth && error" class="status-msg error">
       {{ error }}
       <button class="retry-btn" (click)="reloadPlantDetail()">Thử lại</button>
     </div>
 
     <!-- Plant detail content -->
-    <div *ngIf="!loading && !requiresAuth && !error && plant" class="plant-detail">
+    <div *ngIf="plant" class="plant-detail">
       <!-- Limited info notice (if using public data) -->
       <div *ngIf="isLimitedInfo" class="limited-info-notice">
         <div class="notice-content">
-          <span class="material-icons">info</span>
-          <span>Đang hiển thị thông tin cơ bản. <a (click)="openLoginDialog()" class="login-link">Đăng nhập</a> để xem thông tin chi tiết đầy đủ.</span>
+          <span>ℹ️ Đang hiển thị thông tin cơ bản. <a (click)="openLoginDialog(); $event.stopPropagation(); $event.preventDefault()" class="login-link">Đăng nhập</a> để xem thông tin chi tiết đầy đủ.</span>
         </div>
       </div>
       <!-- Image gallery -->
@@ -79,6 +56,17 @@
           <h1 class="plant-name">{{ plant.commonName }}</h1>
           <p class="plant-scientific">({{ plant.scientificName }})</p>
           <span class="plant-category">{{ plant.categoryName }}</span>
+          
+          <!-- Add to collection button -->
+          <div class="action-buttons">
+            <button 
+              class="add-to-collection-btn"
+              (click)="addToCollection()"
+              title="Thêm cây này vào bộ sưu tập của bạn"
+            >
+              🌱 Thêm vào bộ sưu tập
+            </button>
+          </div>
         </div>
 
         <div class="plant-description">
@@ -91,19 +79,19 @@
           <div class="care-grid">
             <div class="care-item">
               <span class="care-label">Ánh sáng:</span>
-              <span class="care-value">{{ plant.lightRequirement }}</span>
+              <span class="care-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
             </div>
             <div class="care-item">
               <span class="care-label">Nước:</span>
-              <span class="care-value">{{ plant.waterRequirement }}</span>
+              <span class="care-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
             </div>
             <div class="care-item">
               <span class="care-label">Độ khó:</span>
-              <span class="care-value">{{ plant.careDifficulty }}</span>
+              <span class="care-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
             </div>
             <div class="care-item">
               <span class="care-label">Vị trí phù hợp:</span>
-              <span class="care-value">{{ plant.suitableLocation }}</span>
+              <span class="care-value">{{ plant.suitableLocation || 'Chưa có thông tin' }}</span>
             </div>
           </div>
         </div>
@@ -118,27 +106,27 @@
           <p>{{ plant.commonDiseases }}</p>
         </div>
 
+
+
         <!-- Limited info message for care instructions -->
         <div *ngIf="isLimitedInfo" class="limited-content-msg">
           <div class="limited-section">
             <h3>Hướng dẫn chăm sóc chi tiết</h3>
             <p class="locked-content">
-              <span class="material-icons">lock</span>
-              Nội dung này yêu cầu đăng nhập để xem
+              🔒 Nội dung này yêu cầu đăng nhập để xem
             </p>
           </div>
           <div class="limited-section">
             <h3>Thông tin bệnh thường gặp</h3>
             <p class="locked-content">
-              <span class="material-icons">lock</span>
-              Nội dung này yêu cầu đăng nhập để xem
+              🔒 Nội dung này yêu cầu đăng nhập để xem
             </p>
           </div>
         </div>
 
         <div class="plant-meta">
           <span class="status" [class]="'status-' + plant.status.toLowerCase()">
-            Trạng thái: {{ plant.status }}
+            Trạng thái: {{ translatePlantStatus(plant.status) }}
           </span>
           <span class="created-date" *ngIf="plant.createdAt">
             Ngày tạo: {{ formatDate(plant.createdAt) }}

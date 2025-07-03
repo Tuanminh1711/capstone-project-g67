@@ -1,12 +1,13 @@
-<div class="report-detail-container">
-  <div class="page-header">
-    <h1>Chi tiết báo cáo</h1>
-    <div class="breadcrumb">
-      <span routerLink="/admin/response-manager/report-list" class="breadcrumb-link">Danh sách báo cáo</span>
-      <span class="breadcrumb-separator">></span>
-      <span>Chi tiết</span>
+<app-admin-layout>
+  <div class="report-detail-container">
+    <div class="page-header">
+      <h1>Chi tiết báo cáo</h1>
+      <div class="breadcrumb">
+        <span routerLink="/admin/response-manager/report-list" class="breadcrumb-link">Danh sách báo cáo</span>
+        <span class="breadcrumb-separator">></span>
+        <span>Chi tiết</span>
+      </div>
     </div>
-  </div>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
@@ -118,4 +119,5 @@
       </button>
     </div>
   </div>
-</div>
+  </div>
+</app-admin-layout>
