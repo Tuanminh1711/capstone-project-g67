@@ -1,5 +1,6 @@
 package com.plantcare_backend.service.impl;
 
+
 import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
 import com.plantcare_backend.dto.response.Plants.PlantResponseDTO;
 import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;

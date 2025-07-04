@@ -22,4 +22,5 @@ public class LoginResponse {
     private String role;
     private String email;
     private Boolean requiresVerification;
+
 }

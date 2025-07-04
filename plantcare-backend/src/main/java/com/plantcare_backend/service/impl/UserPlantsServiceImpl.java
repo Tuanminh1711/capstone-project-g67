@@ -1,10 +1,14 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.response.Plants.UserPlantsResponseDTO;
-import com.plantcare_backend.dto.response.Plants.UserPlantsSearchResponseDTO;
+
+import com.plantcare_backend.dto.response.userPlants.*;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
 import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
+import com.plantcare_backend.dto.request.userPlants.UpdateUserPlantRequestDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
+import com.plantcare_backend.model.PlantImage;
+import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.model.UserPlantImage;
 import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.repository.UserPlantRepository;
 import com.plantcare_backend.service.UserPlantsService;
@@ -16,6 +20,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,12 +74,51 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     @Override
+    public UserPlantDetailResponseDTO getUserPlantDetail(Long plantId) {
+        UserPlants userPlants = userPlantRepository.findById(plantId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Plant not found"));
+
+        UserPlantDetailResponseDTO dto = new UserPlantDetailResponseDTO();
+        dto.setUserPlantId(userPlants.getUserPlantId());
+        dto.setPlantId(userPlants.getPlantId());
+        dto.setNickname(userPlants.getPlantName());
+        dto.setPlantingDate(userPlants.getPlantDate());
+        dto.setLocationInHouse(userPlants.getPlantLocation());
+        dto.setReminderEnabled(userPlants.isReminder_enabled());
+
+        List<String> imageUrls = new ArrayList<>();
+        List<UserPlantImageDetailDTO> imageDetails = new ArrayList<>();
+
+        if (userPlants.getImages() != null) {
+            for (UserPlantImage img : userPlants.getImages()) {
+                imageUrls.add(img.getImageUrl());
+
+                UserPlantImageDetailDTO imageDetail = new UserPlantImageDetailDTO();
+                imageDetail.setId(img.getId());
+                imageDetail.setImageUrl(img.getImageUrl());
+                imageDetail.setDescription(img.getDescription());
+                imageDetails.add(imageDetail);
+            }
+        }
+        dto.setImageUrls(imageUrls);
+        dto.setImages(imageDetails);
+
+        return dto;
+    }
+
+    @Override
+    public Page<UserPlantListResponseDTO> getAllUserPlants(int page, int size, Long userId) {
+        Page<UserPlants> userPlantsPage = userPlantRepository.findByUserId(userId, PageRequest.of(page, size));
+        return userPlantsPage.map(this::convertToUserPlantListResponseDTO);
+    }
+
+    @Override
     public void deleteUserPlant(Long userPlantId, Long userId) {
         log.info("Attempting to delete user plant with ID: {} for user ID: {}", userPlantId, userId);
-        
+
         // Find the user plant
 //        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
-//                .orElseThrow(() -> new ResourceNotFoundException("User plant not found or you don't have permission to delete it"));
+//                .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         // Delete the user plant
@@ -94,6 +139,17 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlantRepository.save(userPlant);
     }
 
+    @Override
+    public void updateUserPlant(UpdateUserPlantRequestDTO requestDTO, Long userId) {
+        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(requestDTO.getUserPlantId(), userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
+        userPlant.setPlantName(requestDTO.getNickname());
+        userPlant.setPlantDate(requestDTO.getPlantingDate());
+        userPlant.setPlantLocation(requestDTO.getLocationInHouse());
+        userPlant.setReminder_enabled(requestDTO.isReminderEnabled());
+        userPlantRepository.save(userPlant);
+    }
+
     private UserPlantsResponseDTO convertToUserPlantsResponseDTO(UserPlants userPlant) {
         return new UserPlantsResponseDTO(
                 userPlant.getUserPlantId(),
@@ -105,5 +161,15 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 userPlant.isReminder_enabled(),
                 userPlant.getCreated_at()
         );
+    }
+
+    private UserPlantListResponseDTO convertToUserPlantListResponseDTO(UserPlants userPlant) {
+        UserPlantListResponseDTO dto = new UserPlantListResponseDTO();
+        dto.setUserPlantId(userPlant.getUserPlantId());
+        dto.setPlantId(userPlant.getPlantId());
+        dto.setNickname(userPlant.getPlantName());
+        dto.setPlantLocation(userPlant.getPlantLocation());
+        dto.setReminderEnabled(userPlant.isReminder_enabled());
+        return dto;
     }
 } 
