@@ -1,7 +1,7 @@
 package com.plantcare_backend.controller;
 
 import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
-import com.plantcare_backend.dto.response.plantsManager.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.ResponseData;
 import com.plantcare_backend.dto.response.ResponseError;
 import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;

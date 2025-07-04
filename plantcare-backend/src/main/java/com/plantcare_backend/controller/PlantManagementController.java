@@ -2,6 +2,7 @@ package com.plantcare_backend.controller;
 
 import com.plantcare_backend.dto.response.ResponseData;
 import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.ResponseSuccess;
 import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.PlantListResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.PlantReportListResponseDTO;
@@ -113,11 +114,25 @@ public class PlantManagementController {
 
     }
 
-    @PostMapping("/report-plant-reason")
-    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('STAFF')")
-    public ResponseEntity<?> reportPlant(@RequestBody PlantReportRequestDTO request,
-                                         @RequestAttribute("userId") Long userId) {
-        plantManagementService.reportPlant(request, userId);
-        return ResponseEntity.ok(new ResponseSuccess(HttpStatus.CREATED, "báo cáo của bạn đã được ghi nhận ! "));
+    // nhận báo cáo của admin or staff. để xử lý report.
+    @PutMapping("/claim-report/{reportId}")
+    public ResponseEntity<?> claimReport(
+            @PathVariable Long reportId,
+            @RequestHeader("userId") Integer userId
+    ) {
+        plantManagementService.claimReport(reportId, userId);
+        return ResponseEntity.ok(new ResponseSuccess(HttpStatus.OK, "Nhận xử lý báo cáo thành công!"));
     }
+
+    //xác nhận khi xử lý xong.
+    @PutMapping("/handle-report/{reportId}")
+    public ResponseEntity<?> handleReport(
+            @PathVariable Long reportId,
+            @RequestBody HandleReportRequestDTO request,
+            @RequestHeader("userId") Integer userId
+    ) {
+        plantManagementService.handleReport(reportId, request.getStatus(), request.getAdminNotes(), userId);
+        return ResponseEntity.ok(new ResponseSuccess(HttpStatus.OK, "Xử lý báo cáo thành công!"));
+    }
+
 }

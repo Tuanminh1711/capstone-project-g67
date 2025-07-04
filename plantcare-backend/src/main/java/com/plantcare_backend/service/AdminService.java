@@ -51,4 +51,5 @@ public interface AdminService {
     Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize);
 
     void resetPassword(int userId);
+
 }
