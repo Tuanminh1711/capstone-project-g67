@@ -1,5 +1,6 @@
 package com.plantcare_backend.dto.request.auth;
 
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResetPasswordRequestDTO {
+    @Email(message = "Invalid email")
     private String email;
     private String resetCode;
     private LocalDateTime expiryTime;

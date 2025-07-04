@@ -41,7 +41,24 @@ public class PlantReport {
     @Column(name = "created_at")
     private Timestamp createdAt;
 
+    // Claim info
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "claimed_by")
+    private Users claimedBy;
+
+    @Column(name = "claimed_at")
+    private Timestamp claimedAt;
+
+    // Handle info
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "handled_by")
+    private Users handledBy;
+
+    @Column(name = "handled_at")
+    private Timestamp handledAt;
+
+
     public enum ReportStatus {
-        PENDING, APPROVED, REJECTED
+        PENDING,CLAIMED, APPROVED, REJECTED
     }
 }

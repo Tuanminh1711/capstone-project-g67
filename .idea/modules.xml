@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/plantcare-backend.iml" filepath="$PROJECT_DIR$/.idea/plantcare-backend.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/project-capstone-g67.iml" filepath="$PROJECT_DIR$/.idea/project-capstone-g67.iml" />
     </modules>
   </component>
