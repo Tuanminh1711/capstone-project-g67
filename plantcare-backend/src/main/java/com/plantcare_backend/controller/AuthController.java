@@ -46,6 +46,14 @@ public class AuthController {
     @Autowired
     private OtpService otpService;
 
+    @Operation(summary = "Admin/Staff Login", description = "Login for admin or staff")
+    @PostMapping("/login-admin")
+    public ResponseEntity<LoginResponse> loginAdmin(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
+                                                    HttpServletRequest request) {
+        LoginResponse loginResponse = authService.loginForAdminOrStaff(loginRequestDTO, request);
+        return ResponseEntity.ok(loginResponse);
+    }
+
     @Operation(summary = "User Login", description = "Login with username and password")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO,

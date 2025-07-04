@@ -97,6 +97,32 @@ public class AuthServiceImpl implements AuthService {
         return loginResponse;
     }
 
+    @Override
+    public LoginResponse loginForAdminOrStaff(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
+        Users user = userRepository.findByUsername(loginRequestDTO.getUsername())
+                .orElseThrow(() -> new RuntimeException("Username wrong!"));
+        if (user.getStatus() == Users.UserStatus.BANNED) {
+            throw new RuntimeException("Tài khoản đã bị khóa vĩnh viễn do vi phạm chính sách.");
+        }
+        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Password wrong!");
+        }
+        // Chỉ cho phép ADMIN hoặc STAFF
+        if (user.getRole() == null ||
+                !(user.getRole().getRoleName() == Role.RoleName.ADMIN || user.getRole().getRoleName() == Role.RoleName.STAFF)) {
+            throw new RuntimeException("Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập ở đây.");
+        }
+        // (Có thể kiểm tra thêm trạng thái nếu muốn)
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString(), user.getId());
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+        loginResponse.setUsername(user.getUsername());
+        loginResponse.setMessage("Login successful");
+        loginResponse.setStatus(HttpStatus.OK.value());
+        loginResponse.setRole(user.getRole().getRoleName().toString());
+        return loginResponse;
+    }
+
     // hàm lấy IP
     private String getClientIp(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");

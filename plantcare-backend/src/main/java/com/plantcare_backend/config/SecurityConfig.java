@@ -42,7 +42,8 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/change-password",
                                 "/api/auth/resend-verification",
-                                "/api/auth/verify-email"
+                                "/api/auth/verify-email",
+                                "/api/auth/login-admin"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/plants/**").permitAll()
