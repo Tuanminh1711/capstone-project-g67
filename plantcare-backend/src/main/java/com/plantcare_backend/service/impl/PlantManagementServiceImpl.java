@@ -263,65 +263,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         return response;
     }
 
-    /**
-     * Process a plant report from a user.
-     *
-     * @param request The DTO contains report information, including plant ID and reason.
-     * @param reporterId User ID of the report.
-     */
-    @Override
-    public void reportPlant(PlantReportRequestDTO request, Long reporterId) {
-        // 1. Lấy thông tin user
-        Users reporter = userRepository.findById(Math.toIntExact(reporterId))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // 2. Lấy thông tin plant
-        Plants plant = plantRepository.findById(request.getPlantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Plant not found"));
-        // Kiểm tra trạng thái plant
-        if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
-            throw new IllegalArgumentException("Cây này đã bị khóa do bị report quá nhiều!");
-        }
-
-        // 4. Kiểm tra user đã report chưa
-        if (plantReportRepository.existsByPlant_IdAndReporter_Id(request.getPlantId(), reporter.getId())) {
-            throw new IllegalArgumentException("Bạn đã report cây này rồi!");
-        }
-
-        // 3. Tạo report mới
-        PlantReport report = PlantReport.builder()
-                .plant(plant)
-                .reporter(reporter)
-                .reason(request.getReason())
-                .status(PlantReport.ReportStatus.PENDING)
-                .build();
-        plantReportRepository.save(report);
-
-        // 4. Đếm số lượng report của plant này
-        int reportCount = plantReportRepository.countByPlantId(plant.getId());
-
-        // 5. Nếu >= 2, chuyển plant sang INACTIVE
-        if (reportCount >= 1 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
-            plant.setStatus(Plants.PlantStatus.INACTIVE);
-            plantRepository.save(plant);
-        }
-
-        // 6. Gửi email cho staff và admin
-//        List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN", "STAFF"));
-//        for (Users user : staffAndAdmins) {
-//            emailService.sendEmail(
-//                    user.getEmail(),
-//                    "Có báo cáo mới về cây cảnh",
-//                    "Xin chào " + user.getUsername() + ",\n\n" +
-//                            "Cây: " + plant.getCommonName() + "\n" +
-//                            "Người báo cáo: " + reporter.getUsername() + "\n" +
-//                            "Lý do báo cáo:\n" +
-//                            request.getReason() + "\n\n" +
-//                            "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
-//                            "Trân trọng,\n" +
-//                            "Hệ thống PlantCare"
-//            );
-        }
     @Override
     public void claimReport(Long reportId, Integer userId) {
         PlantReport plantReport = plantReportRepository.findById(reportId)

@@ -1,6 +1,8 @@
 package com.plantcare_backend.repository;
 
 import com.plantcare_backend.model.PlantReport;
+import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.model.Users;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +30,7 @@ public interface PlantReportRepository extends JpaRepository<PlantReport, Long> 
     );
     int countByPlantId(Long plantId);
     // Kiểm tra user đã report plant chưa
-    boolean existsByPlant_IdAndReporter_Id(Long plantId, Integer reporterId);
+    boolean existsByPlantAndReporterAndStatus(Plants plant, Users reporter, PlantReport.ReportStatus status);
     // Đếm số report theo status
     int countByPlantIdAndStatusIn(Long plantId, List<PlantReport.ReportStatus> statuses);
 

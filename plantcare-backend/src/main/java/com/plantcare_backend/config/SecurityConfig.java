@@ -40,7 +40,9 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/verify-reset-code",
                                 "/api/auth/reset-password",
-                                "/api/auth/change-password"
+                                "/api/auth/change-password",
+                                "/api/auth/resend-verification",
+                                "/api/auth/verify-email"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/plants/**").permitAll()

@@ -22,8 +22,6 @@ public interface PlantManagementService {
 
     PlantReportListResponseDTO getReportList(PlantReportSearchRequestDTO request);
 
-    void reportPlant(PlantReportRequestDTO plantReportRequestDTO, Long reporterUsername);
-
     void claimReport(Long reportId, Integer userId);
 
     void handleReport(Long reportId, String status, String adminNotes, Integer userId);

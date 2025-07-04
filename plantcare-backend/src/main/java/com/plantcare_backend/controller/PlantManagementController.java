@@ -114,13 +114,6 @@ public class PlantManagementController {
 
     }
 
-    @PostMapping("/report-plant-reason")
-    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('STAFF')")
-    public ResponseEntity<?> reportPlant(@RequestBody PlantReportRequestDTO request,
-                                         @RequestAttribute("userId") Long userId) {
-        plantManagementService.reportPlant(request, userId);
-        return ResponseEntity.ok(new ResponseSuccess(HttpStatus.CREATED, "báo cáo của bạn đã được ghi nhận ! "));
-    }
     // nhận báo cáo của admin or staff. để xử lý report.
     @PutMapping("/claim-report/{reportId}")
     public ResponseEntity<?> claimReport(
