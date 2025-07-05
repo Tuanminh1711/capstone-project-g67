@@ -8,18 +8,19 @@ import com.plantcare_backend.repository.UserProfileRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.UserProfileService;
 import com.plantcare_backend.util.Gender;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserProfileServiceImpl implements UserProfileService {
     @Autowired
-    private UserProfileRepository userProfileRepository;
-
+    private final UserProfileRepository userProfileRepository;
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserProfileRequestDTO getUserProfile(Integer userId) {

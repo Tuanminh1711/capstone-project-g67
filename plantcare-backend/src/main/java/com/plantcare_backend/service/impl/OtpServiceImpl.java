@@ -4,6 +4,7 @@ import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.OtpService;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -14,6 +15,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@RequiredArgsConstructor
 public class OtpServiceImpl implements OtpService {
     @Autowired
     private EmailService emailService;

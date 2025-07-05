@@ -7,6 +7,7 @@ import com.plantcare_backend.service.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,11 +21,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user")
 @Slf4j
+@RequiredArgsConstructor
 @Tag(name = "User Profile Controller")
 @CrossOrigin(origins = "http://localhost:4200/")
 public class UserProfileController {
     @Autowired
-    private UserProfileService userProfileService;
+    private final UserProfileService userProfileService;
 
 
     @GetMapping("/profile")

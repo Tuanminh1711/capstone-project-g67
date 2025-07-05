@@ -52,6 +52,10 @@ public class SecurityConfig {
                                 .requestMatchers("/api/user-plants/**").permitAll()
 //                                .requestMatchers(HttpMethod.DELETE, "/api/user-plants/delete/**").authenticated()
 //                        .requestMatchers("/api/user-plants/**").authenticated()
+                                .requestMatchers( "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-resources/**",
+                                        "/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // <--- DÒNG NÀY RẤT QUAN TRỌNG

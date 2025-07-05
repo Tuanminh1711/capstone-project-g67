@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/plants-reprot")
+@RequestMapping("/api/plants-report")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Plant report Controller", description = "APIs for plant report and management")

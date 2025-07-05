@@ -41,13 +41,13 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private final UserProfileRepository userProfileRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     @Autowired
-    private PlantRepository plantRepository;
+    private final PlantRepository plantRepository;
     @Autowired
-    private UserActivityLogRepository userActivityLogRepository;
+    private final UserActivityLogRepository userActivityLogRepository;
     @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
     /**
      * Creates a new user along with their profile based on the provided data.
