@@ -1,0 +1,30 @@
+.terms-page {
+  padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.terms-section {
+  background: #f6fff9;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 128, 64, 0.06);
+  padding: 32px 40px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.terms-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #218a5a;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.terms-content {
+  font-size: 1.1rem;
+  color: #222;
+  line-height: 1.7;
+} 

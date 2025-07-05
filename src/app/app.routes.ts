@@ -30,6 +30,8 @@ import { TicketReviewComponent } from './admin/response-manager/ticket-review/ti
 import { TotalPlantsStatisticsComponent } from './admin/statistics/total-plants.component';
 import { TotalUsersStatisticsComponent } from './admin/statistics/total-users.component';
 import { TotalBrowseUsersStatisticsComponent } from './admin/statistics/total-browse-users.component';
+import { TermsOfUseComponent } from './main/terms-of-use/terms-of-use.component';
+import { PrivacyPolicyComponent } from './main/privacy-policy/privacy-policy.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -40,6 +42,7 @@ const routes: Routes = [
   { path: 'plant-detail/:id', component: PlantDetailComponent },
   { path: 'plant-info/detail/:id', component: PlantDetailComponent },
   { path: 'about-us', component: AboutUsComponent },
+  { path: 'terms-of-use', component: TermsOfUseComponent },
   { path: 'view-user-profile', component: ViewUserProfileComponent },
   { path: 'edit-profile', component: EditUserProfileComponent },
   { path: 'profile/edit', component: EditUserProfileComponent },
@@ -72,6 +75,8 @@ const routes: Routes = [
   { path: 'admin/statistics/total-plants', component: TotalPlantsStatisticsComponent },
   { path: 'admin/statistics/total-users', component: TotalUsersStatisticsComponent },
   { path: 'admin/statistics/total-browse', component: TotalBrowseUsersStatisticsComponent },
+  
+  { path: 'privacy', component: PrivacyPolicyComponent },
   
   { path: '**', redirectTo: 'home' }
 ];
