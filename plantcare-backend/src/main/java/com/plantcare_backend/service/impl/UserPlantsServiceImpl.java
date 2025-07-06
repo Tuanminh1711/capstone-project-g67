@@ -23,8 +23,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import com.plantcare_backend.repository.CareScheduleRepository;
+import com.plantcare_backend.repository.CareTypeRepository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,10 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private final UserPlantValidator userPlantValidator;
     @Autowired
     private final PlantImageRepository plantImageRepository;
+    @Autowired
+    private final CareScheduleRepository careScheduleRepository;
+    @Autowired
+    private final CareTypeRepository careTypeRepository;
 
     @Override
     public UserPlantsSearchResponseDTO searchUserPlants(UserPlantsSearchRequestDTO request) {
@@ -148,6 +155,36 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setReminder_enabled(requestDTO.isReminderEnabled());
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
         userPlantRepository.save(userPlant);
+
+        if (requestDTO.isReminderEnabled()) {
+            createDefaultCareSchedules(userPlant.getUserPlantId());
+        }
+    }
+
+    private void createDefaultCareSchedules(Long userPlantId) {
+        try {
+            // Tạo lịch tưới nước (mỗi 3 ngày)
+            CareSchedule wateringSchedule = new CareSchedule();
+            wateringSchedule.setUserPlant(userPlantRepository.findById(userPlantId).orElse(null));
+            wateringSchedule.setCareType(careTypeRepository.findByCareTypeName("WATERING").orElse(null));
+            wateringSchedule.setFrequencyDays(3);
+            wateringSchedule.setNextCareDate(new Date());
+            wateringSchedule.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            careScheduleRepository.save(wateringSchedule);
+
+            // Tạo lịch bón phân (mỗi 30 ngày)
+            CareSchedule fertilizingSchedule = new CareSchedule();
+            fertilizingSchedule.setUserPlant(userPlantRepository.findById(userPlantId).orElse(null));
+            fertilizingSchedule.setCareType(careTypeRepository.findByCareTypeName("FERTILIZING").orElse(null));
+            fertilizingSchedule.setFrequencyDays(30);
+            fertilizingSchedule.setNextCareDate(new Date());
+            fertilizingSchedule.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            careScheduleRepository.save(fertilizingSchedule);
+
+            log.info("Created default care schedules for user plant: {}", userPlantId);
+        } catch (Exception e) {
+            log.error("Failed to create default care schedules for user plant: {}", userPlantId, e);
+        }
     }
 
     @Override
