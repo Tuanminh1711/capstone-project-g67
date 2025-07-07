@@ -43,6 +43,8 @@
   height: 100%; // Sử dụng toàn bộ chiều cao
   overflow: hidden; // Container không scroll
   
+  margin-top: 32px; // Đảm bảo phần header không bị chèn bởi top-nav
+
   // Force normal table display for all table elements
   table, thead, tbody, tr, th, td {
     display: revert !important;
@@ -450,6 +452,32 @@
 
 @media (max-width: 900px) {
   .admin-plant-list-container {
+    padding: 8px 12px;
+  }
+  
+  .plant-table tbody {
+    height: calc(100vh - 320px);
+  }
+  
+  .search-bar input {
+    max-width: 200px;
+    font-size: 0.95em; // Tăng từ 0.9em lên 0.95em
+  }
+  
+  // Adjust table columns for smaller screens
+  .plant-table {
+    th:nth-child(1), td:nth-child(1) { width: 50px; } // ID
+    th:nth-child(2), td:nth-child(2) { width: 160px; } // Tên thường gọi
+    th:nth-child(3), td:nth-child(3) { width: 120px; } // Danh mục
+    th:nth-child(4), td:nth-child(4) { width: 100px; } // Khóa
+    th:nth-child(5), td:nth-child(5) { width: 100px; } // Ngày tạo
+    th:nth-child(6), td:nth-child(6) { width: 120px; } // Hành động
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-plant-list-container {
+    margin-top: 20px;
     padding: 8px 12px;
   }
   

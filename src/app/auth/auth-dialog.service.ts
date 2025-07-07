@@ -1,13 +1,19 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { isPlatformBrowser } from '@angular/common';
+import { Subject, Observable } from 'rxjs';
 import { LoginDialogComponent } from '../auth/login/login-dialog';
 import { RegisterDialogComponent } from '../auth/register/register-dialog';
 import { ForgotPasswordDialogComponent } from '../auth/forgot-password/forgot-password-dialog';
+import { VerifyEmailDialogComponent } from '../auth/verify-email/verify-email-dialog';
 
 @Injectable({ providedIn: 'root' })
 export class AuthDialogService {
   private dialogOpened = false;
+  private loginSuccessSubject = new Subject<void>();
+  
+  // Observable để các component khác có thể subscribe
+  public loginSuccess$ = this.loginSuccessSubject.asObservable();
 
   constructor(
     private dialog: MatDialog,
@@ -22,9 +28,18 @@ export class AuthDialogService {
       disableClose: true,
       panelClass: 'dialog-panel-bg'
     });
-    dialogRef.afterClosed().subscribe(() => {
+    dialogRef.afterClosed().subscribe((result) => {
       this.dialogOpened = false;
+      // Nếu đăng nhập thành công, emit event
+      if (result === 'success') {
+        this.loginSuccessSubject.next();
+      }
     });
+  }
+
+  // Method để emit login success từ login component
+  notifyLoginSuccess(): void {
+    this.loginSuccessSubject.next();
   }
 
   openRegisterDialog(): void {
@@ -48,6 +63,24 @@ export class AuthDialogService {
       disableClose: true,
       panelClass: 'dialog-panel-bg'
     });
+    dialogRef.afterClosed().subscribe(() => {
+      this.dialogOpened = false;
+    });
+  }
+
+  openVerifyEmailDialog(email: string): void {
+    if (this.dialogOpened) return;
+    this.dialogOpened = true;
+    const dialogRef = this.dialog.open(VerifyEmailDialogComponent, {
+      width: '500px',
+      disableClose: true,
+      panelClass: 'dialog-panel-bg'
+    });
+    
+    // Set email for the component
+    const componentInstance = dialogRef.componentInstance;
+    componentInstance.setEmail(email);
+    
     dialogRef.afterClosed().subscribe(() => {
       this.dialogOpened = false;
     });

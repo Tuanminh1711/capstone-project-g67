@@ -1,75 +1,77 @@
-<app-admin-layout>
-  <div class="admin-report-list-container" *ngIf="reports$ | async as reports">
-    <div class="report-list-header">
-      <h2>Danh sách báo cáo vi phạm</h2>
-      <button class="reload-btn" (click)="reloadReports()" title="Tải lại danh sách">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
-          <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
-          <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
-        </svg>
-        Cập nhật
-      </button>
-    </div>
-    
-    <div class="message-bar-wrapper">
-      <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
-      <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
-        </div>
+<div class="admin-report-list-container" *ngIf="reports$ | async as reports">
+  <div class="report-list-header">
+    <h2>Danh sách báo cáo vi phạm</h2>
+    <button class="reload-btn" (click)="reloadReports()" title="Tải lại danh sách">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+        <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
+        <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
+      </svg>
+      Cập nhật
+    </button>
+  </div>
+  
+  <div class="message-bar-wrapper">
+    <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
+    <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
+  </div>
 
-        <div class="search-bar">
-          <input 
-            type="text" 
-            [(ngModel)]="searchText" 
-            (input)="onSearchInputChange()"
-            placeholder="Tìm kiếm báo cáo..."
-            class="search-input"
-          >
-          <button (click)="onSearch()" class="search-btn">Tìm kiếm</button>
-        </div>
+  <div class="search-bar">
+    <input 
+      type="text" 
+      [(ngModel)]="searchText" 
+      (input)="onSearchInputChange()"
+      placeholder="Tìm kiếm báo cáo..."
+      class="search-input"
+    >
+    <button (click)="onSearch()" class="search-btn">Tìm kiếm</button>
+  </div>
 
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th (click)="sortBy('id')">ID</th>
-              <th (click)="sortBy('title')">Tiêu đề</th>
-              <th (click)="sortBy('reporterName')">Người báo cáo</th>
-              <th (click)="sortBy('createdAt')">Ngày tạo</th>
-              <th (click)="sortBy('status')">Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let report of reports">
-              <td>{{ report.id }}</td>
-              <td>
-                <a (click)="viewDetail(report)" class="report-link">{{ report.title }}</a>
-              </td>
-              <td>{{ report.reporterName }}</td>
-              <td>{{ report.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                <span class="status-badge" [ngClass]="getStatusClass(report.status)">
-                  {{ getStatusText(report.status) }}
-                </span>
-              </td>
-              <td>
-                <button class="view-btn" (click)="viewDetail(report)" title="Xem chi tiết">
-                  👁 Xem
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th (click)="sortBy('id')">ID</th>
+        <th (click)="sortBy('title')">Tiêu đề</th>
+        <th (click)="sortBy('reporterName')">Người báo cáo</th>
+        <th (click)="sortBy('createdAt')">Ngày tạo</th>
+        <th (click)="sortBy('status')">Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let report of reports">
+        <td>{{ report.reportId }}</td>
+        <td>
+          <a (click)="viewDetail(report)" class="report-link clickable-title">{{ report.reason }}</a>
+        </td>
+        <td>{{ report.reporterName }}</td>
+        <td>{{ report.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <span class="status-badge status-inline" [ngClass]="getStatusClass(report.status)">
+            {{ getStatusText(report.status) }}
+          </span>
+        </td>
+        <td>
+          <button class="claim-btn"
+                  [disabled]="['CLAIMED','APPROVED','REJECTED'].includes(report.status)"
+                  *ngIf="getStatusText(report.status)"
+                  (click)="claimReport(report.reportId)"
+                  title="Nhận xử lý báo cáo">
+            Nhận xử lý
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-        <div class="pagination-bar" *ngIf="reports.length > 0">
-          <button (click)="prevPage()" [disabled]="pageNo === 0">&lt; Trước</button>
-          <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
-          <button (click)="nextPage()" [disabled]="pageNo + 1 >= totalPages">Sau &gt;</button>
-        </div>
+  <div class="pagination-bar" *ngIf="reports.length > 0">
+    <button (click)="prevPage()" [disabled]="pageNo === 0">&lt; Trước</button>
+    <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="pageNo + 1 >= totalPages">Sau &gt;</button>
+  </div>
 
-        <div *ngIf="loading" class="loading-bar">Đang tải...</div>
-        
-        <div *ngIf="!loading && reports.length === 0" class="empty-state">
-          <p>Không có báo cáo nào.</p>
-        </div>
-      </div>
-</app-admin-layout>
+  <div *ngIf="loading" class="loading-bar">Đang tải...</div>
+  
+  <div *ngIf="!loading && reports.length === 0" class="empty-state">
+    <p>Không có báo cáo nào.</p>
+  </div>
+</div>

@@ -1,0 +1,235 @@
+@use '../../../styles/variables' as *;
+@use 'sass:color';
+
+:host-context(.mat-dialog-container),
+.dialog-panel-bg {
+  background: #178a4c !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 40px rgba(30, 174, 96, 0.22) !important;
+  padding: 28px 18px 18px 18px !important;
+  min-width: 280px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  position: relative;
+  border: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  position: relative;
+  border: none !important;
+  margin: 0 auto;
+
+  @media (max-width: 700px) {
+    padding: 12px 2px 8px 2px !important;
+    min-width: 0;
+  }
+}
+
+body .mat-dialog-container {
+  background: #178a4c !important;
+  border: none !important;
+}
+
+.dialog-close-x {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: rgba(23,138,76,0.18);
+  border: none;
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s, background 0.2s;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: #ffe066;
+    background: #178a4c;
+  }
+}
+
+.dialog-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-direction: column;
+  margin-top: 18px;
+
+  .logo-img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #43e97b;
+    margin: 0 auto 4px auto;
+    box-shadow: 0 2px 8px rgba(30, 174, 96, 0.10);
+  }
+
+  .logo-text {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2px;
+    text-align: center;
+    display: block;
+  }
+}
+
+.auth-title {
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #ffe066;
+  margin-bottom: 12px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.13), 0 2px 8px #43e97b;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+  margin-top: 8px;
+  display: block;
+  text-transform: uppercase;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+}
+
+.auth-desc {
+  color: #fffbe6;
+  font-size: 0.98rem;
+  margin-bottom: 18px;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.otp-input {
+  width: 30px;
+  height: 34px;
+  font-size: 1.1rem;
+  text-align: center;
+  border: 1.5px solid #43e97b;
+  border-radius: 7px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+  color: #178a4c;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.08);
+  margin: 0 1px;
+
+  &:focus {
+    border-color: #178a4c;
+    background: #f6fff9;
+  }
+}
+
+.auth-btn {
+  width: 60%;
+  min-width: 100px;
+  max-width: 180px;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(90deg, #ffe066 0%, #43e97b 100%);
+  color: #178a4c;
+  font-weight: 700;
+  font-size: 1.01rem;
+  margin: 12px auto 0 auto;
+  display: block;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px #43e97b33;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 8px #fffbe6cc;
+
+  &:hover {
+    background: linear-gradient(90deg, #43e97b 0%, #ffe066 100%);
+    color: #178a4c;
+    box-shadow: 0 4px 16px #38f9d733;
+  }
+  &:disabled {
+    background: #e0e0e0;
+    color: #bdbdbd;
+    cursor: not-allowed;
+    text-shadow: none;
+  }
+}
+
+.resend-section {
+  text-align: center;
+  margin-top: 10px;
+  color: #fffbe6;
+  font-size: 0.98rem;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  font-weight: 400;
+}
+
+.resend-link {
+  color: #ffe066;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 4px;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  transition: color 0.2s;
+  &:hover {
+    color: #43e97b;
+  }
+}
+
+.loading-spinner {
+  border: 3px solid #e0e0e0;
+  border-top: 3px solid #43e97b;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Đảm bảo không có overlay đen phía sau dialog
+:host ::ng-deep .cdk-overlay-backdrop, :host ::ng-deep .mat-dialog-container {
+  background: transparent !important;
+  box-shadow: none !important;
+}

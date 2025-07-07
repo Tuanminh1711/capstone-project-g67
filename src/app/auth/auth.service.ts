@@ -29,6 +29,16 @@ export interface RegisterResponse {
   message: string;
 }
 
+export interface VerifyEmailRequest {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyEmailResponse {
+  message: string;
+  success: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = '/api/auth'; // Use relative URL to work with proxy
@@ -52,6 +62,18 @@ export class AuthService {
 
   register(data: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
+  }
+
+  verifyEmail(data: VerifyEmailRequest): Observable<VerifyEmailResponse> {
+    // Truyền email và otp qua query string
+    return this.http.post<VerifyEmailResponse>(
+      `${this.apiUrl}/verify-email?email=${encodeURIComponent(data.email)}&otp=${encodeURIComponent(data.otp)}`,
+      {}
+    );
+  }
+
+  resendVerificationEmail(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/resend-verification`, { email });
   }
 
   /**
@@ -90,5 +112,9 @@ export class AuthService {
   // Lấy thông tin profile user
   getProfile(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/profile`, { withCredentials: true });
+  }
+
+  loginAdmin(data: { username: string; password: string }) {
+    return this.http.post<any>('http://localhost:8080/api/auth/login-admin', data);
   }
 }

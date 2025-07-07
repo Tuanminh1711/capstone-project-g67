@@ -3,12 +3,12 @@ import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/ro
 import { AuthDialogService } from './auth/auth-dialog.service';
 import { FooterComponent } from './shared/footer/footer.component';
 import { ToastComponent } from './shared/toast/toast.component';
-import { NgIf } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { ConfirmationDialogComponent } from './shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FooterComponent, ToastComponent, NgIf],
+  imports: [RouterOutlet, FooterComponent, ToastComponent, ConfirmationDialogComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

@@ -38,8 +38,9 @@ export class AdminSidebarComponent {
       title: 'Quản lý phản hồi',
       open: false,
       items: [
-        { label: 'Danh sách báo cáo', link: '/admin/response-manager/reports' },
-        { label: 'Danh sách ticket', link: '/admin/response-manager/tickets' }
+        { label: 'Danh sách báo cáo', link: '/admin/reports' }
+        // Nếu có route cho tickets, thêm vào đây, ví dụ:
+        // { label: 'Danh sách ticket', link: '/admin/tickets' }
       ]
     },
     {
@@ -48,8 +49,8 @@ export class AdminSidebarComponent {
       items: [
         { label: 'Tổng số cây đã thêm', link: '/admin/statistics/total-plants' },
         { label: 'Tổng số người dùng đăng ký', link: '/admin/statistics/total-users' },
-        { label: 'Tổng số người dùng truy cập', link: '/admin/statistics/total-browse' },
-        { label: 'Thống kê cây (lọc)', link: '/admin/statistics/total-plants-filter' }
+        { label: 'Tổng số người dùng truy cập', link: '/admin/statistics/total-browse-users' }
+        // Nếu có route cho thống kê lọc, thêm vào đây
       ]
     }
   ];

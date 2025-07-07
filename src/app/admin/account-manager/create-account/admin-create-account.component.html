@@ -1,52 +1,51 @@
-<app-admin-layout>
-  <div class="admin-create-account-container">
-    <h2>Tạo tài khoản mới</h2>
-    <form (ngSubmit)="onSubmit()" autocomplete="off">
-      <div class="form-group">
-        <label>Tên đăng nhập</label>
-            <input type="text" [(ngModel)]="username" name="username" required />
-          </div>
-          <div class="form-group">
-            <label>Mật khẩu</label>
-            <input type="password" [(ngModel)]="password" name="password" required />
-          </div>
-          <div class="form-group">
-            <label>Nhập lại mật khẩu</label>
-            <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
-          </div>
-          <div class="form-group">
-            <label>Họ tên</label>
-            <input type="text" [(ngModel)]="fullName" name="fullName" required />
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="email" name="email" required />
-          </div>
-          <div class="form-group">
-            <label>Số điện thoại</label>
-            <input type="text" [(ngModel)]="phoneNumber" name="phoneNumber" required />
-          </div>
-          <div class="form-group">
-            <label>Môi trường sống</label>
-            <input type="text" [(ngModel)]="livingEnvironment" name="livingEnvironment" required />
-          </div>
-          <div class="form-group">
-            <label>Giới tính</label>
-            <select [(ngModel)]="gender" name="gender" required>
-              <option value="male">Nam</option>
-              <option value="female">Nữ</option>
-              <option value="other">Khác</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Vai trò</label>
-            <select [(ngModel)]="roleId" name="roleId" required>
-              <option [ngValue]="1">Admin</option>
-              <option [ngValue]="2">Staff</option>
-            </select>
-          </div>          <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
-          <div *ngIf="successMsg" class="success-msg">{{ successMsg }}</div>
-          <button type="submit">Tạo tài khoản</button>
-        </form>
-      </div>
-</app-admin-layout>
+<div class="admin-create-account-container">
+  <h2>Tạo tài khoản mới</h2>
+  <form (ngSubmit)="onSubmit()" autocomplete="off">
+    <div class="form-group">
+      <label>Tên đăng nhập</label>
+      <input type="text" [(ngModel)]="username" name="username" required />
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+    </div>
+    <div class="form-group">
+      <label>Nhập lại mật khẩu</label>
+      <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
+    </div>
+    <div class="form-group">
+      <label>Họ tên</label>
+      <input type="text" [(ngModel)]="fullName" name="fullName" required />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
+    </div>
+    <div class="form-group">
+      <label>Số điện thoại</label>
+      <input type="text" [(ngModel)]="phoneNumber" name="phoneNumber" required />
+    </div>
+    <div class="form-group">
+      <label>Môi trường sống</label>
+      <input type="text" [(ngModel)]="livingEnvironment" name="livingEnvironment" required />
+    </div>
+    <div class="form-group">
+      <label>Giới tính</label>
+      <select [(ngModel)]="gender" name="gender" required>
+        <option value="male">Nam</option>
+        <option value="female">Nữ</option>
+        <option value="other">Khác</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Vai trò</label>
+      <select [(ngModel)]="roleId" name="roleId" required>
+        <option [ngValue]="1">Admin</option>
+        <option [ngValue]="2">Staff</option>
+      </select>
+    </div>
+    <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
+    <div *ngIf="successMsg" class="success-msg">{{ successMsg }}</div>
+    <button type="submit">Tạo tài khoản</button>
+  </form>
+</div>

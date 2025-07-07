@@ -1,0 +1,244 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="report-plant-page">
+  <div class="page-header">
+    <div class="header-background"></div>
+    <div class="header-content">
+      <h1 class="page-title">Báo cáo thông tin cây</h1>
+      <p class="page-subtitle">Hãy chia sẻ với chúng tôi nếu bạn phát hiện thông tin không chính xác về cây này</p>
+      <div class="header-stats"></div>
+    </div>
+  </div>
+
+  @if (plant) {
+    <div class="report-content">
+      <!-- Plant Information Panel -->
+      <div class="plant-info-section">
+        <div class="section-badge">
+          <span class="badge-icon">🌱</span>
+          <span class="badge-text">THÔNG TIN CÂY</span>
+        </div>
+        <div class="plant-header">
+          <div class="plant-images">
+            <div class="main-image">
+              <div class="image-wrapper">
+                <img [src]="plant.imageUrls[0] || '/assets/image/logo.png'" [alt]="plant.commonName" class="plant-img" />
+              </div>
+            </div>
+            @if (plant.imageUrls && plant.imageUrls.length > 1) {
+              <div class="image-gallery">
+                @for (imageUrl of plant.imageUrls.slice(1, 4); track imageUrl) {
+                  <div class="gallery-item">
+                    <img [src]="imageUrl" [alt]="plant.commonName" class="gallery-img" />
+                    <div class="gallery-overlay">
+                      <span class="gallery-icon">🔍</span>
+                    </div>
+                  </div>
+                }
+                @if (plant.imageUrls.length > 4) {
+                  <div class="more-images">
+                    <span class="more-count">+{{ plant.imageUrls.length - 4 }}</span>
+                    <span class="more-text">ảnh khác</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="plant-basic-info">
+            <div class="plant-name-section">
+              <h2 class="plant-name">{{ plant.commonName }}</h2>
+            </div>
+            <p class="plant-scientific">{{ plant.scientificName }}</p>
+            <div class="plant-tags">
+              <span class="plant-category">
+                <span class="category-icon"></span>
+                {{ plant.categoryName }}
+              </span>
+              @if (plant.status) {
+                <div class="plant-status">
+                  <span class="status-badge" [class]="plant.status.toLowerCase()">
+                    <span class="status-icon">{{ plant.status === 'ACTIVE' ? '' : '' }}</span>
+                    {{ plant.status === 'ACTIVE' ? 'Đã xác thực' : 'Đang được kiểm tra bởi admin' }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="plant-details">
+          <div class="detail-section description-section">
+            <div class="section-header">
+              <h3><span class="section-icon">📝</span>Mô tả chi tiết</h3>
+              <span class="section-badge">Thông tin cơ bản</span>
+            </div>
+            <div class="description-content">
+              <p>{{ plant.description || 'Chưa có mô tả chi tiết cho loại cây này.' }}</p>
+            </div>
+          </div>
+          <div class="care-requirements">
+            <div class="section-header">
+              <h3><span class="section-icon">🌿</span>Yêu cầu chăm sóc</h3>
+            </div>
+            <div class="care-grid">
+              <div class="care-item light-care">
+                <div class="care-icon-wrapper">
+                  <div class="care-icon">☀️</div>
+                  <div class="care-indicator light-indicator"></div>
+                </div>
+                <div class="care-info">
+                  <span class="care-label">Ánh sáng</span>
+                  <span class="care-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
+                  <div class="care-tips">Vị trí: {{ getLightPosition(plant.lightRequirement) }}</div>
+                </div>
+              </div>
+              <div class="care-item water-care">
+                <div class="care-icon-wrapper">
+                  <div class="care-icon">💧</div>
+                  <div class="care-indicator water-indicator"></div>
+                </div>
+                <div class="care-info">
+                  <span class="care-label">Nước</span>
+                  <span class="care-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
+                  <div class="care-tips">Tần suất: {{ getWaterFrequency(plant.waterRequirement) }}</div>
+                </div>
+              </div>
+              <div class="care-item difficulty-care">
+                <div class="care-icon-wrapper">
+                  <div class="care-icon">🌱</div>
+                  <div class="care-indicator" [class]="getDifficultyClass(plant.careDifficulty)"></div>
+                </div>
+                <div class="care-info">
+                  <span class="care-label">Độ khó</span>
+                  <span class="care-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
+                  <div class="care-tips">{{ getDifficultyTip(plant.careDifficulty) }}</div>
+                </div>
+              </div>
+              @if (plant.suitableLocation) {
+                <div class="care-item location-care">
+                  <div class="care-icon-wrapper">
+                    <div class="care-icon">🏠</div>
+                    <div class="care-indicator location-indicator"></div>
+                  </div>
+                  <div class="care-info">
+                    <span class="care-label">Vị trí phù hợp</span>
+                    <span class="care-value">{{ plant.suitableLocation }}</span>
+                    <div class="care-tips">Môi trường lý tưởng</div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="detail-section instructions-section" *ngIf="plant.careInstructions">
+            <div class="section-header">
+              <h3><span class="section-icon">📋</span>Hướng dẫn chăm sóc chi tiết</h3>
+            </div>
+            <div class="instructions-content">
+              <p>{{ plant.careInstructions }}</p>
+            </div>
+          </div>
+          <div class="detail-section diseases-section" *ngIf="plant.commonDiseases">
+            <div class="section-header">
+              <h3><span class="section-icon">🩺</span>Bệnh thường gặp</h3>
+            </div>
+            <div class="diseases-content">
+              <p>{{ plant.commonDiseases }}</p>
+            </div>
+          </div>
+          <div class="plant-meta" *ngIf="plant.createdAt">
+            <div class="meta-item">
+              <span class="meta-icon">📅</span>
+              <span class="meta-label">Ngày tạo:</span>
+              <span class="meta-value">{{ formatDate(plant.createdAt) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🔄</span>
+              <span class="meta-label">Cập nhật gần nhất:</span>
+              <span class="meta-value">{{ formatDate(plant.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Report Form Panel -->
+      <div class="report-form-section">
+        <div class="form-header">
+          <div class="form-icon">📝</div>
+          <h2>Gửi báo cáo</h2>
+          <p>Vui lòng mô tả chi tiết vấn đề bạn phát hiện để chúng tôi có thể cải thiện thông tin</p>
+        </div>
+        <form (ngSubmit)="submitReport()" class="report-form">
+          <div class="form-group">
+            <label for="reason" class="form-label">
+              <span class="label-icon">📋</span>
+              <span class="label-text">Lý do báo cáo</span>
+              <span class="label-required">*</span>
+            </label>
+            <div class="textarea-wrapper">
+              <textarea 
+                id="reason"
+                class="form-textarea" 
+                [(ngModel)]="reason" 
+                name="reason" 
+                rows="6" 
+                placeholder="Ví dụ: Thông tin chăm sóc không chính xác, hình ảnh sai, mô tả thiếu chi tiết, tên khoa học không đúng..."
+                required 
+                autofocus
+              ></textarea>
+              <div class="textarea-counter">
+                <span class="counter-text">{{ reason.length }}/500 ký tự</span>
+              </div>
+            </div>
+            <div class="form-suggestions">
+              <div class="suggestion-header">💡 Gợi ý lý do báo cáo:</div>
+              <div class="suggestion-tags">
+                <button type="button" class="suggestion-tag" (click)="addSuggestion('Thông tin chăm sóc không chính xác')">
+                  🌿 Thông tin chăm sóc sai
+                </button>
+                <button type="button" class="suggestion-tag" (click)="addSuggestion('Hình ảnh không phù hợp')">
+                  📸 Hình ảnh sai
+                </button>
+                <button type="button" class="suggestion-tag" (click)="addSuggestion('Tên khoa học không đúng')">
+                  🔬 Tên khoa học sai
+                </button>
+                <button type="button" class="suggestion-tag" (click)="addSuggestion('Mô tả thiếu chi tiết')">
+                  📝 Mô tả thiếu
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Xóa errorMsg khỏi template, chỉ dùng toast -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-cancel" (click)="goToPlantInfo()" [disabled]="submitting">
+              <span class="btn-icon">↩️</span>
+              <span class="btn-text">Quay lại</span>
+            </button>
+            <button type="submit" class="btn btn-submit" [disabled]="submitting || !reason.trim()">
+              <span class="btn-icon" *ngIf="!submitting">📤</span>
+              <div class="btn-loading" *ngIf="submitting">
+                <div class="loading-spinner"></div>
+              </div>
+              <span class="btn-text">{{ submitting ? 'Đang gửi...' : 'Gửi báo cáo' }}</span>
+            </button>
+          </div>
+          <div class="form-footer">
+            <div class="privacy-note">
+              <span class="privacy-icon">🔒</span>
+              <span class="privacy-text">Thông tin báo cáo của bạn sẽ được bảo mật và chỉ dùng để cải thiện chất lượng dữ liệu</span>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <div class="loading-state" *ngIf="!plant && !errorMsg">
+    <div class="loading-spinner">🌱</div>
+    <p>Đang tải thông tin cây...</p>
+  </div>
+
+  <div class="error-state" *ngIf="errorMsg && !plant">
+    <div class="error-icon">❌</div>
+    <h3>Không thể tải thông tin</h3>
+    <p>{{ errorMsg }}</p>
+    <button class="btn btn-retry" (click)="goToPlantInfo()">Quay lại danh sách</button>
+  </div>
+</div>

@@ -1,0 +1,376 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="garden-container" (click)="onPageVisible()">
+  <!-- Hero Section -->
+  <section class="garden-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">🌿 Khu Vườn Của Tôi</h1>
+      <p class="hero-subtitle">Không gian xanh riêng tư nơi bạn chăm sóc những cây cảnh yêu thích</p>
+      
+      <!-- Statistics - Only show when user has plants -->
+      @if (!loading && !error && userPlants.length > 0) {
+        <div class="garden-stats">
+          <div class="stat-item">
+            <div class="stat-number">{{ userPlants.length }}</div>
+            <div class="stat-label">Cây trong vườn</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ getReminderEnabledCount() }}</div>
+            <div class="stat-label">Có lời nhắc</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ getHealthyPlantsCount() }}</div>
+            <div class="stat-label">Cây khỏe mạnh</div>
+          </div>
+        </div>
+      }
+    </div>
+    
+    <div class="garden-decoration">
+      <div class="floating-leaf">🍃</div>
+      <div class="floating-leaf">🌱</div>
+      <div class="floating-leaf">🌿</div>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  @if (!loading && !error && userPlants.length > 0) {
+    <section class="garden-controls">
+      <div class="controls-wrapper">
+        <div class="view-controls">
+          <button 
+            [class.active]="layout === 'garden'" 
+            (click)="layout = 'garden'"
+            class="control-btn garden-view"
+          >
+            <span class="btn-icon">🌱</span>
+            <span>Khu Vườn</span>
+          </button>
+          <button 
+            [class.active]="layout === 'grid'" 
+            (click)="layout = 'grid'"
+            class="control-btn grid-view"
+          >
+            <span class="btn-icon">⊞</span>
+            <span>Lưới</span>
+          </button>
+          <button 
+            [class.active]="layout === 'list'" 
+            (click)="layout = 'list'"
+            class="control-btn list-view"
+          >
+            <span class="btn-icon">☰</span>
+            <span>Danh sách</span>
+          </button>
+        </div>
+
+        <div class="filter-controls">
+          <button 
+            [class.active]="filter === 'all'" 
+            (click)="filter = 'all'"
+            class="filter-btn"
+          >
+            Tất cả
+          </button>
+          <button 
+            [class.active]="filter === 'reminder'" 
+            (click)="filter = 'reminder'"
+            class="filter-btn"
+          >
+            Có nhắc nhở
+          </button>
+          <button 
+            [class.active]="filter === 'recent'" 
+            (click)="filter = 'recent'"
+            class="filter-btn"
+          >
+            Mới trồng
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-garden">
+      <div class="loading-animation">
+        <div class="growing-plant">
+          <div class="plant-stem"></div>
+          <div class="plant-leaves">
+            <div class="leaf leaf-1">🌿</div>
+            <div class="leaf leaf-2">🍃</div>
+            <div class="leaf leaf-3">🌱</div>
+          </div>
+        </div>
+      </div>
+      <p class="loading-text">Đang tải khu vườn của bạn...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-garden">
+      <div class="error-icon">🥀</div>
+      <h3>{{ error.includes('đăng nhập') ? 'Cần đăng nhập' : 'Oops! Có lỗi xảy ra' }}</h3>
+      <p>{{ error }}</p>
+      <div class="error-actions">
+        @if (error.includes('đăng nhập')) {
+          <button 
+            class="auth-btn"
+            (click)="handleAuthRequired()"
+          >
+            <span>🔑</span> Đăng nhập
+          </button>
+        } @else {
+          <button 
+            class="retry-btn" 
+            (click)="refreshGarden()"
+            [disabled]="loading"
+          >
+            <span>🔄</span> {{ loading ? 'Đang thử lại...' : 'Thử lại' }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && !error && userPlants.length === 0) {
+    <div class="empty-garden">
+      <div class="empty-illustration">
+        <div class="empty-pot">
+          <div class="pot-body"></div>
+          <div class="pot-soil"></div>
+          <div class="sprouting-seed">🌱</div>
+        </div>
+      </div>
+      <div class="empty-content">
+        <h3>{{ isLoggedIn ? 'Khu vườn của bạn đang trống' : 'Chào mừng đến với My Garden!' }}</h3>
+        <p>{{ isLoggedIn ? 'Hãy bắt đầu trồng những cây cảnh yêu thích để tạo nên khu vườn xanh tươi!' : 'Đăng nhập để bắt đầu tạo khu vườn xanh của riêng bạn!' }}</p>
+        @if (isLoggedIn) {
+          <button 
+            class="start-gardening-btn" 
+            (click)="router.navigate(['/plant-info'])"
+          >
+            <span>🌱</span> Bắt đầu trồng cây
+          </button>
+        } @else {
+          <button 
+            class="start-gardening-btn" 
+            (click)="handleAuthRequired()"
+          >
+            <span>🔑</span> Đăng nhập để bắt đầu
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Plants Display -->
+  @if (!loading && !error && userPlants.length > 0) {
+    <div class="plants-display">
+      
+      <!-- Garden Layout -->
+      @if (layout === 'garden') {
+        <div class="garden-layout">
+          <div class="garden-ground">
+            <div class="garden-path"></div>
+            <div class="plants-garden">
+              @for (plant of filteredPlants; track plant.plantId; let i = $index) {
+                <div 
+                  class="plant-spot"
+                  [class.spot-left]="i % 2 === 0"
+                  [class.spot-right]="i % 2 === 1"
+                  [style.animation-delay]="i * 0.1 + 's'"
+                >
+                  <div class="plant-pot" (click)="viewPlantDetail(plant.plantId)">
+                    <div class="pot-base"></div>
+                    <div class="plant-image">
+                      <span class="plant-emoji">🌿</span>
+                    </div>
+                    <div class="plant-glow"></div>
+                  </div>
+                  
+                  <div class="plant-info-card">
+                    <h3 class="plant-name">{{ plant.nickname || 'Cây không tên' }}</h3>
+                    <div class="plant-details">
+                      <div class="detail-row">
+                        <span class="detail-icon">📍</span>
+                        <span class="detail-text">{{ plant.plantLocation }}</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-icon">📅</span>
+                        <span class="detail-text">Đã trồng</span>
+                      </div>
+                      @if (plant.reminderEnabled) {
+                        <div class="detail-row">
+                          <span class="detail-icon">🔔</span>
+                          <span class="detail-text">Có lời nhắc</span>
+                        </div>
+                      }
+                    </div>
+                    <div class="plant-actions">
+                      <button class="action-btn care-btn" (click)="carePlant(plant.plantId); $event.stopPropagation()">
+                        <span>Chăm sóc</span>
+                      </button>
+                      <button class="action-btn edit-btn" (click)="editPlant(plant.plantId, plant.nickname); $event.stopPropagation()">
+                        <span>Chỉnh sửa</span>
+                      </button>
+                      <button class="action-btn remove-btn" (click)="removePlantFromCollection(plant.plantId); $event.stopPropagation()">
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Grid Layout -->
+      @if (layout === 'grid') {
+        <div class="grid-layout">
+          <div class="plants-grid">
+            @for (plant of filteredPlants; track plant.plantId; let i = $index) {
+              <div 
+                class="plant-card"
+                [style.animation-delay]="i * 0.1 + 's'"
+              >
+                <div class="card-header">
+                  <div class="plant-image-container">
+                    <img 
+                      src="/assets/image/logo.png" 
+                      [alt]="plant.nickname"
+                      class="plant-image"
+                    />
+                    <div class="image-overlay">
+                      <button 
+                        class="overlay-btn"
+                        (click)="viewPlantDetail(plant.plantId)"
+                      >
+                        <span>👁️</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card-body">
+                  <h3 class="plant-title">{{ plant.nickname }}</h3>
+                  <div class="plant-meta">
+                    <div class="meta-item">
+                      <span class="meta-icon">📍</span>
+                      <span class="meta-text">{{ plant.plantLocation }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <span class="meta-icon">📅</span>
+                      <span class="meta-text">Đã trồng</span>
+                    </div>
+                  </div>
+                  
+                  <div class="plant-status">
+                    <div class="status-indicator" [class.active]="plant.reminderEnabled">
+                      <span class="status-icon">🔔</span>
+                      <span class="status-text">{{ plant.reminderEnabled ? 'Có nhắc nhở' : 'Không nhắc nhở' }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card-footer">
+                  <button 
+                    class="card-btn primary"
+                    (click)="viewPlantDetail(plant.plantId)"
+                  >
+                    Chi tiết
+                  </button>
+                  <button 
+                    class="card-btn secondary"
+                    (click)="editPlant(plant.plantId, plant.nickname)"
+                  >
+                    Sửa
+                  </button>
+                  <button 
+                    class="card-btn secondary"
+                    (click)="removePlantFromCollection(plant.plantId)"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- List Layout -->
+      @if (layout === 'list') {
+        <div class="list-layout">
+          <div class="plants-list">
+            @for (plant of filteredPlants; track plant.plantId; let i = $index) {
+              <div 
+                class="plant-list-item"
+                [style.animation-delay]="i * 0.05 + 's'"
+              >
+                <div class="list-item-image">
+                  <img 
+                    src="/assets/image/logo.png" 
+                    [alt]="plant.nickname"
+                  />
+                </div>
+                
+                <div class="list-item-content">
+                  <div class="content-header">
+                    <h3 class="plant-name">{{ plant.nickname }}</h3>
+                    <div class="plant-age">Đã trồng</div>
+                  </div>
+                  
+                  <div class="content-details">
+                    <div class="detail-group">
+                      <span class="detail-icon">📍</span>
+                      <span>{{ plant.plantLocation }}</span>
+                    </div>
+                    <div class="detail-group">
+                      <span class="detail-icon">📅</span>
+                      <span>Được thêm vào vườn</span>
+                    </div>
+                    @if (plant.reminderEnabled) {
+                      <div class="detail-group">
+                        <span class="detail-icon">🔔</span>
+                        <span>Nhắc nhở đã bật</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+                
+                <div class="list-item-actions">
+                  <button 
+                    class="list-action-btn view"
+                    (click)="viewPlantDetail(plant.plantId)"
+                  >
+                    <span>👁️</span> Xem
+                  </button>
+                  <button 
+                    class="list-action-btn edit"
+                    (click)="editPlant(plant.plantId, plant.nickname)"
+                  >
+                    <span>✏️</span> Sửa
+                  </button>
+                  <button 
+                    class="list-action-btn remove"
+                    (click)="removePlantFromCollection(plant.plantId)"
+                  >
+                    <span>🗑️</span> Xóa
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Confirmation Dialog -->
+<app-confirmation-dialog></app-confirmation-dialog>

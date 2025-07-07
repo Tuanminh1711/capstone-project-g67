@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
+import { ToastService } from '../../../shared/toast.service';
 
 interface UpdatePlantRequest {
   scientificName: string;
@@ -51,7 +52,7 @@ interface ApiResponse<T = any> {
 @Component({
   selector: 'app-update-plant',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminLayoutComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './update-plant.component.html',
   styleUrls: ['./update-plant.scss']
 })
@@ -104,6 +105,8 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     { value: 'ACTIVE', label: 'Hoạt động' },
     { value: 'INACTIVE', label: 'Không hoạt động' }
   ];
+
+  private toast = inject(ToastService);
 
   constructor(
     private route: ActivatedRoute,
@@ -209,30 +212,30 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (!this.validateForm()) {
+      this.toast.error('Vui lòng kiểm tra lại các trường dữ liệu!');
       return;
     }
-
     this.isUpdating = true;
     this.clearMessages();
-
     this.http.put<ApiResponse<Plant>>(`${this.baseUrl}/update-plant/${this.plantId}`, this.updateForm)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           this.isUpdating = false;
-          if (response.success) {
-            this.successMessage = 'Plant updated successfully!';
+          console.log('Update response:', response); // Log response để kiểm tra giá trị success
+          if (response && (response.success === true || response.status === 200)) {
+            this.toast.success('Cập nhật cây thành công!');
             setTimeout(() => {
               this.navigateBack();
-            }, 2000);
+            }, 1500);
           } else {
-            this.handleError(response.message || 'Update failed');
+            this.toast.error(response.message || 'Cập nhật thất bại!');
           }
         },
         error: (error) => {
           this.isUpdating = false;
+          this.toast.error('Có lỗi xảy ra khi cập nhật!');
           this.handleHttpError(error);
-          console.error('Update plant error:', error);
         }
       });
   }
@@ -277,30 +280,33 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private handleError(message: string): void {
-    this.errorMessage = message;
+    this.toast.error(message);
+    this.errorMessage = '';
     this.validationErrors = [];
   }
 
   private handleHttpError(error: any): void {
     switch (error.status) {
       case 400:
-        this.handleError('Invalid data. Please check your input.');
+        this.toast.error('Dữ liệu không hợp lệ.');
         break;
       case 401:
-        this.handleError('Unauthorized. Please login again.');
+        this.toast.error('Bạn chưa đăng nhập.');
         break;
       case 403:
-        this.handleError('You do not have permission to perform this action.');
+        this.toast.error('Bạn không có quyền thực hiện.');
         break;
       case 404:
-        this.handleError('Plant not found.');
+        this.toast.error('Không tìm thấy cây.');
         break;
       case 500:
-        this.handleError('Server error. Please try again later.');
+        this.toast.error('Lỗi server.');
         break;
       default:
-        this.handleError('An unexpected error occurred. Please try again.');
+        this.toast.error('Có lỗi xảy ra.');
     }
+    this.errorMessage = '';
+    this.validationErrors = [];
   }
 
   private clearMessages(): void {

@@ -303,6 +303,21 @@
       }
     }
   }
+
+  // Fix tràn viền input cho form tạo cây mới
+  .form-row,
+  .form-group,
+  .form-control {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .form-row {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 @keyframes spin {

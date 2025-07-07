@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { PlantDataService } from '../../shared/plant-data.service';
@@ -27,7 +27,7 @@ interface Plant {
 @Component({
   selector: 'app-plant-info',
   standalone: true,
-  imports: [TopNavigatorComponent, CommonModule, HttpClientModule, FormsModule],
+  imports: [TopNavigatorComponent, CommonModule, FormsModule],
   templateUrl: './plant-info.html',
   styleUrl: './plant-info.scss'
 })
@@ -55,68 +55,8 @@ export class PlantInfoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Thử load từ cache trước
-    this.loadFromCache();
-    
-    // Nếu không có cache hoặc cache cũ, fetch mới
-    if (this.plantsSubject.value.length === 0) {
-      console.log('No cache found, fetching plants...');
-      setTimeout(() => {
-        this.fetchPlants(0, '');
-      }, 0);
-    } else {
-      console.log('Loaded plants from cache, total:', this.plantsSubject.value.length);
-    }
-  }
-
-  /**
-   * Load dữ liệu từ localStorage cache
-   */
-  private loadFromCache(): void {
-    try {
-      const cached = localStorage.getItem('plants_list_cache');
-      if (cached) {
-        const cacheData = JSON.parse(cached);
-        const cacheTime = new Date(cacheData.cachedAt).getTime();
-        const now = new Date().getTime();
-        
-        // Cache hợp lệ trong 10 phút
-        if (now - cacheTime < 10 * 60 * 1000) {
-          console.log('✅ Loading plants from cache:', cacheData.plants.length, 'items');
-          this.plantsSubject.next(cacheData.plants);
-          this.plantDataService.setPlantsList(cacheData.plants);
-          this.currentPage = cacheData.currentPage || 0;
-          this.totalPages = cacheData.totalPages || 1;
-          this.totalElements = cacheData.totalElements || cacheData.plants.length;
-          this.currentKeyword = cacheData.keyword || '';
-          this.searchText = this.currentKeyword;
-          this.cdr.detectChanges();
-          return;
-        }
-      }
-    } catch (e) {
-      console.log('Failed to load cached plants:', e);
-    }
-  }
-
-  /**
-   * Cache dữ liệu vào localStorage
-   */
-  private cachePlants(plants: Plant[], page: number, keyword: string): void {
-    try {
-      const cacheData = {
-        plants: plants,
-        currentPage: page,
-        totalPages: this.totalPages,
-        totalElements: this.totalElements,
-        keyword: keyword,
-        cachedAt: new Date().toISOString()
-      };
-      localStorage.setItem('plants_list_cache', JSON.stringify(cacheData));
-      console.log('💾 Cached plants list:', plants.length, 'items');
-    } catch (e) {
-      console.log('Failed to cache plants:', e);
-    }
+    // Luôn fetch mới từ server, không ưu tiên cache khi user thao tác hoặc reload
+    this.fetchPlants(0, '');
   }
 
   private buildUrl(page: number, keyword: string): string {
@@ -128,10 +68,8 @@ export class PlantInfoComponent implements OnInit {
   }
 
   fetchPlants(page: number, keyword: string = ''): void {
-    // Chỉ hiển thị loading khi không có data cache
-    if (this.plantsSubject.value.length === 0) {
-      this.loading = true;
-    }
+    // Luôn fetch mới từ server, không ưu tiên cache khi user thao tác hoặc reload
+    this.loading = true;
     this.error = '';
     const trimmedKeyword = keyword.trim();
     const url = this.buildUrl(page, trimmedKeyword);
@@ -145,7 +83,7 @@ export class PlantInfoComponent implements OnInit {
         if (!data || !Array.isArray(data.plants)) {
           this.resetResults();
           this.plantsSubject.next([]);
-          this.cdr.detectChanges(); // đảm bảo cập nhật view
+          this.cdr.detectChanges();
           return;
         }
 
@@ -155,12 +93,9 @@ export class PlantInfoComponent implements OnInit {
         this.pageSize = data.pageSize ?? this.pageSize;
 
         this.plantsSubject.next(data.plants);
-        // Lưu danh sách cây vào service để dùng cho detail page
         this.plantDataService.setPlantsList(data.plants);
-        // Cache dữ liệu vào localStorage
         this.cachePlants(data.plants, page, trimmedKeyword);
-        console.log('Plants saved to service:', data.plants.length, 'items');
-        this.cdr.detectChanges(); // đảm bảo cập nhật view
+        this.cdr.detectChanges();
       },
       error: () => {
         this.loading = false;
@@ -278,13 +213,22 @@ export class PlantInfoComponent implements OnInit {
   }
 
   /**
-   * Translate plant status enum to Vietnamese
+   * Cache dữ liệu vào localStorage
    */
-  translatePlantStatus(value: string): string {
-    const translations: { [key: string]: string } = {
-      'ACTIVE': 'Đang hoạt động',
-      'INACTIVE': 'Ngưng hoạt động'
-    };
-    return translations[value?.toUpperCase()] || value || 'Không rõ';
+  private cachePlants(plants: Plant[], page: number, keyword: string): void {
+    try {
+      const cacheData = {
+        plants: plants,
+        currentPage: page,
+        totalPages: this.totalPages,
+        totalElements: this.totalElements,
+        keyword: keyword,
+        cachedAt: new Date().toISOString()
+      };
+      localStorage.setItem('plants_list_cache', JSON.stringify(cacheData));
+      console.log('💾 Cached plants list:', plants.length, 'items');
+    } catch (e) {
+      console.log('Failed to cache plants:', e);
+    }
   }
 }

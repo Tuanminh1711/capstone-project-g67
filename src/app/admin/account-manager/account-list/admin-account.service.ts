@@ -54,4 +54,8 @@ export class AdminAccountService {
     const params = new HttpParams().set('userId', userId.toString());
     return this.http.post<any>(`${this.apiUrl}/deleteuser`, null, { params });
   }
+
+  resetPassword(userId: number) {
+    return this.http.put<any>(`http://localhost:8080/api/admin/reset-password/${userId}`, {});
+  }
 }

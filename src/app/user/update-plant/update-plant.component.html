@@ -1,0 +1,152 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="update-plant-container" (click)="onPageVisible()">
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">Chỉnh sửa thông tin cây</h1>
+      <p class="page-subtitle">Cập nhật thông tin cho cây trong vườn của bạn</p>
+    </div>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="state-section loading-state">
+      <div class="state-content">
+        <div class="loading-spinner"></div>
+        <h3>Đang tải thông tin</h3>
+        <p>Vui lòng chờ trong giây lát...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="state-section error-state">
+      <div class="state-content">
+        <div class="error-icon">Lỗi</div>
+        <h3>Có lỗi xảy ra</h3>
+        <p>{{ errorMessage }}</p>
+        <button class="retry-btn" (click)="loadPlantData()">Thử lại</button>
+      </div>
+    </div>
+
+    <!-- Update Form -->
+    <div *ngIf="!isLoading && !errorMessage && currentPlant" class="form-section">
+      <!-- Plant Info Header -->
+      <div class="plant-info-card">
+        <div class="plant-avatar">
+          <div class="plant-text">Cây</div>
+        </div>
+        <div class="plant-details">
+          <h2 class="plant-name">{{ currentPlant.nickname }}</h2>
+          <p class="plant-location">{{ currentPlant.plantLocation }}</p>
+          <div class="plant-status">
+            <span class="status-badge" [class.active]="currentPlant.reminderEnabled">
+              {{ currentPlant.reminderEnabled ? 'Có nhắc nhở' : 'Không nhắc nhở' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Form -->
+      <div class="form-card">
+        <div class="form-header">
+          <h3>Thông tin cây</h3>
+          <p>Cập nhật thông tin chi tiết cho cây của bạn</p>
+        </div>
+
+        <form [formGroup]="updateForm" (ngSubmit)="onSubmit()" class="update-form">
+          <div class="form-grid">
+            <!-- Nickname Field -->
+            <div class="form-group">
+              <label for="nickname" class="form-label">
+                Tên gọi <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="nickname"
+                formControlName="nickname"
+                class="form-input"
+                [class.error]="isFieldInvalid('nickname')"
+                placeholder="Nhập tên gọi cho cây của bạn"
+                maxlength="100"
+              />
+              <div *ngIf="isFieldInvalid('nickname')" class="error-message">
+                {{ getFieldError('nickname') }}
+              </div>
+            </div>
+
+            <!-- Location Field -->
+            <div class="form-group">
+              <label for="locationInHouse" class="form-label">
+                Vị trí trong nhà <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="locationInHouse"
+                formControlName="locationInHouse"
+                class="form-input"
+                [class.error]="isFieldInvalid('locationInHouse')"
+                placeholder="Ví dụ: Phòng khách, Ban công, Phòng ngủ..."
+                maxlength="50"
+              />
+              <div *ngIf="isFieldInvalid('locationInHouse')" class="error-message">
+                {{ getFieldError('locationInHouse') }}
+              </div>
+            </div>
+
+            <!-- Planting Date Field -->
+            <div class="form-group">
+              <label for="plantingDate" class="form-label">
+                Ngày trồng <span class="required">*</span>
+              </label>
+              <input
+                type="date"
+                id="plantingDate"
+                formControlName="plantingDate"
+                class="form-input"
+                [class.error]="isFieldInvalid('plantingDate')"
+              />
+              <div *ngIf="isFieldInvalid('plantingDate')" class="error-message">
+                {{ getFieldError('plantingDate') }}
+              </div>
+            </div>
+
+            <!-- Reminder Toggle -->
+            <div class="form-group full-width">
+              <div class="toggle-section">
+                <div class="toggle-info">
+                  <label for="reminderEnabled" class="toggle-label">
+                    Nhắc nhở chăm sóc
+                  </label>
+                  <p class="toggle-description">
+                    Nhận thông báo nhắc nhở chăm sóc cây định kỳ
+                  </p>
+                </div>
+                <div class="toggle-wrapper">
+                  <input
+                    type="checkbox"
+                    id="reminderEnabled"
+                    formControlName="reminderEnabled"
+                    class="toggle-input"
+                  />
+                  <label for="reminderEnabled" class="toggle-switch">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="updateForm.invalid || isSubmitting"
+            >
+              <span *ngIf="isSubmitting" class="btn-loading"></span>
+              <span>{{ isSubmitting ? 'Đang cập nhật...' : 'Cập nhật thông tin' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

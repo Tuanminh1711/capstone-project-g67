@@ -1,5 +1,8 @@
 <router-outlet />
+<app-confirmation-dialog></app-confirmation-dialog>
 <!-- Footer chỉ hiển thị nếu không phải trang admin -->
-<app-footer *ngIf="!isAdminPage()"></app-footer>
+@if (!isAdminPage()) {
+  <app-footer></app-footer>
+}
 <!-- Toast notifications -->
 <app-toast></app-toast>

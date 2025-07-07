@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 import { AdminCreateAccountService } from './admin-create-account.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-create-account',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminLayoutComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-create-account.component.html',
   styleUrls: ['./admin-create-account.component.scss']
 })

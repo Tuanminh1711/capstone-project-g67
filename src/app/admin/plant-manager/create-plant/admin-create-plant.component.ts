@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AdminCreatePlantService } from './admin-create-plant.service';
 import { ToastService } from '../../../shared/toast.service';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 export interface PlantCategory {
   id: number;
@@ -28,7 +27,7 @@ export interface CreatePlantRequest {
 @Component({
   selector: 'app-admin-create-plant',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, AdminLayoutComponent],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './admin-create-plant.component.html',
   styleUrls: ['./admin-create-plant.component.scss']
 })

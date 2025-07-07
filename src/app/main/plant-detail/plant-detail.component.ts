@@ -1,11 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CookieService } from '../../auth/cookie.service';
 import { PlantDataService, Plant } from '../../shared/plant-data.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
+import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../shared/toast.service';
+import { ConfirmationDialogService } from '../../shared/confirmation-dialog.service';
+import { MatDialog } from '@angular/material/dialog';
 
 /**
  * Component hiển thị chi tiết thông tin của một cây
@@ -13,7 +17,7 @@ import { AuthDialogService } from '../../auth/auth-dialog.service';
 @Component({
   selector: 'app-plant-detail',
   standalone: true,
-  imports: [CommonModule, TopNavigatorComponent],
+  imports: [CommonModule, TopNavigatorComponent, FormsModule, RouterModule],
   templateUrl: './plant-detail.component.html',
   styleUrl: './plant-detail.component.scss'
 })
@@ -23,6 +27,9 @@ export class PlantDetailComponent implements OnInit {
   selectedImage = '';
   requiresAuth = false;
   isLimitedInfo = false;
+  private toast = inject(ToastService);
+  private confirmationDialog = inject(ConfirmationDialogService);
+  private dialog = inject(MatDialog);
 
   constructor(
     private route: ActivatedRoute,
@@ -310,11 +317,40 @@ export class PlantDetailComponent implements OnInit {
     return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
   }
 
-  translatePlantStatus(value: string): string {
-    const translations: { [key: string]: string } = {
-      'ACTIVE': 'Đang hoạt động',
-      'INACTIVE': 'Ngưng hoạt động'
+  // New helper methods for enhanced UI
+  getLightPosition(value: string): string {
+    const positions: { [key: string]: string } = {
+      'LOW': 'Góc tối, xa cửa sổ',
+      'MEDIUM': 'Gần cửa sổ, ánh sáng gián tiếp',
+      'HIGH': 'Cửa sổ hướng nam, ánh sáng trực tiếp'
     };
-    return translations[value?.toUpperCase()] || value || 'Không rõ';
+    return positions[value?.toUpperCase()] || 'Tùy theo loại cây';
+  }
+
+  getWaterFrequency(value: string): string {
+    const frequencies: { [key: string]: string } = {
+      'LOW': '1-2 lần/tuần',
+      'MEDIUM': '2-3 lần/tuần',
+      'HIGH': '3-4 lần/tuần'
+    };
+    return frequencies[value?.toUpperCase()] || 'Theo nhu cầu';
+  }
+
+  getDifficultyClass(value: string): string {
+    const classes: { [key: string]: string } = {
+      'EASY': 'easy-indicator',
+      'MODERATE': 'moderate-indicator',
+      'DIFFICULT': 'difficult-indicator'
+    };
+    return classes[value?.toUpperCase()] || 'default-indicator';
+  }
+
+  getDifficultyTip(value: string): string {
+    const tips: { [key: string]: string } = {
+      'EASY': 'Phù hợp người mới bắt đầu',
+      'MODERATE': 'Cần chút kinh nghiệm',
+      'DIFFICULT': 'Dành cho người có kinh nghiệm'
+    };
+    return tips[value?.toUpperCase()] || 'Tùy theo kinh nghiệm';
   }
 }

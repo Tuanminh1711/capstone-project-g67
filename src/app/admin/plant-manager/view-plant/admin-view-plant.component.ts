@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 interface PlantDetail {
   id: number;
@@ -46,7 +45,7 @@ interface UpdatePlantRequest {
 @Component({
   selector: 'app-admin-view-plant',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AdminLayoutComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-view-plant.component.html',
   styleUrl: './admin-view-plant.scss',
   encapsulation: ViewEncapsulation.None

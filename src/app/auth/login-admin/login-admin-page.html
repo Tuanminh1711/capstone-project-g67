@@ -1,0 +1,19 @@
+<div class="login-admin-page-bg">
+  <div class="login-admin-card">
+    <div class="auth-header">
+      <img src="assets/image/logo.png" alt="logo" class="logo-img" />
+      <span class="logo-text">PLANCARE</span>
+    </div>
+    <h2 class="auth-title">Đăng nhập Quản trị/Staff</h2>
+    <form (ngSubmit)="onSubmit()" autocomplete="on">
+      <input class="auth-input" type="text" name="username" [(ngModel)]="username" placeholder="Tên đăng nhập hoặc Email" required />
+      <input class="auth-input" type="password" name="password" [(ngModel)]="password" placeholder="Mật khẩu" required />
+      <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
+      <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
+      <button class="auth-btn" type="submit" [disabled]="loading">
+        <ng-container *ngIf="loading; else loginText">Đang đăng nhập...</ng-container>
+        <ng-template #loginText>Đăng nhập</ng-template>
+      </button>
+    </form>
+  </div>
+</div>

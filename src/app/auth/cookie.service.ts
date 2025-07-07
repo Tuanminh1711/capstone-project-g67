@@ -40,8 +40,8 @@ export class CookieService {
     name: string, 
     value: string, 
     days: number = 7, 
-    secure: boolean = true, 
-    sameSite: 'Strict' | 'Lax' | 'None' = 'Strict'
+    secure: boolean = false, // Default false cho development 
+    sameSite: 'Strict' | 'Lax' | 'None' = 'Lax' // Lax cho development
   ): void {
     if (typeof document === 'undefined') {
       return; // SSR safety
@@ -98,7 +98,8 @@ export class CookieService {
    * @param days Số ngày hết hạn (mặc định 7 ngày)
    */
   setAuthToken(token: string, days: number = 7): void {
-    this.setCookie('auth_token', token, days, true, 'Strict');
+    // Development: không dùng secure và strict
+    this.setCookie('auth_token', token, days, false, 'Lax');
   }
 
   /**

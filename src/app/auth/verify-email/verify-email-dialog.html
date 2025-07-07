@@ -1,0 +1,30 @@
+<div class="dialog-panel-bg">
+  <button class="dialog-close-x" (click)="close()">&times;</button>
+  <div class="auth-header">
+    <img src="assets/image/logo.png" alt="logo" class="logo-img" />
+    <span class="logo-text">PLANCARE</span>
+  </div>
+  <h2 class="auth-title">Xác thực Email</h2>
+  <p class="auth-desc">Vui lòng nhập mã OTP gồm 6 số đã gửi đến email <b>{{ email }}</b></p>
+  <form (ngSubmit)="onSubmit()" class="verify-otp-form">
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" #input0 (input)="onOtpInput($event, 0)" (keydown)="onKeyDown($event, 0)" [(ngModel)]="otpDigits[0]" name="otp0" autocomplete="off" class="otp-input" required>
+      <input type="text" maxlength="1" #input1 (input)="onOtpInput($event, 1)" (keydown)="onKeyDown($event, 1)" [(ngModel)]="otpDigits[1]" name="otp1" autocomplete="off" class="otp-input" required>
+      <input type="text" maxlength="1" #input2 (input)="onOtpInput($event, 2)" (keydown)="onKeyDown($event, 2)" [(ngModel)]="otpDigits[2]" name="otp2" autocomplete="off" class="otp-input" required>
+      <input type="text" maxlength="1" #input3 (input)="onOtpInput($event, 3)" (keydown)="onKeyDown($event, 3)" [(ngModel)]="otpDigits[3]" name="otp3" autocomplete="off" class="otp-input" required>
+      <input type="text" maxlength="1" #input4 (input)="onOtpInput($event, 4)" (keydown)="onKeyDown($event, 4)" [(ngModel)]="otpDigits[4]" name="otp4" autocomplete="off" class="otp-input" required>
+      <input type="text" maxlength="1" #input5 (input)="onOtpInput($event, 5)" (keydown)="onKeyDown($event, 5)" [(ngModel)]="otpDigits[5]" name="otp5" autocomplete="off" class="otp-input" required>
+    </div>
+    <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
+    <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
+    <button class="auth-btn" type="submit" [disabled]="loading || !isOtpComplete()">
+      <span *ngIf="loading" class="loading-spinner"></span>
+      {{ loading ? 'Đang xác thực...' : 'Xác thực' }}
+    </button>
+  </form>
+  <div class="resend-section">
+    <span>Bạn chưa nhận được mail?</span>
+    <a class="resend-link" *ngIf="countdown === 0 && !resendLoading" (click)="resendOtp()">Gửi lại mã</a>
+    <span *ngIf="countdown > 0 || resendLoading" class="resend-link" style="pointer-events:none;opacity:0.6;">Gửi lại sau {{ countdown }}s</span>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { MatDialogModule } from '@angular/material/dialog';
 
 import { routes } from './app.routes';
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([authInterceptor])
     ),
+    provideAnimations(),
     MatDialogModule
   ]
 };

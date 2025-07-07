@@ -1,0 +1,105 @@
+<div class="admin-activity-logs-container">
+  <div class="logs-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="goBack()" title="Quay lại danh sách tài khoản">
+        <i class="fas fa-arrow-left"></i>
+        Quay lại
+      </button>
+      <h2>Nhật ký hoạt động người dùng #{{ userId }}</h2>
+    </div>
+    <button class="reload-btn" (click)="reloadLogs()" title="Tải lại dữ liệu">
+      <i class="fas fa-sync-alt"></i>
+      Tải lại
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-bar">
+      <i class="fas fa-spinner fa-spin"></i>
+      Đang tải nhật ký hoạt động...
+    </div>
+  }
+
+  @if (errorMsg && !loading) {
+    <div class="error-bar">
+      {{ errorMsg }}
+      <button class="retry-btn" (click)="reloadLogs()">
+        <i class="fas fa-redo"></i>
+        Thử lại
+      </button>
+    </div>
+  }
+
+  @if (logs && logs.length > 0 && !loading && !errorMsg) {
+    <div class="logs-stats">
+      <span class="stats-info">
+        <i class="fas fa-list"></i>
+        Tổng {{ totalElements }} hoạt động - Trang {{ currentPage + 1 }} / {{ totalPages }}
+      </span>
+    </div>
+
+    <div class="logs-table-wrapper">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Hành động</th>
+            <th>Thời gian</th>
+            <th>IP Address</th>
+            <th>Mô tả</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs; track log.id) {
+            <tr>
+              <td class="log-id">{{ log.id }}</td>
+              <td>
+                <span class="action-badge" [ngClass]="getActionClass(log.action)">
+                  {{ getActionText(log.action) }}
+                </span>
+              </td>
+              <td class="log-time">{{ formatDateTime(log.timestamp) }}</td>
+              <td class="log-ip">{{ log.ipAddress }}</td>
+              <td class="log-description">{{ log.description }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+      <div class="pagination-bar">
+        <button 
+          class="pagination-btn" 
+          (click)="prevPage()" 
+          [disabled]="currentPage === 0"
+          title="Trang trước">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="pagination-info">
+          <span class="pagination-text">
+            Trang {{ currentPage + 1 }} / {{ totalPages }}
+          </span>
+        </div>
+        
+        <button 
+          class="pagination-btn" 
+          (click)="nextPage()" 
+          [disabled]="currentPage + 1 >= totalPages"
+          title="Trang sau">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    }
+  }
+
+  @if (!logs || logs.length === 0 && !loading && !errorMsg) {
+    <div class="empty-state">
+      <i class="fas fa-history"></i>
+      <h3>Không có hoạt động nào</h3>
+      <p>Người dùng này chưa có hoạt động nào được ghi lại.</p>
+    </div>
+  }
+</div>

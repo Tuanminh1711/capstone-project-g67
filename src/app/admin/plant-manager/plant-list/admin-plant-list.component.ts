@@ -5,7 +5,6 @@ import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 interface Plant {
   id: number;
@@ -29,11 +28,11 @@ interface Plant {
 
 @Component({
   selector: 'app-admin-plant-list',
+  standalone: true,
   templateUrl: './admin-plant-list.component.html',
   styleUrls: ['./admin-plant-list.component.scss'],
   imports: [
-    CommonModule, FormsModule, NgIf, NgForOf,
-    AdminLayoutComponent
+    CommonModule, FormsModule, NgIf, NgForOf
   ]
 })
 export class AdminPlantListComponent implements OnInit, AfterViewInit {

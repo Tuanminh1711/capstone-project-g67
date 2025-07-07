@@ -1,5 +1,5 @@
-<app-admin-layout>
-  <div class="admin-account-list-container" *ngIf="accounts$ | async as accounts">
+<div class="admin-account-list-container">
+  @if (accounts$ | async; as accounts) {
     <div class="account-list-header">
       <h2>Danh sách tài khoản</h2>
       <button class="reload-btn" (click)="reloadAccounts()" title="Tải lại danh sách">
@@ -11,53 +11,79 @@
       </button>
     </div>
     <div class="message-bar-wrapper">
-      <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
-      <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
+      @if (errorMsg) {
+        <div class="error-bar message-bar">{{ errorMsg }}</div>
+      }
+      @if (successMsg) {
+        <div class="success-bar message-bar">{{ successMsg }}</div>
+      }
     </div>
-    <table class="account-table">
-      <thead>
-        <tr>
-          <th (click)="sortBy('username')">Tên đăng nhập</th>
-          <th (click)="sortBy('fullName')">Họ tên</th>
-          <th (click)="sortBy('email')">Email</th>
-          <th (click)="sortBy('phone')">Điện thoại</th>
-          <th (click)="sortBy('role')">Vai trò</th>
-          <th (click)="sortBy('status')">Trạng thái</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let acc of accounts">
-          <td>
-            <a (click)="viewDetail(acc)" class="account-link">{{ acc.username }}</a>
-          </td>
-          <td>
-            <a (click)="viewDetail(acc)" class="account-link">{{ acc.fullName }}</a>
-          </td>
-          <td>{{ acc.email }}</td>
-          <td>{{ acc.phone }}</td>
-          <td>{{ acc.role | titlecase }}</td>
-          <td colspan="2">
-            <select class="status-dropdown" [ngClass]="{
-              'active': acc.status.toLowerCase() === 'active',
-              'inactive': acc.status.toLowerCase() === 'inactive',
-              'banned': acc.status.toLowerCase() === 'banned'
-            }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)">
-              <option value="ACTIVE">Hoạt động</option>
-              <option value="INACTIVE">Đã khóa</option>
-              <option value="BANNED">Cấm</option>
-            </select>
-            <button class="delete-btn" (click)="deleteAccount(acc)" title="Xóa tài khoản">
-              🗑 Xóa
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination-bar" *ngIf="accounts.length > 0">
-      <button (click)="prevPage()" [disabled]="pageNo === 0">&lt; Trước</button>
-      <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
-      <button (click)="nextPage()" [disabled]="pageNo + 1 >= totalPages">Sau &gt;</button>
+    <div class="table-wrapper">
+      <table class="account-table">
+        <thead>
+          <tr>
+            <th (click)="sortBy('username')">Tên đăng nhập</th>
+            <th (click)="sortBy('fullName')">Họ tên</th>
+            <th (click)="sortBy('email')">Email</th>
+            <th (click)="sortBy('phone')">Điện thoại</th>
+            <th (click)="sortBy('role')">Vai trò</th>
+            <th (click)="sortBy('status')">Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (acc of accounts; track acc.id) {
+            <tr>
+              <td>
+                <a (click)="viewDetail(acc)" class="account-link">{{ acc.username }}</a>
+              </td>
+              <td>
+                <a (click)="viewDetail(acc)" class="account-link">{{ acc.fullName }}</a>
+              </td>
+              <td>{{ acc.email }}</td>
+              <td>{{ acc.phone }}</td>
+              <td>{{ acc.role | titlecase }}</td>
+              <td>
+                <select class="status-dropdown" [ngClass]="{
+                  'active': acc.status.toLowerCase() === 'active',
+                  'inactive': acc.status.toLowerCase() === 'inactive',
+                  'banned': acc.status.toLowerCase() === 'banned'
+                }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)">
+                  <option value="ACTIVE">Hoạt động</option>
+                  <option value="INACTIVE">Đã khóa</option>
+                  <option value="BANNED">Cấm</option>
+                </select>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn" (click)="editUser(acc)" title="Chỉnh sửa tài khoản">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="logs-btn" (click)="viewActivityLogs(acc)" title="Xem nhật ký hoạt động">
+                    <i class="fas fa-history"></i>
+                  </button>
+                  <button class="reset-btn" (click)="resetPassword(acc)" title="Đặt lại mật khẩu">
+                    <i class="fas fa-key"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
-    <div *ngIf="loading" class="loading-bar">Đang tải...</div>
-  </div>
-</app-admin-layout>
+    @if (accounts && accounts.length > 0) {
+      <div class="pagination-bar">
+        <button class="pagination-btn" (click)="prevPage()" [disabled]="pageNo === 0">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="pagination-index">{{ pageNo + 1 }} / {{ totalPages }}</span>
+        <button class="pagination-btn" (click)="nextPage()" [disabled]="pageNo + 1 >= totalPages">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    }
+    @if (loading) {
+      <div class="loading-bar">Đang tải...</div>
+    }
+  }

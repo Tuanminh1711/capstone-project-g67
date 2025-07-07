@@ -256,6 +256,105 @@ app-admin-sidebar {
   font-size: 16px;
 }
 
+.report-table .view-btn, .report-table .claim-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+  box-shadow: 0 2px 12px #e0e0e0;
+  outline: none;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+.report-table .view-btn {
+  background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1976d2;
+  border: 1.5px solid #90caf9;
+}
+.report-table .view-btn:hover, .report-table .view-btn:focus {
+  background: linear-gradient(90deg, #1976d2 0%, #64b5f6 100%);
+  color: #fff;
+  border-color: #1976d2;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 4px 16px #1976d233;
+}
+
+.report-table .claim-btn {
+  display: inline-block;
+  padding: 7px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #388e3c;
+  color: #fff;
+  border: 1.5px solid #388e3c;
+  box-shadow: 0 1px 4px #e0e0e0;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+  outline: none;
+  letter-spacing: 0.01em;
+}
+.report-table .claim-btn:hover, .report-table .claim-btn:focus {
+  background: #256029;
+  color: #fff;
+  border-color: #256029;
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 2px 8px #388e3c33;
+}
+
+.report-table .claim-btn .claim-icon {
+  font-size: 18px;
+  margin-right: 4px;
+  filter: drop-shadow(0 1px 2px #fffde7);
+}
+
+.report-table .view-btn .view-icon {
+  font-size: 18px;
+  margin-right: 4px;
+  filter: drop-shadow(0 1px 2px #e3f2fd);
+}
+
+.report-table .status-badge.status-inline {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: middle;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #fffde7;
+  color: #fbc02d;
+  border: 1px solid #ffe082;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.report-table .clickable-title {
+  color: #222;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dashed #bdbdbd;
+  background: transparent;
+  transition: color 0.18s, border-bottom 0.18s;
+  padding-bottom: 1px;
+}
+.report-table .clickable-title:hover {
+  color: #388e3c;
+  border-bottom: 2px solid #388e3c;
+  background: #f1f8e9;
+}
+
 @media (max-width: 900px) {
   .admin-report-list-main {
     flex-direction: column;
@@ -271,4 +370,4 @@ app-admin-sidebar {
   .admin-report-list-container {
     padding: 8px;
   }
-} 
+}

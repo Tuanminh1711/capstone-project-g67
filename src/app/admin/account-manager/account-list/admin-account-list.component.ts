@@ -1,15 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
+import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
 import { AdminAccountService, Account } from './admin-account.service';
 import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ConfirmationDialogService } from '../../../shared/confirmation-dialog.service';
 
 @Component({
   selector: 'app-admin-account-list',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, AdminLayoutComponent],
+  imports: [CommonModule, HttpClientModule],
   templateUrl: './admin-account-list.component.html',
   styleUrls: ['./admin-account-list.component.scss']
 })
@@ -32,7 +33,12 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
   sortField: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private accountService: AdminAccountService, private route: ActivatedRoute) {}
+  constructor(
+    private accountService: AdminAccountService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private confirmationDialog: ConfirmationDialogService
+  ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -141,8 +147,15 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
   }
 
   viewDetail(account: Account) {
-    // TODO: Điều hướng tới trang chi tiết tài khoản
-    alert('Xem chi tiết tài khoản: ' + account.username);
+    this.router.navigate(['/admin/accounts/detail', account.id]);
+  }
+
+  editUser(account: Account) {
+    this.router.navigate(['/admin/accounts/update', account.id]);
+  }
+
+  viewActivityLogs(account: Account) {
+    this.router.navigate(['/admin/accounts/activity-logs', account.id]);
   }
 
   reloadAccounts() {
@@ -182,5 +195,33 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
     });
     this.pageNo = 0;
     this.updatePage();
+  }
+
+  resetPassword(account: Account) {
+    this.confirmationDialog.showDialog({
+      title: 'Xác nhận đặt lại mật khẩu',
+      message: `Bạn có chắc chắn muốn đặt lại mật khẩu cho tài khoản "${account.username}"?`,
+      confirmText: 'Đặt lại',
+      cancelText: 'Hủy',
+      icon: 'key',
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.loading = true;
+      this.errorMsg = '';
+      this.successMsg = '';
+      this.accountService.resetPassword(account.id).subscribe({
+        next: (res) => {
+          this.successMsg = res?.message || 'Đặt lại mật khẩu thành công!';
+          setTimeout(() => this.successMsg = '', 3000);
+          this.loading = false;
+        },
+        error: (err) => {
+          this.errorMsg = err?.error?.message || 'Đặt lại mật khẩu thất bại!';
+          setTimeout(() => this.errorMsg = '', 3000);
+          this.loading = false;
+        }
+      });
+    });
   }
 }
