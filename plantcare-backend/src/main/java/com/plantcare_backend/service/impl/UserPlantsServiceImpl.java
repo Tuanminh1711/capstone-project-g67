@@ -102,7 +102,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         dto.setNickname(userPlants.getPlantName());
         dto.setPlantingDate(userPlants.getPlantDate());
         dto.setLocationInHouse(userPlants.getPlantLocation());
-        dto.setReminderEnabled(userPlants.isReminder_enabled());
 
         List<String> imageUrls = new ArrayList<>();
         List<UserPlantImageDetailDTO> imageDetails = new ArrayList<>();
@@ -152,13 +151,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setPlantName(requestDTO.getNickname());
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
-        userPlant.setReminder_enabled(requestDTO.isReminderEnabled());
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
         userPlantRepository.save(userPlant);
 
-        if (requestDTO.isReminderEnabled()) {
-            createDefaultCareSchedules(userPlant.getUserPlantId());
-        }
     }
 
     private void createDefaultCareSchedules(Long userPlantId) {
@@ -194,7 +189,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setPlantName(requestDTO.getNickname());
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
-        userPlant.setReminder_enabled(requestDTO.isReminderEnabled());
         userPlantRepository.save(userPlant);
     }
 
@@ -240,7 +234,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setPlantName(request.getCommonName()); // Default nickname
         userPlant.setPlantDate(new java.sql.Timestamp(System.currentTimeMillis()));
         userPlant.setPlantLocation("Default location");
-        userPlant.setReminder_enabled(false);
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
         userPlantRepository.save(userPlant);
 
@@ -298,7 +291,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 userPlant.getPlantName(),
                 userPlant.getPlantDate(),
                 userPlant.getPlantLocation(),
-                userPlant.isReminder_enabled(),
                 userPlant.getCreated_at()
         );
     }
@@ -309,7 +301,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         dto.setPlantId(userPlant.getPlantId());
         dto.setNickname(userPlant.getPlantName());
         dto.setPlantLocation(userPlant.getPlantLocation());
-        dto.setReminderEnabled(userPlant.isReminder_enabled());
         return dto;
     }
 } 

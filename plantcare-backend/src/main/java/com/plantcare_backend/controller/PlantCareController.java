@@ -1,13 +1,10 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.request.plantcare.CareCompletionRequest;
-import com.plantcare_backend.dto.response.ResponseData;
-import com.plantcare_backend.dto.response.ResponseError;
-import com.plantcare_backend.model.CareSchedule;
-import com.plantcare_backend.repository.CareScheduleRepository;
-import com.plantcare_backend.service.PlantCareNotificationService;
+import com.plantcare_backend.dto.request.plantcare.CareScheduleSetupRequest;
+import com.plantcare_backend.dto.response.plantcare.CareScheduleResponseDTO;
+import com.plantcare_backend.service.CareScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,32 +13,23 @@ import java.util.List;
 @RequestMapping("/api/plant-care")
 public class PlantCareController {
     @Autowired
-    private PlantCareNotificationService notificationService;
+    private CareScheduleService careScheduleService;
 
-    @Autowired
-    private CareScheduleRepository careScheduleRepository;
-
-    @PostMapping("/complete/{scheduleId}")
-    public ResponseData<?> markCareAsCompleted(
-            @PathVariable Long scheduleId,
-            @RequestBody CareCompletionRequest request) {
-        try {
-            notificationService.markCareAsCompleted(scheduleId, request.getNotes(), request.getImageUrl());
-            return new ResponseData<>(HttpStatus.OK.value(), "Care marked as completed successfully", null);
-        } catch (Exception e) {
-            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-        }
+    // Setup nhắc nhở cho từng loại công việc chăm sóc trên 1 cây
+    @PostMapping("/{userPlantId}/care-reminders")
+    public ResponseEntity<?> setupCareReminders(
+            @PathVariable Long userPlantId,
+            @RequestBody CareScheduleSetupRequest request) {
+        careScheduleService.setupCareSchedules(userPlantId, request.getSchedules());
+        return ResponseEntity.ok("Cập nhật nhắc nhở thành công!");
     }
 
-    @GetMapping("/schedules/{userPlantId}")
-    public ResponseData<?> getCareSchedules(@PathVariable Long userPlantId) {
-        List<CareSchedule> schedules = careScheduleRepository.findByUserPlant_UserPlantId(userPlantId);
-        return new ResponseData<>(HttpStatus.OK.value(), "Care schedules retrieved successfully", schedules);
+    //lấy danh sách nhắc nhở đã setup
+    @GetMapping("/{userPlantId}/care-reminders")
+    public ResponseEntity<List<CareScheduleResponseDTO>> getCareReminders(@PathVariable Long userPlantId) {
+        List<CareScheduleResponseDTO> schedules = careScheduleService.getCareSchedules(userPlantId);
+        return ResponseEntity.ok(schedules);
     }
 
-    @PostMapping("/test-reminder/{userPlantId}")
-    public ResponseData<?> sendTestReminder(@PathVariable Long userPlantId) {
-        notificationService.sendWateringReminder(userPlantId);
-        return new ResponseData<>(HttpStatus.OK.value(), "Test reminder sent successfully", null);
-    }
+
 }

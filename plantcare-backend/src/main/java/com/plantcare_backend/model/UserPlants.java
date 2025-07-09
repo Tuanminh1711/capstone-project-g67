@@ -39,9 +39,6 @@ public class UserPlants {
     @JsonManagedReference
     private List<UserPlantImage> images;
 
-    @Column(name = "reminder_enabled")
-    private boolean reminder_enabled;
-
     @Column(name = "created_at")
     private Timestamp created_at;
 }

@@ -6,17 +6,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CareScheduleRepository extends JpaRepository<CareSchedule, Long> {
     List<CareSchedule> findByUserPlant_UserPlantId(Long userPlantId);
-    List<CareSchedule> findByUserPlant_UserId(Long userId);
 
-    @Query("SELECT cs FROM CareSchedule cs WHERE cs.nextCareDate <= :date AND cs.userPlant.reminder_enabled = true")
-    List<CareSchedule> findUpcomingCareSchedules(@Param("date") Date date);
+    Optional<CareSchedule> findByUserPlant_UserPlantIdAndCareType_CareTypeId(Long userPlantId, Long careTypeId);
 
-    @Query("SELECT cs FROM CareSchedule cs WHERE cs.userPlant.userId = :userId AND cs.nextCareDate <= :date")
-    List<CareSchedule> findUserUpcomingCareSchedules(@Param("userId") Long userId, @Param("date") Date date);
+    @Query("""
+                SELECT cs FROM CareSchedule cs
+                WHERE cs.reminderEnabled = true
+                AND cs.nextCareDate <= :date
+                AND cs.reminderTime = :reminderTime""")
+    List<CareSchedule> findDueReminders(@Param("date") Date date, @Param("reminderTime") LocalTime reminderTime);
 }

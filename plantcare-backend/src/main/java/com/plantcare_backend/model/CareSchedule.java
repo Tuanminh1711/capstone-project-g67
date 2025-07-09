@@ -38,4 +38,16 @@ public class CareSchedule {
 
     @Column(name = "created_at")
     private Timestamp createdAt;
+
+    @Column(name = "reminder_time")
+    private java.time.LocalTime reminderTime;
+
+    @Column(name = "reminder_enabled")
+    private Boolean reminderEnabled;
+
+    @Column(name = "custom_message")
+    private String customMessage;
+
+    @Column(name = "start_date")
+    private Date startDate;
 }

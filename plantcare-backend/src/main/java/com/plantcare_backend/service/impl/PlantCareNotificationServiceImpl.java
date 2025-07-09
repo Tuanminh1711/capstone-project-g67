@@ -27,106 +27,41 @@ import java.util.List;
 public class PlantCareNotificationServiceImpl implements PlantCareNotificationService {
     @Autowired
     private CareScheduleRepository careScheduleRepository;
-
     @Autowired
     private CareLogRepository careLogRepository;
-
-    @Autowired
-    private UserPlantRepository userPlantRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private EmailService emailService;
-
-    @Override
-    @Async
-    public void sendWateringReminder(Long userPlantId) {
-        CareSchedule schedule = careScheduleRepository.findByUserPlant_UserPlantId(userPlantId)
-                .stream()
-                .filter(s -> "WATERING".equals(s.getCareType().getCareTypeName()))
-                .findFirst()
-                .orElse(null);
-
-        Date today = new Date();
-        if (schedule != null && schedule.getNextCareDate() != null &&
-                schedule.getNextCareDate().compareTo(today) <= 0) {  // ← Sửa cách so sánh
-            UserPlants userPlant = schedule.getUserPlant();
-            Users user = userRepository.findById(userPlant.getUserId().intValue()).orElse(null);
-
-            if (user != null && userPlant.isReminder_enabled()) {
-                String subject = "🌱 Nhắc nhở tưới cây";
-                String content = String.format(
-                        "Chào %s,\n\n" +
-                                "Đã đến lúc tưới nước cho cây \"%s\" của bạn!\n" +
-                                "Vị trí: %s\n\n" +
-                                "PlantCare Team",
-                        user.getUsername(),
-                        userPlant.getPlantName(),
-                        userPlant.getPlantLocation()
-                );
-
-                emailService.sendEmailAsync(user.getEmail(), subject, content);
-                log.info("Sent watering reminder to user: {}", user.getEmail());
-            }
-        }
-    }
-
-    @Override
-    @Async
-    public void sendFertilizingReminder(Long userPlantId) {
-    }
-
-    @Override
-    public void sendCustomCareReminder(Long userPlantId, String careType) {
-
-    }
-
-    @Override
-    @Async
-    public void sendDailyReminders() {
-        Date today = new Date();
-        List<CareSchedule> upcomingSchedules = careScheduleRepository.findUpcomingCareSchedules(today);
-
-        for (CareSchedule schedule : upcomingSchedules) {
-            String careType = schedule.getCareType().getCareTypeName();
-            switch (careType) {
-                case "WATERING":
-                    sendWateringReminder(schedule.getUserPlant().getUserPlantId());
-                    break;
-                case "FERTILIZING":
-                    sendFertilizingReminder(schedule.getUserPlant().getUserPlantId());
-                    break;
-            }
-        }
-    }
-
-    @Override
-    @Transactional
-    public void markCareAsCompleted(Long scheduleId, String notes, String imageUrl) {
-        CareSchedule schedule = careScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Care schedule not found"));
-
-        CareLog careLog = new CareLog();
-        careLog.setUserPlant(schedule.getUserPlant());
-        careLog.setCareType(schedule.getCareType());
-        careLog.setNotes(notes);
-        careLog.setImageUrl(imageUrl);
-        careLog.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-        careLogRepository.save(careLog);
-
-        schedule.setLastCareDate(new Date());
-        schedule.setNextCareDate(calculateNextCareDate(schedule.getLastCareDate(), schedule.getFrequencyDays()));
-        careScheduleRepository.save(schedule);
-
-        log.info("Marked care as completed for schedule: {}", scheduleId);
-    }
 
     private Date calculateNextCareDate(Date lastCareDate, Integer frequencyDays) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastCareDate);
         cal.add(Calendar.DAY_OF_MONTH, frequencyDays);
         return cal.getTime();
+    }
+
+    @Override
+    @Async
+    public void sendReminder(CareSchedule schedule) {
+        Users user = schedule.getUserPlant().getUserId() != null
+                ? userRepository.findById(schedule.getUserPlant().getUserId().intValue()).orElse(null)
+                : null;
+        if (user == null || !Boolean.TRUE.equals(schedule.getReminderEnabled())) return;
+
+        String careType = schedule.getCareType().getCareTypeName();
+        String subject = "🌱 Nhắc nhở chăm sóc cây: " + careType;
+        String content = (schedule.getCustomMessage() != null && !schedule.getCustomMessage().isEmpty())
+                ? schedule.getCustomMessage()
+                : String.format(
+                "Chào %s,\n\nĐã đến lúc %s cho cây \"%s\" của bạn!\nVị trí: %s\n\nPlantCare Team",
+                user.getUsername(),
+                careType.toLowerCase(),
+                schedule.getUserPlant().getPlantName(),
+                schedule.getUserPlant().getPlantLocation()
+        );
+
+        emailService.sendEmailAsync(user.getEmail(), subject, content);
+        log.info("Sent {} reminder to user: {}", careType, user.getEmail());
     }
 }
