@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,4 +38,14 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
         boolean existsByScientificNameIgnoreCase(String scientificName);
 
         Optional<Plants> findById(Long id);
+
+        @Query("SELECT COUNT(p) > 0 FROM Plants p WHERE LOWER(p.scientificName) = LOWER(:scientificName) AND p.createdBy IS NULL")
+        boolean existsByScientificNameIgnoreCaseAndCreatedByIsNull(@Param("scientificName") String scientificName);
+
+        @Query("SELECT COUNT(p) FROM Plants p WHERE p.createdBy = :userId AND p.createdAt BETWEEN :startTime AND :endTime")
+        long countByCreatedByAndCreatedAtBetween(
+                @Param("userId") Long userId,
+                @Param("startTime") Timestamp startTime,
+                @Param("endTime") Timestamp endTime
+        );
 }

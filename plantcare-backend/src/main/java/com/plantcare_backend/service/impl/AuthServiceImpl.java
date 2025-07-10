@@ -18,6 +18,7 @@ import com.plantcare_backend.service.IpLocationService;
 import com.plantcare_backend.service.OtpService;
 import com.plantcare_backend.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,23 +32,24 @@ import java.time.LocalDateTime;
  */
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
     @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
     @Autowired
-    private UserProfileRepository userProfileRepository;
+    private final UserProfileRepository userProfileRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     @Autowired
-    private UserActivityLogRepository userActivityLogRepository;
+    private final UserActivityLogRepository userActivityLogRepository;
     @Autowired
-    private IpLocationService ipLocationService;
+    private final IpLocationService ipLocationService;
     @Autowired
-    private OtpService otpService;
+    private final OtpService otpService;
 
     @Override
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {

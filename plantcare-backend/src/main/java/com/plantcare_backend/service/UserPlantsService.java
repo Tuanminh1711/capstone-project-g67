@@ -1,6 +1,8 @@
 package com.plantcare_backend.service;
 
+import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.userPlants.UserPlantResponseDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantsSearchResponseDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantListResponseDTO;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
@@ -17,4 +19,6 @@ public interface UserPlantsService {
     void updateUserPlant(com.plantcare_backend.dto.request.userPlants.UpdateUserPlantRequestDTO requestDTO, Long userId);
 
     UserPlantDetailResponseDTO getUserPlantDetail(Long userPlantId);
+
+    UserPlantResponseDTO createNewPlant(CreateUserPlantRequestDTO request, Long userId);
 }

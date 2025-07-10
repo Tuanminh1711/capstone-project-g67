@@ -110,13 +110,17 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     }
 
     /**
-     * Updates the details of an existing plant, including its information, category,
+     * Updates the details of an existing plant, including its information,
+     * category,
      * status, and associated images based on the provided update request.
      *
-     * @param plantId the ID of the plant to be updated.
-     * @param updateRequest the {@link UpdatePlantRequestDTO} containing new values for the plant's fields,
-     *                      such as name, description, care instructions, category, status, and images.
-     * @return the updated {@link PlantDetailResponseDTO} representing the plant's latest data.
+     * @param plantId       the ID of the plant to be updated.
+     * @param updateRequest the {@link UpdatePlantRequestDTO} containing new values
+     *                      for the plant's fields,
+     *                      such as name, description, care instructions, category,
+     *                      status, and images.
+     * @return the updated {@link PlantDetailResponseDTO} representing the plant's
+     *         latest data.
      */
     @Override
     public PlantDetailResponseDTO updatePlant(Long plantId, UpdatePlantRequestDTO updateRequest) {
@@ -171,12 +175,15 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     }
 
     /**
-     * Retrieves detailed information of a plant by its ID, including scientific name,
-     * common name, description, care instructions, category name, status, timestamps,
+     * Retrieves detailed information of a plant by its ID, including scientific
+     * name,
+     * common name, description, care instructions, category name, status,
+     * timestamps,
      * and associated images.
      *
      * @param plantId the ID of the plant to retrieve.
-     * @return a {@link PlantDetailResponseDTO} containing detailed information about the plant.
+     * @return a {@link PlantDetailResponseDTO} containing detailed information
+     *         about the plant.
      */
     @Override
     public PlantDetailResponseDTO getPlantDetail(Long plantId) {
@@ -248,8 +255,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         }
 
         Page<PlantReport> reportPage = plantReportRepository.findReportsWithFilters(
-                status, request.getPlantName(), request.getReporterName(), pageable
-        );
+                status, request.getPlantName(), request.getReporterName(), pageable);
 
         PlantReportListResponseDTO response = new PlantReportListResponseDTO();
         response.setReports(reportPage.getContent().stream()
@@ -262,7 +268,6 @@ public class PlantManagementServiceImpl implements PlantManagementService {
 
         return response;
     }
-
 
     @Override
     public void claimReport(Long reportId, Integer userId) {
@@ -327,8 +332,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         Long plantId = report.getPlant().getId();
         int pendingCount = plantReportRepository.countByPlantIdAndStatusIn(
                 plantId,
-                List.of(PlantReport.ReportStatus.PENDING, PlantReport.ReportStatus.CLAIMED)
-        );
+                List.of(PlantReport.ReportStatus.PENDING, PlantReport.ReportStatus.CLAIMED));
         if (pendingCount == 0) {
             Plants plant = report.getPlant();
             if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
@@ -337,6 +341,77 @@ public class PlantManagementServiceImpl implements PlantManagementService {
             }
         }
     }
+    @Override
+    public PlantReportDetailResponseDTO getReportDetail(Long reportId) {
+        PlantReport report = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
+
+        PlantReportDetailResponseDTO dto = new PlantReportDetailResponseDTO();
+        dto.setReportId(report.getReportId());
+        dto.setReason(report.getReason());
+        dto.setStatus(report.getStatus().name());
+        dto.setAdminNotes(report.getAdminNotes());
+        dto.setCreatedAt(report.getCreatedAt());
+
+        Plants plant = report.getPlant();
+        dto.setPlantId(plant.getId());
+        dto.setPlantName(plant.getCommonName());
+        dto.setScientificName(plant.getScientificName());
+        dto.setPlantDescription(plant.getDescription());
+        dto.setPlantStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
+
+        List<String> imageUrls = new ArrayList<>();
+        if (plant.getImages() != null) {
+            imageUrls = plant.getImages().stream()
+                    .map(PlantImage::getImageUrl)
+                    .collect(Collectors.toList());
+        }
+        dto.setPlantImageUrls(imageUrls);
+
+        Users reporter = report.getReporter();
+        dto.setReporterId((long) reporter.getId());
+        dto.setReporterName(reporter.getUsername());
+        dto.setReporterEmail(reporter.getEmail());
+
+        String reporterPhone = null;
+        try {
+            UserProfile userProfile = userRepository.findById(reporter.getId())
+                    .map(Users::getUserProfile)
+                    .orElse(null);
+            if (userProfile != null) {
+                reporterPhone = userProfile.getPhone();
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting reporter phone: " + e.getMessage());
+        }
+        dto.setReporterPhone(reporterPhone);
+
+        if (report.getClaimedBy() != null) {
+            Users claimedBy = report.getClaimedBy();
+            dto.setClaimedById((long) claimedBy.getId());
+            dto.setClaimedByName(claimedBy.getUsername());
+            dto.setClaimedByEmail(claimedBy.getEmail());
+            dto.setClaimedAt(report.getClaimedAt());
+        }
+
+        if (report.getHandledBy() != null) {
+            Users handledBy = report.getHandledBy();
+            dto.setHandledById((long) handledBy.getId());
+            dto.setHandledByName(handledBy.getUsername());
+            dto.setHandledByEmail(handledBy.getEmail());
+            dto.setHandledAt(report.getHandledAt());
+        }
+
+        List<PlantReportLog> logs = plantReportLogRepository.findByReport_ReportId(reportId);
+        List<PlantReportDetailResponseDTO.ReportLogDTO> logDTOs = logs.stream()
+                .map(this::convertToLogDTO)
+                .collect(Collectors.toList());
+        dto.setReportLogs(logDTOs);
+
+        return dto;
+    }
+
     /**
      * Xử lý update ảnh linh hoạt - cho phép update từng ảnh cụ thể
      */
@@ -426,6 +501,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         dto.setCreatedAt(plant.getCreatedAt());
         return dto;
     }
+
     private PlantReportResponseDTO convertToDTO(PlantReport report) {
         PlantReportResponseDTO dto = new PlantReportResponseDTO();
         dto.setReportId(report.getReportId());
@@ -439,6 +515,17 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         dto.setStatus(report.getStatus().name());
         dto.setAdminNotes(report.getAdminNotes());
         dto.setCreatedAt(report.getCreatedAt());
+        return dto;
+    }
+
+    private PlantReportDetailResponseDTO.ReportLogDTO convertToLogDTO(PlantReportLog log) {
+        PlantReportDetailResponseDTO.ReportLogDTO dto = new PlantReportDetailResponseDTO.ReportLogDTO();
+        dto.setLogId(log.getLogId());
+        dto.setAction(log.getAction().name());
+        dto.setUserName(log.getUser().getUsername());
+        dto.setUserEmail(log.getUser().getEmail());
+        dto.setNote(log.getNote());
+        dto.setCreatedAt(log.getCreatedAt());
         return dto;
     }
 }

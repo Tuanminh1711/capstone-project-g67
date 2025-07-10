@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PlantReportLogRepository extends JpaRepository<PlantReportLog, Long> {
-    List<PlantReportLog> findByReport_ReportId(Integer reportId);
+    List<PlantReportLog> findByReport_ReportId(Long reportId);
 }
