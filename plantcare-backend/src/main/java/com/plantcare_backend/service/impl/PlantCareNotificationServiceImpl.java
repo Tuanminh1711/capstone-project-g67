@@ -42,24 +42,35 @@ public class PlantCareNotificationServiceImpl implements PlantCareNotificationSe
     }
 
     @Override
-    @Async
     public void sendReminder(CareSchedule schedule) {
+        System.out.println("=== [DEBUG] sendReminder called for scheduleId: " + schedule.getScheduleId());
         Users user = schedule.getUserPlant().getUserId() != null
                 ? userRepository.findById(schedule.getUserPlant().getUserId().intValue()).orElse(null)
                 : null;
-        if (user == null || !Boolean.TRUE.equals(schedule.getReminderEnabled())) return;
+        System.out.println("=== [DEBUG] user: " + (user != null ? user.getEmail() : "null"));
+        System.out.println("=== [DEBUG] reminderEnabled: " + schedule.getReminderEnabled());
+        if (user == null || !Boolean.TRUE.equals(schedule.getReminderEnabled())) {
+            System.out.println("=== [DEBUG] User is null or reminder not enabled, skipping...");
+            return;
+        }
+        System.out.println("=== [DEBUG] Sending email to: " + user.getEmail());
+        System.out.println("=== [DEBUG] Email sent to: " + user.getEmail());
 
         String careType = schedule.getCareType().getCareTypeName();
         String subject = "🌱 Nhắc nhở chăm sóc cây: " + careType;
+        String confirmUrl = "https://your-domain.com/api/plant-care/" +
+                schedule.getUserPlant().getUserPlantId() +
+                "/care-reminders/" + schedule.getCareType().getCareTypeId() + "/confirm";
+        String confirmLink = "\n\n<b><a href='" + confirmUrl + "'>Tôi đã thực hiện " + careType + "</a></b>";
         String content = (schedule.getCustomMessage() != null && !schedule.getCustomMessage().isEmpty())
-                ? schedule.getCustomMessage()
+                ? schedule.getCustomMessage() + confirmLink
                 : String.format(
-                "Chào %s,\n\nĐã đến lúc %s cho cây \"%s\" của bạn!\nVị trí: %s\n\nPlantCare Team",
-                user.getUsername(),
-                careType.toLowerCase(),
-                schedule.getUserPlant().getPlantName(),
-                schedule.getUserPlant().getPlantLocation()
-        );
+                        "Chào %s,\n\nĐã đến lúc %s cho cây \"%s\" của bạn!\nVị trí: %s\n\nPlantCare Team%s",
+                        user.getUsername(),
+                        careType.toLowerCase(),
+                        schedule.getUserPlant().getPlantName(),
+                        schedule.getUserPlant().getPlantLocation(),
+                        confirmLink);
 
         emailService.sendEmailAsync(user.getEmail(), subject, content);
         log.info("Sent {} reminder to user: {}", careType, user.getEmail());

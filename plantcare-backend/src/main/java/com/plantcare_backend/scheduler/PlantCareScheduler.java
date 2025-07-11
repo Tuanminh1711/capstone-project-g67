@@ -26,7 +26,7 @@ public class PlantCareScheduler {
         LocalTime now = LocalTime.now().withSecond(0).withNano(0);
         Date today = new Date();
         List<CareSchedule> dueSchedules = careScheduleRepository.findDueReminders(today, now);
-
+        System.out.println("Scheduler found " + dueSchedules.size() + " due schedules at " + now);
         for (CareSchedule schedule : dueSchedules) {
             notificationService.sendReminder(schedule);
         }
