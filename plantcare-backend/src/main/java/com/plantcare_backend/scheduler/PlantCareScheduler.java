@@ -21,7 +21,7 @@ public class PlantCareScheduler {
     private CareScheduleRepository careScheduleRepository;
 
     // Chạy mỗi ngày lúc 8:00 AM
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
     public void sendReminders() {
         LocalTime now = LocalTime.now().withSecond(0).withNano(0);
         Date today = new Date();
