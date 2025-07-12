@@ -1,6 +1,7 @@
 package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.service.IpLocationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -9,9 +10,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class IpLocationServiceImpl implements IpLocationService {
     @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Override
     public String getLocationFromIp(String ipAddress) {

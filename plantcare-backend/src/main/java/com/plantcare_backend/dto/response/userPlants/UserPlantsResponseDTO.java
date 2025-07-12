@@ -17,6 +17,5 @@ public class UserPlantsResponseDTO {
     private String plantName;
     private Timestamp plantDate;
     private String plantLocation;
-    private boolean reminderEnabled;
     private Timestamp createdAt;
 } 

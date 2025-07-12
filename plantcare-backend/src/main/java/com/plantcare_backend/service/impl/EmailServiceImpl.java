@@ -1,6 +1,7 @@
 package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.service.EmailService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -10,9 +11,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
     @Autowired
-    private JavaMailSender emailSender;
+    private final JavaMailSender emailSender;
 
     @Override
     public void sendResetCodeEmail(String to, String resetCode) {

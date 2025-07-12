@@ -1,10 +1,20 @@
 server:
   port: 8080
+
 spring:
   application:
     name: tay-java-app
   profiles:
     active: @spring.profiles.active@
+
+  # Cấu hình file upload
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+      enabled: true
+      file-size-threshold: 2KB
+      location: ${java.io.tmpdir}
 
 # Health check
 management:
@@ -35,3 +45,5 @@ logging:
     org.springframework: INFO
     org.apache: OFF
     kafka: OFF
+    com.plantcare_backend: DEBUG
+    org.springframework.web: DEBUG

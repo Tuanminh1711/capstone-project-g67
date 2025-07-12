@@ -31,28 +31,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {})
+                .cors(cors -> {
+                })
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/auth/forgot-password",
-                                "/api/auth/verify-reset-code",
-                                "/api/auth/reset-password",
-                                "/api/auth/change-password",
-                                "/api/auth/resend-verification",
-                                "/api/auth/verify-email",
-                                "/api/auth/login-admin"
-                        ).permitAll()
-                        .requestMatchers("/api/admin/**").permitAll()
-                        .requestMatchers("/api/plants/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/manager/**").permitAll()
+                                .requestMatchers(
+                                        "/api/auth/login",
+                                        "/api/auth/register",
+                                        "/api/auth/forgot-password",
+                                        "/api/auth/verify-reset-code",
+                                        "/api/auth/reset-password",
+                                        "/api/auth/change-password",
+                                        "/api/auth/resend-verification",
+                                        "/api/auth/verify-email",
+                                        "/api/auth/login-admin"
+                                ).permitAll()
+                                .requestMatchers("/api/admin/**").permitAll()
+                                .requestMatchers("/api/plants/**").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers("/api/manager/**").permitAll()
+                                .requestMatchers("/api/support/**").authenticated()
+                                .requestMatchers("/api/admin/support/**").authenticated()
                                 .requestMatchers("/api/user-plants/**").permitAll()
 //                                .requestMatchers(HttpMethod.DELETE, "/api/user-plants/delete/**").authenticated()
 //                        .requestMatchers("/api/user-plants/**").authenticated()
-                        .anyRequest().authenticated()
+                                .requestMatchers("/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-resources/**",
+                                        "/webjars/**").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // <--- DÒNG NÀY RẤT QUAN TRỌNG
 

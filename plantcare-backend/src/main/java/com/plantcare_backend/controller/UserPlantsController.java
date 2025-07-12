@@ -1,7 +1,8 @@
 package com.plantcare_backend.controller;
 
-import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.userPlants.UserPlantResponseDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantsSearchResponseDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantListResponseDTO;
 import com.plantcare_backend.dto.response.ResponseData;
@@ -10,8 +11,9 @@ import com.plantcare_backend.dto.response.ResponseSuccess;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
 import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
 import com.plantcare_backend.dto.request.userPlants.UpdateUserPlantRequestDTO;
+import com.plantcare_backend.exception.RateLimitExceededException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
-import com.plantcare_backend.model.UserPlants;
+import com.plantcare_backend.exception.ValidationException;
 import com.plantcare_backend.service.UserPlantsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -129,6 +131,37 @@ public class UserPlantsController {
             return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully");
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to update user plant: " + e.getMessage());
+        }
+    }
+
+    @Operation(method = "POST", summary = "Create new plant", description = "Create a new plant and add to user collection")
+    @PostMapping("/create-new-plant")
+    public ResponseData<UserPlantResponseDTO> createNewPlant(
+            @Valid @RequestBody CreateUserPlantRequestDTO request,
+            HttpServletRequest httpRequest) {
+
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        if (userId == null) {
+            return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
+        }
+
+        log.info("Creating new plant for user: {}", userId);
+
+        try {
+            UserPlantResponseDTO result = userPlantsService.createNewPlant(request, userId);
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created and added to collection successfully", result);
+        } catch (ValidationException e) {
+            log.error("Validation failed for new plant: {}", e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        } catch (RateLimitExceededException e) {
+            log.error("Rate limit exceeded for user: {}", userId);
+            return new ResponseError(HttpStatus.TOO_MANY_REQUESTS.value(), e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found: {}", e.getMessage());
+            return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to create new plant", e);
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create new plant");
         }
     }
 }
