@@ -1,4 +1,4 @@
-package com.plantcare_backend.controller;
+package com.plantcare_backend.controller.auth;
 
 import com.plantcare_backend.dto.response.auth.LoginResponse;
 import com.plantcare_backend.dto.response.ResponseData;

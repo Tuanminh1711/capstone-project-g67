@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,4 +30,14 @@ public interface UserRepository extends JpaRepository<Users, Integer>, JpaSpecif
 
     @Query("SELECT u FROM Users u WHERE u.role.roleName IN :roles AND u.status = 'ACTIVE'")
     List<Users> findByRoleIn(@Param("roles") List<String> roles);
+
+    @Query("SELECT DATE(u.createdAt) as date, COUNT(u) as totalRegistered " +
+            "FROM Users u " +
+            "WHERE u.createdAt BETWEEN :startDate AND :endDate " +
+            "GROUP BY DATE(u.createdAt) " +
+            "ORDER BY DATE(u.createdAt) ASC")
+    List<Object[]> countUsersRegisteredByDate(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }

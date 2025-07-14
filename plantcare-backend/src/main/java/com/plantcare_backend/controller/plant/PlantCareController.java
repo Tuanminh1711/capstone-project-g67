@@ -1,4 +1,4 @@
-package com.plantcare_backend.controller;
+package com.plantcare_backend.controller.plant;
 
 import com.plantcare_backend.dto.request.plantcare.CareCompletionRequest;
 import com.plantcare_backend.dto.request.plantcare.CareScheduleSetupRequest;
