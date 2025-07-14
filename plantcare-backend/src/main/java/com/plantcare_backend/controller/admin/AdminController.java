@@ -1,7 +1,9 @@
-package com.plantcare_backend.controller;
+package com.plantcare_backend.controller.admin;
 
+import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
 import com.plantcare_backend.dto.response.ResponseData;
 import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.UserRequestDTO;
@@ -272,6 +274,13 @@ public class AdminController {
             log.error("Create plant failed", e);
             return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Create plant failed");
         }
+    }
+
+    @PostMapping("/statistics/registered-users")
+    // @PreAuthorize("hasRole('ADMIN')") // Nếu bạn dùng Spring Security annotation
+    public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(
+            @RequestBody UserRegisterStatisticRequestDTO requestDTO) {
+        return adminService.getUserRegisterStatistics(requestDTO);
     }
 
 }

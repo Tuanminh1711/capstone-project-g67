@@ -1,4 +1,4 @@
-package com.plantcare_backend.controller;
+package com.plantcare_backend.controller.user;
 
 import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantDetailResponseDTO;

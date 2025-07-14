@@ -1,8 +1,7 @@
-package com.plantcare_backend.controller;
+package com.plantcare_backend.controller.user;
 
 import com.plantcare_backend.dto.response.ResponseData;
 import com.plantcare_backend.dto.request.auth.UserProfileRequestDTO;
-import com.plantcare_backend.dto.request.auth.UpdateAvatarRequestDTO;
 import com.plantcare_backend.dto.response.auth.UpdateAvatarResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.service.UserProfileService;
