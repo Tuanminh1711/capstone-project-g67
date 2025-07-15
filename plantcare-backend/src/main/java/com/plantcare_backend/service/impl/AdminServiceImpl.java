@@ -1,7 +1,9 @@
 package com.plantcare_backend.service.impl;
 
+import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
+import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
-import com.plantcare_backend.dto.request.UserRequestDTO;
+import com.plantcare_backend.dto.request.auth.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
 import com.plantcare_backend.model.*;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -344,6 +348,26 @@ public class AdminServiceImpl implements AdminService {
                 "Your new password is: " + newPassword);
     }
 
+    /**
+     *
+     * @param requestDTO
+     * @return
+     */
+    @Override
+    public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(UserRegisterStatisticRequestDTO requestDTO) {
+        List<Object[]> results = userRepository.countUsersRegisteredByDate(
+                requestDTO.getStartDate(), requestDTO.getEndDate()
+        );
+        List<UserRegisterStatisticResponseDTO> responseList = new ArrayList<>();
+        for (Object[] row : results) {
+            LocalDate date = (row[0] instanceof java.sql.Date)
+                    ? ((java.sql.Date) row[0]).toLocalDate()
+                    : (LocalDate) row[0];
+            long total = ((Number) row[1]).longValue();
+            responseList.add(new UserRegisterStatisticResponseDTO(date, total));
+        }
+        return responseList;
+    }
     /**
      * Generates a random 8-character alphanumeric password.
      *

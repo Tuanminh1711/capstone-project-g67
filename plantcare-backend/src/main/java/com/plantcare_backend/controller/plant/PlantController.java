@@ -1,9 +1,9 @@
-package com.plantcare_backend.controller;
+package com.plantcare_backend.controller.plant;
 
 import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
 import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
-import com.plantcare_backend.dto.response.ResponseData;
-import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.base.ResponseData;
+import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;

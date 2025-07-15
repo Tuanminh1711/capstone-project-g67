@@ -2,8 +2,10 @@ package com.plantcare_backend.service;
 
 
 
+import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
+import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
-import com.plantcare_backend.dto.request.UserRequestDTO;
+import com.plantcare_backend.dto.request.auth.UserRequestDTO;
 import com.plantcare_backend.dto.request.admin.SearchAccountRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserActivityLogRequestDTO;
 import com.plantcare_backend.model.Plants;
@@ -51,5 +53,7 @@ public interface AdminService {
     Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize);
 
     void resetPassword(int userId);
+
+    List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(UserRegisterStatisticRequestDTO requestDTO);
 
 }
