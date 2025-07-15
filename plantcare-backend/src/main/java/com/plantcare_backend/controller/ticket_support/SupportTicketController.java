@@ -1,8 +1,8 @@
 package com.plantcare_backend.controller.ticket_support;
 
 import com.plantcare_backend.dto.request.ticket_support.CreateTicketRequestDTO;
-import com.plantcare_backend.dto.response.ResponseData;
-import com.plantcare_backend.dto.response.ResponseError;
+import com.plantcare_backend.dto.response.base.ResponseData;
+import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.ticket_support.CreateTicketResponseDTO;
 import com.plantcare_backend.dto.response.ticket_support.TicketListResponseDTO;
 import com.plantcare_backend.dto.response.ticket_support.TicketResponseDTO;

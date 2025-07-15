@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/support/**").authenticated()
                                 .requestMatchers("/api/admin/support/**").authenticated()
                                 .requestMatchers("/api/user-plants/**").permitAll()
+                                .requestMatchers("/api/chat/**").authenticated()
 //                                .requestMatchers(HttpMethod.DELETE, "/api/user-plants/delete/**").authenticated()
 //                        .requestMatchers("/api/user-plants/**").authenticated()
                                 .requestMatchers("/swagger-ui/**",
