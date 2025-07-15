@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.request;
+package com.plantcare_backend.dto.request.auth;
 
 import com.plantcare_backend.dto.validator.GenderSubset;
 import com.plantcare_backend.dto.validator.PhoneNumber;

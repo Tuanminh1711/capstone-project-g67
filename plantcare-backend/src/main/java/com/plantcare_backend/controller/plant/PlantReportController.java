@@ -1,7 +1,7 @@
 package com.plantcare_backend.controller.plant;
 
 import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
-import com.plantcare_backend.dto.response.ResponseSuccess;
+import com.plantcare_backend.dto.response.base.ResponseSuccess;
 import com.plantcare_backend.service.PlantService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

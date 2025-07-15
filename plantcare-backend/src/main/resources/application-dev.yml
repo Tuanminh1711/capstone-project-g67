@@ -32,3 +32,11 @@ openapi:
     server: http://localhost:${server.port}
     title: API Document
     version: 1.0.0
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY:default}
+
+openrouter:
+  api:
+    key: ${OPENROUTER_API_KEY}

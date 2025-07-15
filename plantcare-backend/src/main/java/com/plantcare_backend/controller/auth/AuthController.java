@@ -1,7 +1,7 @@
 package com.plantcare_backend.controller.auth;
 
 import com.plantcare_backend.dto.response.auth.LoginResponse;
-import com.plantcare_backend.dto.response.ResponseData;
+import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.request.auth.ForgotPasswordRequestDTO;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;

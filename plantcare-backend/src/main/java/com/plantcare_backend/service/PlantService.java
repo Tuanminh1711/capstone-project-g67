@@ -23,5 +23,7 @@ public interface PlantService {
     UserPlantDetailResponseDTO toUserPlantDetailDTO(PlantDetailResponseDTO dto);
 
     void reportPlant(PlantReportRequestDTO plantReportRequestDTO, Long reporterUsername);
+
+
 }
 

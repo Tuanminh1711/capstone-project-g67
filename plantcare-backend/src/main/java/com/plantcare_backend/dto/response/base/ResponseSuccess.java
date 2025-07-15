@@ -1,4 +1,4 @@
-package com.plantcare_backend.dto.response;
+package com.plantcare_backend.dto.response.base;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
