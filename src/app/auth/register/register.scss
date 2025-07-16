@@ -4,6 +4,25 @@
   box-sizing: border-box;
 }
 
+// Fix z-index to ensure dialog appears above top navigation
+:host ::ng-deep {
+  .cdk-overlay-container {
+    z-index: 99999 !important;
+  }
+  
+  .cdk-overlay-backdrop {
+    z-index: 99998 !important;
+  }
+  
+  .mat-dialog-container {
+    z-index: 99999 !important;
+  }
+  
+  .cdk-overlay-pane {
+    z-index: 99999 !important;
+  }
+}
+
 .auth-container {
   min-height: 100vh;
   display: flex;

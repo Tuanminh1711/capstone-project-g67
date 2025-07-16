@@ -1,35 +1,51 @@
 <app-top-navigator></app-top-navigator>
 
-<div class="garden-container" (click)="onPageVisible()">
+<div class="garden-container" (click)="onPageVisible()" style="margin-bottom: 64px; padding-bottom: 32px;">
   <!-- Hero Section -->
   <section class="garden-hero">
     <div class="hero-content">
-      <h1 class="hero-title">🌿 Khu Vườn Của Tôi</h1>
-      <p class="hero-subtitle">Không gian xanh riêng tư nơi bạn chăm sóc những cây cảnh yêu thích</p>
+      <div class="hero-header">
+        <h1 class="hero-title">🌿 Khu Vườn Của Tôi</h1>
+        <div class="hero-actions">
+          @if (isLoggedIn) {
+            <button 
+              class="create-plant-btn primary"
+              (click)="router.navigate(['/user/create-new-plant'])"
+            >
+              <i class="fas fa-plus"></i>
+              <span>Tạo cây mới</span>
+            </button>
+            <button 
+              class="add-existing-btn secondary"
+              (click)="router.navigate(['/plant-info'])"
+            >
+              <i class="fas fa-search"></i>
+              <span>Thêm từ thư viện</span>
+            </button>
+          }
+        </div>
+      </div>
+      <p class="hero-subtitle">Quản lý và chăm sóc bộ sưu tập cây cảnh cá nhân của bạn</p>
       
       <!-- Statistics - Only show when user has plants -->
       @if (!loading && !error && userPlants.length > 0) {
         <div class="garden-stats">
           <div class="stat-item">
-            <div class="stat-number">{{ userPlants.length }}</div>
-            <div class="stat-label">Cây trong vườn</div>
+            <div class="stat-icon">🌱</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ userPlants.length }}</div>
+              <div class="stat-label">Tổng số cây</div>
+            </div>
           </div>
           <div class="stat-item">
-            <div class="stat-number">{{ getReminderEnabledCount() }}</div>
-            <div class="stat-label">Có lời nhắc</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">{{ getHealthyPlantsCount() }}</div>
-            <div class="stat-label">Cây khỏe mạnh</div>
+            <div class="stat-icon">🔔</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ getReminderEnabledCount() }}</div>
+              <div class="stat-label">Có lời nhắc</div>
+            </div>
           </div>
         </div>
       }
-    </div>
-    
-    <div class="garden-decoration">
-      <div class="floating-leaf">🍃</div>
-      <div class="floating-leaf">🌱</div>
-      <div class="floating-leaf">🌿</div>
     </div>
   </section>
 
@@ -149,18 +165,29 @@
         <h3>{{ isLoggedIn ? 'Khu vườn của bạn đang trống' : 'Chào mừng đến với My Garden!' }}</h3>
         <p>{{ isLoggedIn ? 'Hãy bắt đầu trồng những cây cảnh yêu thích để tạo nên khu vườn xanh tươi!' : 'Đăng nhập để bắt đầu tạo khu vườn xanh của riêng bạn!' }}</p>
         @if (isLoggedIn) {
-          <button 
-            class="start-gardening-btn" 
-            (click)="router.navigate(['/plant-info'])"
-          >
-            <span>🌱</span> Bắt đầu trồng cây
-          </button>
+          <div class="empty-actions">
+            <button 
+              class="start-gardening-btn primary"
+              (click)="router.navigate(['/user/create-new-plant'])"
+            >
+              <i class="fas fa-plus"></i>
+              <span>Tạo cây mới</span>
+            </button>
+            <button 
+              class="browse-plants-btn secondary" 
+              (click)="router.navigate(['/plant-info'])"
+            >
+              <i class="fas fa-search"></i>
+              <span>Chọn từ thư viện</span>
+            </button>
+          </div>
         } @else {
           <button 
-            class="start-gardening-btn" 
+            class="start-gardening-btn primary" 
             (click)="handleAuthRequired()"
           >
-            <span>🔑</span> Đăng nhập để bắt đầu
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Đăng nhập để bắt đầu</span>
           </button>
         }
       </div>
@@ -175,51 +202,65 @@
       @if (layout === 'garden') {
         <div class="garden-layout">
           <div class="garden-ground">
-            <div class="garden-path"></div>
             <div class="plants-garden">
               @for (plant of filteredPlants; track plant.plantId; let i = $index) {
                 <div 
                   class="plant-spot"
-                  [class.spot-left]="i % 2 === 0"
-                  [class.spot-right]="i % 2 === 1"
                   [style.animation-delay]="i * 0.1 + 's'"
                 >
-                  <div class="plant-pot" (click)="viewPlantDetail(plant.plantId)">
-                    <div class="pot-base"></div>
-                    <div class="plant-image">
-                      <span class="plant-emoji">🌿</span>
+                  <div class="plant-container" (click)="viewPlantDetail(plant.userPlantId)">
+                    <div class="plant-image-wrapper">
+                      <div class="plant-image-container">
+                        @if (plant.imageUrl) {
+                          <img 
+                            [src]="plant.imageUrl" 
+                            [alt]="plant.nickname"
+                            class="plant-image"
+                            (error)="$any($event.target).style.display='none'"
+                          />
+                        } @else {
+                          <div class="plant-placeholder">
+                            <i class="fas fa-seedling"></i>
+                          </div>
+                        }
+                      </div>
+                      <div class="plant-glow"></div>
                     </div>
-                    <div class="plant-glow"></div>
-                  </div>
-                  
-                  <div class="plant-info-card">
-                    <h3 class="plant-name">{{ plant.nickname || 'Cây không tên' }}</h3>
-                    <div class="plant-details">
-                      <div class="detail-row">
-                        <span class="detail-icon">📍</span>
-                        <span class="detail-text">{{ plant.plantLocation }}</span>
-                      </div>
-                      <div class="detail-row">
-                        <span class="detail-icon">📅</span>
-                        <span class="detail-text">Đã trồng</span>
-                      </div>
-                      @if (plant.reminderEnabled) {
+                    
+                    <div class="plant-info">
+                      <h3 class="plant-name">{{ plant.nickname || 'Cây không tên' }}</h3>
+                      
+                      <div class="plant-details">
                         <div class="detail-row">
-                          <span class="detail-icon">🔔</span>
-                          <span class="detail-text">Có lời nhắc</span>
+                          <span class="detail-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                          </span>
+                          <span class="detail-text">{{ plant.plantLocation || 'Chưa xác định' }}</span>
                         </div>
-                      }
-                    </div>
-                    <div class="plant-actions">
-                      <button class="action-btn care-btn" (click)="carePlant(plant.plantId); $event.stopPropagation()">
-                        <span>Chăm sóc</span>
-                      </button>
-                      <button class="action-btn edit-btn" (click)="editPlant(plant.plantId, plant.nickname); $event.stopPropagation()">
-                        <span>Chỉnh sửa</span>
-                      </button>
-                      <button class="action-btn remove-btn" (click)="removePlantFromCollection(plant.plantId); $event.stopPropagation()">
-                        <span>Xóa</span>
-                      </button>
+                        @if (plant.reminderEnabled) {
+                          <div class="detail-row">
+                            <span class="detail-icon">
+                              <i class="fas fa-bell"></i>
+                            </span>
+                            <span class="detail-text">Có lời nhắc</span>
+                          </div>
+                        }
+                      </div>
+                      
+                      <div class="plant-actions">
+                        <button class="action-btn care-btn" (click)="carePlant(plant.plantId); $event.stopPropagation()">
+                          <i class="fas fa-heart"></i>
+                          <span>Chăm sóc</span>
+                        </button>
+                        <button class="action-btn edit-btn" (click)="editPlant(plant.plantId, plant.nickname); $event.stopPropagation()">
+                          <i class="fas fa-edit"></i>
+                          <span>Sửa</span>
+                        </button>
+                        <button class="action-btn remove-btn" (click)="removePlantFromCollection(plant.plantId); $event.stopPropagation()">
+                          <i class="fas fa-trash"></i>
+                          <span>Xóa</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -240,61 +281,58 @@
               >
                 <div class="card-header">
                   <div class="plant-image-container">
-                    <img 
-                      src="/assets/image/logo.png" 
-                      [alt]="plant.nickname"
-                      class="plant-image"
-                    />
-                    <div class="image-overlay">
-                      <button 
-                        class="overlay-btn"
-                        (click)="viewPlantDetail(plant.plantId)"
-                      >
-                        <span>👁️</span>
-                      </button>
-                    </div>
+                    @if (plant.imageUrl) {
+                      <img 
+                        [src]="plant.imageUrl" 
+                        [alt]="plant.nickname"
+                        class="plant-image"
+                        (error)="$any($event.target).style.display='none'"
+                        (click)="viewPlantDetail(plant.userPlantId)"
+                        style="cursor: pointer;"
+                      />
+                    } @else {
+                      <div class="plant-placeholder" (click)="viewPlantDetail(plant.userPlantId)" style="cursor: pointer;">
+                        <div class="placeholder-icon">
+                          <i class="fas fa-seedling"></i>
+                        </div>
+                      </div>
+                    }
                   </div>
                 </div>
                 
-                <div class="card-body">
-                  <h3 class="plant-title">{{ plant.nickname }}</h3>
+                <div class="card-body" (click)="viewPlantDetail(plant.userPlantId)" style="cursor: pointer;">
+                  <h3 class="plant-title">{{ plant.nickname || 'Cây không tên' }}</h3>
+                  
                   <div class="plant-meta">
                     <div class="meta-item">
-                      <span class="meta-icon">📍</span>
-                      <span class="meta-text">{{ plant.plantLocation }}</span>
+                      <span class="meta-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                      </span>
+                      <span class="meta-text">{{ plant.plantLocation || 'Chưa xác định' }}</span>
                     </div>
                     <div class="meta-item">
-                      <span class="meta-icon">📅</span>
-                      <span class="meta-text">Đã trồng</span>
-                    </div>
-                  </div>
-                  
-                  <div class="plant-status">
-                    <div class="status-indicator" [class.active]="plant.reminderEnabled">
-                      <span class="status-icon">🔔</span>
-                      <span class="status-text">{{ plant.reminderEnabled ? 'Có nhắc nhở' : 'Không nhắc nhở' }}</span>
+                      <span class="meta-icon">
+                        <i class="fas fa-bell"></i>
+                      </span>
+                      <span class="meta-text">{{ plant.reminderEnabled ? 'Có nhắc nhở' : 'Không nhắc nhở' }}</span>
                     </div>
                   </div>
                 </div>
                 
                 <div class="card-footer">
                   <button 
-                    class="card-btn primary"
-                    (click)="viewPlantDetail(plant.plantId)"
-                  >
-                    Chi tiết
-                  </button>
-                  <button 
                     class="card-btn secondary"
                     (click)="editPlant(plant.plantId, plant.nickname)"
                   >
-                    Sửa
+                    <i class="fas fa-edit"></i>
+                    <span>Sửa</span>
                   </button>
                   <button 
-                    class="card-btn secondary"
+                    class="card-btn danger"
                     (click)="removePlantFromCollection(plant.plantId)"
                   >
-                    Xóa
+                    <i class="fas fa-trash"></i>
+                    <span>Xóa</span>
                   </button>
                 </div>
               </div>
@@ -319,7 +357,7 @@
                   />
                 </div>
                 
-                <div class="list-item-content">
+                <div class="list-item-content" (click)="viewPlantDetail(plant.userPlantId)" style="cursor: pointer;">
                   <div class="content-header">
                     <h3 class="plant-name">{{ plant.nickname }}</h3>
                     <div class="plant-age">Đã trồng</div>
@@ -344,12 +382,6 @@
                 </div>
                 
                 <div class="list-item-actions">
-                  <button 
-                    class="list-action-btn view"
-                    (click)="viewPlantDetail(plant.plantId)"
-                  >
-                    <span>👁️</span> Xem
-                  </button>
                   <button 
                     class="list-action-btn edit"
                     (click)="editPlant(plant.plantId, plant.nickname)"

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { AuthService, RegisterRequest, RegisterResponse } from '../auth.service';
 import { AuthDialogService } from '../auth-dialog.service';
+import { ToastService } from '../../shared/toast.service';
 
 @Component({
   selector: 'app-register-dialog',
@@ -27,6 +28,7 @@ export class RegisterDialogComponent {
     private authService: AuthService,
     private cdRef: ChangeDetectorRef,
     private authDialogService: AuthDialogService,
+    private toast: ToastService,
     @Optional() private dialogRef?: MatDialogRef<RegisterDialogComponent>
   ) {}
 
@@ -40,7 +42,7 @@ export class RegisterDialogComponent {
     this.errorMsg = '';
     this.successMsg = '';
     if (!this.username || !this.fullName || !this.phone || !this.email || !this.password || !this.confirmPassword) {
-      this.errorMsg = 'Vui lòng nhập đầy đủ thông tin.';
+      this.toast.error('Vui lòng nhập đầy đủ thông tin.');
       this.loading = false;
       this.cdRef.detectChanges();
       return;
@@ -57,27 +59,29 @@ export class RegisterDialogComponent {
     };
     this.authService.register(registerData).subscribe({
       next: (res) => {
-        this.successMsg = res.message || 'Đăng ký thành công!';
+        this.toast.success(res.message || 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');
         this.loading = false;
         this.cdRef.detectChanges();
-        setTimeout(() => {
-          if (this.dialogRef) {
-            this.dialogRef.close();
-          } else {
-            window.location.href = '/login';
-          }
-        }, 600);
+        if (this.dialogRef) {
+          this.dialogRef.afterClosed().subscribe(() => {
+            this.authDialogService.openVerifyEmailDialog(this.email);
+          });
+          this.dialogRef.close();
+        } else {
+          this.authDialogService.openVerifyEmailDialog(this.email);
+        }
       },
       error: (err) => {
         this.loading = false;
+        console.error('API Register Error:', err);
         if (err && err.error && err.error.message) {
-          this.errorMsg = err.error.message;
+          this.toast.error(err.error.message);
         } else if (err && err.error && typeof err.error === 'string') {
-          this.errorMsg = err.error;
+          this.toast.error(err.error);
         } else if (err && err.status) {
-          this.errorMsg = `Đăng ký thất bại (status: ${err.status})`;
+          this.toast.error(`Đăng ký thất bại (status: ${err.status})`);
         } else {
-          this.errorMsg = 'Đăng ký thất bại!';
+          this.toast.error('Đăng ký thất bại!');
         }
         this.cdRef.detectChanges();
       }

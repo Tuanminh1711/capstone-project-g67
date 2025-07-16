@@ -1,0 +1,43 @@
+<app-top-navigator></app-top-navigator>
+<div class="care-reminder-setup-container wide">
+  <h2>Cài đặt nhắc nhở lịch chăm sóc cây</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div formArrayName="schedules">
+      <div *ngFor="let schedule of schedules.controls; let i = index" [formGroupName]="i" class="schedule-block">
+        <div class="schedule-header">
+          <span>Lịch {{ i + 1 }}</span>
+          <button type="button" (click)="removeSchedule(i)" *ngIf="schedules.length > 1">Xóa</button>
+        </div>
+        <div class="schedule-grid">
+          <div class="form-row">
+            <label>Loại chăm sóc</label>
+            <select formControlName="careTypeId">
+              <option *ngFor="let type of careTypes" [value]="type.id">{{ type.name }}</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Chu kỳ (ngày)</label>
+            <input type="number" formControlName="frequencyDays" min="1" />
+          </div>
+          <div class="form-row">
+            <label>Giờ nhắc</label>
+            <input type="time" formControlName="reminderTime" />
+          </div>
+          <div class="form-row">
+            <label>Ngày bắt đầu</label>
+            <input type="date" formControlName="startDate" />
+          </div>
+          <div class="form-row full-width">
+            <label>Tin nhắn tuỳ chỉnh</label>
+            <input type="text" formControlName="customMessage" maxlength="100" placeholder="Nhập tin nhắn..." />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="add-schedule-btn" (click)="addSchedule()">+ Thêm lịch nhắc</button>
+      <button type="submit" [disabled]="form.invalid || loading">Lưu nhắc nhở</button>
+      <span *ngIf="loading">Đang lưu...</span>
+    </div>
+  </form>
+</div>

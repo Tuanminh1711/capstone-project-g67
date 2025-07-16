@@ -6,11 +6,23 @@
     <aside class="sidebar">
       <div class="sidebar-title">Danh mục</div>
       <nav class="sidebar-menu">
-        @for (item of [1,2,3,4,5,6]; track $index) {
-          <a class="sidebar-item" href="#">
-            <img src="" class="sidebar-icon" alt="ABCD" />
-            ABCD
-          </a>
+        @if (loadingCategories) {
+          <div class="sidebar-loading">Đang tải danh mục...</div>
+        }
+        @if (errorCategories) {
+          <div class="sidebar-error">{{ errorCategories }}</div>
+        }
+        @if (!loadingCategories) {
+          @if (categories$ | async; as categories) {
+            @if (categories.length > 0) {
+              @for (cat of categories; track cat.id) {
+                <a class="sidebar-item" href="#" (click)="filterByCategory(cat.id); $event.preventDefault()">
+                  <span class="sidebar-icon">🌱</span>
+                  {{ translateCategoryName(cat.name) }}
+                </a>
+              }
+            }
+          }
         }
       </nav>
     </aside>
@@ -20,7 +32,7 @@
       <div class="plant-search-card">
 
         <!-- Search box -->
-        <form class="plant-search-box" (ngSubmit)="onSearch()">
+        <form class="plant-search-box full-width" (ngSubmit)="onSearch()">
           <input
             type="text"
             class="plant-search-input"
@@ -31,7 +43,6 @@
           />
           <button class="plant-search-btn" type="submit">
             <span class="material-icons">search</span>
-            Tìm kiếm
           </button>
         </form>
 
@@ -44,6 +55,14 @@
         @if (!loading && error) {
           <div class="status-msg error">
             {{ error }}
+          </div>
+        }
+
+        <!-- Demo data notice -->
+        @if (!loading && usingDemoData) {
+          <div class="status-msg info">
+            <i class="material-icons">info</i>
+            Đang hiển thị dữ liệu mẫu (API không khả dụng)
           </div>
         }
 
@@ -61,15 +80,20 @@
             <!-- Danh sách cây -->
             @if (plants.length > 0) {
               <div class="plant-list">
-                @for (plant of plants; track plant.id) {
+                @for (plant of plants; track trackByPlantId($index, plant)) {
                   <div class="plant-card">
-                    @if (plant.imageUrls.length) {
+                    @if (plant.imageUrls && plant.imageUrls.length > 0) {
                       <img
                         [src]="plant.imageUrls[0]"
                         [alt]="plant.commonName"
                         class="plant-img"
                         (click)="viewPlantDetail(plant.id)"
                       />
+                    } @else {
+                      <div class="no-image-placeholder" (click)="viewPlantDetail(plant.id)">
+                        <i class="fas fa-seedling"></i>
+                        <span>Chưa có ảnh</span>
+                      </div>
                     }
                     <div class="plant-info" (click)="viewPlantDetail(plant.id)">
                       <div class="plant-title">
@@ -91,10 +115,15 @@
                         Phân loại: {{ plant.categoryName }}
                       </div>
                       <div class="plant-desc">{{ plant.description }}</div>
-                      <div class="plant-meta">
-                        <span>Ánh sáng: {{ translateLightRequirement(plant.lightRequirement) }}</span> |
-                        <span>Nước: {{ translateWaterRequirement(plant.waterRequirement) }}</span> |
-                        <span>Độ khó: {{ translateCareDifficulty(plant.careDifficulty) }}</span>
+                      <div class="plant-meta-simple">
+                        <span class="meta-label">Ánh sáng:</span>
+                        <span class="meta-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
+                        <span class="meta-sep">|</span>
+                        <span class="meta-label">Nước:</span>
+                        <span class="meta-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
+                        <span class="meta-sep">|</span>
+                        <span class="meta-label">Độ khó:</span>
+                        <span class="meta-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
                       </div>
                       <div class="plant-actions">
                         <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">

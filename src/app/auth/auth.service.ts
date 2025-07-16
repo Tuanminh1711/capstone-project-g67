@@ -10,9 +10,14 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  token: string | null;
   userId?: string;
-  // Thêm các trường khác nếu backend trả về
+  username?: string;
+  message?: string;
+  status?: number;
+  role?: string | null;
+  email?: string;
+  requiresVerification?: boolean;
 }
 
 export interface RegisterRequest {
@@ -73,7 +78,7 @@ export class AuthService {
   }
 
   resendVerificationEmail(email: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/resend-verification`, { email });
+    return this.http.post<any>(`${this.apiUrl}/resend-verification?email=${encodeURIComponent(email)}`, {});
   }
 
   /**

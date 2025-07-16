@@ -1,5 +1,28 @@
 @use '../../../styles/variables' as *;
 
+/* ==== PLANT META CARDS ==== */
+// ...existing code...
+.plant-meta-simple {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 0.97rem;
+  color: #444;
+}
+.plant-meta-simple .meta-label {
+  font-weight: bold;
+  color: #222;
+}
+.plant-meta-simple .meta-value {
+  font-weight: 400;
+  color: #444;
+}
+.plant-meta-simple .meta-sep {
+  color: #bbb;
+  font-size: 1.1em;
+}
+// ...existing code...
 /* ==== RESET ==== */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -12,7 +35,7 @@ body, .plant-info-layout {
 
 /* ==== LAYOUT CHUNG ==== */
 .plant-info-layout {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   background: #e6f4ea;
   display: flex;
@@ -21,9 +44,9 @@ body, .plant-info-layout {
 
 .plant-info-inner {
   display: grid;
-  grid-template-columns: 1fr minmax(240px, 300px) minmax(400px, 600px) 1fr;
-  gap: 24px;
-  margin-top: 20px;
+  grid-template-columns: 1fr minmax(240px, 350px) minmax(600px, 1000px) 1fr;
+  gap: 32px;
+  margin-top: 80px; /* Tăng margin-top để tránh top-nav */
   width: 100%;
 }
 
@@ -32,6 +55,7 @@ body, .plant-info-layout {
   grid-column: 2 / 3;
   background: #fff;
   padding: 20px;
+  padding-bottom: 48px;
   border-radius: 16px;
   box-shadow: 0 2px 16px rgba(30, 174, 96, 0.08);
 }
@@ -89,6 +113,9 @@ body, .plant-info-layout {
   padding: 28px;
   border-radius: 16px;
   box-shadow: 0 4px 28px rgba(30, 174, 96, 0.12);
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto 24px auto;
 }
 
 .plant-search-box {
@@ -100,6 +127,11 @@ body, .plant-info-layout {
   box-shadow: 0 2px 10px rgba(30, 174, 96, 0.08);
   margin-bottom: 24px;
   max-width: 500px;
+
+  &.full-width {
+    width: 100%;
+    display: flex;
+  }
 }
 
 .plant-search-input {
@@ -109,6 +141,7 @@ body, .plant-info-layout {
   font-size: 1rem;
   color: #333;
   padding: 8px 0;
+  min-width: 0; // Prevent input from overflowing
 
   &::placeholder {
     color: #aaa;
@@ -123,6 +156,7 @@ body, .plant-info-layout {
   color: #178a4c;
   cursor: pointer;
   padding: 4px 8px;
+  margin-left: 8px; // Add margin to separate from input
 
   &:hover {
     color: #0c4f2f;
@@ -159,6 +193,38 @@ body, .plant-info-layout {
     object-fit: cover;
     background: #eee;
     cursor: pointer;
+  }
+
+  .no-image-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    cursor: pointer;
+    border: 2px dashed #dee2e6;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #e9ecef, #dee2e6);
+      border-color: #adb5bd;
+    }
+
+    i {
+      font-size: 24px;
+      margin-bottom: 4px;
+      color: #28a745;
+    }
+
+    span {
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+    }
   }
 
   .plant-info {
@@ -369,7 +435,7 @@ body, .plant-info-layout {
     display: flex;
     flex-direction: column;
     padding: 0;
-    margin-top: 12px;
+    margin-top: 70px; /* Tăng margin-top cho mobile để tránh top-nav */
   }
 
   .sidebar {

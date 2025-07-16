@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription, filter } from 'rxjs';
 import { PlantDataService } from '../../shared/plant-data.service';
 
 interface Plant {
@@ -31,13 +31,14 @@ interface Plant {
   templateUrl: './plant-info.html',
   styleUrl: './plant-info.scss'
 })
-export class PlantInfoComponent implements OnInit {
+export class PlantInfoComponent implements OnInit, OnDestroy {
   private plantsSubject = new BehaviorSubject<Plant[]>([]);
   plants$ = this.plantsSubject.asObservable();
 
   searchText = '';
   loading = false;
   error = '';
+  usingDemoData = false;
 
   currentPage = 0;
   pageSize = 8;
@@ -46,17 +47,46 @@ export class PlantInfoComponent implements OnInit {
 
   private searchDebounce: any;
   private currentKeyword = '';
+  private navigationSubscription: Subscription;
+
+  private categoriesSubject = new BehaviorSubject<Array<{ id: number; name: string; description: string }>>([]);
+  categories$ = this.categoriesSubject.asObservable();
+  loadingCategories = false;
+  errorCategories = '';
+
+  selectedCategoryId: number | null = null;
 
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private plantDataService: PlantDataService
-  ) {}
+  ) {
+    // Listen for navigation events to refresh data when coming from create page
+    this.navigationSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.url === '/main/plant-info') {
+          console.log('🔄 Detected navigation to plant-info, refreshing data...');
+          setTimeout(() => this.refreshData(), 100);
+        }
+      });
+  }
 
   ngOnInit(): void {
-    // Luôn fetch mới từ server, không ưu tiên cache khi user thao tác hoặc reload
+    // Force refresh từ server mỗi khi component init
+    // Điều này đảm bảo luôn có dữ liệu mới nhất
+    console.log('🔄 PlantInfo Component init - fetching fresh data');
     this.fetchPlants(0, '');
+    this.loadCategories();
+
+    // Đọc lại category đã chọn từ localStorage khi reload
+    try {
+      const savedCatId = localStorage.getItem('selectedCategoryId');
+      if (savedCatId) {
+        this.selectedCategoryId = Number(savedCatId);
+      }
+    } catch {}
   }
 
   private buildUrl(page: number, keyword: string): string {
@@ -95,14 +125,61 @@ export class PlantInfoComponent implements OnInit {
         this.plantsSubject.next(data.plants);
         this.plantDataService.setPlantsList(data.plants);
         this.cachePlants(data.plants, page, trimmedKeyword);
+        this.usingDemoData = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (error) => {
+        console.warn('Plants API not available, using demo data:', error.message);
         this.loading = false;
-        this.error = 'Không thể tải danh sách cây.';
-        this.resetResults();
-        this.plantsSubject.next([]);
+        this.usingDemoData = true;
+        
+        // Provide demo/fallback data when API fails
+        const demoPlants: Plant[] = this.getDemoPlants();
+        
+        // Filter demo plants based on keyword if provided
+        let filteredPlants = demoPlants;
+        if (trimmedKeyword) {
+          filteredPlants = demoPlants.filter(plant => 
+            plant.commonName.toLowerCase().includes(trimmedKeyword.toLowerCase()) ||
+            plant.scientificName.toLowerCase().includes(trimmedKeyword.toLowerCase()) ||
+            plant.categoryName.toLowerCase().includes(trimmedKeyword.toLowerCase())
+          );
+        }
+        
+        // Simulate pagination
+        const startIndex = page * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        const paginatedPlants = filteredPlants.slice(startIndex, endIndex);
+        
+        this.totalPages = Math.ceil(filteredPlants.length / this.pageSize);
+        this.totalElements = filteredPlants.length;
+        this.currentPage = page;
+        this.currentKeyword = trimmedKeyword;
+        
+        this.plantsSubject.next(paginatedPlants);
+        this.plantDataService.setPlantsList(paginatedPlants);
         this.cdr.detectChanges();
+        
+        // Show info message only once
+        if (page === 0 && !trimmedKeyword) {
+          console.info('Sử dụng dữ liệu demo do API không khả dụng');
+        }
+      }
+    });
+  }
+
+  loadCategories() {
+    this.loadingCategories = true;
+    this.errorCategories = '';
+    this.http.get<any>('http://localhost:8080/api/plants/categories').subscribe({
+      next: (res) => {
+        this.categoriesSubject.next(res.data || []);
+        this.loadingCategories = false;
+      },
+      error: (err) => {
+        this.errorCategories = 'Không thể tải danh mục cây.';
+        this.categoriesSubject.next([]);
+        this.loadingCategories = false;
       }
     });
   }
@@ -213,6 +290,18 @@ export class PlantInfoComponent implements OnInit {
   }
 
   /**
+   * Translate category name to Vietnamese
+   */
+  translateCategoryName(name: string): string {
+    switch (name) {
+      case 'Indoor Plants': return 'Cây trồng trong nhà';
+      case 'Outdoor Plants': return 'Cây ngoài trời';
+      case 'Succulents': return 'Cây mọng nước';
+      default: return name;
+    }
+  }
+
+  /**
    * Cache dữ liệu vào localStorage
    */
   private cachePlants(plants: Plant[], page: number, keyword: string): void {
@@ -230,5 +319,182 @@ export class PlantInfoComponent implements OnInit {
     } catch (e) {
       console.log('Failed to cache plants:', e);
     }
+  }
+
+  /**
+   * Tạo dữ liệu demo khi API không hoạt động
+   */
+  private getDemoPlants(): Plant[] {
+    return [
+      {
+        id: 1,
+        scientificName: 'Ficus elastica',
+        commonName: 'Cây cao su',
+        categoryName: 'Cây cảnh trong nhà',
+        description: 'Cây cao su là một loại cây cảnh phổ biến với lá to, bóng và màu xanh đậm. Rất dễ chăm sóc và phù hợp trồng trong nhà.',
+        careInstructions: 'Tưới nước khi đất khô, đặt nơi có ánh sáng gián tiếp, lau lá thường xuyên để giữ độ bóng.',
+        lightRequirement: 'MEDIUM',
+        waterRequirement: 'MEDIUM',
+        careDifficulty: 'EASY',
+        suitableLocation: 'Phòng khách, ban công có mái che',
+        commonDiseases: 'Rỉ sắt, thối rễ do tưới nước quá nhiều',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=1'],
+        createdAt: '2024-01-15T10:30:00Z'
+      },
+      {
+        id: 2,
+        scientificName: 'Sansevieria trifasciata',
+        commonName: 'Cây lưỡi hổ',
+        categoryName: 'Cây cảnh trong nhà',
+        description: 'Cây lưỡi hổ có lá dài, thẳng đứng với họa tiết sọc vàng xanh đặc trưng. Rất dễ chăm sóc và có khả năng lọc không khí tốt.',
+        careInstructions: 'Tưới nước ít, khoảng 1-2 tuần/lần. Có thể sống trong điều kiện ánh sáng yếu.',
+        lightRequirement: 'LOW',
+        waterRequirement: 'LOW',
+        careDifficulty: 'EASY',
+        suitableLocation: 'Phòng ngủ, văn phòng, phòng tắm',
+        commonDiseases: 'Thối rễ do tưới nước quá nhiều',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=2'],
+        createdAt: '2024-01-20T14:15:00Z'
+      },
+      {
+        id: 3,
+        scientificName: 'Pothos aureus',
+        commonName: 'Cây trầu bà',
+        categoryName: 'Cây cảnh trong nhà',
+        description: 'Cây trầu bà là loại cây leo với lá có màu xanh và vàng đẹp mắt. Dễ trồng và có thể phát triển tốt trong nước hoặc đất.',
+        careInstructions: 'Tưới nước đều đặn, đặt nơi có ánh sáng gián tiếp, có thể cắt tỉa để tạo hình.',
+        lightRequirement: 'MEDIUM',
+        waterRequirement: 'MEDIUM',
+        careDifficulty: 'EASY',
+        suitableLocation: 'Treo ở ban công, kệ sách, bàn làm việc',
+        commonDiseases: 'Lá vàng do thiếu nước hoặc ánh sáng',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=3'],
+        createdAt: '2024-02-01T09:45:00Z'
+      },
+      {
+        id: 4,
+        scientificName: 'Aloe vera',
+        commonName: 'Nha đam',
+        categoryName: 'Cây thảo dược',
+        description: 'Nha đam là cây mọng nước có nhiều công dụng trong y học và làm đẹp. Lá dày, chứa gel trong suốt có tính kháng khuẩn.',
+        careInstructions: 'Tưới nước ít, đặt nơi có ánh sáng trực tiếp, tránh úng nước.',
+        lightRequirement: 'HIGH',
+        waterRequirement: 'LOW',
+        careDifficulty: 'EASY',
+        suitableLocation: 'Ban công có ánh nắng, cửa sổ hướng nam',
+        commonDiseases: 'Thối rễ, cháy lá do ánh nắng quá mạnh',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=4'],
+        createdAt: '2024-02-10T16:20:00Z'
+      },
+      {
+        id: 5,
+        scientificName: 'Monstera deliciosa',
+        commonName: 'Cây lá xẻ',
+        categoryName: 'Cây cảnh trong nhà',
+        description: 'Cây lá xẻ có lá to với những lỗ thủng tự nhiên đặc trưng, tạo vẻ đẹp nhiệt đới. Là cây cảnh nội thất được ưa chuộng.',
+        careInstructions: 'Tưới nước khi đất khô, đặt nơi có ánh sáng gián tiếp, cần cột hỗ trợ khi cây lớn.',
+        lightRequirement: 'MEDIUM',
+        waterRequirement: 'MEDIUM',
+        careDifficulty: 'MODERATE',
+        suitableLocation: 'Phòng khách rộng, góc phòng có ánh sáng',
+        commonDiseases: 'Lá vàng, rệp, nhện đỏ',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=5'],
+        createdAt: '2024-02-15T11:10:00Z'
+      },
+      {
+        id: 6,
+        scientificName: 'Rosa damascena',
+        commonName: 'Hoa hồng',
+        categoryName: 'Cây hoa',
+        description: 'Hoa hồng là biểu tượng của tình yêu với hương thơm quyến rũ và vẻ đẹp kiêu sa. Có nhiều màu sắc và giống khác nhau.',
+        careInstructions: 'Tưới nước đều đặn, bón phân định kỳ, cắt tỉa cành khô, phòng trừ sâu bệnh.',
+        lightRequirement: 'HIGH',
+        waterRequirement: 'HIGH',
+        careDifficulty: 'MODERATE',
+        suitableLocation: 'Sân vườn, ban công có ánh nắng trực tiếp',
+        commonDiseases: 'Bệnh đốm đen, rỉ sắt, rệp và sâu róm',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=6'],
+        createdAt: '2024-02-20T08:30:00Z'
+      },
+      {
+        id: 7,
+        scientificName: 'Lavandula angustifolia',
+        commonName: 'Oải hương',
+        categoryName: 'Cây thảo dược',
+        description: 'Oải hương có hương thơm dễ chịu, giúp thư giãn và có tác dụng chống côn trùng tự nhiên. Hoa màu tím đẹp mắt.',
+        careInstructions: 'Tưới nước vừa phải, đặt nơi có ánh sáng trực tiếp, cắt tỉa sau khi ra hoa.',
+        lightRequirement: 'HIGH',
+        waterRequirement: 'LOW',
+        careDifficulty: 'MODERATE',
+        suitableLocation: 'Sân vườn, ban công có nắng, cửa sổ',
+        commonDiseases: 'Thối rễ do tưới nước quá nhiều',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=7'],
+        createdAt: '2024-03-01T13:45:00Z'
+      },
+      {
+        id: 8,
+        scientificName: 'Citrus limon',
+        commonName: 'Cây chanh',
+        categoryName: 'Cây ăn quả',
+        description: 'Cây chanh cho quả chua, giàu vitamin C. Có thể trồng trong chậu hoặc vườn, vừa có quả ăn vừa làm cảnh.',
+        careInstructions: 'Tưới nước đều đặn, bón phân hữu cơ, đặt nơi có ánh sáng trực tiếp, tỉa cành để thông thoáng.',
+        lightRequirement: 'HIGH',
+        waterRequirement: 'HIGH',
+        careDifficulty: 'MODERATE',
+        suitableLocation: 'Sân vườn, ban công lớn có nắng',
+        commonDiseases: 'Canker, rệp, nhện đỏ, thiếu dinh dưỡng',
+        status: 'APPROVED',
+        imageUrls: ['https://picsum.photos/400/300?random=8'],
+        createdAt: '2024-03-05T15:20:00Z'
+      }
+    ];
+  }
+
+  ngOnDestroy(): void {
+    if (this.navigationSubscription) {
+      this.navigationSubscription.unsubscribe();
+    }
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+  }
+
+  /**
+   * Track function để tránh duplicate keys
+   */
+  trackByPlantId(index: number, plant: Plant): string {
+    return `${plant.id}-${index}`;
+  }
+
+  private refreshData() {
+    console.log('🔄 Refreshing plant data after create operation');
+    this.currentPage = 0;
+    this.searchText = '';
+    this.currentKeyword = '';
+    this.plantsSubject.next([]);
+    this.totalElements = 0;
+    this.totalPages = 0;
+    this.fetchPlants(0, '');
+  }
+
+  filterByCategory(categoryId: number) {
+    this.selectedCategoryId = categoryId;
+    // Lưu category đã chọn vào localStorage để giữ trạng thái khi reload
+    try {
+      localStorage.setItem('selectedCategoryId', String(categoryId));
+    } catch {}
+  }
+
+  // Thêm hàm để filter trong template nếu cần
+  filterPlantsByCategory(plants: any[]): any[] {
+    if (!this.selectedCategoryId) return plants;
+    return plants.filter(p => p.categoryId === this.selectedCategoryId);
   }
 }

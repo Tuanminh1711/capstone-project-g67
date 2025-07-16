@@ -1,0 +1,13 @@
+<div class="handle-dialog">
+  <h2>Xử lý ticket hỗ trợ</h2>
+  <form [formGroup]="handleForm" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label for="note">Ghi chú xử lý</label>
+      <textarea id="note" formControlName="note" rows="3" placeholder="Nhập ghi chú xử lý..." class="input-note"></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="close()" class="cancel">Hủy</button>
+      <button type="submit" [disabled]="handleForm.invalid || loading" class="confirm">Xác nhận xử lý</button>
+    </div>
+  </form>
+</div>

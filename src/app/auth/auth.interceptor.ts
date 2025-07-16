@@ -9,12 +9,19 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const cookieService = inject(CookieService);
   const token = cookieService.getAuthToken();
 
-  // Chuẩn bị headers
-  let headers = new HttpHeaders({
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  });
+  // Chuẩn bị headers - merge với headers hiện có
+  let headers = request.headers;
 
+  // Chỉ set Content-Type nếu body KHÔNG phải FormData
+  if (!(request.body instanceof FormData)) {
+    if (!headers.has('Content-Type')) {
+      headers = headers.set('Content-Type', 'application/json');
+    }
+    if (!headers.has('Accept')) {
+      headers = headers.set('Accept', 'application/json');
+    }
+  }
+  // Luôn set Authorization nếu có token
   if (token) {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
@@ -33,8 +40,12 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 
   return next(apiReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Ghi log lỗi trong môi trường development
-      if (!environment.production) {
+      // Chỉ ghi log lỗi quan trọng, không log lỗi categories, upload và plants
+      const ignoredEndpoints = ['/api/categories', '/api/upload/image', '/api/plants/search'];
+      const shouldLog = !environment.production && 
+        !ignoredEndpoints.some(endpoint => apiReq.url.includes(endpoint));
+      
+      if (shouldLog) {
         console.error('API Error:', error);
       }
       

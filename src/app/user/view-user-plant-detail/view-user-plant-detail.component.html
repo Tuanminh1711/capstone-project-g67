@@ -1,0 +1,52 @@
+<app-top-navigator></app-top-navigator>
+<div class="user-plant-detail-container">
+  <ng-container *ngIf="loading">
+    <div class="loading-bar">
+      <div class="loading-spinner"></div>
+      <span>Đang tải chi tiết cây...</span>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!loading && errorMsg">
+    <div class="error-msg">
+      <span class="error-icon">🥀</span>
+      <div>{{ errorMsg }}</div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!loading && plant">
+    <div class="plant-header">
+      <h2>{{ plant.nickname || 'Chưa đặt tên' }}</h2>
+      <span class="plant-id">#{{ plant.userPlantId }}</span>
+    </div>
+    
+    <!-- Hiển thị ảnh hoặc placeholder -->
+    <div class="plant-images">
+      <ng-container *ngIf="plant.imageUrls && plant.imageUrls.length > 0; else noImages">
+        <img *ngFor="let img of plant.imageUrls" [src]="img" alt="Ảnh cây" class="plant-img" 
+             (error)="onImageError($event)" />
+      </ng-container>
+      <ng-template #noImages>
+        <div class="no-image-placeholder">
+          <span class="placeholder-icon">🌱</span>
+          <span class="placeholder-text">Chưa có ảnh</span>
+        </div>
+      </ng-template>
+    </div>
+    
+    <div class="plant-info">
+      <div class="info-row"><b>Ngày trồng:</b> <span>{{ plant.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span></div>
+      <div class="info-row"><b>Vị trí:</b> <span>{{ plant.locationInHouse || 'Chưa cập nhật' }}</span></div>
+      <div class="info-row"><b>Nhắc nhở:</b> <span [class.enabled]="plant.reminderEnabled">{{ plant.reminderEnabled ? 'Bật' : 'Tắt' }}</span></div>
+    </div>
+    
+    <div class="plant-images-detail" *ngIf="plant.images && plant.images.length">
+      <h4>Ảnh & mô tả:</h4>
+      <div class="image-detail-list">
+        <div class="image-detail-item" *ngFor="let img of plant.images">
+          <img [src]="img.imageUrl" alt="Ảnh" class="plant-img-detail" 
+               (error)="onImageError($event)" />
+          <p class="img-desc">{{ img.description }}</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

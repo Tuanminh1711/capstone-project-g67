@@ -124,13 +124,52 @@ app-admin-sidebar {
   border-collapse: collapse;
   margin-bottom: 20px;
   background: white;
+  table-layout: fixed; /* Thêm để kiểm soát độ rộng cột */
+}
+
+/* Điều chỉnh độ rộng cho từng cột */
+.report-table th:nth-child(1), .report-table td:nth-child(1) { /* ID */
+  width: 40px; /* Giảm từ 60px */
+}
+
+.report-table th:nth-child(2), .report-table td:nth-child(2) { /* Tiêu đề */
+  width: 35%; /* Tăng từ 25% để có nhiều chỗ hơn */
+  max-width: none; /* Bỏ giới hạn max-width */
+}
+
+.report-table th:nth-child(3), .report-table td:nth-child(3) { /* Người báo cáo */
+  width: 12%; /* Giảm từ 15% */
+}
+
+.report-table th:nth-child(4), .report-table td:nth-child(4) { /* Ngày tạo */
+  width: 15%;
+}
+
+.report-table th:nth-child(5), .report-table td:nth-child(5) { /* Trạng thái */
+  width: 16%; /* Tăng từ 12% để có thêm không gian */
+}
+
+.report-table th:nth-child(6), .report-table td:nth-child(6) { /* Hành động */
+  width: 120px; /* Giảm vì chỉ còn 1 nút */
+  min-width: 120px;
 }
 
 .report-table th,
 .report-table td {
   border: 1px solid #e0e0e0;
-  padding: 12px;
-  text-align: left;
+  padding: 15px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 15px; /* Tăng từ 14px để dễ đọc hơn */
+  vertical-align: middle;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.report-table td:nth-child(2) { /* Cột tiêu đề */
+  white-space: normal; /* Cho phép xuống dòng */
+  word-wrap: break-word;
+  line-height: 1.4; /* Cải thiện spacing giữa các dòng */
 }
 
 .report-table th {
@@ -161,11 +200,15 @@ app-admin-sidebar {
 }
 
 .status-badge {
-  padding: 4px 12px;
+  padding: 6px 14px; /* Tăng padding để sử dụng hết không gian */
   border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px; /* Tăng font size nhẹ */
+  font-weight: 600; /* Tăng font weight */
   text-transform: uppercase;
+  white-space: nowrap; /* Đảm bảo text không wrap */
+  display: inline-block;
+  min-width: 80px; /* Đặt min-width để đồng nhất */
+  text-align: center; /* Căn giữa text */
 }
 
 .status-pending {
@@ -256,7 +299,7 @@ app-admin-sidebar {
   font-size: 16px;
 }
 
-.report-table .view-btn, .report-table .claim-btn {
+.report-table .view-btn, .report-table .claim-btn, .report-table .detail-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -274,11 +317,89 @@ app-admin-sidebar {
   letter-spacing: 0.02em;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center; /* Center vì chỉ còn 1 nút */
+}
+
+// Responsive design cho action buttons
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+  
+  .report-table .detail-btn, .report-table .claim-btn {
+    width: 100%;
+    min-width: auto;
+    font-size: 12px;
+    padding: 6px 12px;
+    height: 32px;
+  }
+  
+  .report-table .detail-btn i, .report-table .claim-btn i {
+    font-size: 11px;
+  }
+}
+
+.report-table .detail-btn, .report-table .claim-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  min-width: 75px;
+  height: 32px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.report-table .detail-btn {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.report-table .detail-btn:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+  color: #212529;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.20);
+}
+
+.report-table .claim-btn {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: #ffffff;
+  border: 1px solid #007bff;
+}
+
+.report-table .claim-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  border-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25), 0 1px 3px rgba(0, 123, 255, 0.35);
+}
+
 .report-table .view-btn {
   background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
   color: #1976d2;
   border: 1.5px solid #90caf9;
 }
+
 .report-table .view-btn:hover, .report-table .view-btn:focus {
   background: linear-gradient(90deg, #1976d2 0%, #64b5f6 100%);
   color: #fff;
@@ -287,28 +408,24 @@ app-admin-sidebar {
   box-shadow: 0 4px 16px #1976d233;
 }
 
-.report-table .claim-btn {
-  display: inline-block;
-  padding: 7px 18px;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  background: #388e3c;
-  color: #fff;
-  border: 1.5px solid #388e3c;
-  box-shadow: 0 1px 4px #e0e0e0;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
-  outline: none;
-  letter-spacing: 0.01em;
+.report-table .claim-btn:disabled {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #6c757d;
+  border-color: #dee2e6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  opacity: 0.7;
 }
-.report-table .claim-btn:hover, .report-table .claim-btn:focus {
-  background: #256029;
-  color: #fff;
-  border-color: #256029;
-  transform: translateY(-1px) scale(1.03);
-  box-shadow: 0 2px 8px #388e3c33;
+
+.report-table .detail-btn i, .report-table .claim-btn i {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.report-table .detail-btn:active, .report-table .claim-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .report-table .claim-btn .claim-icon {
@@ -353,6 +470,21 @@ app-admin-sidebar {
   color: #388e3c;
   border-bottom: 2px solid #388e3c;
   background: #f1f8e9;
+}
+
+// Clickable row styling
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+  background-color: #f8f9fa;
+}
+
+.report-title {
+  font-weight: 500;
+  color: #495057;
 }
 
 @media (max-width: 900px) {

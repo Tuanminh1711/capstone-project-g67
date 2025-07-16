@@ -1,0 +1,68 @@
+<div class="support-dialog-pro">
+  <button class="dialog-close-pro" (click)="close()" aria-label="Đóng">×</button>
+  <div class="dialog-header-pro" style="text-align:center; padding: 12px 0 8px 0; border-bottom: 1px solid #eee;">
+    <span class="dialog-title-pro" style="font-weight: 600; color: #fff;">GỬI YÊU CẦU HỖ TRỢ</span>
+    <div class="dialog-subtitle-pro" style="font-weight: 600; color: #fff;">CHÚNG TÔI SẼ PHẢN HỒI SỚM NHẤT CÓ THỂ!</div>
+  </div>
+  <form (ngSubmit)="onSubmit()" autocomplete="off" class="support-form-pro">
+    <div class="form-row flex-row" style="margin-bottom: 12px;display:flex;align-items:center;gap:12px;">
+      <label for="title" class="field-label" style="font-weight:500;min-width:110px;margin-bottom:0;">Tiêu đề <span class="required">*</span></label>
+      <input 
+        id="title"
+        class="field-input first-input" 
+        type="text" 
+        name="title"
+        [(ngModel)]="title"
+        placeholder="Nhập tiêu đề vấn đề"
+        maxlength="100"
+        required
+        style="color: #222; border: 1px solid #d0d7de; border-radius: 6px; padding: 8px 10px; width: 100%; font-size: 1rem; margin-left: 8px;" />
+    </div>
+    <div class="form-row flex-row" style="margin-bottom: 12px;display:flex;align-items:center;gap:12px;">
+      <label for="description" class="field-label" style="font-weight:500;min-width:110px;margin-bottom:0;">Mô tả chi tiết <span class="required">*</span></label>
+      <textarea 
+        id="description"
+        class="field-input field-textarea" 
+        name="description"
+        [(ngModel)]="description"
+        placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."
+        rows="4"
+        maxlength="1000"
+        required
+        style="resize:vertical; min-height:80px; border: 1px solid #d0d7de; border-radius: 6px; padding: 8px 10px; width: 100%; font-size: 1rem;" ></textarea>
+    </div>
+    <div class="form-row flex-row" style="margin-bottom: 12px;display:flex;align-items:center;gap:12px;">
+      <label class="field-label" style="font-weight:500;min-width:110px;margin-bottom:0;">Đính kèm hình ảnh</label>
+      <div class="image-upload-section">
+        <input 
+          type="file" 
+          id="imageUploadPro"
+          accept="image/*" 
+          (change)="onImageSelected($event)"
+          hidden />
+        <label for="imageUploadPro" class="image-upload-label">
+          <span class="material-icons">cloud_upload</span>
+          Chọn ảnh
+        </label>
+        <span class="selected-file-name" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+      </div>
+    </div>
+    <div *ngIf="imagePreview" style="margin-bottom: 12px;display:flex;align-items:center;gap:8px;justify-content:center;">
+      <img [src]="imagePreview" alt="Hình ảnh xem trước" style="max-width:80px;max-height:80px;border-radius:4px;border:1px solid #ffe066;" />
+      <button type="button" (click)="removeImage()" style="background:#f44336;color:#fff;border:none;border-radius:4px;padding:2px 8px;cursor:pointer;">Xóa</button>
+    </div>
+    <div class="form-actions-pro" style="display:flex;justify-content:center;gap:18px;margin-top:22px;">
+      <button 
+        type="submit" 
+        [disabled]="isSubmitting || !title.trim() || !description.trim()"
+        class="btn-pro btn-submit">
+        <span *ngIf="isSubmitting" class="loading-spinner-pro" style="margin-right:6px;"></span>
+        {{ isSubmitting ? 'GỬI...' : 'GỬI YÊU CẦU HỖ TRỢ' }}
+      </button>
+    </div>
+  </form>
+  <div class="dialog-footer-pro" style="margin-top:18px;text-align:center;font-size:0.95rem;color:#888;">
+    <span style="color:#fff;font-weight:600;">⏱️ Thời gian phản hồi trung bình: <b>2 giờ</b></span><br>
+    <span style="color:#fff;">Chúng tôi cam kết bảo mật thông tin của bạn</span>
+  </div>
+</div>

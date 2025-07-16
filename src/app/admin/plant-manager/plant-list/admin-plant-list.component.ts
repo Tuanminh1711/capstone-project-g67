@@ -5,6 +5,10 @@ import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
+import { AdminTopNavigatorComponent } from '../../../shared/admin-top-navigator/admin-top-navigator.component';
+import { AdminSidebarComponent } from '../../../shared/admin-sidebar/admin-sidebar.component';
+import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
+import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 
 interface Plant {
   id: number;
@@ -28,12 +32,10 @@ interface Plant {
 
 @Component({
   selector: 'app-admin-plant-list',
-  standalone: true,
   templateUrl: './admin-plant-list.component.html',
   styleUrls: ['./admin-plant-list.component.scss'],
   imports: [
-    CommonModule, FormsModule, NgIf, NgForOf
-  ]
+    CommonModule, FormsModule, NgIf, NgForOf]
 })
 export class AdminPlantListComponent implements OnInit, AfterViewInit {
   sidebarCollapsed = false;
@@ -298,6 +300,18 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
 
   trackByPlant(index: number, plant: Plant): number {
     return plant.id;
+  }
+
+  formatDate(dateString: string | null): string {
+    if (!dateString) return '';
+    try {
+      return new Date(dateString).toLocaleString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
   }
 
 }

@@ -226,8 +226,12 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     this.toastService.error(this.errorMessage);
   }
 
-  viewPlantDetail(plantId: number): void {
-    this.router.navigate(['/plant-detail', plantId]);
+  viewPlantDetail(userPlantId: number): void {
+    if (userPlantId) {
+      this.router.navigate(['/user/user-plant-detail', userPlantId]);
+    } else {
+      this.toastService.error('Không tìm thấy cây này trong vườn của bạn');
+    }
   }
 
   removePlantFromCollection(plantId: number, plantName?: string): void {
@@ -345,8 +349,14 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
   carePlant(plantId: number): void {
-    // Navigate to plant care page or show care modal
-    this.toastService.info('Tính năng chăm sóc cây đang được phát triển');
+    // Tìm userPlantId theo plantId
+    const targetPlant = this.userPlants.find(p => p.plantId === plantId);
+    const userPlantId = targetPlant?.userPlantId;
+    if (userPlantId) {
+      this.router.navigate(['/user/plant-care-reminder', userPlantId]);
+    } else {
+      this.toastService.error('Không tìm thấy cây này trong vườn của bạn');
+    }
   }
 
   refreshGarden(): void {

@@ -1,0 +1,222 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="create-plant-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>TẠO LOẠI CÂY MỚI</h1>
+      <p class="subtitle">Chia sẻ thông tin về loại cây mới với cộng đồng yêu thực vật</p>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <form [formGroup]="createPlantForm" (ngSubmit)="onSubmit()" class="create-plant-form">
+      
+      <!-- Basic Information -->
+      <div class="form-section">
+        <h2 class="section-title">Thông tin cơ bản</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="scientificName">Tên khoa học *</label>
+            <input 
+              type="text" 
+              id="scientificName"
+              formControlName="scientificName"
+              [class.error]="isFieldInvalid('scientificName')"
+              placeholder="Ví dụ: Ficus elastica">
+            <div class="error-message" *ngIf="isFieldInvalid('scientificName')">
+              {{ getFieldError('scientificName') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="commonName">Tên thông thường *</label>
+            <input 
+              type="text" 
+              id="commonName"
+              formControlName="commonName"
+              [class.error]="isFieldInvalid('commonName')"
+              placeholder="Ví dụ: Cây cao su">
+            <div class="error-message" *ngIf="isFieldInvalid('commonName')">
+              {{ getFieldError('commonName') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="categoryId">Danh mục *</label>
+          <select 
+            id="categoryId"
+            formControlName="categoryId"
+            [class.error]="isFieldInvalid('categoryId')">
+            <option value="">-- Chọn danh mục --</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+          <div class="loading-text" *ngIf="isLoadingCategories">Đang tải danh mục...</div>
+          <div class="error-message" *ngIf="isFieldInvalid('categoryId')">
+            {{ getFieldError('categoryId') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Mô tả *</label>
+          <textarea 
+            id="description"
+            formControlName="description"
+            [class.error]="isFieldInvalid('description')"
+            placeholder="Mô tả đặc điểm, hình dáng của cây..."
+            rows="4"></textarea>
+          <div class="error-message" *ngIf="isFieldInvalid('description')">
+            {{ getFieldError('description') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Care Information -->
+      <div class="form-section">
+        <h2 class="section-title">Thông tin chăm sóc</h2>
+
+        <div class="form-group">
+          <label for="careInstructions">Hướng dẫn chăm sóc *</label>
+          <textarea 
+            id="careInstructions"
+            formControlName="careInstructions"
+            [class.error]="isFieldInvalid('careInstructions')"
+            placeholder="Hướng dẫn chi tiết cách chăm sóc cây..."
+            rows="4"></textarea>
+          <div class="error-message" *ngIf="isFieldInvalid('careInstructions')">
+            {{ getFieldError('careInstructions') }}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lightRequirement">Yêu cầu ánh sáng *</label>
+            <select 
+              id="lightRequirement"
+              formControlName="lightRequirement"
+              [class.error]="isFieldInvalid('lightRequirement')">
+              <option value="">-- Chọn mức ánh sáng --</option>
+              <option *ngFor="let light of lightRequirements" [value]="light.value">
+                {{ light.label }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="isFieldInvalid('lightRequirement')">
+              {{ getFieldError('lightRequirement') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="waterRequirement">Yêu cầu nước *</label>
+            <select 
+              id="waterRequirement"
+              formControlName="waterRequirement"
+              [class.error]="isFieldInvalid('waterRequirement')">
+              <option value="">-- Chọn mức nước --</option>
+              <option *ngFor="let water of waterRequirements" [value]="water.value">
+                {{ water.label }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="isFieldInvalid('waterRequirement')">
+              {{ getFieldError('waterRequirement') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="careDifficulty">Độ khó chăm sóc *</label>
+            <select 
+              id="careDifficulty"
+              formControlName="careDifficulty"
+              [class.error]="isFieldInvalid('careDifficulty')">
+              <option value="">-- Chọn độ khó --</option>
+              <option *ngFor="let difficulty of careDifficulties" [value]="difficulty.value">
+                {{ difficulty.label }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="isFieldInvalid('careDifficulty')">
+              {{ getFieldError('careDifficulty') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="suitableLocation">Vị trí phù hợp *</label>
+            <input 
+              type="text" 
+              id="suitableLocation"
+              formControlName="suitableLocation"
+              [class.error]="isFieldInvalid('suitableLocation')"
+              placeholder="Ví dụ: Phòng khách, ban công có mái che...">
+            <div class="error-message" *ngIf="isFieldInvalid('suitableLocation')">
+              {{ getFieldError('suitableLocation') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="commonDiseases">Bệnh thường gặp *</label>
+          <textarea 
+            id="commonDiseases"
+            formControlName="commonDiseases"
+            [class.error]="isFieldInvalid('commonDiseases')"
+            placeholder="Các bệnh thường gặp và cách phòng chống..."
+            rows="3"></textarea>
+          <div class="error-message" *ngIf="isFieldInvalid('commonDiseases')">
+            {{ getFieldError('commonDiseases') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Images Section -->
+      <div class="form-section">
+        <h2 class="section-title">Hình ảnh minh họa</h2>
+        
+        <div class="image-upload-section">
+          <div class="upload-area" (click)="imageUpload.click()">
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <div class="upload-text">Tải lên hình ảnh cây</div>
+            <div class="upload-hint">Nhấp để chọn ảnh hoặc kéo thả vào đây (tối đa 5 ảnh)</div>
+            <input 
+              #imageUpload
+              type="file" 
+              id="imageUpload"
+              multiple 
+              accept="image/*"
+              (change)="onImageSelect($event)"
+              [disabled]="isUploadingImages">
+          </div>
+
+          <!-- Image Preview -->
+          <div class="image-preview-grid" *ngIf="imageUrls.length > 0">
+            <div class="image-preview-item" *ngFor="let url of imageUrls; let i = index">
+              <img [src]="url" [alt]="'Preview ' + (i + 1)">
+              <button type="button" class="remove-image" (click)="removeImage(i)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="submit-section">
+        <div class="submit-actions">
+          <button type="button" class="btn btn-secondary" (click)="goBack()" [disabled]="isSubmitting">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại
+          </button>
+
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || isUploadingImages" [class.loading]="isSubmitting">
+            <i class="fas fa-plus" *ngIf="!isSubmitting"></i>
+            <span *ngIf="!isSubmitting">Tạo cây mới</span>
+            <span *ngIf="isSubmitting">Đang tạo...</span>
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>

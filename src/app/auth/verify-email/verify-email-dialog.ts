@@ -23,7 +23,6 @@ export class VerifyEmailDialogComponent implements AfterViewInit, OnDestroy {
   countdown = 0;
   private countdownInterval?: any;
   errorMsg: string = '';
-  successMsg: string = '';
 
   constructor(
     private authService: AuthService,
@@ -159,17 +158,43 @@ export class VerifyEmailDialogComponent implements AfterViewInit, OnDestroy {
     if (this.countdown > 0 || this.resendLoading) {
       return;
     }
+    
+    if (!this.email) {
+      this.toast.error('Email không hợp lệ');
+      return;
+    }
+    
     this.resendLoading = true;
+    this.cdRef.detectChanges();
+    
     this.authService.resendVerificationEmail(this.email).subscribe({
       next: (res: any) => {
         this.resendLoading = false;
         this.toast.success('Mã OTP mới đã được gửi đến email của bạn');
         this.startCountdown();
+        // Reset OTP inputs để user nhập mã mới
+        this.otpDigits = ['', '', '', '', '', ''];
+        if (this.input0) {
+          this.input0.nativeElement.focus();
+        }
         this.cdRef.detectChanges();
       },
       error: (err: any) => {
         this.resendLoading = false;
-        this.toast.error('Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
+        console.error('Resend OTP Error:', err);
+        
+        let errorMessage = 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.';
+        if (err && err.error && err.error.message) {
+          errorMessage = err.error.message;
+        } else if (err && err.error && typeof err.error === 'string') {
+          errorMessage = err.error;
+        } else if (err && err.status === 429) {
+          errorMessage = 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.';
+        } else if (err && err.status === 400) {
+          errorMessage = 'Email không hợp lệ hoặc đã được xác thực.';
+        }
+        
+        this.toast.error(errorMessage);
         this.cdRef.detectChanges();
       }
     });

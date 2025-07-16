@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService, Toast } from '../toast.service';
 import { Subscription } from 'rxjs';
@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-toast',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="toast-container">
       <div 
@@ -38,7 +39,7 @@ import { Subscription } from 'rxjs';
       position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 1000;
+      z-index: 20000; /* tăng z-index để toast nổi trên dialog */
       display: flex;
       flex-direction: column;
       gap: 12px;

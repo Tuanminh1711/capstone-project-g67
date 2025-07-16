@@ -6,6 +6,7 @@ import { LoginDialogComponent } from '../auth/login/login-dialog';
 import { RegisterDialogComponent } from '../auth/register/register-dialog';
 import { ForgotPasswordDialogComponent } from '../auth/forgot-password/forgot-password-dialog';
 import { VerifyEmailDialogComponent } from '../auth/verify-email/verify-email-dialog';
+// import { CreateSupportTicketComponent } from '../support/create-ticket/create-support-ticket.component';
 
 @Injectable({ providedIn: 'root' })
 export class AuthDialogService {
@@ -26,7 +27,8 @@ export class AuthDialogService {
     const dialogRef = this.dialog.open(LoginDialogComponent, {
       width: '420px',
       disableClose: true,
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     });
     dialogRef.afterClosed().subscribe((result) => {
       this.dialogOpened = false;
@@ -48,7 +50,8 @@ export class AuthDialogService {
     const dialogRef = this.dialog.open(RegisterDialogComponent, {
       width: '420px',
       disableClose: true,
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     });
     dialogRef.afterClosed().subscribe(() => {
       this.dialogOpened = false;
@@ -61,7 +64,8 @@ export class AuthDialogService {
     const dialogRef = this.dialog.open(ForgotPasswordDialogComponent, {
       width: '420px',
       disableClose: true,
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     });
     dialogRef.afterClosed().subscribe(() => {
       this.dialogOpened = false;
@@ -69,12 +73,12 @@ export class AuthDialogService {
   }
 
   openVerifyEmailDialog(email: string): void {
-    if (this.dialogOpened) return;
     this.dialogOpened = true;
     const dialogRef = this.dialog.open(VerifyEmailDialogComponent, {
       width: '500px',
       disableClose: true,
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     });
     
     // Set email for the component
@@ -85,4 +89,19 @@ export class AuthDialogService {
       this.dialogOpened = false;
     });
   }
+
+  // openSupportTicketDialog(): void {
+  //   if (this.dialogOpened) return;
+  //   this.dialogOpened = true;
+  //   const dialogRef = this.dialog.open(CreateSupportTicketComponent, {
+  //     width: '500px',
+  //     disableClose: true,
+  //     panelClass: ['dialog-panel-bg', 'high-z-index'],
+  //     backdropClass: 'high-z-backdrop'
+  //   });
+  //   
+  //   dialogRef.afterClosed().subscribe(() => {
+  //     this.dialogOpened = false;
+  //   });
+  // }
 }

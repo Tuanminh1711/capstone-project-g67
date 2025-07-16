@@ -1,0 +1,18 @@
+<div class="status-dialog">
+  <h2>Đổi trạng thái ticket</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label for="status">Trạng thái mới</label>
+      <select id="status" formControlName="status" class="status-select">
+        <option value="OPEN">OPEN</option>
+        <option value="CLAIMED">CLAIMED</option>
+        <option value="HANDLED">HANDLED</option>
+        <option value="CLOSED">CLOSED</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="close()" class="cancel">Hủy</button>
+      <button type="submit" [disabled]="form.invalid" class="confirm">Xác nhận</button>
+    </div>
+  </form>
+</div>

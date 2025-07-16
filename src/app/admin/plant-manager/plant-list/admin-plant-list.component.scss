@@ -43,8 +43,6 @@
   height: 100%; // Sử dụng toàn bộ chiều cao
   overflow: hidden; // Container không scroll
   
-  margin-top: 32px; // Đảm bảo phần header không bị chèn bởi top-nav
-
   // Force normal table display for all table elements
   table, thead, tbody, tr, th, td {
     display: revert !important;
@@ -331,35 +329,49 @@
 }
 
 .pagination-bar {
-  margin-top: 12px; // Tăng từ 8px lên 12px
   display: flex;
   align-items: center;
-  gap: 10px; // Tăng từ 8px lên 10px
   justify-content: flex-end;
-  flex-shrink: 0; // Không cho phép thu nhỏ
+  gap: 12px;
+  margin: 18px 0 0 0;
+}
 
-  button {
-    background: #388e3c;
-    color: #fff;
-    border: none;
-    border-radius: 6px; // Tăng từ 4px lên 6px
-    padding: 8px 18px; // Tăng từ 6px 16px lên 8px 18px
-    font-weight: 600; // Giảm font-weight
-    font-size: 0.95em; // Tăng từ 0.9em lên 0.95em
-    cursor: pointer;
+.pagination-btn {
+  background: #fff;
+  color: #1976d2;
+  border: 1.5px solid #90caf9;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.18em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border 0.15s;
+  box-shadow: 0 1px 4px #1976d211;
+  outline: none;
+  padding: 0;
+}
 
-    &:disabled {
-      background: #c8e6c9;
-      color: #888;
-      cursor: not-allowed;
-    }
-  }
+.pagination-btn:disabled {
+  color: #b0bec5;
+  border-color: #e3f2fd;
+  background: #f5fafd;
+  cursor: not-allowed;
+}
 
-  span {
-    font-weight: 600; // Giảm font-weight
-    color: #388e3c;
-    font-size: 1.0em; // Tăng từ 0.95em lên 1.0em
-  }
+.pagination-btn:hover:not(:disabled) {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-color: #1976d2;
+}
+
+.pagination-index {
+  font-size: 1em;
+  font-weight: 600;
+  color: #1976d2;
 }
 
 // Sortable header styles - NO FLEXBOX
@@ -452,32 +464,6 @@
 
 @media (max-width: 900px) {
   .admin-plant-list-container {
-    padding: 8px 12px;
-  }
-  
-  .plant-table tbody {
-    height: calc(100vh - 320px);
-  }
-  
-  .search-bar input {
-    max-width: 200px;
-    font-size: 0.95em; // Tăng từ 0.9em lên 0.95em
-  }
-  
-  // Adjust table columns for smaller screens
-  .plant-table {
-    th:nth-child(1), td:nth-child(1) { width: 50px; } // ID
-    th:nth-child(2), td:nth-child(2) { width: 160px; } // Tên thường gọi
-    th:nth-child(3), td:nth-child(3) { width: 120px; } // Danh mục
-    th:nth-child(4), td:nth-child(4) { width: 100px; } // Khóa
-    th:nth-child(5), td:nth-child(5) { width: 100px; } // Ngày tạo
-    th:nth-child(6), td:nth-child(6) { width: 120px; } // Hành động
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-plant-list-container {
-    margin-top: 20px;
     padding: 8px 12px;
   }
   

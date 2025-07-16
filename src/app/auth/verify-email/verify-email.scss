@@ -206,8 +206,25 @@ body .mat-dialog-container {
   margin-left: 4px;
   font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
   transition: color 0.2s;
+
   &:hover {
     color: #43e97b;
+  }
+
+  &.resend-loading {
+    cursor: default;
+    opacity: 0.8;
+
+    .loading-spinner {
+      margin-right: 8px;
+    }
+  }
+
+  &.resend-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: default;
+    color: #bdbdbd;
   }
 }
 

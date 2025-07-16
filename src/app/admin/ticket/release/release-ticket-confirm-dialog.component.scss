@@ -1,0 +1,51 @@
+.release-dialog {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.13);
+  padding: 0;
+  min-width: 320px;
+  max-width: 98vw;
+  margin: auto;
+  border: none;
+}
+h2 {
+  font-size: 1.18rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1976d2;
+  text-align: center;
+  padding: 18px 18px 10px 18px;
+}
+p {
+  text-align: center;
+  color: #444;
+  font-size: 1rem;
+  margin: 10px 0 0 0;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+button {
+  min-width: 100px;
+  padding: 8px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #e0e0e0;
+  color: #222;
+  transition: background 0.18s, color 0.18s;
+}
+.confirm {
+  background: linear-gradient(90deg, #43ea7f 0%, #2ecc40 100%);
+  color: #fff;
+}
+button:disabled {
+  background: #bfc8d6;
+  color: #888;
+  cursor: not-allowed;
+}
