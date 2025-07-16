@@ -18,6 +18,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # Build sẽ tự động chạy test, nếu test fail sẽ dừng tại đây
       - name: Build with Maven
         run: |
           cd plantcare-backend
@@ -43,6 +44,18 @@ jobs:
         with:
           name: plantcare-backend
 
+      # Backup JAR cũ trước khi deploy
+      - name: Backup old JAR on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            if [ -f /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
+              cp /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
+            fi
+
       - name: Copy JAR to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -61,3 +74,18 @@ jobs:
           script: |
             pkill -f 'java.*plantcare-backend' || true
             nohup java -jar /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+
+      # Rollback nếu deploy lỗi
+      - name: Rollback if deploy failed
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            if [ -f /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar.bak ]; then
+              mv /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar
+              pkill -f 'java.*plantcare-backend' || true
+              nohup java -jar /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+            fi
