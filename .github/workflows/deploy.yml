@@ -2,7 +2,7 @@ name: Build and Deploy Spring Boot
 
 on:
   push:
-    branches: [ "main", "plantcare-be" ] # Chỉnh branch theo repo của bạn
+    branches: [ "main", "plantcare-be" ]
 
 jobs:
   build:
@@ -19,16 +19,18 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Maven
-        run: mvn -B clean package --file plantcare-backend/pom.xml
+        run: |
+          cd plantcare-backend
+          mvn -B clean package
 
       - name: List target directory
-        run: ls -l plantcare-backend/plantcare-backend/target
+        run: ls -l plantcare-backend/target
 
       - name: Archive JAR
         uses: actions/upload-artifact@v4
         with:
           name: plantcare-backend
-          path: plantcare-backend/plantcare-backend/target/*.jar
+          path: plantcare-backend/target/*.jar
 
   deploy:
     needs: build
@@ -47,7 +49,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "plantcare-backend/plantcare-backend/target/*.jar"
+          source: "plantcare-backend/target/*.jar"
           target: "/home/ubuntu/plantcare-backend"
 
       - name: Restart app on server
