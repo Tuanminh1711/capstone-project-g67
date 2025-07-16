@@ -11,7 +11,7 @@
     <groupId>com.example</groupId>
     <artifactId>plantcare-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>plantcare-backend</name>
     <description>Website ho tro cham soc cay canh tai nha</description>
     <url/>
