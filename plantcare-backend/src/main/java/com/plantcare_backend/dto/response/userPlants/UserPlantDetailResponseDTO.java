@@ -13,7 +13,6 @@ public class UserPlantDetailResponseDTO {
     private String nickname;
     private Timestamp plantingDate;
     private String locationInHouse;
-    private boolean reminderEnabled;
     private List<String> imageUrls;
     private List<UserPlantImageDetailDTO> images;
 }

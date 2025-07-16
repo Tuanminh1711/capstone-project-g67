@@ -9,5 +9,4 @@ public class UserPlantListResponseDTO {
     private String imageUrl;
     private String nickname;
     private String plantLocation;
-    private boolean reminderEnabled;
 }
