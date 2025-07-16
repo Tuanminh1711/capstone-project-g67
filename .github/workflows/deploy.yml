@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: plantcare-backend
-          path: plantcare-backend/target/*.jar
+          path: plantcare-backend/plantcare-backend/target/*.jar
 
   deploy:
     needs: build
