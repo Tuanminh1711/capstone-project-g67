@@ -1,0 +1,101 @@
+name: Build and Deploy Angular Frontend
+
+on:
+  push:
+    branches: [ "plantcare-fe" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular app
+        run: npm run build -- --configuration production
+
+      - name: Archive dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+
+      - name: Debug - List downloaded files
+        run: |
+          pwd
+          ls -la
+          ls -la dist
+
+      # Backup dist cũ trên server trước khi deploy
+      - name: Backup old dist on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            sudo mkdir -p /var/www/plantcare-fe
+            sudo chown azureuser:azureuser /var/www/plantcare-fe
+            sudo chmod 755 /var/www/plantcare-fe
+            if [ -d /var/www/plantcare-fe/dist ]; then
+              sudo mv /var/www/plantcare-fe/dist /var/www/plantcare-fe/dist.bak.$(date +%s)
+            fi
+
+      - name: Copy dist to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          source: "dist/"
+          target: "/var/www/plantcare-fe"
+
+      - name: Set permissions and reload nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            sudo chown -R azureuser:azureuser /var/www/plantcare-fe
+            sudo chmod -R 755 /var/www/plantcare-fe
+            sudo systemctl reload nginx
+
+      # Rollback nếu deploy lỗi
+      - name: Rollback if deploy failed
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            echo "🔄 Rolling back to previous dist..."
+            if ls /var/www/plantcare-fe/dist.bak.* 1> /dev/null 2>&1; then
+              latest_backup=$(ls -td /var/www/plantcare-fe/dist.bak.* | head -1)
+              sudo rm -rf /var/www/plantcare-fe/dist
+              sudo mv $latest_backup /var/www/plantcare-fe/dist
+              sudo systemctl reload nginx
+              echo "✅ Rollback completed"
+            else
+              echo "❌ No backup found for rollback"
+            fi
