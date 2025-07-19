@@ -33,10 +33,20 @@ openapi:
     title: API Document
     version: 1.0.0
 
+# AI Configuration
 openai:
   api:
-    key: ${OPENAI_API_KEY:default}
+    key: ${OPENAI_API_KEY:temp-key-for-testing}
 
 openrouter:
   api:
     key: ${OPENROUTER_API_KEY}
+    base-url: https://openrouter.ai/api/v1
+    model: openai/gpt-3.5-turbo
+
+# Payment Configuration
+paypal:
+  client:
+    id: ${PAYPAL_CLIENT_ID:temp-paypal-id}
+    secret: ${PAYPAL_CLIENT_SECRET:temp-paypal-secret}
+  mode: sandbox

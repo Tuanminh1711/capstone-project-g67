@@ -19,6 +19,9 @@ public class ChatBoxImpl implements ChatService {
     @Value("${openrouter.api.key}")
     private String openRouterApiKey;
 
+    @Value("${openrouter.api.model:openai/gpt-3.5-turbo}")
+    private String openRouterModel;
+
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
     private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -56,8 +59,8 @@ public class ChatBoxImpl implements ChatService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("HTTP-Referer", "http://localhost:8080"); // hoặc domain của bạn
 
-        // Chọn model, ví dụ: openchat/openchat-3.5-0106 hoặc google/gemini-pro hoặc mistralai/mixtral-8x7b-instruct
-        String model = "mistralai/mixtral-8x7b-instruct";
+        // Sử dụng model từ config
+        String model = openRouterModel;
 
         JSONObject body = new JSONObject();
         body.put("model", model);
@@ -81,6 +84,12 @@ public class ChatBoxImpl implements ChatService {
             return messageObj.getString("content").trim();
         }
         return "Không nhận được phản hồi từ OpenRouter.";
+    }
+
+    @Override
+    public String askAI(String message) {
+        // Sử dụng OpenRouter làm service mặc định
+        return askOpenRouter(message);
     }
 
 }
