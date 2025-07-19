@@ -23,6 +23,7 @@ jobs:
         run: |
           cd plantcare-backend
           mvn -B clean package
+
       - name: List target directory
         run: ls -l plantcare-backend/target
 
@@ -47,42 +48,44 @@ jobs:
       - name: Backup old JAR on server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.AZURE_HOST }}
-          username: ${{ secrets.AZURE_USERNAME }}
-          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
-              cp /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
+            if [ -f /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
+              cp /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
             fi
+
       - name: Copy JAR to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.AZURE_HOST }}
-          username: ${{ secrets.AZURE_USERNAME }}
-          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           source: "plantcare-backend/target/*.jar"
-          target: "/opt/plantcare-app"
+          target: "/home/ubuntu/plantcare-backend"
 
       - name: Restart app on server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.AZURE_HOST }}
-          username: ${{ secrets.AZURE_USERNAME }}
-          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            sudo systemctl stop plantcare-app || true
-            sudo systemctl start plantcare-app
-            sudo systemctl status plantcare-app
+            pkill -f 'java.*plantcare-backend' || true
+            nohup java -jar /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+
       # Rollback nếu deploy lỗi
       - name: Rollback if deploy failed
         if: failure()
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.AZURE_HOST }}
-          username: ${{ secrets.AZURE_USERNAME }}
-          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak ]; then
-              mv /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
-              sudo systemctl restart plantcare-app
+            if [ -f /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar.bak ]; then
+              mv /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar
+              pkill -f 'java.*plantcare-backend' || true
+              nohup java -jar /home/ubuntu/plantcare-backend/plantcare-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
             fi
