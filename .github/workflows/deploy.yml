@@ -50,7 +50,7 @@ jobs:
           echo "JAR files:"
           ls -la *.jar || echo "No JAR files found"
 
-      # Backup JAR cũ trước khi deploy
+            # Backup JAR cũ trước khi deploy
       - name: Backup old JAR on server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -58,7 +58,12 @@ jobs:
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
+            # Tạo thư mục và set permissions
             sudo mkdir -p /opt/plantcare-app
+            sudo chown azureuser:azureuser /opt/plantcare-app
+            sudo chmod 755 /opt/plantcare-app
+            
+            # Backup file cũ
             if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
               sudo cp /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
             fi
