@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-api-domain.com/api',  // Thay đổi thành domain thực của bạn
-  baseUrl: 'https://your-api-domain.com',
+  apiUrl: 'http://40.81.23.51:8080/api',  // Đúng IP và port backend
+  baseUrl: 'http://40.81.23.51:8080',
   endpoints: {
     auth: '/api/auth',
     user: {
