@@ -43,6 +43,13 @@ jobs:
         with:
           name: plantcare-backend
 
+      - name: Debug - List downloaded files
+        run: |
+          pwd
+          ls -la
+          echo "JAR files:"
+          ls -la *.jar || echo "No JAR files found"
+
       # Backup JAR cũ trước khi deploy
       - name: Backup old JAR on server
         uses: appleboy/ssh-action@v1.0.3
@@ -51,28 +58,49 @@ jobs:
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
+            sudo mkdir -p /opt/plantcare-app
             if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
-              cp /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
+              sudo cp /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
             fi
+
       - name: Copy JAR to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
-          source: "plantcare-backend/target/*.jar"
+          source: "*.jar"
           target: "/opt/plantcare-app"
 
-      - name: Restart app on server
+      - name: Set permissions and restart app
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
+            # Set proper permissions
+            sudo chown azureuser:azureuser /opt/plantcare-app/*.jar
+            sudo chmod 755 /opt/plantcare-app/*.jar
+            
+            # Stop existing application
             sudo systemctl stop plantcare-app || true
+            
+            # Start application
             sudo systemctl start plantcare-app
+            
+            # Wait a moment and check status
+            sleep 5
             sudo systemctl status plantcare-app
+            
+            # Check if app is running
+            if pgrep -f "plantcare-backend" > /dev/null; then
+              echo "✅ Application started successfully"
+            else
+              echo "❌ Application failed to start"
+              exit 1
+            fi
+
       # Rollback nếu deploy lỗi
       - name: Rollback if deploy failed
         if: failure()
@@ -82,7 +110,11 @@ jobs:
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
+            echo "🔄 Rolling back to previous version..."
             if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak ]; then
-              mv /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
+              sudo mv /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
               sudo systemctl restart plantcare-app
+              echo "✅ Rollback completed"
+            else
+              echo "❌ No backup file found for rollback"
             fi
