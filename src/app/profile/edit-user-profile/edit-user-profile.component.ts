@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UserProfileService, UserProfile, UpdateUserProfileRequest } from '../view-user-profile/user-profile.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
-import { ToastService } from '../../shared/toast.service';
+import { ToastService } from '../../shared/toast/toast.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';

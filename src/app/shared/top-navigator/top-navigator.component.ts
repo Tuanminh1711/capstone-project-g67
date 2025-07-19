@@ -17,117 +17,92 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class TopNavigatorComponent {
   supportTickets: any[] = [];
-  // isSupportDropdownOpen = false; // Đã khai báo phía trên
-  private dialog = inject(MatDialog);
-  private supportService = inject(SupportService);
-
-  toggleSupportDropdown(event: MouseEvent) {
-    event.stopPropagation();
-    this.isSupportDropdownOpen = !this.isSupportDropdownOpen;
-    if (this.isSupportDropdownOpen) {
-      this.loadSupportTickets();
-    }
-  }
-
-  closeSupportDropdown() {
-    this.isSupportDropdownOpen = false;
-  }
-
-  openSendTicketDialog() {
-    this.closeSupportDropdown();
-    this.dialog.open(SendTicketDialogComponent, {
-      width: '500px',
-      panelClass: 'dialog-panel-bg'
-    });
-  }
-
-  viewMyTickets() {
-    this.closeSupportDropdown();
-    this.router.navigate(['/user/my-tickets']);
-  }
-
-  loadSupportTickets() {
-    this.supportService.getMyTickets().subscribe(tickets => {
-      this.supportTickets = tickets;
-    });
-  }
   showUserMenu = false;
   showGreenSpaceDropdown = false;
   showMobileMenu = false;
   isSupportDropdownOpen = false;
 
+  private dialog = inject(MatDialog);
+  private supportService = inject(SupportService);
+
   constructor(
-    public router: Router, 
+    public router: Router,
     public authService: AuthService,
-    private authDialog: AuthDialogService,
-    // private supportDialog: SupportDialogService
+    private authDialog: AuthDialogService
   ) {}
 
-  toggleUserMenu(event: MouseEvent) {
+  toggleSupportDropdown = (event: MouseEvent): void => {
+    event.stopPropagation();
+    this.isSupportDropdownOpen = !this.isSupportDropdownOpen;
+    if (this.isSupportDropdownOpen) {
+      this.loadSupportTickets();
+    }
+  };
+
+  closeSupportDropdown = (): void => {
+    this.isSupportDropdownOpen = false;
+  };
+
+  openSendTicketDialog = (): void => {
+    this.closeSupportDropdown();
+    this.dialog.open(SendTicketDialogComponent, {
+      width: '500px',
+      panelClass: 'dialog-panel-bg'
+    });
+  };
+
+  viewMyTickets = (): void => {
+    this.closeSupportDropdown();
+    this.router.navigate(['/user/my-tickets']);
+  };
+
+  loadSupportTickets = (): void => {
+    this.supportService.getMyTickets().subscribe(tickets => {
+      this.supportTickets = tickets;
+    });
+  };
+
+  toggleUserMenu = (event: MouseEvent): void => {
     event.stopPropagation();
     this.showUserMenu = !this.showUserMenu;
-  }
-  closeUserMenu() {
+  };
+
+  closeUserMenu = (): void => {
     this.showUserMenu = false;
-  }
+  };
+
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
+  onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.nav-icon.user')) {
-      this.showUserMenu = false;
-    }
-    if (!target.closest('.support-dropdown')) {
-      this.isSupportDropdownOpen = false;
-    }
-    if (!target.closest('.mobile-menu-toggle') && !target.closest('.nav-links')) {
-      this.showMobileMenu = false;
-    }
+    if (!target.closest('.nav-icon.user')) this.showUserMenu = false;
+    if (!target.closest('.support-dropdown')) this.isSupportDropdownOpen = false;
+    if (!target.closest('.mobile-menu-toggle') && !target.closest('.nav-links')) this.showMobileMenu = false;
   }
 
-  toggleMobileMenu() {
+  toggleMobileMenu = (): void => {
     this.showMobileMenu = !this.showMobileMenu;
-  }
+  };
 
-  closeMobileMenu() {
+  closeMobileMenu = (): void => {
     this.showMobileMenu = false;
-  }
+  };
 
-  openLogin() {
+  openLogin = (): void => {
     this.closeUserMenu();
     this.authDialog.openLoginDialog();
-  }
+  };
 
-  openRegister() {
+  openRegister = (): void => {
     this.closeUserMenu();
     this.authDialog.openRegisterDialog();
-  }
-
-  // openSupportTicket() {
-  //   this.isSupportDropdownOpen = false;
-  //   this.supportDialog.openSupportDialog();
-  // }
-
-  // toggleSupportDropdown(event: MouseEvent) {
-  //   event.stopPropagation();
-  //   this.isSupportDropdownOpen = !this.isSupportDropdownOpen;
-  //   console.log('Support dropdown state:', this.isSupportDropdownOpen);
-  // }
-
-  // viewSupportTickets() {
-  //   this.isSupportDropdownOpen = false;
-  //   this.router.navigate(['/support/tickets']);
-  // }
-
-  // closeSupportDropdown() {
-  //   this.isSupportDropdownOpen = false;
-  // }
+  };
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }
 
-  logout() {
+  logout = (): void => {
     this.authService.logout();
     this.router.navigate(['/home']);
-  }
+  };
 }

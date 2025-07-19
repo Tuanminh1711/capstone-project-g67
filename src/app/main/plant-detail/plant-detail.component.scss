@@ -32,38 +32,41 @@
   }
 }
 
-.plant-info-image.modern {
-  flex-shrink: 0;
-  .main-image {
-    .image-wrapper.modern {
-      border-radius: 32px;
-      overflow: hidden;
-      box-shadow: 0 12px 32px rgba(16,185,129,0.13);
-      border: 3px solid #bbf7d0;
-      .plant-img.modern {
-        width: 220px;
-        height: 220px;
-        object-fit: cover;
-        border-radius: 32px;
-        display: block;
-        background: #f0fdf4;
-      }
-    }
-    .image-quality-badge.modern {
-      margin-top: 14px;
-      font-size: 1rem;
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: white;
-      padding: 8px 22px;
-      border-radius: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 12px rgba(251,191,36,0.13);
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-  }
+// Ảnh hiển thị tự nhiên, hiện đại
+.plant-info-image.modern .main-image .image-wrapper.modern {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(16,185,129,0.10);
+  border: 1.5px solid #bbf7d0;
+  padding: 0;
+  background: #f0fdf4;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.plant-info-image.modern .main-image .image-wrapper.modern .plant-img.modern {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  display: block;
+  background: transparent;
+}
+.plant-info-image.modern .main-image .image-quality-badge.modern {
+  margin-top: 14px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  padding: 8px 22px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 12px rgba(251,191,36,0.13);
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .plant-info-main.modern {
@@ -73,75 +76,74 @@
   flex-direction: column;
   gap: 18px;
   align-items: flex-start;
-  .plant-name.modern {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #059669;
-    margin: 0;
-    background: linear-gradient(135deg, #059669, #10b981);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 2px 12px rgba(16,185,129,0.08);
-    letter-spacing: 0.5px;
-  }
-  .plant-scientific.modern {
-    font-size: 1.2rem;
-    color: #6b7280;
-    font-style: italic;
-    margin-bottom: 6px;
-  }
-  .plant-tags.modern {
-    display: flex;
-    gap: 14px;
-    margin-bottom: 10px;
-    .plant-category.modern {
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: white;
-      padding: 10px 24px;
-      border-radius: 24px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(16,185,129,0.10);
-    }
-    .plant-status .status-badge.modern {
-      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-      color: #16a34a;
-      padding: 10px 24px;
-      border-radius: 24px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(16,185,129,0.10);
-    }
-  }
-  .action-buttons.modern {
-    display: flex;
-    gap: 18px;
-    margin-top: 12px;
-    .add-to-collection-btn.modern, .report-btn.modern {
-      font-size: 1.1rem;
-      padding: 14px 28px;
-      border-radius: 20px;
-      font-weight: 700;
-      box-shadow: 0 2px 12px rgba(4,120,87,0.13);
-      border: none;
-      cursor: pointer;
-      transition: all 0.22s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .add-to-collection-btn.modern {
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: white;
-      &:hover { background: #10b981; }
-    }
-    .report-btn.modern {
-      background: linear-gradient(135deg, #dc2626, #ef4444);
-      color: white;
-      &:hover { background: #ef4444; }
-    }
-  }
+}
+.plant-info-main.modern .plant-name.modern {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #059669;
+  margin: 0;
+  background: linear-gradient(135deg, #059669, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 12px rgba(16,185,129,0.08);
+  letter-spacing: 0.5px;
+}
+.plant-info-main.modern .plant-scientific.modern {
+  font-size: 1.2rem;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+.plant-info-main.modern .plant-tags.modern {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+// Category label style: nhẹ nhàng, không giống button
+.plant-info-main.modern .plant-tags.modern .plant-category.modern {
+  background: #e0f2fe;
+  color: #059669;
+  padding: 6px 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: 1.5px solid #a7f3d0;
+  box-shadow: none;
+  letter-spacing: 0.2px;
+  display: inline-block;
+}
+.plant-info-main.modern .action-buttons.modern {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+}
+.plant-info-main.modern .action-buttons.modern .add-to-collection-btn.modern, .plant-info-main.modern .action-buttons.modern .report-btn.modern {
+  font-size: 1.1rem;
+  padding: 14px 28px;
+  border-radius: 20px;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(4,120,87,0.13);
+  border: none;
+  cursor: pointer;
+  transition: all 0.22s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.plant-info-main.modern .action-buttons.modern .add-to-collection-btn.modern {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+}
+.plant-info-main.modern .action-buttons.modern .add-to-collection-btn.modern:hover {
+  background: #10b981;
+}
+.plant-info-main.modern .action-buttons.modern .report-btn.modern {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+}
+.plant-info-main.modern .action-buttons.modern .report-btn.modern:hover {
+  background: #ef4444;
 }
 
 // Card dưới: 2 card chia đôi
@@ -150,11 +152,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 40px;
 }
-
-.plant-detail-card.modern.left-card {
+.plant-detail-card.modern.left-card, .plant-detail-card.modern.right-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 18px;
   background: white;
   border-radius: 36px;
@@ -162,50 +162,35 @@
   border: 1.5px solid #e0f2fe;
   padding: 40px 32px;
   transition: box-shadow 0.25s;
-  &:hover {
-    box-shadow: 0 16px 48px rgba(16,185,129,0.16);
-  }
-  .plant-info-image.modern {
-    margin-bottom: 8px;
-  }
-  .plant-info-main.modern {
-    width: 100%;
-    align-items: flex-start;
-    margin-bottom: 8px;
-  }
-  .section-header.modern {
-    margin-top: 10px;
-  }
-  .description-content.modern {
-    margin-bottom: 8px;
-  }
-  .plant-meta.modern {
-    margin-top: 10px;
-  }
 }
-
-.plant-detail-card.modern.right-card {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  background: white;
-  border-radius: 36px;
-  box-shadow: 0 8px 32px rgba(16,185,129,0.10);
-  border: 1.5px solid #e0f2fe;
-  padding: 40px 32px;
-  transition: box-shadow 0.25s;
-  &:hover {
-    box-shadow: 0 16px 48px rgba(16,185,129,0.16);
-  }
-  .section-header.modern {
-    margin-top: 0;
-  }
-  .care-requirements.modern {
-    margin-bottom: 8px;
-  }
-  .instructions-content.modern, .diseases-content.modern {
-    margin-bottom: 8px;
-  }
+.plant-detail-card.modern.left-card:hover, .plant-detail-card.modern.right-card:hover {
+  box-shadow: 0 16px 48px rgba(16,185,129,0.16);
+}
+.plant-detail-card.modern.left-card .plant-info-image.modern {
+  margin-bottom: 8px;
+}
+.plant-detail-card.modern.left-card .plant-info-main.modern {
+  width: 100%;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.plant-detail-card.modern.left-card .section-header.modern {
+  margin-top: 10px;
+}
+.plant-detail-card.modern.left-card .description-content.modern {
+  margin-bottom: 8px;
+}
+.plant-detail-card.modern.left-card .plant-meta.modern {
+  margin-top: 10px;
+}
+.plant-detail-card.modern.right-card .section-header.modern {
+  margin-top: 0;
+}
+.plant-detail-card.modern.right-card .care-requirements.modern {
+  margin-bottom: 8px;
+}
+.plant-detail-card.modern.right-card .instructions-content.modern, .plant-detail-card.modern.right-card .diseases-content.modern {
+  margin-bottom: 8px;
 }
 
 .section-header.modern {
@@ -216,10 +201,10 @@
   font-weight: 800;
   color: #059669;
   margin-bottom: 8px;
-  .section-icon {
-    font-size: 1.5rem;
-    margin-right: 4px;
-  }
+}
+.section-header.modern .section-icon {
+  font-size: 1.5rem;
+  margin-right: 4px;
 }
 
 .description-content.modern, .instructions-content.modern, .diseases-content.modern {
@@ -228,69 +213,67 @@
   line-height: 1.7;
 }
 
-.care-requirements.modern {
-  .care-grid.modern {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    .care-item.modern {
-      background: #f0fdf4;
-      border-radius: 20px;
-      box-shadow: 0 2px 8px rgba(16,185,129,0.07);
-      padding: 18px 16px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      .care-icon-wrapper.modern {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        .care-icon {
-          font-size: 2rem;
-        }
-      }
-      .care-info.modern {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        .care-label {
-          font-weight: 700;
-          color: #059669;
-        }
-        .care-value {
-          font-size: 1.05rem;
-          color: #374151;
-        }
-        .care-tips {
-          font-size: 0.95rem;
-          color: #6b7280;
-        }
-      }
-    }
-  }
+.care-requirements.modern .care-grid.modern {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern {
+  background: #f0fdf4;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(16,185,129,0.07);
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern .care-icon-wrapper.modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern .care-icon-wrapper.modern .care-icon {
+  font-size: 2rem;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern .care-info.modern {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern .care-info.modern .care-label {
+  font-weight: 700;
+  color: #059669;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern .care-info.modern .care-value {
+  font-size: 1.05rem;
+  color: #374151;
+}
+.care-requirements.modern .care-grid.modern .care-item.modern .care-info.modern .care-tips {
+  font-size: 0.95rem;
+  color: #6b7280;
 }
 
 .plant-meta.modern {
   margin-top: 18px;
   display: flex;
   gap: 24px;
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 1rem;
-    color: #6b7280;
-    .meta-icon {
-      font-size: 1.2rem;
-    }
-    .meta-label {
-      font-weight: 600;
-    }
-    .meta-value {
-      color: #059669;
-      font-weight: 700;
-    }
-  }
+}
+.plant-meta.modern .meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  color: #6b7280;
+}
+.plant-meta.modern .meta-item .meta-icon {
+  font-size: 1.2rem;
+}
+.plant-meta.modern .meta-item .meta-label {
+  font-weight: 600;
+}
+.plant-meta.modern .meta-item .meta-value {
+  color: #059669;
+  font-weight: 700;
 }
 
 // Responsive

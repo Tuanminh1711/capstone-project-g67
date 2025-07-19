@@ -100,13 +100,13 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => {
       this.initializeComponent();
       // Debug CSS loading
-      console.log('Component loaded, checking CSS...');
+      // ...existing code...
       const element = document.querySelector('app-admin-view-plant');
       if (element) {
-        console.log('Found app-admin-view-plant element:', element);
-        console.log('Element styles:', window.getComputedStyle(element));
+        // ...existing code...
+        // ...existing code...
       } else {
-        console.log('app-admin-view-plant element not found');
+        // ...existing code...
       }
     }, 0);
   }
@@ -141,23 +141,23 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     this.error = '';
     
     const apiUrl = `/api/manager/plant-detail/${this.plantId}`;
-    console.log('Loading plant detail immediately:', apiUrl);
+    // ...existing code...
 
     this.http.get<ApiResponse>(apiUrl).subscribe({
       next: (response) => {
-        console.log('API Response received:', response);
+        // ...existing code...
         this.loading = false;
         
         if (response && response.data) {
           this.plant = response.data;
-          console.log('Plant loaded successfully:', this.plant);
+          // ...existing code...
         } else {
           this.error = 'Không có dữ liệu trả về từ server';
         }
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('API Error:', err);
+        // ...existing code...
         this.loading = false;
         this.handleApiError(err);
         this.cdr.markForCheck();
@@ -194,7 +194,7 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.plant) {
       const confirmed = confirm(`Bạn có chắc chắn muốn xóa cây "${this.plant.commonName}"? Hành động này không thể hoàn tác.`);
       if (confirmed) {
-        console.log('Deleting plant:', this.plant.id);
+        // ...existing code...
         // TODO: Implement delete functionality
         alert('Tính năng xóa sẽ được triển khai sau');
       }
@@ -203,27 +203,27 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
 
   // Admin Control Methods
   togglePublish(): void {
-    console.log('Toggle publish status');
+    // ...existing code...
     alert('Tính năng công bố sẽ được triển khai sau');
   }
 
   toggleFeature(): void {
-    console.log('Toggle feature status');
+    // ...existing code...
     alert('Tính năng nổi bật sẽ được triển khai sau');
   }
 
   toggleVerify(): void {
-    console.log('Toggle verify status');
+    // ...existing code...
     alert('Tính năng xác minh sẽ được triển khai sau');
   }
 
   toggleArchive(): void {
-    console.log('Toggle archive status');
+    // ...existing code...
     alert('Tính năng lưu trữ sẽ được triển khai sau');
   }
 
   editBasicInfo(): void {
-    console.log('Edit basic info');
+    // ...existing code...
     alert('Chế độ chỉnh sửa nhanh sẽ được triển khai sau');
   }
 
@@ -237,30 +237,30 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
 
   // Image Management Methods
   addImage(): void {
-    console.log('Add new image');
+    // ...existing code...
     alert('Tính năng thêm ảnh sẽ được triển khai sau');
   }
 
   sortImages(): void {
-    console.log('Sort images');
+    // ...existing code...
     alert('Tính năng sắp xếp ảnh sẽ được triển khai sau');
   }
 
   editImage(index: number): void {
-    console.log('Edit image at index:', index);
+    // ...existing code...
     alert(`Chỉnh sửa ảnh ${index + 1} sẽ được triển khai sau`);
   }
 
   deleteImage(index: number): void {
     const confirmed = confirm(`Bạn có chắc chắn muốn xóa ảnh ${index + 1}?`);
     if (confirmed) {
-      console.log('Delete image at index:', index);
+      // ...existing code...
       alert(`Xóa ảnh ${index + 1} sẽ được triển khai sau`);
     }
   }
 
   refreshStats(): void {
-    console.log('Refresh statistics');
+    // ...existing code...
     alert('Đang làm mới thống kê...');
   }
 
@@ -272,13 +272,13 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   editField(fieldName: string): void {
-    console.log('Edit field:', fieldName);
+    // ...existing code...
     alert(`Chỉnh sửa trường ${fieldName} sẽ được triển khai sau`);
   }
 
   viewHistory(): void {
     if (this.plant) {
-      console.log('Viewing history for plant:', this.plant.id);
+      // ...existing code...
       // TODO: Implement history view
       alert('Lịch sử thay đổi sẽ được hiển thị ở phiên bản tiếp theo');
     }

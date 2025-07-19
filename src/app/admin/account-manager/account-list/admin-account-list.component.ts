@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
 import { AdminAccountService, Account } from './admin-account.service';
 import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfirmationDialogService } from '../../../shared/confirmation-dialog.service';
+import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 
 @Component({
   selector: 'app-admin-account-list',
@@ -14,7 +15,7 @@ import { ConfirmationDialogService } from '../../../shared/confirmation-dialog.s
   templateUrl: './admin-account-list.component.html',
   styleUrls: ['./admin-account-list.component.scss']
 })
-export class AdminAccountListComponent implements OnInit, OnDestroy {
+export class AdminAccountListComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
   private accountsSubject = new BehaviorSubject<Account[]>([]);
   accounts$ = this.accountsSubject.asObservable();
   allAccounts: Account[] = [];
@@ -22,13 +23,11 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
   pageSize = 10;
   totalPages = 1;
   totalElements = 0;
-  loading = false;
-  errorMsg = '';
+  // loading, errorMsg are now handled by BaseAdminListComponent
   searchText = '';
   currentKeyword = '';
   searchDebounce: any;
-  private sub: Subscription = new Subscription();
-  successMsg = '';
+  // sub, successMsg are now handled by BaseAdminListComponent
 
   sortField: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -38,13 +37,14 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private confirmationDialog: ConfirmationDialogService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       if (params['successMsg']) {
-        this.successMsg = params['successMsg'];
-        setTimeout(() => this.successMsg = '', 3000);
+        this.setSuccess(params['successMsg']);
       }
     });
     setTimeout(() => {
@@ -53,13 +53,13 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.sub.unsubscribe();
+    this.cleanupSubscriptions();
     clearTimeout(this.searchDebounce);
   }
 
   fetchAllAccounts(keyword: string) {
-    this.loading = true;
-    this.errorMsg = '';
+    this.setLoading(true);
+    this.setError('');
     this.currentKeyword = keyword;
     this.sub.add(
       this.accountService.getAccounts(0, 10000, keyword).subscribe({ // lấy tối đa 10000 user
@@ -69,12 +69,12 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
           this.totalPages = Math.ceil(this.totalElements / this.pageSize) || 1;
           this.pageNo = 0;
           this.updatePage();
-          this.loading = false;
+          this.setLoading(false);
         },
         error: err => {
           this.accountsSubject.next([]);
-          this.errorMsg = 'Không thể tải danh sách tài khoản';
-          this.loading = false;
+          this.setError('Không thể tải danh sách tài khoản');
+          this.setLoading(false);
         }
       })
     );
@@ -125,8 +125,7 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
         account.status = newStatus;
       },
       error: (err) => {
-        this.errorMsg = err?.error?.message || 'Không thể cập nhật trạng thái tài khoản';
-        setTimeout(() => this.errorMsg = '', 3000);
+        this.setError(err?.error?.message || 'Không thể cập nhật trạng thái tài khoản');
       }
     });
   }
@@ -140,8 +139,7 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
         account.status = newStatus;
       },
       error: (err) => {
-        this.errorMsg = err?.error?.message || 'Không thể cập nhật trạng thái tài khoản';
-        setTimeout(() => this.errorMsg = '', 3000);
+        this.setError(err?.error?.message || 'Không thể cập nhật trạng thái tài khoản');
       }
     });
   }
@@ -166,14 +164,12 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
     if (!confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) return;
     this.accountService.deleteUser(account.id).subscribe({
       next: (res) => {
-        this.successMsg = res?.message || 'Xóa tài khoản thành công!';
-        this.errorMsg = '';
+        this.setSuccess(res?.message || 'Xóa tài khoản thành công!');
+        this.setError('');
         this.fetchAllAccounts(this.currentKeyword);
-        setTimeout(() => this.successMsg = '', 3000);
       },
       error: (err) => {
-        this.errorMsg = err?.error?.message || 'Xóa tài khoản thất bại!';
-        setTimeout(() => this.errorMsg = '', 3000);
+        this.setError(err?.error?.message || 'Xóa tài khoản thất bại!');
       }
     });
   }
@@ -207,19 +203,17 @@ export class AdminAccountListComponent implements OnInit, OnDestroy {
       type: 'warning'
     }).subscribe(confirmed => {
       if (!confirmed) return;
-      this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
+      this.setLoading(true);
+      this.setError('');
+      this.setSuccess('');
       this.accountService.resetPassword(account.id).subscribe({
         next: (res) => {
-          this.successMsg = res?.message || 'Đặt lại mật khẩu thành công!';
-          setTimeout(() => this.successMsg = '', 3000);
-          this.loading = false;
+          this.setSuccess(res?.message || 'Đặt lại mật khẩu thành công!');
+          this.setLoading(false);
         },
         error: (err) => {
-          this.errorMsg = err?.error?.message || 'Đặt lại mật khẩu thất bại!';
-          setTimeout(() => this.errorMsg = '', 3000);
-          this.loading = false;
+          this.setError(err?.error?.message || 'Đặt lại mật khẩu thất bại!');
+          this.setLoading(false);
         }
       });
     });

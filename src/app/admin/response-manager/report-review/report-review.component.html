@@ -1,0 +1,160 @@
+<app-admin-layout>
+  <div class="report-review-container">
+    <div class="page-header">
+      <h1>Xem xét báo cáo</h1>
+      <div class="breadcrumb">
+        <span routerLink="/admin/response-manager/report-list" class="breadcrumb-link">Danh sách báo cáo</span>
+        <span class="breadcrumb-separator">></span>
+        <span routerLink="/admin/response-manager/report-detail/{{reportId}}" class="breadcrumb-link">Chi tiết</span>
+        <span class="breadcrumb-separator">></span>
+        <span>Xem xét</span>
+      </div>
+    </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải thông tin báo cáo...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMsg" class="error-container">
+    <div class="error-message">{{ errorMsg }}</div>
+    <button (click)="loadReport()" class="btn-retry">Thử lại</button>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="successMsg" class="success-container">
+    <div class="success-message">{{ successMsg }}</div>
+  </div>
+
+  <!-- Report Review Content -->
+  <div *ngIf="report && !loading" class="report-review-content">
+    <!-- Report Summary -->
+    <div class="report-summary-card">
+      <div class="card-header">
+        <h2>Thông tin báo cáo #{{ report.id }}</h2>
+      </div>
+      
+      <div class="card-body">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <label>Tiêu đề:</label>
+            <span>{{ report.title }}</span>
+          </div>
+          
+          <div class="summary-item">
+            <label>Loại báo cáo:</label>
+            <span>{{ getTypeText(report.type) }}</span>
+          </div>
+          
+          <div class="summary-item">
+            <label>Mức độ ưu tiên:</label>
+            <span>{{ getPriorityText(report.priority) }}</span>
+          </div>
+          
+          <div class="summary-item">
+            <label>Ngày tạo:</label>
+            <span>{{ formatDate(report.createdAt) }}</span>
+          </div>
+          
+          <div class="summary-item">
+            <label>Người tạo:</label>
+            <span>{{ report.createdBy.username }} ({{ report.createdBy.email }})</span>
+          </div>
+          
+          <div class="summary-item">
+            <label>Trạng thái hiện tại:</label>
+            <span>{{ getStatusText(report.status) }}</span>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <label>Nội dung báo cáo:</label>
+          <div class="content-box">{{ report.content }}</div>
+        </div>
+
+        <!-- Attachments -->
+        <div *ngIf="report.attachments && report.attachments.length > 0" class="attachments-section">
+          <label>Tệp đính kèm:</label>
+          <div class="attachments-preview">
+            <img *ngFor="let attachment of report.attachments" 
+                 [src]="attachment" 
+                 [alt]="'Attachment'" 
+                 class="attachment-image">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Form -->
+    <div class="review-form-card">
+      <div class="card-header">
+        <h3>Xem xét và quyết định</h3>
+      </div>
+      
+      <form (ngSubmit)="submitReview()" class="review-form">
+        <div class="card-body">
+          <!-- Review Decision -->
+          <div class="form-group">
+            <label for="reviewStatus">Quyết định <span class="required">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" 
+                       name="reviewStatus" 
+                       value="APPROVED" 
+                       [(ngModel)]="reviewStatus">
+                <span class="radio-label approved">✓ Chấp thuận</span>
+              </label>
+              
+              <label class="radio-option">
+                <input type="radio" 
+                       name="reviewStatus" 
+                       value="REJECTED" 
+                       [(ngModel)]="reviewStatus">
+                <span class="radio-label rejected">✗ Từ chối</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Review Note -->
+          <div class="form-group">
+            <label for="reviewNote">Ghi chú xem xét <span class="required">*</span></label>
+            <textarea id="reviewNote"
+                      [(ngModel)]="reviewNote"
+                      name="reviewNote"
+                      placeholder="Nhập lý do và ghi chú cho quyết định này..."
+                      rows="5"
+                      class="form-control"
+                      required></textarea>
+            <div class="form-help">
+              Hãy giải thích rõ lý do cho quyết định của bạn. Thông tin này sẽ được gửi đến người tạo báo cáo.
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card-footer">
+          <div class="action-buttons">
+            <button type="button" (click)="goBack()" class="btn btn-secondary" [disabled]="submitting">
+              <i class="fas fa-arrow-left"></i> Quay lại
+            </button>
+            
+            <button type="button" (click)="goToList()" class="btn btn-outline" [disabled]="submitting">
+              <i class="fas fa-list"></i> Danh sách
+            </button>
+            
+            <button type="submit" 
+                    class="btn btn-primary" 
+                    [disabled]="submitting || !reviewNote.trim()">
+              <span *ngIf="submitting" class="spinner-small"></span>
+              <i *ngIf="!submitting" class="fas fa-check"></i>
+              {{ submitting ? 'Đang gửi...' : 'Gửi xem xét' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+    </div>
+  </div>
+</app-admin-layout>

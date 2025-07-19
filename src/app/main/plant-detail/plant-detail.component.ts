@@ -1,15 +1,17 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CookieService } from '../../auth/cookie.service';
 import { PlantDataService, Plant } from '../../shared/plant-data.service';
+import { PlantDetailLoaderService } from '../../shared/plant-detail-loader.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
 import { FormsModule } from '@angular/forms';
-import { ToastService } from '../../shared/toast.service';
-import { ConfirmationDialogService } from '../../shared/confirmation-dialog.service';
+import { ToastService } from '../../shared/toast/toast.service';
+import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { MatDialog } from '@angular/material/dialog';
+import { PlantUiHelperService } from '../../shared/plant-ui-helper.service';
 
 /**
  * Component hiển thị chi tiết thông tin của một cây
@@ -22,14 +24,31 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrl: './plant-detail.component.scss'
 })
 export class PlantDetailComponent implements OnInit {
+  /**
+   * Helper: cập nhật state khi load thành công
+   */
+
+
+  /**
+   * Helper: cập nhật state khi lỗi
+   */
+  private handleError(errorMsg: string, requiresAuth = false) {
+    this.error = errorMsg;
+    this.requiresAuth = requiresAuth;
+    this.loading = false;
+    this.plant = null;
+    this.cdr.detectChanges();
+  }
   plant: Plant | null = null;
   error = '';
   selectedImage = '';
   requiresAuth = false;
   isLimitedInfo = false;
+  loading = false;
   private toast = inject(ToastService);
   private confirmationDialog = inject(ConfirmationDialogService);
   private dialog = inject(MatDialog);
+  public plantUiHelper = inject(PlantUiHelperService);
 
   constructor(
     private route: ActivatedRoute,
@@ -37,10 +56,32 @@ export class PlantDetailComponent implements OnInit {
     private http: HttpClient,
     private cookieService: CookieService,
     private plantDataService: PlantDataService,
-    private authDialogService: AuthDialogService
+    private authDialogService: AuthDialogService,
+    private cdr: ChangeDetectorRef,
+    private plantDetailLoader: PlantDetailLoaderService
   ) {}
 
   ngOnInit(): void {
+    // Ưu tiên lấy từ service nếu đã có (giữ state khi reload/quay lại)
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      const cached = this.plantDataService.getSelectedPlant();
+      // Validate dữ liệu: phải có id, tên hoặc hình ảnh
+      if (
+        cached &&
+        cached.id === Number(id) &&
+        (cached.commonName || cached.scientificName || (Array.isArray(cached.imageUrls) && cached.imageUrls.length > 0))
+      ) {
+        this.plant = cached;
+        this.setSelectedImage();
+        // Không return ở đây, vẫn gọi API để luôn đảm bảo dữ liệu mới nhất
+        this.loadPlantDetail();
+        return;
+      } else if (cached) {
+        // Nếu dữ liệu cache không hợp lệ, clear cache để lần sau không bị trắng
+        this.plantDataService.clearData();
+      }
+    }
     this.loadPlantDetail();
   }
 
@@ -53,141 +94,42 @@ export class PlantDetailComponent implements OnInit {
       this.error = 'ID cây không hợp lệ';
       return;
     }
-
-    const plantId = parseInt(id);
     this.resetState();
-    this.loadFromServiceFirst(plantId);
+    this.loading = true;
+    this.plantDetailLoader.loadPlantDetail(id).subscribe({
+      next: (plant) => {
+        this.plant = plant;
+        this.plantDataService.setSelectedPlant(plant); // luôn lưu lại state mới nhất
+        this.isLimitedInfo = false;
+        this.setSelectedImage();
+        this.loading = false;
+        this.error = '';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        if (err.status === 404) {
+          this.handleError('Không tìm thấy thông tin cây với ID này');
+        } else if (err.status === 403 || err.status === 401) {
+          this.handleError('', true);
+        } else {
+          this.handleError('Không thể tải thông tin cây. Vui lòng thử lại.');
+        }
+      }
+    });
   }
 
   private resetState(): void {
     this.error = '';
     this.requiresAuth = false;
     this.isLimitedInfo = false;
+    this.plant = null;
   }
 
   /**
    * Load từ service trước, fallback vào API
    */
-  private loadFromServiceFirst(plantId: number): void {
-    const token = this.cookieService.getAuthToken();
-    
-    // Thử từ cache
-    const cachedPlant = this.loadCachedPlant(plantId);
-    if (cachedPlant) {
-      this.plant = cachedPlant;
-      this.isLimitedInfo = !token;
-      this.setSelectedImage();
-      if (token) {
-        this.upgradeToFullData(plantId.toString());
-      }
-      return;
-    }
-    
-    // Thử từ service
-    const selectedPlant = this.plantDataService.getSelectedPlant();
-    if (selectedPlant?.id === plantId) {
-      this.plant = this.mapApiResponseToPlant(selectedPlant);
-      this.cachePlant(this.plant);
-      this.isLimitedInfo = !token;
-      this.setSelectedImage();
-      if (token) {
-        this.upgradeToFullData(plantId.toString());
-      }
-      return;
-    }
 
-    // Thử từ cached list
-    const cachedListPlant = this.plantDataService.getPlantById(plantId);
-    if (cachedListPlant) {
-      this.plant = this.mapApiResponseToPlant(cachedListPlant);
-      this.cachePlant(this.plant);
-      this.isLimitedInfo = !token;
-      this.setSelectedImage();
-      if (token) {
-        this.upgradeToFullData(plantId.toString());
-      }
-      return;
-    }
-
-    // Load từ API
-    this.loadFromAPI(plantId.toString());
-  }
-
-  /**
-   * Load từ API
-   */
-  private loadFromAPI(id: string): void {
-    const token = this.cookieService.getAuthToken();
-    
-    if (token) {
-      this.fetchPlantDetailWithAuth(id);
-    } else {
-      this.tryPublicEndpoint(id);
-    }
-  }
-
-  private tryPublicEndpoint(id: string): void {
-    this.http.get<any>(`/api/plants/${id}`).subscribe({
-      next: (response) => {
-        if (response?.data || response?.id) {
-          const rawData = response.data || response;
-          this.plant = this.mapApiResponseToPlant(rawData);
-          this.isLimitedInfo = true;
-          this.setSelectedImage();
-        } else {
-          this.error = 'Không tìm thấy thông tin cây';
-        }
-      },
-      error: () => {
-        this.requiresAuth = true;
-      }
-    });
-  }
-
-  private fetchPlantDetailWithAuth(id: string): void {
-    this.http.get<any>(`/api/plants/detail/${id}`).subscribe({
-      next: (response) => {
-        if (response?.data || response?.id) {
-          const rawData = response.data || response;
-          this.plant = this.mapApiResponseToPlant(rawData, this.plant || undefined);
-          this.isLimitedInfo = false;
-          this.setSelectedImage();
-          if (this.plant) {
-            this.cachePlant(this.plant);
-          }
-        } else {
-          this.error = 'Không tìm thấy thông tin cây';
-        }
-      },
-      error: (err) => {
-        if (err.status === 404) {
-          this.error = 'Không tìm thấy thông tin cây với ID này';
-        } else if (err.status === 403 || err.status === 401) {
-          this.requiresAuth = true;
-        } else {
-          this.error = 'Không thể tải thông tin cây. Vui lòng thử lại.';
-        }
-      }
-    });
-  }
-
-  private upgradeToFullData(id: string): void {
-    this.http.get<any>(`/api/plants/detail/${id}`).subscribe({
-      next: (response) => {
-        if (response?.data || response?.id) {
-          const rawData = response.data || response;
-          this.plant = this.mapApiResponseToPlant(rawData, this.plant || undefined);
-          this.isLimitedInfo = false;
-          this.setSelectedImage();
-        }
-      },
-      error: (err) => {
-        if (err.status === 403 || err.status === 401) {
-          this.isLimitedInfo = true;
-        }
-      }
-    });
-  }
 
   private setSelectedImage(): void {
     if (this.plant?.imageUrls?.length) {
@@ -198,52 +140,15 @@ export class PlantDetailComponent implements OnInit {
   /**
    * Map API response to Plant interface với preservation của dữ liệu cũ
    */
-  private mapApiResponseToPlant(apiData: any, existingPlant?: Plant): Plant {
-    return {
-      id: apiData.id,
-      scientificName: apiData.scientificName || '',
-      commonName: apiData.commonName || '',
-      categoryName: apiData.categoryName || apiData.category || '',
-      description: apiData.description || '',
-      careInstructions: apiData.careInstructions || '',
-      lightRequirement: apiData.lightRequirement || existingPlant?.lightRequirement || '',
-      waterRequirement: apiData.waterRequirement || existingPlant?.waterRequirement || '',
-      careDifficulty: apiData.careDifficulty || existingPlant?.careDifficulty || '',
-      suitableLocation: apiData.suitableLocation || '',
-      commonDiseases: apiData.commonDiseases || '',
-      status: apiData.status || 'ACTIVE',
-      imageUrls: apiData.imageUrls || apiData.images || [],
-      createdAt: apiData.createdAt || null
-    };
-  }
+
 
   private loadCachedPlant(plantId: number): Plant | null {
-    try {
-      const cached = localStorage.getItem(`plant_${plantId}`);
-      if (cached) {
-        const plantData = JSON.parse(cached);
-        const cacheTime = new Date(plantData.cachedAt).getTime();
-        const now = new Date().getTime();
-        if (now - cacheTime < 5 * 60 * 1000) { // 5 minutes
-          return plantData.plant;
-        }
-      }
-    } catch (e) {
-      // Silent fail
-    }
+    // Đã loại bỏ cache localStorage
     return null;
   }
 
   private cachePlant(plant: Plant): void {
-    try {
-      const cacheData = {
-        plant: plant,
-        cachedAt: new Date().toISOString()
-      };
-      localStorage.setItem(`plant_${plant.id}`, JSON.stringify(cacheData));
-    } catch (e) {
-      // Silent fail
-    }
+    // Đã loại bỏ cache localStorage
   }
 
   // UI Methods
@@ -289,68 +194,5 @@ export class PlantDetailComponent implements OnInit {
     return new Date(dateString).toLocaleDateString('vi-VN');
   }
 
-  // Translation Methods
-  translateLightRequirement(value: string): string {
-    const translations: { [key: string]: string } = {
-      'LOW': 'Ít ánh sáng',
-      'MEDIUM': 'Ánh sáng vừa phải',
-      'HIGH': 'Nhiều ánh sáng'
-    };
-    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
-  }
-
-  translateWaterRequirement(value: string): string {
-    const translations: { [key: string]: string } = {
-      'LOW': 'Ít nước',
-      'MEDIUM': 'Nước vừa phải',
-      'HIGH': 'Nhiều nước'
-    };
-    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
-  }
-
-  translateCareDifficulty(value: string): string {
-    const translations: { [key: string]: string } = {
-      'EASY': 'Dễ chăm sóc',
-      'MODERATE': 'Trung bình',
-      'DIFFICULT': 'Khó chăm sóc'
-    };
-    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
-  }
-
-  // New helper methods for enhanced UI
-  getLightPosition(value: string): string {
-    const positions: { [key: string]: string } = {
-      'LOW': 'Góc tối, xa cửa sổ',
-      'MEDIUM': 'Gần cửa sổ, ánh sáng gián tiếp',
-      'HIGH': 'Cửa sổ hướng nam, ánh sáng trực tiếp'
-    };
-    return positions[value?.toUpperCase()] || 'Tùy theo loại cây';
-  }
-
-  getWaterFrequency(value: string): string {
-    const frequencies: { [key: string]: string } = {
-      'LOW': '1-2 lần/tuần',
-      'MEDIUM': '2-3 lần/tuần',
-      'HIGH': '3-4 lần/tuần'
-    };
-    return frequencies[value?.toUpperCase()] || 'Theo nhu cầu';
-  }
-
-  getDifficultyClass(value: string): string {
-    const classes: { [key: string]: string } = {
-      'EASY': 'easy-indicator',
-      'MODERATE': 'moderate-indicator',
-      'DIFFICULT': 'difficult-indicator'
-    };
-    return classes[value?.toUpperCase()] || 'default-indicator';
-  }
-
-  getDifficultyTip(value: string): string {
-    const tips: { [key: string]: string } = {
-      'EASY': 'Phù hợp người mới bắt đầu',
-      'MODERATE': 'Cần chút kinh nghiệm',
-      'DIFFICULT': 'Dành cho người có kinh nghiệm'
-    };
-    return tips[value?.toUpperCase()] || 'Tùy theo kinh nghiệm';
-  }
+  // Các hàm dịch enum và UI helper đã chuyển sang PlantUiHelperService
 }

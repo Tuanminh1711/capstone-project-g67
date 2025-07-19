@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 interface ActivityLog {
   id: number;

@@ -5,22 +5,22 @@
     <p class="subtitle">Cập nhật chi tiết, hình ảnh và thông tin chăm sóc</p>
   </div>
 
-  <div *ngIf="isLoading" class="loading-section">
+  <div *ngIf="loading" class="loading-section">
     <div class="loading-card">
       <div class="loading-spinner-large"></div>
       <h3>Đang tải thông tin cây cảnh...</h3>
     </div>
   </div>
 
-  <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
-  <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>
+  <div *ngIf="errorMsg" class="alert error">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="alert success">{{ successMsg }}</div>
   <div *ngIf="validationErrors.length > 0" class="alert warning">
     <ul>
       <li *ngFor="let error of validationErrors">{{ error }}</li>
     </ul>
   </div>
 
-  <div *ngIf="plant && !isLoading" class="update-plant-content">
+  <div *ngIf="plant && !loading" class="update-plant-content">
     <div class="plant-image-block">
       <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="plant-image-gallery">
         <img *ngFor="let imageUrl of plant.imageUrls" [src]="imageUrl" [alt]="plant.commonName" (error)="onImageError($event)" />

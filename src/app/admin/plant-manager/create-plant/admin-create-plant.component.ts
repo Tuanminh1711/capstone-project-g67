@@ -1,9 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AdminCreatePlantService } from './admin-create-plant.service';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 export interface PlantCategory {
   id: number;
@@ -31,7 +32,7 @@ export interface CreatePlantRequest {
   templateUrl: './admin-create-plant.component.html',
   styleUrls: ['./admin-create-plant.component.scss']
 })
-export class AdminCreatePlantComponent implements OnInit {
+export class AdminCreatePlantComponent extends BaseAdminListComponent implements OnInit {
   createPlantForm: FormGroup;
   categories: PlantCategory[] = [];
   isSubmitting = false;
@@ -65,6 +66,7 @@ export class AdminCreatePlantComponent implements OnInit {
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {
+    super();
     this.createPlantForm = this.initializeForm();
   }
 
@@ -121,18 +123,16 @@ export class AdminCreatePlantComponent implements OnInit {
   async onSubmit(): Promise<void> {
     if (this.createPlantForm.invalid) {
       this.markFormGroupTouched();
-      this.toastService.error('Vui lòng kiểm tra lại thông tin nhập vào');
+      this.setError('Vui lòng kiểm tra lại thông tin nhập vào');
       return;
     }
 
-    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
       this.isSubmitting = true;
     });
 
     try {
       const formValue = this.createPlantForm.value;
-      
       const createPlantRequest: CreatePlantRequest = {
         scientificName: formValue.scientificName.trim(),
         commonName: formValue.commonName.trim(),
@@ -153,39 +153,37 @@ export class AdminCreatePlantComponent implements OnInit {
           !createPlantRequest.careInstructions || !createPlantRequest.lightRequirement ||
           !createPlantRequest.waterRequirement || !createPlantRequest.careDifficulty ||
           !createPlantRequest.suitableLocation || !createPlantRequest.imageUrls.length) {
-        this.toastService.error('Vui lòng điền đầy đủ tất cả thông tin bắt buộc');
+        this.setError('Vui lòng điền đầy đủ tất cả thông tin bắt buộc');
         return;
       }
 
       const response = await this.createPlantService.createPlant(createPlantRequest);
-      
-      // Kiểm tra response status
       if (response && (response as any).status === 500) {
         throw new Error((response as any).message || 'Server error occurred');
       }
-      
-      this.toastService.success('Tạo cây mới thành công!');
-      
-      // Reset form sau khi tạo thành công
+
+      this.setSuccess('Tạo cây mới thành công!');
       this.createPlantForm.reset();
       this.createPlantForm = this.initializeForm();
-      
-      // Navigate về danh sách plants để reload data
       this.router.navigate(['/admin/plants']);
     } catch (error: any) {
-      if (error?.status === 403) {
-        this.toastService.error('Bạn không có quyền thực hiện hành động này');
-      } else if (error?.status === 401) {
-        this.toastService.error('Vui lòng đăng nhập lại');
-        this.router.navigate(['/login']);
-      } else {
-        const errorMessage = error?.error?.message || error?.message || 'Có lỗi xảy ra khi tạo cây mới';
-        this.toastService.error(errorMessage);
-      }
+      this.handleApiError(error);
     } finally {
       setTimeout(() => {
         this.isSubmitting = false;
       });
+    }
+  }
+
+  private handleApiError(error: any) {
+    if (error?.status === 403) {
+      this.setError('Bạn không có quyền thực hiện hành động này');
+    } else if (error?.status === 401) {
+      this.setError('Vui lòng đăng nhập lại');
+      this.router.navigate(['/login']);
+    } else {
+      const errorMessage = error?.error?.message || error?.message || 'Có lỗi xảy ra khi tạo cây mới';
+      this.setError(errorMessage);
     }
   }
 

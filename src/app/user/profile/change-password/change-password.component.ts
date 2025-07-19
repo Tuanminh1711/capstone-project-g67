@@ -3,10 +3,11 @@ import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserProfileService } from '../view-user-profile/user-profile.service';
+// import { UserProfileService } from '../view-user-profile/user-profile.service';
+import { HttpClient } from '@angular/common/http';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -30,11 +31,11 @@ export class ChangePasswordComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private userProfileService: UserProfileService,
     private jwtUserUtil: JwtUserUtilService,
     private authDialogService: AuthDialogService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -138,7 +139,10 @@ export class ChangePasswordComponent implements OnInit {
       confirmPassword: this.confirmPassword
     };
 
-    this.userProfileService.changePassword(passwordData).pipe(
+    this.http.post('/api/auth/change-password', passwordData, {
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json' }
+    }).pipe(
       tap(response => {
         this.toastService.success('Đổi mật khẩu thành công!');
         

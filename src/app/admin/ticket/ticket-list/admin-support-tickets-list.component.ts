@@ -9,7 +9,7 @@ import { HandleTicketDialogComponent } from '../handle/handle-ticket-dialog.comp
 import { ReleaseTicketConfirmDialogComponent } from '../release/release-ticket-confirm-dialog.component';
 import { StatusTicketDialogComponent } from '../status/status-ticket-dialog.component';
 import { ResponseTicketDialogComponent } from '../response/response-ticket-dialog.component';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 
 @Component({

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { AuthService, VerifyEmailRequest, VerifyEmailResponse } from '../auth.service';
 import { AuthDialogService } from '../auth-dialog.service';
-import { ToastService } from '../../shared/toast.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-verify-email-dialog',

@@ -17,8 +17,21 @@
       {{ error }}
       <button class="retry-btn" (click)="reloadPlantDetail()">Thử lại</button>
     </div>
+    <!-- Loading state -->
+    <div *ngIf="loading" class="status-msg loading">
+      <span>Đang tải dữ liệu cây...</span>
+    </div>
+    <!-- Error state -->
+    <div *ngIf="!loading && error" class="status-msg error">
+      {{ error }}
+      <button class="retry-btn" (click)="reloadPlantDetail()">Thử lại</button>
+    </div>
     <!-- Plant detail content -->
-    <div *ngIf="plant" class="plant-detail">
+    <div *ngIf="!loading && !error && plant" class="plant-detail">
+    <!-- Loading state -->
+    <div *ngIf="!plant && !error && !requiresAuth" class="status-msg loading">
+      <span>Đang tải dữ liệu cây...</span>
+    </div>
       <div *ngIf="isLimitedInfo" class="limited-info-notice">
         <div class="notice-content">
           <span>ℹ️ Đang hiển thị thông tin cơ bản. <a (click)="openLoginDialog(); $event.stopPropagation(); $event.preventDefault()" class="login-link">Đăng nhập</a> để xem thông tin chi tiết đầy đủ.</span>
@@ -98,8 +111,8 @@
                 </div>
                 <div class="care-info modern">
                   <span class="care-label">Ánh sáng</span>
-                  <span class="care-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
-                  <div class="care-tips">Vị trí: {{ getLightPosition(plant.lightRequirement) }}</div>
+                  <span class="care-value">{{ plantUiHelper.translateLightRequirement(plant.lightRequirement) }}</span>
+                  <div class="care-tips">Vị trí: {{ plantUiHelper.getLightPosition(plant.lightRequirement) }}</div>
                 </div>
               </div>
               <div class="care-item water-care modern">
@@ -109,19 +122,19 @@
                 </div>
                 <div class="care-info modern">
                   <span class="care-label">Nước</span>
-                  <span class="care-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
-                  <div class="care-tips">Tần suất: {{ getWaterFrequency(plant.waterRequirement) }}</div>
+                  <span class="care-value">{{ plantUiHelper.translateWaterRequirement(plant.waterRequirement) }}</span>
+                  <div class="care-tips">Tần suất: {{ plantUiHelper.getWaterFrequency(plant.waterRequirement) }}</div>
                 </div>
               </div>
               <div class="care-item difficulty-care modern">
                 <div class="care-icon-wrapper modern">
                   <div class="care-icon">🌱</div>
-                  <div class="care-indicator" [class]="getDifficultyClass(plant.careDifficulty)"></div>
+                  <div class="care-indicator" [class]="plantUiHelper.getDifficultyClass(plant.careDifficulty)"></div>
                 </div>
                 <div class="care-info modern">
                   <span class="care-label">Độ khó</span>
-                  <span class="care-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
-                  <div class="care-tips">{{ getDifficultyTip(plant.careDifficulty) }}</div>
+                  <span class="care-value">{{ plantUiHelper.translateCareDifficulty(plant.careDifficulty) }}</span>
+                  <div class="care-tips">{{ plantUiHelper.getDifficultyTip(plant.careDifficulty) }}</div>
                 </div>
               </div>
               <div class="care-item location-care modern" *ngIf="plant.suitableLocation">

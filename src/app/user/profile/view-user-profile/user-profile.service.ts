@@ -75,21 +75,6 @@ export class UserProfileService {
     );
   }
 
-  changePassword(passwordData: any): Observable<any> {
-    // Sử dụng endpoint mới với JWT Authorization header
-    // Backend sẽ lấy userId từ JWT token trong request attribute
-    return this.http.post<any>('/api/auth/change-password', passwordData, {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).pipe(
-      tap(response => {
-        console.log('Password change response:', response);
-      }),
-      catchError(this.handleError)
-    );
-  }
 
   // Lấy profile từ cache
   getCachedProfile(): UserProfile | null {

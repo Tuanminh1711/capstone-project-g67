@@ -1,7 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { FormsModule } from '@angular/forms';
 
 interface UserDetail {
@@ -30,19 +32,19 @@ interface UserDetail {
   templateUrl: './admin-account-detail.component.html',
   styleUrls: ['./admin-account-detail.component.scss']
 })
-export class AdminAccountDetailComponent implements OnInit, AfterViewInit {
+export class AdminAccountDetailComponent extends BaseAdminListComponent implements OnInit, AfterViewInit {
   user: UserDetail | null = null;
-  loading = false;
-  errorMsg = '';
   userId: number = 0;
   private dataLoaded = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    super();
+  }
 
   ngOnInit() {
     // Load user detail immediately on component init
@@ -50,7 +52,7 @@ export class AdminAccountDetailComponent implements OnInit, AfterViewInit {
     
     // Subscribe to route params changes
     this.route.params.subscribe(params => {
-      const newUserId = +params['id'];
+      const newUserId = +(params as any)['id'];
       if (newUserId && newUserId !== this.userId) {
         this.userId = newUserId;
         this.dataLoaded = false;
@@ -75,15 +77,15 @@ export class AdminAccountDetailComponent implements OnInit, AfterViewInit {
       this.userId = +id;
       this.loadUserDetail();
     } else {
-      this.errorMsg = 'ID người dùng không hợp lệ';
+      this.setError('ID người dùng không hợp lệ');
     }
   }
 
   loadUserDetail() {
     if (this.loading || !this.userId) return; // Prevent multiple simultaneous requests
     
-    this.loading = true;
-    this.errorMsg = '';
+    this.setLoading(true);
+    this.setError('');
     this.cdr.detectChanges(); // Force UI update immediately
     
     // Use proxy path for consistency
@@ -95,33 +97,31 @@ export class AdminAccountDetailComponent implements OnInit, AfterViewInit {
           this.user = response.data || response;
           this.dataLoaded = true;
         } else {
-          this.errorMsg = 'Không tìm thấy thông tin người dùng';
+          this.setError('Không tìm thấy thông tin người dùng');
           this.dataLoaded = false;
         }
-        this.loading = false;
+        this.setLoading(false);
         // Force change detection
         this.cdr.markForCheck();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading user detail:', error);
-        
         // Handle different error types like user profile component
         if (error.status === 0) {
-          this.errorMsg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+          this.setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
         } else if (error.status === 401) {
-          this.errorMsg = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          this.setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         } else if (error.status === 403) {
-          this.errorMsg = 'Bạn không có quyền truy cập thông tin này.';
+          this.setError('Bạn không có quyền truy cập thông tin này.');
         } else if (error.status === 404) {
-          this.errorMsg = 'Không tìm thấy thông tin người dùng.';
+          this.setError('Không tìm thấy thông tin người dùng.');
         } else if (error.status === 500) {
-          this.errorMsg = 'Lỗi server. Vui lòng thử lại sau.';
+          this.setError('Lỗi server. Vui lòng thử lại sau.');
         } else {
-          this.errorMsg = error?.error?.message || 'Không thể tải thông tin người dùng. Vui lòng thử lại.';
+          this.setError(error?.error?.message || 'Không thể tải thông tin người dùng. Vui lòng thử lại.');
         }
-        
-        this.loading = false;
+        this.setLoading(false);
         this.dataLoaded = false;
         this.user = null;
         // Force change detection immediately

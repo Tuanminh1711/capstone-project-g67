@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { AuthDialogService } from './auth/auth-dialog.service';
 import { FooterComponent } from './shared/footer/footer.component';
 import { ToastComponent } from './shared/toast/toast.component';
-import { filter } from 'rxjs/operators';
+import { filter } from 'rxjs';
 import { ConfirmationDialogComponent } from './shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({

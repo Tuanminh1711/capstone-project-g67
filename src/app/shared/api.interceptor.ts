@@ -8,12 +8,9 @@ import { environment } from '../../environments/environment';
 export class ApiInterceptor implements HttpInterceptor {
   private activeRequests = 0;
 
-  constructor() {}
-
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     this.activeRequests++;
 
-    // Clone request and add common headers
     let apiReq = req.clone({
       setHeaders: {
         'Content-Type': 'application/json',
@@ -21,67 +18,58 @@ export class ApiInterceptor implements HttpInterceptor {
       }
     });
 
-    // Add base URL for production
     if (environment.production && !req.url.startsWith('http')) {
       apiReq = apiReq.clone({
         url: `${environment.baseUrl}${req.url}`
       });
     }
 
-    // Note: Authorization header is handled by authInterceptor
-
     return next.handle(apiReq).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Only log in development mode
         if (!environment.production) {
           console.error('API Error:', error);
         }
-        
-        // Process error message based on response type
+
         let errorMessage = 'An error occurred';
-        
-        if (error.error) {
-          if (typeof error.error === 'string') {
-            // Handle plain text errors (like CORS errors)
-            errorMessage = error.error;
-          } else if (error.error.message) {
-            // Handle JSON errors with message property
-            errorMessage = error.error.message;
-          } else if (typeof error.error === 'object') {
+        const err = error.error;
+        if (err) {
+          if (typeof err === 'string') {
+            errorMessage = err;
+          } else if (err.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'object') {
             try {
-              // Handle other JSON error formats
-              errorMessage = JSON.stringify(error.error);
-            } catch (e) {
+              errorMessage = JSON.stringify(err);
+            } catch {
               errorMessage = 'Invalid error response format';
             }
           }
         } else if (error.message) {
           errorMessage = error.message;
         }
-        
-        // Handle common HTTP errors
-        if (error.status === 0) {
-          // Network error or CORS issue
-          errorMessage = 'Network error or CORS issue - check your connection and server configuration';
-          console.error('🌐 Network/CORS Error:', errorMessage);
-        } else if (error.status === 401) {
-          // Unauthorized - redirect to login
-          errorMessage = 'Authentication required - token may be invalid or expired';
-          console.error('🔒 Authentication Error:', errorMessage);
-          // Token handling is now done by authInterceptor
-          window.location.href = '/login';
-        } else if (error.status === 403) {
-          // Forbidden
-          errorMessage = 'Access denied - insufficient permissions or invalid token';
-          console.error('🚫 Authorization Error:', errorMessage);
-          // Token handling is now done by authInterceptor
-        } else if (error.status >= 500) {
-          // Server error
-          errorMessage = 'Server error - please try again later';
-          console.error('🔥 Server Error:', errorMessage);
+
+        switch (error.status) {
+          case 0:
+            errorMessage = 'Network error or CORS issue - check your connection and server configuration';
+            console.error('🌐 Network/CORS Error:', errorMessage);
+            break;
+          case 401:
+            errorMessage = 'Authentication required - token may be invalid or expired';
+            console.error('🔒 Authentication Error:', errorMessage);
+            // For SPA, consider using router navigation instead of window.location.href
+            break;
+          case 403:
+            errorMessage = 'Access denied - insufficient permissions or invalid token';
+            console.error('🚫 Authorization Error:', errorMessage);
+            break;
+          default:
+            if (error.status >= 500) {
+              errorMessage = 'Server error - please try again later';
+              console.error('🔥 Server Error:', errorMessage);
+            }
+            break;
         }
 
-        // Always return a consistent error format
         const processedError = new HttpErrorResponse({
           error: { message: errorMessage },
           headers: error.headers,
@@ -89,7 +77,6 @@ export class ApiInterceptor implements HttpInterceptor {
           statusText: error.statusText,
           url: error.url || undefined
         });
-
         return throwError(() => processedError);
       }),
       finalize(() => {

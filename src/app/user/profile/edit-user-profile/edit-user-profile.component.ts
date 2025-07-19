@@ -2,9 +2,10 @@ import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, AfterViewIni
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserProfileService, UserProfile, UpdateUserProfileRequest } from '../view-user-profile/user-profile.service';
+import { HttpClient } from '@angular/common/http';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
@@ -21,6 +22,7 @@ import { CommonModule } from '@angular/common';
 export class EditUserProfileComponent implements OnInit, AfterViewInit {
   user: Partial<UserProfile> = {};
   avatarPreview: string | null = null;
+  selectedAvatarFile: File | null = null;
   loading = true;
   saving = false;
   saveMessage = '';
@@ -34,6 +36,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
     private toastService: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -73,103 +76,71 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         this.loading = false;
         // Force change detection
         this.cdr.markForCheck();
-        this.cdr.detectChanges();
       },
       error: (error) => {
         if (error.status === 401) {
           this.saveError = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
           this.toastService.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-          this.cdr.markForCheck();
-          this.cdr.detectChanges();
           this.showLoginDialog();
         } else if (error.status === 403) {
           this.saveError = 'Không có quyền truy cập thông tin này.';
           this.toastService.error('Không có quyền truy cập thông tin này.');
-          this.cdr.markForCheck();
-          this.cdr.detectChanges();
         } else if (error.status === 404) {
           this.saveError = 'Không tìm thấy thông tin người dùng.';
           this.toastService.error('Không tìm thấy thông tin người dùng.');
-          this.cdr.markForCheck();
-          this.cdr.detectChanges();
         } else {
           this.saveError = 'Có lỗi xảy ra khi tải thông tin. Vui lòng thử lại.';
           this.toastService.error('Có lỗi xảy ra khi tải thông tin. Vui lòng thử lại.');
-          this.cdr.markForCheck();
-          this.cdr.detectChanges();
         }
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
+
+
 
   onAvatarChange(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
+        this.selectedAvatarFile = null;
         return;
       }
-      
-      // Validate file type
       if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
         this.toastService.error('Định dạng file không hỗ trợ. Vui lòng chọn file JPG, PNG hoặc GIF.');
+        this.selectedAvatarFile = null;
         return;
       }
-      
-      this.avatarUploading = true;
-      
+      this.selectedAvatarFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        const base64Image = e.target.result;
-        this.avatarPreview = base64Image;
-        
-        // Tự động lưu ảnh ngay lập tức
-        this.saveAvatarOnly(base64Image);
-      };
-      reader.onerror = () => {
-        this.toastService.error('Có lỗi khi đọc file ảnh. Vui lòng thử lại.');
-        this.avatarUploading = false;
-        this.cdr.detectChanges();
+        this.avatarPreview = e.target.result;
+        this.cdr.markForCheck();
       };
       reader.readAsDataURL(file);
     }
   }
 
-  // Method riêng để chỉ lưu avatar
-  saveAvatarOnly(avatarData: string) {
-    if (!this.user.id) {
-      this.toastService.error('Không thể cập nhật ảnh. Vui lòng tải lại trang.');
-      this.avatarUploading = false;
+  uploadAvatar() {
+    if (!this.selectedAvatarFile) {
+      this.toastService.error('Vui lòng chọn ảnh trước khi cập nhật.');
       return;
     }
-
-    const updateData: UpdateUserProfileRequest = {
-      id: this.user.id,
-      fullName: this.user.fullName || '',
-      phoneNumber: this.user.phoneNumber || '',
-      livingEnvironment: this.user.livingEnvironment || '',
-      avatar: avatarData,
-      gender: this.user.gender || 'MALE'
-    };
-
-    this.userProfileService.updateUserProfile(updateData).pipe(
-      tap(response => {
-        if (response && response.id) {
-          this.user.avatar = response.avatar;
-          this.avatarPreview = response.avatar;
-          this.toastService.success('Cập nhật ảnh đại diện thành công!');
-        }
-        
+    this.avatarUploading = true;
+    const formData = new FormData();
+    formData.append('avatar', this.selectedAvatarFile);
+    this.http.post('http://localhost:8080/api/user/update-avatar', formData, { withCredentials: true }).subscribe({
+      next: (response: any) => {
+        this.toastService.success('Cập nhật ảnh đại diện thành công!');
+        this.loadUserProfile();
         this.avatarUploading = false;
-        this.cdr.detectChanges();
-      }),
-      catchError(error => {
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
         let errorMessage = 'Có lỗi xảy ra khi cập nhật ảnh đại diện.';
-        
         if (error.status === 401) {
           errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
           this.showLoginDialog();
@@ -178,13 +149,11 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         } else if (error.error?.message) {
           errorMessage = error.error.message;
         }
-        
         this.toastService.error(errorMessage);
         this.avatarUploading = false;
-        this.cdr.detectChanges();
-        return of(null);
-      })
-    ).subscribe();
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   save() {
@@ -255,7 +224,6 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         
         // Force change detection immediately
         this.cdr.markForCheck();
-        this.cdr.detectChanges();
       }),
       catchError(error => {
         this.saveError = 'Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.';
@@ -278,14 +246,12 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         this.toastService.error(this.saveError);
         // Force change detection immediately
         this.cdr.markForCheck();
-        this.cdr.detectChanges();
         return of(null);
       }),
       finalize(() => {
         this.saving = false;
         // Force change detection immediately
         this.cdr.markForCheck();
-        this.cdr.detectChanges();
       })
     ).subscribe();
   }
@@ -295,7 +261,6 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
     if (this.user.fullName && this.user.fullName.trim().length > 0 && this.user.fullName.trim().length < 2) {
       this.toastService.warning('Họ tên phải có ít nhất 2 ký tự');
       this.cdr.markForCheck();
-      this.cdr.detectChanges();
     }
   }
 
@@ -305,7 +270,6 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
       if (!phoneRegex.test(this.user.phoneNumber)) {
         this.toastService.warning('Số điện thoại phải có 10-11 chữ số');
         this.cdr.markForCheck();
-        this.cdr.detectChanges();
       }
     }
   }

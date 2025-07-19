@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, NgZone, ApplicationRef, AfterViewInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
@@ -5,7 +6,7 @@ import { UserProfileService, UserProfile } from './user-profile.service';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/auth.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
-import { ToastService } from '../../shared/toast.service';
+import { ToastService } from '../../shared/toast/toast.service';
 import { RouterModule, Router } from '@angular/router';
 
 @Component({
@@ -146,5 +147,17 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
   formatJoinDate(): string {
     // Since we don't have join date from API, return a default
     return 'Thành viên từ 2024';
+  }
+
+  getAvatarUrl(avatar: string): string {
+    if (!avatar) return '';
+    if (avatar.startsWith('http')) return avatar;
+    // Nếu chỉ là tên file, trả về đúng API lấy avatar
+    // Use environment.baseUrl for avatar URL
+    return `${environment.baseUrl}/api/user/avatars/${avatar}`;
+  }
+
+  onAvatarError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/image/default-plant.png';
   }
 }

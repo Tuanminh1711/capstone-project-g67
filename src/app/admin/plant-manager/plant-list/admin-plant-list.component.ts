@@ -1,14 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { CommonModule, NgForOf, NgIf } from '@angular/common';
+import { CommonModule, NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
-import { AdminTopNavigatorComponent } from '../../../shared/admin-top-navigator/admin-top-navigator.component';
-import { AdminSidebarComponent } from '../../../shared/admin-sidebar/admin-sidebar.component';
-import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
+import { shareReplay } from 'rxjs';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 
 interface Plant {
   id: number;
@@ -37,12 +34,11 @@ interface Plant {
   imports: [
     CommonModule, FormsModule, NgIf, NgForOf]
 })
-export class AdminPlantListComponent implements OnInit, AfterViewInit {
+export class AdminPlantListComponent extends BaseAdminListComponent implements OnInit, AfterViewInit {
   sidebarCollapsed = false;
   plantsSubject = new BehaviorSubject<Plant[]>([]);
   plants$ = this.plantsSubject.asObservable().pipe(shareReplay(1));
-  loading = false;
-  errorMsg = '';
+  // loading and errorMsg handled by BaseAdminListComponent
   pageNo = 0;
   pageSize = 10;
   totalPages = 1;
@@ -61,7 +57,9 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
     private http: HttpClient, 
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     // Load plants immediately if not already loaded
@@ -85,13 +83,13 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
     if (this.sortField) {
       url += `&sort=${this.sortField},${this.sortDirection}`;
     }
-    console.log('API URL:', url); // Debug log
+    // ...existing code...
     return url;
   }
 
   fetchPlants(page: number, keyword: string) {
-    this.loading = true;
-    this.errorMsg = '';
+    this.setLoading(true);
+    this.setError('');
     const url = this.buildUrl(page, keyword);
     
     this.http.get<any>(url).subscribe({
@@ -100,8 +98,8 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
         const plants = data?.content || data?.plants;
         if (!data || !Array.isArray(plants)) {
           this.plantsSubject.next([]);
-          this.errorMsg = 'Không có dữ liệu cây.';
-          this.loading = false;
+          this.setError('Không có dữ liệu cây.');
+          this.setLoading(false);
           this.cdr.detectChanges();
           return;
         }
@@ -117,16 +115,16 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
         this.totalElements = data.totalElements || data.totalElements || plants.length;
         this.totalPages = data.totalPages || Math.ceil(plants.length / this.pageSize);
         this.pageNo = data.number || data.page || page;
-        this.loading = false;
+        this.setLoading(false);
         this.currentKeyword = keyword;
         this.dataLoaded = true;
         
         this.cdr.detectChanges();
       },
       error: (error) => {
-        this.errorMsg = `Không thể tải danh sách cây. ${error.status ? `(${error.status})` : ''}`;
+        this.setError(`Không thể tải danh sách cây. ${error.status ? `(${error.status})` : ''}`);
         this.plantsSubject.next([]);
-        this.loading = false;
+        this.setLoading(false);
         this.cdr.detectChanges();
       }
     });
@@ -183,7 +181,7 @@ export class AdminPlantListComponent implements OnInit, AfterViewInit {
         this.fetchPlants(this.pageNo, this.currentKeyword);
       },
       error: () => {
-        this.errorMsg = 'Xóa plant thất bại!';
+        this.setError('Xóa plant thất bại!');
       }
     });
   }

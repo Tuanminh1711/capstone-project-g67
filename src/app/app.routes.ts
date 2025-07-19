@@ -5,40 +5,26 @@ import { PlantDetailComponent } from './main/plant-detail/plant-detail.component
 import { AboutUsComponent } from './main/about-us/about-us';
 
 // USER FEATURE
-import { MyGardenComponent } from './user/my-garden/my-garden.component';
-import { AddPlantComponent } from './user/add-plant/add-plant.component';
-import { CreateNewPlantComponent } from './user/create-plants/create-new-plant.component';
-import { ViewUserPlantDetailComponent } from './user/view-user-plant-detail/view-user-plant-detail.component';
-import { PlantCareReminderSetupComponent } from './user/plant-care-reminder-setup/plant-care-reminder-setup.component';
-import { ReportPlantPageComponent } from './user/report-plant/report-plant-page.component';
+import { MyGardenComponent } from './user/plant/my-garden/my-garden.component';
+import { AddPlantComponent } from './user/plant/add-plant/add-plant.component';
+import { CreateNewPlantComponent } from './user/plant/create-plants/create-new-plant.component';
+import { ViewUserPlantDetailComponent } from './user/plant/view-user-plant-detail/view-user-plant-detail.component';
+import { PlantCareReminderSetupComponent } from './user/plant/plant-care-reminder-setup/plant-care-reminder-setup.component';
+import { ReportPlantPageComponent } from './user/plant/report-plant/report-plant-page.component';
+import { UpdatePlantComponent as UserUpdatePlantComponent } from './user/plant/update-plant/update-plant.component';
 
 // PROFILE & AUTH
-import { AuthPopupHolderComponent } from './shared/empty.component';
 import { ViewUserProfileComponent } from './profile/view-user-profile/view-user-profile.component';
 import { EditUserProfileComponent } from './profile/edit-user-profile/edit-user-profile.component';
 import { ChangePasswordComponent } from './profile/change-password/change-password.component';
 import { LoginAdminPageComponent } from './auth/login-admin/login-admin-page.component';
 
 // ADMIN FEATURE
-import { AdminHomeComponent } from './admin/home/admin-home.component';
-import { AdminCreateAccountComponent } from './admin/account-manager/create-account/admin-create-account.component';
-import { AdminAccountListComponent } from './admin/account-manager/account-list/admin-account-list.component';
-import { AdminPlantListComponent } from './admin/plant-manager/plant-list/admin-plant-list.component';
-import { AdminCreatePlantComponent } from './admin/plant-manager/create-plant/admin-create-plant.component';
-import { AdminViewPlantComponent } from './admin/plant-manager/view-plant/admin-view-plant.component';
-import { UpdatePlantComponent } from './admin/plant-manager/update-plant/update-plant.component';
-import { UpdatePlantComponent as UserUpdatePlantComponent } from './user/update-plant/update-plant.component';
-import { ReportListComponent } from './admin/response-manager/report/report-list/report-list.component';
-import { TotalUsersStatisticsComponent } from './admin/statistics/total-users/total-users.component';
-import { TotalPlantsStatisticsComponent } from './admin/statistics/total-plants/total-plants.component';
-import { TotalBrowseUsersStatisticsComponent } from './admin/statistics/total-browse-users/total-browse-users.component';
-import { AdminLayoutComponent } from './shared/admin-layout/admin-layout.component';
-import { AdminAccountDetailComponent } from './admin/account-manager/account-detail/admin-account-detail.component';
-import { AdminUpdateUserComponent } from './admin/account-manager/update-user/admin-update-user.component';
-import { AdminUserActivityLogsComponent } from './admin/account-manager/user-activity-logs/admin-user-activity-logs.component';
 
 // SHARED/UTILS
 import { Routes } from '@angular/router';
+import { PrivacyPolicyComponent } from './main/privacy-policy/privacy-policy.component';
+import { TermsOfUseComponent } from './main/terms-of-use/terms-of-use.component';
 
 // ROUTES
 export const routes: Routes = [
@@ -49,6 +35,8 @@ export const routes: Routes = [
   { path: 'plant-info', component: PlantInfoComponent },
   { path: 'plant-detail/:id', component: PlantDetailComponent },
   { path: 'plant-info/detail/:id', component: PlantDetailComponent },
+  { path: 'privacy-policy', component: PrivacyPolicyComponent },
+  { path: 'terms-of-use', component: TermsOfUseComponent },
 
   // USER
   { path: 'user/my-garden', component: MyGardenComponent },
@@ -62,8 +50,6 @@ export const routes: Routes = [
   { path: 'user/report-plant/:id', component: ReportPlantPageComponent },
 
   // PROFILE & AUTH
-  { path: 'login', component: AuthPopupHolderComponent, data: { showLogin: true } },
-  { path: 'register', component: AuthPopupHolderComponent, data: { showRegister: true } },
   { path: 'view-user-profile', component: ViewUserProfileComponent },
   { path: 'edit-profile', component: EditUserProfileComponent },
   { path: 'profile/edit', component: EditUserProfileComponent },
@@ -71,28 +57,9 @@ export const routes: Routes = [
   { path: 'login-admin', component: LoginAdminPageComponent },
 
   // ADMIN
-  {
-    path: 'admin',
-    component: AdminLayoutComponent,
-    children: [
-      { path: '', component: AdminHomeComponent },
-      { path: 'reports', component: ReportListComponent },
-      { path: 'statistics/total-users', component: TotalUsersStatisticsComponent },
-      { path: 'statistics/total-plants', component: TotalPlantsStatisticsComponent },
-      { path: 'statistics/total-browse-users', component: TotalBrowseUsersStatisticsComponent },
-      { path: 'accounts/create', component: AdminCreateAccountComponent },
-      { path: 'accounts', component: AdminAccountListComponent },
-      { path: 'accounts/detail/:id', component: AdminAccountDetailComponent },
-      { path: 'accounts/update/:id', component: AdminUpdateUserComponent },
-      { path: 'accounts/activity-logs/:id', component: AdminUserActivityLogsComponent },
-      { path: 'plants/create', component: AdminCreatePlantComponent },
-      { path: 'plants/view/:id', component: AdminViewPlantComponent },
-      { path: 'plants/edit/:id', component: UpdatePlantComponent },
-      { path: 'plants/update/:id', component: UpdatePlantComponent },
-      { path: 'plants', component: AdminPlantListComponent },
-      { path: 'support/tickets', loadComponent: () => import('./admin/ticket/ticket-list/admin-support-tickets-list.component').then(m => m.AdminSupportTicketsListComponent) },
-      { path: 'support/tickets/:id', loadComponent: () => import('./admin/ticket/ticket-detail/admin-support-ticket-detail.component').then(m => m.AdminSupportTicketDetailComponent) },
-    ]
+  { 
+    path: 'admin', 
+    loadChildren: () => import('./admin/admin-routes.lazy').then(m => m.ADMIN_ROUTES) 
   },
 
   // SHARED/UTILS

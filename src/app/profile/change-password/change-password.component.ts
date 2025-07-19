@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { UserProfileService } from '../view-user-profile/user-profile.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
-import { ToastService } from '../../shared/toast.service';
+import { ToastService } from '../../shared/toast/toast.service';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 

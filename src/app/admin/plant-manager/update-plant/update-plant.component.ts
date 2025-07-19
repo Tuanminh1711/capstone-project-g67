@@ -1,11 +1,13 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
+import { environment } from '../../../../environments/environment';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 
 interface UpdatePlantRequest {
   scientificName: string;
@@ -56,16 +58,14 @@ interface ApiResponse<T = any> {
   templateUrl: './update-plant.component.html',
   styleUrls: ['./update-plant.scss']
 })
-export class UpdatePlantComponent implements OnInit, OnDestroy {
+export class UpdatePlantComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private readonly baseUrl = 'http://localhost:8080/api/manager';
+  private readonly baseUrl = `${environment.apiUrl}/manager`;
   
   plantId: number = 0;
   plant: Plant | null = null;
-  isLoading = false;
   isUpdating = false;
-  errorMessage = '';
-  successMessage = '';
+  // loading, error, and success state handled by BaseAdminListComponent
   validationErrors: string[] = [];
   sidebarCollapsed = false;
 
@@ -112,8 +112,11 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone = inject(NgZone)
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -122,73 +125,55 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         this.plantId = +id;
         this.loadPlantData();
       } else {
-        this.handleError('Invalid plant ID');
+        this.setError('Invalid plant ID');
         this.navigateBack();
       }
     });
+    this.setLoading(true);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.cleanupSubscriptions();
   }
 
   // Add method to redirect to working edit page if API doesn't work
   redirectToEditPage(): void {
-    console.log('Redirecting to edit page...');
+    this.toast.info('Chuyển đến trang chỉnh sửa cây.');
     this.router.navigate(['/admin/plants/edit', this.plantId]);
   }
 
   private loadPlantData(): void {
-    this.isLoading = true;
-    this.clearMessages();
-
-    // Use the same endpoint as view-plant component
+    this.setLoading(true);
+    this.setError('');
+    this.setSuccess('');
     const apiUrl = `/api/manager/plant-detail/${this.plantId}`;
-    console.log('Loading plant data from:', apiUrl);
-
     this.http.get<any>(apiUrl)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.isLoading = false;
-          console.log('API Response:', response);
-          
-          // Handle the response format like view-plant component
+          this.setLoading(false);
           if (response && response.data) {
             this.plant = response.data;
             this.populateForm(response.data);
           } else if (response) {
-            // Direct plant object
             this.plant = response;
             this.populateForm(response);
           } else {
-            this.handleError('No plant data found');
+            this.setError('No plant data found');
           }
           this.cdr.detectChanges();
         },
         error: (error) => {
-          this.isLoading = false;
-          console.error('Load plant error:', error);
-          this.handleApiError(error);
+          this.setLoading(false);
+          this.setError('Không thể tải thông tin cây.');
           this.cdr.detectChanges();
         }
       });
   }
 
-  private handleApiError(err: any): void {
-    if (err.status === 404) {
-      this.handleError('Không tìm thấy thông tin cây này.');
-    } else if (err.status === 401 || err.status === 403) {
-      this.handleError('Bạn không có quyền truy cập. Vui lòng đăng nhập lại.');
-    } else if (err.status === 0) {
-      this.handleError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
-    } else if (err.status === 500) {
-      this.handleError('Lỗi server. Vui lòng thử lại sau.');
-    } else {
-      this.handleError(`Không thể tải thông tin cây. Lỗi: ${err.status} - ${err.message || 'Unknown error'}`);
-    }
-  }
+  // handleApiError is now handled by setError above
 
   private populateForm(plant: any): void {
     // Handle the plant detail interface like view-plant component
@@ -206,36 +191,49 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       status: plant.status || 'ACTIVE'
     };
     
-    console.log('Form populated with:', this.updateForm);
-    console.log('Original plant data:', plant);
+    this.toast.info('Thông tin cây đã được nạp vào form.');
   }
 
   onSubmit(): void {
     if (!this.validateForm()) {
-      this.toast.error('Vui lòng kiểm tra lại các trường dữ liệu!');
+      this.setError('Vui lòng kiểm tra lại các trường dữ liệu!');
       return;
     }
     this.isUpdating = true;
-    this.clearMessages();
+    this.setError('');
+    this.setSuccess('');
     this.http.put<ApiResponse<Plant>>(`${this.baseUrl}/update-plant/${this.plantId}`, this.updateForm)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           this.isUpdating = false;
-          console.log('Update response:', response); // Log response để kiểm tra giá trị success
           if (response && (response.success === true || response.status === 200)) {
-            this.toast.success('Cập nhật cây thành công!');
+            this.zone.run(() => {
+              Promise.resolve().then(() => {
+                this.setSuccess('Cập nhật cây thành công!');
+                this.toast.success('Cập nhật cây thành công!');
+              });
+            });
             setTimeout(() => {
               this.navigateBack();
             }, 1500);
           } else {
-            this.toast.error(response.message || 'Cập nhật thất bại!');
+            this.zone.run(() => {
+              Promise.resolve().then(() => {
+                this.setError(response.message || 'Cập nhật thất bại!');
+                this.toast.error(response.message || 'Cập nhật thất bại!');
+              });
+            });
           }
         },
-        error: (error) => {
+        error: () => {
           this.isUpdating = false;
-          this.toast.error('Có lỗi xảy ra khi cập nhật!');
-          this.handleHttpError(error);
+          this.zone.run(() => {
+            Promise.resolve().then(() => {
+              this.setError('Có lỗi xảy ra khi cập nhật!');
+              this.toast.error('Có lỗi xảy ra khi cập nhật!');
+            });
+          });
         }
       });
   }
@@ -272,48 +270,14 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     }
 
     if (this.validationErrors.length > 0) {
-      this.errorMessage = 'Please fix the validation errors below';
+      this.setError('Please fix the validation errors below');
       return false;
     }
 
     return true;
   }
 
-  private handleError(message: string): void {
-    this.toast.error(message);
-    this.errorMessage = '';
-    this.validationErrors = [];
-  }
-
-  private handleHttpError(error: any): void {
-    switch (error.status) {
-      case 400:
-        this.toast.error('Dữ liệu không hợp lệ.');
-        break;
-      case 401:
-        this.toast.error('Bạn chưa đăng nhập.');
-        break;
-      case 403:
-        this.toast.error('Bạn không có quyền thực hiện.');
-        break;
-      case 404:
-        this.toast.error('Không tìm thấy cây.');
-        break;
-      case 500:
-        this.toast.error('Lỗi server.');
-        break;
-      default:
-        this.toast.error('Có lỗi xảy ra.');
-    }
-    this.errorMessage = '';
-    this.validationErrors = [];
-  }
-
-  private clearMessages(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.validationErrors = [];
-  }
+  // handleError, handleHttpError, clearMessages are now handled by setError/setSuccess and validationErrors
 
   navigateBack(): void {
     this.router.navigate(['/admin/plants']);
@@ -350,7 +314,8 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   resetForm(): void {
     if (this.plant) {
       this.populateForm(this.plant);
-      this.clearMessages();
+      this.setError('');
+      this.setSuccess('');
     }
   }
 

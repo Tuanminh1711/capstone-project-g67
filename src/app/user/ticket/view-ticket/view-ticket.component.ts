@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { DatePipe, CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
@@ -59,7 +60,7 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
   fetchTickets() {
     this.loading = true;
     this.error = '';
-    this.http.get<any>('http://localhost:8080/api/support/tickets').subscribe({
+    this.http.get<any>(`${environment.apiUrl}/support/tickets`).subscribe({
       next: (res) => {
         const tickets = res.data || [];
         this.ticketsSubject.next(tickets);
@@ -79,7 +80,7 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
   fetchTicketDetail(ticketId: number) {
     this.loading = true;
     this.error = '';
-    this.http.get<any>(`http://localhost:8080/api/support/tickets/${ticketId}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/support/tickets/${ticketId}`).subscribe({
       next: (res) => {
         this.selectedTicket = res.data || null;
         this.loading = false;

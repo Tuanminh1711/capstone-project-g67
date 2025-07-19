@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupportService } from '../send-ticket/support.service';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-send-ticket-dialog',
@@ -25,7 +25,8 @@ export class SendTicketDialogComponent {
   constructor(
     private dialogRef: MatDialogRef<SendTicketDialogComponent>,
     private supportService: SupportService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
 
@@ -53,15 +54,16 @@ export class SendTicketDialogComponent {
   public async onSubmit() {
     if (!this.title.trim() || !this.description.trim()) {
       this.errorMessage = 'Vui lòng nhập đầy đủ tiêu đề và mô tả';
+      this.cdr.detectChanges();
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
     try {
       let imageUrl = '';
-      
       // Upload image if selected
       if (this.selectedImage) {
         const uploadResponse = await this.supportService.uploadImage(this.selectedImage).toPromise();
@@ -76,15 +78,16 @@ export class SendTicketDialogComponent {
       };
 
       await this.supportService.createTicket(ticketData).toPromise();
-      
       this.toastService.show('Ticket đã được gửi thành công!', 'success');
       this.close();
     } catch (error: any) {
       console.error('Error submitting ticket:', error);
       this.errorMessage = error.message || 'Có lỗi xảy ra khi gửi ticket. Vui lòng thử lại.';
       this.toastService.show('Không thể gửi ticket. Vui lòng thử lại.', 'error');
+      this.cdr.detectChanges();
     } finally {
       this.isSubmitting = false;
+      this.cdr.detectChanges();
     }
   }
 

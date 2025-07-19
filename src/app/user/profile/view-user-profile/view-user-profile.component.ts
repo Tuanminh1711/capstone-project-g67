@@ -5,7 +5,7 @@ import { UserProfileService, UserProfile } from './user-profile.service';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../auth/auth.service';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { RouterModule, Router } from '@angular/router';
 
 @Component({

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminCreateAccountService } from './admin-create-account.service';
@@ -11,7 +12,7 @@ import { Router } from '@angular/router';
   templateUrl: './admin-create-account.component.html',
   styleUrls: ['./admin-create-account.component.scss']
 })
-export class AdminCreateAccountComponent {
+export class AdminCreateAccountComponent extends BaseAdminListComponent {
   username = '';
   password = '';
   confirmPassword = '';
@@ -21,24 +22,25 @@ export class AdminCreateAccountComponent {
   livingEnvironment = '';
   gender: 'male' | 'female' | 'other' = 'male';
   roleId: number = 3; // USER mặc định
-  errorMsg = '';
-  successMsg = '';
+  // errorMsg and successMsg handled by BaseAdminListComponent
 
-  constructor(private createAccountService: AdminCreateAccountService, private router: Router) {}
+  constructor(private createAccountService: AdminCreateAccountService, private router: Router) {
+    super();
+  }
 
   onSubmit() {
-    this.errorMsg = '';
-    this.successMsg = '';
+    this.setError('');
+    this.setSuccess('');
     if (!this.username || !this.password || !this.confirmPassword || !this.fullName || !this.email || !this.phoneNumber || !this.livingEnvironment || !this.gender || !this.roleId) {
-      this.errorMsg = 'Vui lòng nhập đầy đủ thông tin.';
+      this.setError('Vui lòng nhập đầy đủ thông tin.');
       return;
     }
     if (this.password.length < 6) {
-      this.errorMsg = 'Mật khẩu phải có ít nhất 6 ký tự.';
+      this.setError('Mật khẩu phải có ít nhất 6 ký tự.');
       return;
     }
     if (this.password !== this.confirmPassword) {
-      this.errorMsg = 'Mật khẩu nhập lại không khớp.';
+      this.setError('Mật khẩu nhập lại không khớp.');
       return;
     }
     const data = {
@@ -53,21 +55,21 @@ export class AdminCreateAccountComponent {
     };
     this.createAccountService.addUser(data).subscribe({
       next: (res) => {
-        this.successMsg = 'Tạo tài khoản thành công!';
-        this.errorMsg = '';
+        this.setSuccess('Tạo tài khoản thành công!');
+        this.setError('');
         setTimeout(() => {
           this.router.navigate(['/admin/accounts'], { queryParams: { successMsg: this.successMsg } });
         }, 800);
       },
       error: (err) => {
         if (err && err.error && err.error.message) {
-          this.errorMsg = err.error.message;
+          this.setError(err.error.message);
         } else if (err && err.error && typeof err.error === 'string') {
-          this.errorMsg = err.error;
+          this.setError(err.error);
         } else if (err && err.status) {
-          this.errorMsg = `Tạo tài khoản thất bại (status: ${err.status})`;
+          this.setError(`Tạo tài khoản thất bại (status: ${err.status})`);
         } else {
-          this.errorMsg = 'Tạo tài khoản thất bại!';
+          this.setError('Tạo tài khoản thất bại!');
         }
       }
     });

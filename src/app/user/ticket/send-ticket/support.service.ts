@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -14,11 +15,12 @@ export class SupportService {
 
   // Create support ticket
   createTicket(data: { title: string; description: string; imageUrl?: string }): Observable<any> {
-    return this.http.post('http://localhost:8080/api/support/tickets', data);
+    return this.http.post(`${environment.apiUrl}/support/tickets`, data);
   }
 
   // Get list of tickets (for dropdown)
   getMyTickets(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:8080/api/support/tickets/my');
+    // Nếu backend không hỗ trợ /my, dùng endpoint chung và filter phía client hoặc truyền userId nếu cần
+    return this.http.get<any[]>(`${environment.apiUrl}/support/tickets`);
   }
 }

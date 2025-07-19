@@ -1,3 +1,5 @@
+import { environment } from '../../../environments/environment';
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
@@ -91,6 +93,25 @@ export class UserProfileService {
     );
   }
 
+
+  updateAvatar(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    // Use environment.apiUrl for update-avatar
+    return this.http.post<any>(`${environment.apiUrl}/user/update-avatar`, formData, {
+      withCredentials: true
+    }).pipe(
+      tap(response => {
+        this.profileCache.next(null);
+      }),
+      catchError(error => {
+        return throwError(() => error);
+      })
+    );
+  }
+
+  
+
   // Lấy profile từ cache
   getCachedProfile(): UserProfile | null {
     return this.profileCache.value;
@@ -133,4 +154,6 @@ export class UserProfileService {
     
     return throwError(() => ({ ...error, userMessage: errorMessage }));
   };
+
+ 
 }

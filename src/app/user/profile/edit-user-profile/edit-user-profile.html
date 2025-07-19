@@ -35,8 +35,8 @@
             <h3>Ảnh đại diện</h3>
             <div class="avatar-upload-area">
               <div class="avatar-preview" (click)="avatarInput.click()" [class.uploading]="avatarUploading">
-                <img *ngIf="avatarPreview && !avatarUploading" [src]="avatarPreview" alt="avatar" />
-                <div *ngIf="!avatarPreview && !avatarUploading" class="avatar-placeholder">
+                <img *ngIf="(avatarPreview || user.avatar) && !avatarUploading" [src]="avatarPreview || user.avatar" alt="avatar" />
+                <div *ngIf="!avatarPreview && !user.avatar && !avatarUploading" class="avatar-placeholder">
                   <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
                   </svg>
@@ -54,13 +54,18 @@
               </div>
               <input #avatarInput type="file" accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onAvatarChange($event)" style="display:none" [disabled]="avatarUploading" />
             </div>
+            <div style="text-align:center; margin-top: 12px;">
+              <button type="button" class="update-avatar-btn" (click)="uploadAvatar()" [disabled]="avatarUploading || !selectedAvatarFile">
+                <span *ngIf="!avatarUploading">Cập nhật ảnh đại diện</span>
+                <span *ngIf="avatarUploading">Đang cập nhật...</span>
+              </button>
+            </div>
             <div class="avatar-info">
               <p class="avatar-guidelines">
                 <strong>Hướng dẫn:</strong><br>
                 • Kích thước tối đa: 5MB<br>
                 • Định dạng: JPG, PNG, GIF<br>
                 • Tỷ lệ khuyến nghị: 1:1 (vuông)<br>
-                • <em>Ảnh sẽ được lưu tự động khi chọn</em>
               </p>
             </div>
           </div>

@@ -3,7 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastService } from '../../../shared/toast.service';
+import { ToastService } from '../../../shared/toast/toast.service';
+import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 
 interface UserDetail {
   id: number;
@@ -42,11 +43,9 @@ interface UpdateUserRequest {
   templateUrl: './admin-update-user.component.html',
   styleUrls: ['./admin-update-user.component.scss']
 })
-export class AdminUpdateUserComponent implements OnInit, AfterViewInit {
+export class AdminUpdateUserComponent extends BaseAdminListComponent implements OnInit, AfterViewInit {
   user: UserDetail | null = null;
-  loading = false;
-  errorMsg = '';
-  successMsg = '';
+  // loading, errorMsg, and successMsg handled by BaseAdminListComponent
   userId: number = 0;
   private dataLoaded = false;
   
@@ -70,7 +69,9 @@ export class AdminUpdateUserComponent implements OnInit, AfterViewInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     // Load user detail immediately on component init
@@ -111,9 +112,9 @@ export class AdminUpdateUserComponent implements OnInit, AfterViewInit {
   loadUserDetail() {
     if (this.loading || !this.userId) return; // Prevent multiple simultaneous requests
     
-    this.loading = true;
-    this.errorMsg = '';
-    this.successMsg = '';
+    this.setLoading(true);
+    this.setError('');
+    this.setSuccess('');
     this.cdr.detectChanges(); // Force UI update immediately
     
     // Use proxy path for consistency
@@ -126,10 +127,10 @@ export class AdminUpdateUserComponent implements OnInit, AfterViewInit {
           this.dataLoaded = true;
           this.populateForm();
         } else {
-          this.errorMsg = 'Không tìm thấy thông tin người dùng';
+          this.setError('Không tìm thấy thông tin người dùng');
           this.dataLoaded = false;
         }
-        this.loading = false;
+        this.setLoading(false);
         // Force change detection
         this.cdr.markForCheck();
         this.cdr.detectChanges();
@@ -139,20 +140,19 @@ export class AdminUpdateUserComponent implements OnInit, AfterViewInit {
         
         // Handle different error types like user profile component
         if (error.status === 0) {
-          this.errorMsg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+          this.setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
         } else if (error.status === 401) {
-          this.errorMsg = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          this.setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         } else if (error.status === 403) {
-          this.errorMsg = 'Bạn không có quyền truy cập thông tin này.';
+          this.setError('Bạn không có quyền truy cập thông tin này.');
         } else if (error.status === 404) {
-          this.errorMsg = 'Không tìm thấy thông tin người dùng.';
+          this.setError('Không tìm thấy thông tin người dùng.');
         } else if (error.status === 500) {
-          this.errorMsg = 'Lỗi server. Vui lòng thử lại sau.';
+          this.setError('Lỗi server. Vui lòng thử lại sau.');
         } else {
-          this.errorMsg = error?.error?.message || 'Không thể tải thông tin người dùng. Vui lòng thử lại.';
+          this.setError(error?.error?.message || 'Không thể tải thông tin người dùng. Vui lòng thử lại.');
         }
-        
-        this.loading = false;
+        this.setLoading(false);
         this.dataLoaded = false;
         this.user = null;
         // Force change detection immediately
@@ -200,8 +200,8 @@ export class AdminUpdateUserComponent implements OnInit, AfterViewInit {
     }
 
     this.updating = true;
-    this.errorMsg = '';
-    this.successMsg = '';
+    this.setError('');
+    this.setSuccess('');
     this.cdr.detectChanges();
 
     const updateData = {

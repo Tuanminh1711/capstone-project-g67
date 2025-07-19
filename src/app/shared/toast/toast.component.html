@@ -1,0 +1,20 @@
+<div class="toast-container">
+  <div *ngFor="let toast of toasts" class="toast" [ngClass]="'toast-' + toast.type" (click)="removeToast(toast.id)">
+    <div class="toast-icon">
+      <svg *ngIf="toast.type === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+      </svg>
+      <svg *ngIf="toast.type === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M13,13H11V7H13M11,15H13V17H11M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
+      </svg>
+      <svg *ngIf="toast.type === 'warning'" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+      </svg>
+      <svg *ngIf="toast.type === 'info'" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+      </svg>
+    </div>
+    <div class="toast-message">{{ toast.message }}</div>
+    <button class="toast-close" (click)="removeToast(toast.id)">×</button>
+  </div>
+</div>

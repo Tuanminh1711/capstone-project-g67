@@ -1,9 +1,8 @@
 import { Component, Optional, ChangeDetectorRef } from '@angular/core';
-import { ToastService } from '../../shared/toast.service';
+import { ToastService } from '../../shared/toast/toast.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../auth.service';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
 import { AuthDialogService } from '../auth-dialog.service';
 import { JwtUserUtilService } from '../jwt-user-util.service';
 import { jwtDecode } from 'jwt-decode';
@@ -11,7 +10,7 @@ import { jwtDecode } from 'jwt-decode';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [FormsModule],
   styleUrl: './login.scss',
   templateUrl: './login-dialog.html',
 })
@@ -20,8 +19,8 @@ export class LoginComponent {
   password = '';
   rememberMe = false;
   loading = false;
-  errorMsg = '';
-  successMsg = '';
+  // errorMsg = '';
+  // successMsg = '';
 
   constructor(
     private auth: AuthService,
@@ -39,10 +38,10 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    this.errorMsg = '';
-    this.successMsg = '';
+    // this.errorMsg = '';
+    // this.successMsg = '';
     if (!this.username || !this.password) {
-      this.errorMsg = 'Vui lòng nhập đầy đủ thông tin.';
+      this.toast.error('Vui lòng nhập đầy đủ thông tin.');
       this.loading = false;
       this.cdRef.detectChanges();
       return;
@@ -53,7 +52,7 @@ export class LoginComponent {
       next: (res) => {
         this.loading = false;
         if (res && res.token) {
-          this.successMsg = 'Đăng nhập thành công!';
+          this.toast.success('Đăng nhập thành công!');
           this.cdRef.detectChanges();
           setTimeout(() => {
             const role = this.jwtUserUtil.getRoleFromToken();
@@ -83,13 +82,13 @@ export class LoginComponent {
               this.authDialogService.openVerifyEmailDialog(res.email as string);
             },
             error: () => {
-              this.errorMsg = 'Không thể gửi lại mã xác thực. Vui lòng thử lại sau.';
+              this.toast.error('Không thể gửi lại mã xác thực. Vui lòng thử lại sau.');
               this.cdRef.detectChanges();
             }
           });
         } else {
           // Nếu có message lỗi khác
-          this.errorMsg = res && res.message ? res.message : 'Đăng nhập thất bại!';
+          this.toast.error(res && res.message ? res.message : 'Đăng nhập thất bại!');
           this.cdRef.detectChanges();
         }
       },
@@ -106,13 +105,13 @@ export class LoginComponent {
           this.authDialogService.openVerifyEmailDialog(err.error.email);
         } else {
           if (err && err.error && err.error.message) {
-            this.errorMsg = err.error.message;
+            this.toast.error(err.error.message);
           } else if (err && err.error && typeof err.error === 'string') {
-            this.errorMsg = err.error;
+            this.toast.error(err.error);
           } else if (err && err.status) {
-            this.errorMsg = `Đăng nhập thất bại (status: ${err.status})`;
+            this.toast.error(`Đăng nhập thất bại (status: ${err.status})`);
           } else {
-            this.errorMsg = 'Đăng nhập thất bại!';
+            this.toast.error('Đăng nhập thất bại!');
           }
         }
         this.cdRef.detectChanges();
