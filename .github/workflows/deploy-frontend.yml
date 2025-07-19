@@ -27,7 +27,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/
+          path: dist/fe_code/
 
   deploy:
     needs: build
@@ -43,7 +43,7 @@ jobs:
         run: |
           pwd
           ls -la
-          ls -la dist
+          ls -la fe_code
 
       # Backup dist cũ trên server trước khi deploy
       - name: Backup old dist on server
@@ -53,11 +53,11 @@ jobs:
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
-            sudo mkdir -p /var/www/plantcare-fe
+            sudo mkdir -p /var/www/plantcare-fe/dist
             sudo chown azureuser:azureuser /var/www/plantcare-fe
             sudo chmod 755 /var/www/plantcare-fe
-            if [ -d /var/www/plantcare-fe/dist ]; then
-              sudo mv /var/www/plantcare-fe/dist /var/www/plantcare-fe/dist.bak.$(date +%s)
+            if [ -d /var/www/plantcare-fe/dist/fe_code ]; then
+              sudo mv /var/www/plantcare-fe/dist/fe_code /var/www/plantcare-fe/dist/fe_code.bak.$(date +%s)
             fi
 
       - name: Copy dist to server
@@ -66,8 +66,8 @@ jobs:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
-          source: "dist/"
-          target: "/var/www/plantcare-fe"
+          source: "fe_code/"
+          target: "/var/www/plantcare-fe/dist"
 
       - name: Set permissions and reload nginx
         uses: appleboy/ssh-action@v1.0.3
@@ -90,10 +90,10 @@ jobs:
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
             echo "🔄 Rolling back to previous dist..."
-            if ls /var/www/plantcare-fe/dist.bak.* 1> /dev/null 2>&1; then
-              latest_backup=$(ls -td /var/www/plantcare-fe/dist.bak.* | head -1)
-              sudo rm -rf /var/www/plantcare-fe/dist
-              sudo mv $latest_backup /var/www/plantcare-fe/dist
+            if ls /var/www/plantcare-fe/dist/fe_code.bak.* 1> /dev/null 2>&1; then
+              latest_backup=$(ls -td /var/www/plantcare-fe/dist/fe_code.bak.* | head -1)
+              sudo rm -rf /var/www/plantcare-fe/dist/fe_code
+              sudo mv $latest_backup /var/www/plantcare-fe/dist/fe_code
               sudo systemctl reload nginx
               echo "✅ Rollback completed"
             else
