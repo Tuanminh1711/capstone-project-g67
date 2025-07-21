@@ -32,4 +32,5 @@ public class PlantResponseDTO {
     private Plants.PlantStatus status;
     private List<String> imageUrls;
     private Timestamp createdAt;
+    private int reportCount;
 }

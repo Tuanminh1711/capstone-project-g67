@@ -1,5 +1,6 @@
 package com.plantcare_backend.dto.response.Plants;
 
+import com.plantcare_backend.model.Plants;
 import lombok.Data;
 import java.util.List;
 
@@ -13,6 +14,8 @@ public class UserPlantDetailResponseDTO {
     private String suitableLocation;
     private String commonDiseases;
     private String status;
+    private Plants.WaterRequirement waterRequirement;
+    private Plants.LightRequirement lightRequirement;
     private String categoryName;
     private List<String> imageUrls;
 }

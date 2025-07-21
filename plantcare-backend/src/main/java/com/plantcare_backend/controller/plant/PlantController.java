@@ -80,6 +80,4 @@ public class PlantController {
         UserPlantDetailResponseDTO userDto = plantService.toUserPlantDetailDTO(fullDto);
         return new ResponseData<>(HttpStatus.OK.value(), "Get plant detail successfully", userDto);
     }
-
-
 }
