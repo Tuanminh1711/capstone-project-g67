@@ -71,9 +71,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
-        config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "http://40.81.23.51"
+                // Thêm domain nếu có, ví dụ: "https://yourdomain.com"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -1,0 +1,125 @@
+name: Build and Deploy Spring Boot
+
+on:
+  push:
+    branches: [ "main", "plantcare-be" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Build sẽ tự động chạy test, nếu test fail sẽ dừng tại đây
+      - name: Build with Maven
+        run: |
+          cd plantcare-backend
+          mvn -B clean package
+      - name: List target directory
+        run: ls -l plantcare-backend/target
+
+      - name: Archive JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: plantcare-backend
+          path: plantcare-backend/target/*.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: plantcare-backend
+
+      - name: Debug - List downloaded files
+        run: |
+          pwd
+          ls -la
+          echo "JAR files:"
+          ls -la *.jar || echo "No JAR files found"
+
+            # Backup JAR cũ trước khi deploy
+      - name: Backup old JAR on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            # Tạo thư mục và set permissions
+            sudo mkdir -p /opt/plantcare-app
+            sudo chown azureuser:azureuser /opt/plantcare-app
+            sudo chmod 755 /opt/plantcare-app
+            
+            # Backup file cũ
+            if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
+              sudo cp /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
+            fi
+
+      - name: Copy JAR to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          source: "*.jar"
+          target: "/opt/plantcare-app"
+
+      - name: Set permissions and restart app
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            # Set proper permissions
+            sudo chown azureuser:azureuser /opt/plantcare-app/*.jar
+            sudo chmod 755 /opt/plantcare-app/*.jar
+            
+            # Stop existing application
+            sudo systemctl stop plantcare-app || true
+            
+            # Start application
+            sudo systemctl start plantcare-app
+            
+            # Wait a moment and check status
+            sleep 5
+            sudo systemctl status plantcare-app
+            
+            # Check if app is running
+            if pgrep -f "plantcare-backend" > /dev/null; then
+              echo "✅ Application started successfully"
+            else
+              echo "❌ Application failed to start"
+              exit 1
+            fi
+
+      # Rollback nếu deploy lỗi
+      - name: Rollback if deploy failed
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            echo "🔄 Rolling back to previous version..."
+            if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak ]; then
+              sudo mv /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
+              sudo systemctl restart plantcare-app
+              echo "✅ Rollback completed"
+            else
+              echo "❌ No backup file found for rollback"
+            fi
