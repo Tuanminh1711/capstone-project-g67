@@ -9,7 +9,7 @@ import com.plantcare_backend.model.Plants;
 import org.springframework.data.domain.Page;
 
 public interface PlantManagementService {
-    Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO);
+//    Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO);
 
     Page<PlantListResponseDTO> getAllPlants(int page, int size);
 

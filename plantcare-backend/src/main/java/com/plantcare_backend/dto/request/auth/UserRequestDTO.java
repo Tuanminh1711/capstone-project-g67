@@ -4,10 +4,7 @@ import com.plantcare_backend.dto.validator.GenderSubset;
 import com.plantcare_backend.dto.validator.PhoneNumber;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.util.Gender;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -34,7 +31,11 @@ public class UserRequestDTO implements Serializable {
     @Size(min = 6, message = "password must be at least 6 characters")
     private String password;
 
-    @NotNull(message = "fullName must be not null")
+    @NotBlank(message = "fullName must not be blank")
+    @Pattern(
+            regexp = "^[a-zA-Z\\sÀ-ỹ]+$",
+            message = "fullName must not contain numbers or special characters"
+    )
     private String fullName;
 
     @PhoneNumber(message = "phone invalid format! please try again")

@@ -40,4 +40,7 @@ public interface UserRepository extends JpaRepository<Users, Integer>, JpaSpecif
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("SELECT u FROM Users u JOIN FETCH u.role WHERE u.id = :id")
+    Optional<Users> findByIdWithRole(@Param("id") Long id);
 }

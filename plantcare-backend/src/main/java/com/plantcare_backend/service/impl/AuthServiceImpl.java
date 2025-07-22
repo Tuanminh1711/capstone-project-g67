@@ -62,8 +62,9 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("password wrong!");
         }
 
-        if (user.getRole() == null || user.getRole().getRoleName() != Role.RoleName.USER) {
-            throw new RuntimeException("Chỉ tài khoản người dùng (USER) mới được phép đăng nhập ở đây.");
+        Role.RoleName roleName = user.getRole() != null ? user.getRole().getRoleName() : null;
+        if (roleName != Role.RoleName.USER && roleName != Role.RoleName.VIP) {
+            throw new RuntimeException("Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập ở đây.");
         }
 
         if (user.getStatus() == Users.UserStatus.INACTIVE) {
@@ -111,7 +112,36 @@ public class AuthServiceImpl implements AuthService {
         }
         // Chỉ cho phép ADMIN hoặc STAFF
         if (user.getRole() == null ||
-                !(user.getRole().getRoleName() == Role.RoleName.ADMIN || user.getRole().getRoleName() == Role.RoleName.STAFF)) {
+                !(user.getRole().getRoleName() == Role.RoleName.ADMIN ||
+                        user.getRole().getRoleName() == Role.RoleName.STAFF ||
+                        user.getRole().getRoleName() == Role.RoleName.EXPERT)) {
+            throw new RuntimeException("Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập ở đây.");
+        }
+        // (Có thể kiểm tra thêm trạng thái nếu muốn)
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString(), user.getId());
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+        loginResponse.setUsername(user.getUsername());
+        loginResponse.setMessage("Login successful");
+        loginResponse.setStatus(HttpStatus.OK.value());
+        loginResponse.setRole(user.getRole().getRoleName().toString());
+        return loginResponse;
+    }
+
+    @Override
+    public LoginResponse loginForExpert(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
+        Users user = userRepository.findByUsername(loginRequestDTO.getUsername())
+                .orElseThrow(() -> new RuntimeException("Username wrong!"));
+        if (user.getStatus() == Users.UserStatus.BANNED) {
+            throw new RuntimeException("Tài khoản đã bị khóa vĩnh viễn do vi phạm chính sách.");
+        }
+        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Password wrong!");
+        }
+        // Chỉ cho phép ADMIN hoặc STAFF
+        if (user.getRole() == null ||
+                !(user.getRole().getRoleName() == Role.RoleName.EXPERT ||
+                        user.getRole().getRoleName() == Role.RoleName.STAFF)) {
             throw new RuntimeException("Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập ở đây.");
         }
         // (Có thể kiểm tra thêm trạng thái nếu muốn)

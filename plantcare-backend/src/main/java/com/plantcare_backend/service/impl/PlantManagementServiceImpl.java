@@ -46,29 +46,29 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      *                                        details to be created.
      * @return the ID of the newly created plant.
      */
-    @Override
-    public Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO) {
-        PlantCategory plantCategory = plantCategoryRepository
-                .findById(Long.valueOf(createPlantManagementRequestDTO.getCategoryId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-        Plants plants = new Plants();
-        plants.setScientificName(createPlantManagementRequestDTO.getScientificName());
-        plants.setCommonName(createPlantManagementRequestDTO.getCommonName());
-        plants.setCategory(plantCategory);
-        plants.setDescription(createPlantManagementRequestDTO.getDescription());
-        plants.setCareInstructions(createPlantManagementRequestDTO.getCareInstructions());
-        plants.setLightRequirement(
-                Plants.LightRequirement.valueOf(createPlantManagementRequestDTO.getLightRequirement()));
-        plants.setWaterRequirement(
-                Plants.WaterRequirement.valueOf(createPlantManagementRequestDTO.getWaterRequirement()));
-        plants.setCareDifficulty(Plants.CareDifficulty.valueOf(createPlantManagementRequestDTO.getCareDifficulty()));
-        plants.setSuitableLocation(createPlantManagementRequestDTO.getSuitableLocation());
-        plants.setCommonDiseases(createPlantManagementRequestDTO.getCommonDiseases());
-        plants.setStatus(Plants.PlantStatus.ACTIVE);
-
-        Plants saved = plantRepository.save(plants);
-        return saved.getId();
-    }
+//    @Override
+//    public Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO) {
+//        PlantCategory plantCategory = plantCategoryRepository
+//                .findById(Long.valueOf(createPlantManagementRequestDTO.getCategoryId()))
+//                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+//        Plants plants = new Plants();
+//        plants.setScientificName(createPlantManagementRequestDTO.getScientificName());
+//        plants.setCommonName(createPlantManagementRequestDTO.getCommonName());
+//        plants.setCategory(plantCategory);
+//        plants.setDescription(createPlantManagementRequestDTO.getDescription());
+//        plants.setCareInstructions(createPlantManagementRequestDTO.getCareInstructions());
+//        plants.setLightRequirement(
+//                Plants.LightRequirement.valueOf(createPlantManagementRequestDTO.getLightRequirement()));
+//        plants.setWaterRequirement(
+//                Plants.WaterRequirement.valueOf(createPlantManagementRequestDTO.getWaterRequirement()));
+//        plants.setCareDifficulty(Plants.CareDifficulty.valueOf(createPlantManagementRequestDTO.getCareDifficulty()));
+//        plants.setSuitableLocation(createPlantManagementRequestDTO.getSuitableLocation());
+//        plants.setCommonDiseases(createPlantManagementRequestDTO.getCommonDiseases());
+//        plants.setStatus(Plants.PlantStatus.ACTIVE);
+//
+//        Plants saved = plantRepository.save(plants);
+//        return saved.getId();
+//    }
 
     /**
      * Retrieves a paginated list of all plants in the system.
