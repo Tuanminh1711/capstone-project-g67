@@ -20,7 +20,7 @@ public class ChatBoxController {
 
     @PostMapping
     public ResponseEntity<ChatResponseDTO> chat(@RequestBody ChatRequestDTO request) {
-        String reply = chatService.askOpenAI(request.getMessage());
+        String reply = chatService.askAI(request.getMessage());
         ChatResponseDTO response = new ChatResponseDTO();
         response.setReply(reply);
         return ResponseEntity.ok(response);
