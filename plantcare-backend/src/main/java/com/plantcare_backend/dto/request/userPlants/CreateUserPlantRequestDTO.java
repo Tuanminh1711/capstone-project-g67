@@ -4,10 +4,12 @@ import com.plantcare_backend.model.Plants;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
+@Builder
 @Data
 public class CreateUserPlantRequestDTO {
     @NotBlank(message = "scientificName must not blank")

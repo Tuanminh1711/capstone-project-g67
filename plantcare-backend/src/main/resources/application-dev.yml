@@ -50,3 +50,4 @@ paypal:
     id: ${PAYPAL_CLIENT_ID:temp-paypal-id}
     secret: ${PAYPAL_CLIENT_SECRET:temp-paypal-secret}
   mode: sandbox
+
