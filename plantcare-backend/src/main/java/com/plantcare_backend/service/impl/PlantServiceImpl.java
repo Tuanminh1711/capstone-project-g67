@@ -154,6 +154,8 @@ public class PlantServiceImpl implements PlantService {
         dto.setSuitableLocation(plant.getSuitableLocation());
         dto.setCommonDiseases(plant.getCommonDiseases());
         dto.setStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
+        dto.setLightRequirement(plant.getLightRequirement());
+        dto.setWaterRequirement(plant.getWaterRequirement());
         dto.setStatusDisplay(getStatusDisplay(plant.getStatus()));
         dto.setCreatedAt(plant.getCreatedAt());
         dto.setUpdatedAt(plant.getUpdatedAt());
@@ -182,6 +184,8 @@ public class PlantServiceImpl implements PlantService {
         userDto.setSuitableLocation(dto.getSuitableLocation());
         userDto.setCommonDiseases(dto.getCommonDiseases());
         userDto.setStatus(dto.getStatus());
+        userDto.setLightRequirement(dto.getLightRequirement());
+        userDto.setWaterRequirement(dto.getWaterRequirement());
         userDto.setCategoryName(dto.getCategoryName());
         userDto.setImageUrls(dto.getImageUrls());
         return userDto;
@@ -236,7 +240,7 @@ public class PlantServiceImpl implements PlantService {
         int reportCount = plantReportRepository.countByPlantId(plant.getId());
 
         // 5. Nếu >= 2, chuyển plant sang INACTIVE
-        if (reportCount >= 2 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
+        if (reportCount >= 3 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
             plant.setStatus(Plants.PlantStatus.INACTIVE);
             plantRepository.save(plant);
         }
@@ -275,7 +279,8 @@ public class PlantServiceImpl implements PlantService {
         dto.setCommonDiseases(plant.getCommonDiseases());
         dto.setStatus(plant.getStatus());
         dto.setCreatedAt(plant.getCreatedAt());
-
+        int reportCount = plantReportRepository.countByPlantId(plant.getId());
+        dto.setReportCount(reportCount);
         if (plant.getImages() != null && !plant.getImages().isEmpty()) {
             List<String> imageUrls = plant.getImages().stream()
                     .map(image -> image.getImageUrl())
