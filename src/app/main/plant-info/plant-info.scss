@@ -1,26 +1,114 @@
 @use '../../../styles/variables' as *;
 
+// Tooltip cho cảnh báo báo cáo
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.plant-warning-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  width: max-content;
+  background: #fffbe6;
+  color: #bfa100;
+  text-align: left;
+  border-radius: 6px;
+  padding: 6px 12px;
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 500;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.tooltip-container:hover .plant-warning-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+
 /* ==== PLANT META CARDS ==== */
 // ...existing code...
+
+// Cải thiện hiển thị thông tin meta
+
+// Hiển thị meta-info dạng hàng ngang, chữ nhỏ gọn
 .plant-meta-simple {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-  font-size: 0.97rem;
-  color: #444;
-}
-.plant-meta-simple .meta-label {
-  font-weight: bold;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 0.93rem;
   color: #222;
+  background: #f9fdfb;
+  border-radius: 8px;
+  padding: 8px 12px 4px 12px;
+  box-shadow: 0 1px 6px rgba(30, 174, 96, 0.03);
+
+  .meta-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #ececec;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  .meta-label {
+    font-weight: 600;
+    color: #178a4c;
+    text-transform: none;
+    font-size: 0.97em;
+    letter-spacing: 0.01em;
+    font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+    margin-right: 2px;
+  }
+  .meta-value {
+    font-weight: 400;
+    color: #222;
+    font-size: 0.97em;
+    font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
+    margin-left: 0;
+    letter-spacing: 0.01em;
+  }
 }
-.plant-meta-simple .meta-value {
-  font-weight: 400;
-  color: #444;
+
+@media (max-width: 600px) {
+  .plant-meta-simple {
+    padding: 6px 4px 2px 4px;
+    gap: 2px;
+    .meta-item {
+      padding: 3px 0;
+    }
+    .meta-label, .meta-value {
+      font-size: 0.98em;
+    }
+  }
 }
-.plant-meta-simple .meta-sep {
-  color: #bbb;
-  font-size: 1.1em;
+
+@media (max-width: 600px) {
+  .plant-meta-simple {
+    padding: 10px 8px 6px 8px;
+    gap: 10px;
+    .meta-item {
+      padding-bottom: 8px;
+    }
+    .meta-label {
+      font-size: 0.98em;
+    }
+    .meta-value {
+      font-size: 1.05em;
+    }
+  }
 }
 // ...existing code...
 /* ==== RESET ==== */
@@ -31,6 +119,7 @@ body, .plant-info-layout {
   margin: 0;
   padding: 0;
   font-family: 'Montserrat', 'Roboto', sans-serif;
+  font-size: 0.97rem; /* Giảm font-size mặc định toàn bộ trang */
 }
 
 /* ==== LAYOUT CHUNG ==== */
@@ -44,6 +133,7 @@ body, .plant-info-layout {
   display: grid;
   grid-template-columns: 1fr minmax(240px, 350px) minmax(600px, 1000px) 1fr;
   gap: 32px;
+  font-size: 0.97rem;
   margin-top: 80px; /* Tăng margin-top để tránh top-nav */
   width: 100%;
   overflow-x: auto;
@@ -61,10 +151,11 @@ body, .plant-info-layout {
 
 .sidebar-title {
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #f27123;
   margin-bottom: 16px;
   text-transform: capitalize;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
 }
 
 .sidebar-menu {
@@ -79,15 +170,17 @@ body, .plant-info-layout {
   gap: 10px;
   padding: 10px;
   border-radius: 8px;
-  color: #f27123;
+  color: #178a4c;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 400;
+  font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
   text-decoration: none;
   transition: background 0.2s, color 0.2s;
 
   &:hover, &.active {
     background: #e0f2f1;
     color: #178a4c;
+    font-weight: 600;
   }
 
   .sidebar-icon {
@@ -174,6 +267,7 @@ body, .plant-info-layout {
   background: #f9fdfb;
   border-radius: 12px;
   padding: 16px;
+  font-size: 0.96rem;
   gap: 16px;
   box-shadow: 0 1px 8px rgba(30, 174, 96, 0.05);
   cursor: pointer;
@@ -235,7 +329,7 @@ body, .plant-info-layout {
     cursor: pointer;
 
     .plant-title {
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       font-weight: 400;
       color: #178a4c;
       text-transform: uppercase;
@@ -254,15 +348,16 @@ body, .plant-info-layout {
     }
 
     .plant-category {
-      font-size: 0.92rem;
-      color: #555;
-      font-weight: 400;
-      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.88rem;
+      color: #178a4c;
+      font-weight: 300;
+      font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
       letter-spacing: 0.01em;
+      font-style: normal;
     }
 
     .plant-desc {
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       color: #444;
       font-weight: 400;
       font-family: Arial, Helvetica, sans-serif;
@@ -275,7 +370,7 @@ body, .plant-info-layout {
     }
 
     .plant-meta {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #666;
       font-weight: 400;
       font-family: Arial, Helvetica, sans-serif;

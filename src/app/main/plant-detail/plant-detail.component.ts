@@ -33,11 +33,10 @@ export class PlantDetailComponent implements OnInit {
    * Helper: cập nhật state khi lỗi
    */
   private handleError(errorMsg: string, requiresAuth = false) {
+    this.loading = false;
     this.error = errorMsg;
     this.requiresAuth = requiresAuth;
-    this.loading = false;
-    this.plant = null;
-    this.cdr.detectChanges();
+    // Không điều hướng, không toast, chỉ set error và requiresAuth để template xử lý
   }
   plant: Plant | null = null;
   error = '';
@@ -45,6 +44,7 @@ export class PlantDetailComponent implements OnInit {
   requiresAuth = false;
   isLimitedInfo = false;
   loading = false;
+  private plantId: string | null = null;
   private toast = inject(ToastService);
   private confirmationDialog = inject(ConfirmationDialogService);
   private dialog = inject(MatDialog);
@@ -62,14 +62,15 @@ export class PlantDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Extract id only once
+    this.plantId = this.route.snapshot.paramMap.get('id');
     // Ưu tiên lấy từ service nếu đã có (giữ state khi reload/quay lại)
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
+    if (this.plantId) {
       const cached = this.plantDataService.getSelectedPlant();
       // Validate dữ liệu: phải có id, tên hoặc hình ảnh
       if (
         cached &&
-        cached.id === Number(id) &&
+        cached.id === Number(this.plantId) &&
         (cached.commonName || cached.scientificName || (Array.isArray(cached.imageUrls) && cached.imageUrls.length > 0))
       ) {
         this.plant = cached;
@@ -89,21 +90,28 @@ export class PlantDetailComponent implements OnInit {
    * Tải thông tin chi tiết của cây
    */
   loadPlantDetail(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
+    if (!this.plantId) {
       this.error = 'ID cây không hợp lệ';
       return;
     }
     this.resetState();
     this.loading = true;
-    this.plantDetailLoader.loadPlantDetail(id).subscribe({
-      next: (plant) => {
+    // Gọi trực tiếp API đúng endpoint
+    this.http.get<any>(`/api/plants/detail/${this.plantId}`).subscribe({
+      next: (res) => {
+        const plant = res?.data || res;
         this.plant = plant;
         this.plantDataService.setSelectedPlant(plant); // luôn lưu lại state mới nhất
-        this.isLimitedInfo = false;
         this.setSelectedImage();
         this.loading = false;
         this.error = '';
+        // Nếu thiếu careInstructions hoặc commonDiseases thì chỉ hiển thị thông tin cơ bản
+        if (!plant.careInstructions || !plant.commonDiseases) {
+          this.isLimitedInfo = true;
+        } else {
+          this.isLimitedInfo = false;
+        }
+        this.requiresAuth = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -111,10 +119,12 @@ export class PlantDetailComponent implements OnInit {
         if (err.status === 404) {
           this.handleError('Không tìm thấy thông tin cây với ID này');
         } else if (err.status === 403 || err.status === 401) {
+          // Nếu API trả về lỗi 401/403 thì yêu cầu đăng nhập
           this.handleError('', true);
         } else {
           this.handleError('Không thể tải thông tin cây. Vui lòng thử lại.');
         }
+        this.cdr.detectChanges();
       }
     });
   }

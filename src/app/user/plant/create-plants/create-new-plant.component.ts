@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CreateNewPlantService, CreatePlantRequest, Category } from './create-new-plant.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
@@ -14,6 +15,7 @@ import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigat
   templateUrl: './create-new-plant.component.html',
   styleUrls: ['./create-new-plant.component.scss']
 })
+
 export class CreateNewPlantComponent implements OnInit, OnDestroy {
   createPlantForm: FormGroup;
   categories: Category[] = [];
@@ -22,8 +24,8 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   isLoadingCategories = false;
   isUploadingImages = false;
-  
   private subscriptions: Subscription = new Subscription();
+  @ViewChild('imageUpload') imageUpload!: ElementRef<HTMLInputElement>;
 
   // Options cho dropdowns
   lightRequirements = [
@@ -79,41 +81,35 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
 
   loadCategories() {
     this.isLoadingCategories = true;
-    this.cdr.detectChanges(); // Trigger change detection
-    
     // Disable the select while loading
     this.createPlantForm.get('categoryId')?.disable();
-    
     const sub = this.createPlantService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
+      next: (categories: any) => {
+        // Nếu API trả về object, lấy property chứa array; nếu là array thì gán trực tiếp
+        if (Array.isArray(categories)) {
+          this.categories = categories;
+        } else if (categories && Array.isArray(categories.data)) {
+          this.categories = categories.data;
+        } else {
+          this.categories = [];
+        }
         this.isLoadingCategories = false;
-        this.cdr.detectChanges(); // Trigger change detection
-        // Re-enable the select when data is loaded
-        this.createPlantForm.get('categoryId')?.enable();
-        
-        // Show info message that we're using default categories (no need for warning)
-        console.info('Loaded', categories.length, 'categories successfully');
+        // Đẩy enable select sang tick tiếp theo để tránh lỗi ExpressionChangedAfterItHasBeenCheckedError
+        setTimeout(() => {
+          this.createPlantForm.get('categoryId')?.enable();
+        });
+        console.info('Loaded', this.categories.length, 'categories successfully');
       },
       error: (error) => {
         console.error('Error loading categories:', error);
-        // Provide default categories even if the observable fails completely
-        this.categories = [
-          { id: 1, name: 'Cây cảnh trong nhà', description: 'Các loại cây phù hợp trồng trong nhà' },
-          { id: 2, name: 'Cây cảnh ngoài trời', description: 'Các loại cây phù hợp trồng ngoài trời' },
-          { id: 3, name: 'Cây ăn quả', description: 'Các loại cây cho trái có thể ăn được' },
-          { id: 4, name: 'Cây thảo dược', description: 'Các loại cây có tính chất thảo dược' },
-          { id: 5, name: 'Cây hoa', description: 'Các loại cây có hoa đẹp' },
-          { id: 6, name: 'Cây sen đá', description: 'Các loại cây sen đá và cây mọng nước' }
-        ];
-        this.toastService.info('Sử dụng danh mục mặc định');
+        this.toastService.error('Không thể tải danh mục cây. Vui lòng thử lại sau.');
         this.isLoadingCategories = false;
-        this.cdr.detectChanges(); // Trigger change detection
-        // Re-enable the select even on error
-        this.createPlantForm.get('categoryId')?.enable();
+        // Đẩy enable select sang tick tiếp theo để tránh lỗi ExpressionChangedAfterItHasBeenCheckedError
+        setTimeout(() => {
+          this.createPlantForm.get('categoryId')?.enable();
+        });
       }
     });
-    
     this.subscriptions.add(sub);
   }
 
@@ -149,25 +145,29 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
   uploadImages(files: File[]) {
     this.isUploadingImages = true;
     this.cdr.detectChanges(); // Trigger change detection
-    
-    const uploadPromises = files.map(file => {
-      return this.createPlantService.uploadImage(file).toPromise()
-        .then(response => response?.url)
-        .catch(error => {
-          console.error('Upload error for file:', file.name, error);
-          this.toastService.error(`Không thể upload ${file.name}`);
-          return null;
-        });
-    });
 
-    Promise.all(uploadPromises).then(urls => {
-      const validUrls = urls.filter(url => url !== null) as string[];
+    const uploadObservables = files.map(file =>
+      this.createPlantService.uploadImage(file).pipe(
+        catchError((error: any) => {
+          this.toastService.error(`Không thể upload ${file.name}`);
+          return of({ url: null });
+        })
+      )
+    );
+
+    forkJoin(uploadObservables).subscribe((results: any[]) => {
+      const validUrls = results.map((r: any) => r.url).filter((url: any) => url !== null) as string[];
       this.imageUrls = [...this.imageUrls, ...validUrls];
       this.isUploadingImages = false;
-      this.cdr.detectChanges(); // Trigger change detection
-      
+      this.cdr.detectChanges();
+
+      // Reset input file để tránh double upload dialog
+      if (this.imageUpload && this.imageUpload.nativeElement) {
+        this.imageUpload.nativeElement.value = '';
+      }
+
       if (validUrls.length > 0) {
-        const isUsingMockUrls = validUrls.some(url => url.includes('picsum.photos'));
+        const isUsingMockUrls = validUrls.some((url: any) => url.includes('picsum.photos'));
         if (isUsingMockUrls) {
           this.toastService.info(`Đã thêm ${validUrls.length} ảnh (sử dụng ảnh demo)`);
         } else {
@@ -202,35 +202,41 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
       imageUrls: this.imageUrls
     };
 
-    const sub = this.createPlantService.createNewPlant(plantData).subscribe({
-      next: (response) => {
-        console.log('Plant created successfully:', response);
-        this.toastService.success('Tạo cây mới thành công!');
-        this.isSubmitting = false;
-        
-        // Reset form
-        this.createPlantForm.reset();
-        this.imageUrls = [];
-        this.selectedImages = [];
-        
-        // Hỏi user muốn đi đâu tiếp theo
-        this.showSuccessOptions(response);
-      },
-      error: (error) => {
-        console.error('Error creating plant:', error);
-        this.isSubmitting = false;
-        
-        if (error.status === 400) {
-          this.toastService.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại');
-        } else if (error.status === 403) {
-          this.toastService.error('Bạn không có quyền tạo cây mới');
-        } else {
-          this.toastService.error('Không thể tạo cây mới. Vui lòng thử lại');
-        }
-      }
-    });
-
-    this.subscriptions.add(sub);
+        const sub = this.createPlantService.createNewPlant(plantData).subscribe({
+          next: (response) => {
+            // Nếu backend trả về status 400 hoặc có message lỗi, không báo thành công
+            const statusNum = Number(response?.status);
+            if (
+              (response && !isNaN(statusNum) && statusNum >= 400 && response.message) ||
+              (response && !isNaN(statusNum) && statusNum === 400)
+            ) {
+              this.isSubmitting = false;
+              this.toastService.error(response.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại');
+              return;
+            }
+            this.toastService.success('Tạo cây mới thành công!');
+            this.isSubmitting = false;
+            // Reset form
+            this.createPlantForm.reset();
+            this.imageUrls = [];
+            this.selectedImages = [];
+            // Hỏi user muốn đi đâu tiếp theo
+            this.showSuccessOptions(response);
+          },
+          error: (error) => {
+            this.isSubmitting = false;
+            if (error && error.error && error.error.message) {
+              this.toastService.error(error.error.message);
+            } else if (error.status === 400) {
+              this.toastService.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại');
+            } else if (error.status === 403) {
+              this.toastService.error('Bạn không có quyền tạo cây mới');
+            } else {
+              this.toastService.error('Không thể tạo cây mới. Vui lòng thử lại');
+            }
+          }
+        });
+        this.subscriptions.add(sub);
   }
 
   private markFormGroupTouched() {

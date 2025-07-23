@@ -26,10 +26,6 @@
       <input type="text" [(ngModel)]="phoneNumber" name="phoneNumber" required />
     </div>
     <div class="form-group">
-      <label>Môi trường sống</label>
-      <input type="text" [(ngModel)]="livingEnvironment" name="livingEnvironment" required />
-    </div>
-    <div class="form-group">
       <label>Giới tính</label>
       <select [(ngModel)]="gender" name="gender" required>
         <option value="male">Nam</option>
@@ -42,6 +38,7 @@
       <select [(ngModel)]="roleId" name="roleId" required>
         <option [ngValue]="1">Admin</option>
         <option [ngValue]="2">Staff</option>
+        <option [ngValue]="5">Expert</option>
       </select>
     </div>
     <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>

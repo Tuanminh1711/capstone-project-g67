@@ -59,6 +59,15 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
     { value: 'DIFFICULT', label: 'Khó chăm sóc' }
   ];
 
+  // trackBy functions for *ngFor
+  trackByCategoryId(index: number, item: PlantCategory) {
+    return item.id;
+  }
+
+  trackByOptionValue(index: number, item: { value: string; label: string }) {
+    return item.value;
+  }
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -106,7 +115,9 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
 
   private async loadCategories(): Promise<void> {
     try {
-      this.categories = await this.createPlantService.getCategories();
+      const res = await this.createPlantService.getCategories();
+      this.categories = Array.isArray(res) ? res : (res as any).data;
+      this.cdr.detectChanges();
     } catch (error) {
       this.toastService.error('Không thể tải danh sách danh mục');
       // Fallback categories

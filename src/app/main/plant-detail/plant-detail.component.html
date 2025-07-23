@@ -17,153 +17,148 @@
       {{ error }}
       <button class="retry-btn" (click)="reloadPlantDetail()">Thử lại</button>
     </div>
-    <!-- Loading state -->
-    <div *ngIf="loading" class="status-msg loading">
-      <span>Đang tải dữ liệu cây...</span>
-    </div>
     <!-- Error state -->
     <div *ngIf="!loading && error" class="status-msg error">
       {{ error }}
       <button class="retry-btn" (click)="reloadPlantDetail()">Thử lại</button>
     </div>
     <!-- Plant detail content -->
-    <div *ngIf="!loading && !error && plant" class="plant-detail">
-    <!-- Loading state -->
-    <div *ngIf="!plant && !error && !requiresAuth" class="status-msg loading">
-      <span>Đang tải dữ liệu cây...</span>
-    </div>
-      <div *ngIf="isLimitedInfo" class="limited-info-notice">
-        <div class="notice-content">
-          <span>ℹ️ Đang hiển thị thông tin cơ bản. <a (click)="openLoginDialog(); $event.stopPropagation(); $event.preventDefault()" class="login-link">Đăng nhập</a> để xem thông tin chi tiết đầy đủ.</span>
-        </div>
-      </div>
-      <!-- Card dưới: 2 card chia đều thông tin -->
-      <div class="plant-detail-cards modern">
-        <!-- Card trái: Ảnh, tên, trạng thái, mô tả, meta -->
-        <div class="plant-detail-card modern left-card">
-          <div class="plant-info-image modern">
-            <div class="main-image">
-              <div class="image-wrapper modern">
-                <img [src]="selectedImage || plant.imageUrls[0] || '/assets/image/logo.png'" [alt]="plant.commonName" class="plant-img modern" />
-              </div>
-            </div>
-          </div>
-          <div class="plant-info-main modern">
-            <h1 class="plant-name modern">
-              {{ plant.commonName }}
-              <span *ngIf="plant.status === 'INACTIVE'" class="plant-warning-icon" title="Cây này đang được xác thực thông tin bởi hệ thống">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-                  <circle cx="10" cy="10" r="10" fill="#ffe066"/>
-                  <path d="M10 5v5.5" stroke="#bfa100" stroke-width="1.6" stroke-linecap="round"/>
-                  <circle cx="10" cy="14.2" r="1.1" fill="#bfa100"/>
-                </svg>
-              </span>
-            </h1>
-            <p class="plant-scientific modern">({{ plant.scientificName }})</p>
-            <div class="plant-tags modern">
-              <span class="plant-category modern">
-                <span class="category-icon">🏷️</span>
-                {{ plant.categoryName }}
-              </span>
-              
-            </div>
-            <div class="action-buttons modern">
-              <button class="add-to-collection-btn modern" (click)="addToCollection()" title="Thêm cây này vào bộ sưu tập của bạn">
-                <span class="btn-icon">🌱</span>
-                <span class="btn-text">Thêm vào bộ sưu tập</span>
-              </button>
-              <button *ngIf="!isLimitedInfo && plant" class="report-btn modern" [routerLink]="['/user/report-plant', plant.id]" title="Báo cáo thông tin sai">
-                <span class="btn-icon">🚩</span>
-                <span class="btn-text">Báo cáo</span>
-              </button>
-            </div>
-          </div>
-          <div class="section-header modern">
-            <h3><span class="section-icon">📝</span> Mô tả chi tiết</h3>
-          </div>
-          <div class="description-content modern">
-            <p>{{ plant.description || 'Chưa có mô tả chi tiết cho loại cây này.' }}</p>
-          </div>
-          <div class="plant-meta modern" *ngIf="plant.createdAt">
-            <div class="meta-item">
-              <span class="meta-icon">📅</span>
-              <span class="meta-label">Ngày tạo:</span>
-              <span class="meta-value">{{ formatDate(plant.createdAt) }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-icon">🔄</span>
-              <span class="meta-label">Cập nhật gần nhất:</span>
-              <span class="meta-value">{{ formatDate(plant.createdAt) }}</span>
-            </div>
+    <ng-container *ngIf="!loading && !error && plant">
+      <ng-container *ngIf="isLimitedInfo; else fullDetail">
+        <div class="limited-info-notice">
+          <div class="notice-content">
+            <span>ℹ️ Đang hiển thị thông tin cơ bản. <a (click)="openLoginDialog(); $event.stopPropagation(); $event.preventDefault()" class="login-link">Đăng nhập</a> để xem thông tin chi tiết đầy đủ.</span>
           </div>
         </div>
-        <!-- Card phải: Yêu cầu chăm sóc, hướng dẫn, bệnh -->
-        <div class="plant-detail-card modern right-card">
-          <div class="section-header modern">
-            <h3><span class="section-icon">🌿</span> Yêu cầu chăm sóc</h3>
-          </div>
-          <div class="care-requirements modern">
-            <div class="care-grid modern">
-              <div class="care-item light-care modern">
-                <div class="care-icon-wrapper modern">
-                  <div class="care-icon">☀️</div>
-                  <div class="care-indicator light-indicator"></div>
-                </div>
-                <div class="care-info modern">
-                  <span class="care-label">Ánh sáng</span>
-                  <span class="care-value">{{ plantUiHelper.translateLightRequirement(plant.lightRequirement) }}</span>
-                  <div class="care-tips">Vị trí: {{ plantUiHelper.getLightPosition(plant.lightRequirement) }}</div>
-                </div>
-              </div>
-              <div class="care-item water-care modern">
-                <div class="care-icon-wrapper modern">
-                  <div class="care-icon">💧</div>
-                  <div class="care-indicator water-indicator"></div>
-                </div>
-                <div class="care-info modern">
-                  <span class="care-label">Nước</span>
-                  <span class="care-value">{{ plantUiHelper.translateWaterRequirement(plant.waterRequirement) }}</span>
-                  <div class="care-tips">Tần suất: {{ plantUiHelper.getWaterFrequency(plant.waterRequirement) }}</div>
-                </div>
-              </div>
-              <div class="care-item difficulty-care modern">
-                <div class="care-icon-wrapper modern">
-                  <div class="care-icon">🌱</div>
-                  <div class="care-indicator" [class]="plantUiHelper.getDifficultyClass(plant.careDifficulty)"></div>
-                </div>
-                <div class="care-info modern">
-                  <span class="care-label">Độ khó</span>
-                  <span class="care-value">{{ plantUiHelper.translateCareDifficulty(plant.careDifficulty) }}</span>
-                  <div class="care-tips">{{ plantUiHelper.getDifficultyTip(plant.careDifficulty) }}</div>
-                </div>
-              </div>
-              <div class="care-item location-care modern" *ngIf="plant.suitableLocation">
-                <div class="care-icon-wrapper modern">
-                  <div class="care-icon">🏠</div>
-                  <div class="care-indicator location-indicator"></div>
-                </div>
-                <div class="care-info modern">
-                  <span class="care-label">Vị trí phù hợp</span>
-                  <span class="care-value">{{ plant.suitableLocation }}</span>
-                  <div class="care-tips">Môi trường lý tưởng</div>
+      </ng-container>
+      <ng-template #fullDetail>
+        <div class="plant-detail-cards modern">
+          <!-- Card trái: Ảnh, tên, trạng thái, mô tả, meta -->
+          <div class="plant-detail-card modern left-card">
+            <div class="plant-info-image modern">
+              <div class="main-image">
+                <div class="image-wrapper modern">
+                  <img [src]="selectedImage || plant.imageUrls[0] || '/assets/image/logo.png'" [alt]="plant.commonName" class="plant-img modern" />
                 </div>
               </div>
             </div>
+            <div class="plant-info-main modern">
+              <h1 class="plant-name modern">
+                {{ plant.commonName }}
+                <span *ngIf="plant.status === 'INACTIVE'" class="plant-warning-icon" title="Cây này đang được xác thực thông tin bởi hệ thống">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                    <circle cx="10" cy="10" r="10" fill="#ffe066"/>
+                    <path d="M10 5v5.5" stroke="#bfa100" stroke-width="1.6" stroke-linecap="round"/>
+                    <circle cx="10" cy="14.2" r="1.1" fill="#bfa100"/>
+                  </svg>
+                </span>
+              </h1>
+              <p class="plant-scientific modern">({{ plant.scientificName }})</p>
+              <div class="plant-tags modern">
+                <span class="plant-category modern">
+                  <span class="category-icon">🏷️</span>
+                  {{ plant.categoryName }}
+                </span>
+                
+              </div>
+              <div class="action-buttons modern">
+                <button class="add-to-collection-btn modern" (click)="addToCollection()" title="Thêm cây này vào bộ sưu tập của bạn">
+                  <span class="btn-icon">🌱</span>
+                  <span class="btn-text">Thêm vào bộ sưu tập</span>
+                </button>
+                <button class="report-btn modern" [routerLink]="['/user/report-plant', plant.id]" title="Báo cáo thông tin sai">
+                  <span class="btn-icon">🚩</span>
+                  <span class="btn-text">Báo cáo</span>
+                </button>
+              </div>
+            </div>
+            <div class="section-header modern">
+              <h3><span class="section-icon">📝</span> Mô tả chi tiết</h3>
+            </div>
+            <div class="description-content modern">
+              <p>{{ plant.description || 'Chưa có mô tả chi tiết cho loại cây này.' }}</p>
+            </div>
+            <div class="plant-meta modern" *ngIf="plant.createdAt">
+              <div class="meta-item">
+                <span class="meta-icon">📅</span>
+                <span class="meta-label">Ngày tạo:</span>
+                <span class="meta-value">{{ formatDate(plant.createdAt) }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">🔄</span>
+                <span class="meta-label">Cập nhật gần nhất:</span>
+                <span class="meta-value">{{ formatDate(plant.createdAt) }}</span>
+              </div>
+            </div>
           </div>
-          <div class="section-header modern" *ngIf="plant.careInstructions && !isLimitedInfo">
-            <h3><span class="section-icon">📋</span> Hướng dẫn chăm sóc chi tiết</h3>
-          </div>
-          <div class="instructions-content modern" *ngIf="plant.careInstructions && !isLimitedInfo">
-            <p>{{ plant.careInstructions }}</p>
-          </div>
-          <div class="section-header modern" *ngIf="plant.commonDiseases && !isLimitedInfo">
-            <h3><span class="section-icon">🩺</span> Bệnh thường gặp</h3>
-          </div>
-          <div class="diseases-content modern" *ngIf="plant.commonDiseases && !isLimitedInfo">
-            <p>{{ plant.commonDiseases }}</p>
+          <!-- Card phải: Yêu cầu chăm sóc, hướng dẫn, bệnh -->
+          <div class="plant-detail-card modern right-card">
+            <div class="section-header modern">
+              <h3><span class="section-icon">🌿</span> Yêu cầu chăm sóc</h3>
+            </div>
+            <div class="care-requirements modern">
+              <div class="care-grid modern">
+                <div class="care-item light-care modern">
+                  <div class="care-icon-wrapper modern">
+                    <div class="care-icon">☀️</div>
+                    <div class="care-indicator light-indicator"></div>
+                  </div>
+                  <div class="care-info modern">
+                    <span class="care-label">Ánh sáng</span>
+                    <span class="care-value">{{ plantUiHelper.translateLightRequirement(plant.lightRequirement) }}</span>
+                    <div class="care-tips">Vị trí: {{ plantUiHelper.getLightPosition(plant.lightRequirement) }}</div>
+                  </div>
+                </div>
+                <div class="care-item water-care modern">
+                  <div class="care-icon-wrapper modern">
+                    <div class="care-icon">💧</div>
+                    <div class="care-indicator water-indicator"></div>
+                  </div>
+                  <div class="care-info modern">
+                    <span class="care-label">Nước</span>
+                    <span class="care-value">{{ plantUiHelper.translateWaterRequirement(plant.waterRequirement) }}</span>
+                    <div class="care-tips">Tần suất: {{ plantUiHelper.getWaterFrequency(plant.waterRequirement) }}</div>
+                  </div>
+                </div>
+                <div class="care-item difficulty-care modern">
+                  <div class="care-icon-wrapper modern">
+                    <div class="care-icon">🌱</div>
+                    <div class="care-indicator" [class]="plantUiHelper.getDifficultyClass(plant.careDifficulty)"></div>
+                  </div>
+                  <div class="care-info modern">
+                    <span class="care-label">Độ khó</span>
+                    <span class="care-value">{{ plantUiHelper.translateCareDifficulty(plant.careDifficulty) }}</span>
+                    <div class="care-tips">{{ plantUiHelper.getDifficultyTip(plant.careDifficulty) }}</div>
+                  </div>
+                </div>
+                <div class="care-item location-care modern" *ngIf="plant.suitableLocation">
+                  <div class="care-icon-wrapper modern">
+                    <div class="care-icon">🏠</div>
+                    <div class="care-indicator location-indicator"></div>
+                  </div>
+                  <div class="care-info modern">
+                    <span class="care-label">Vị trí phù hợp</span>
+                    <span class="care-value">{{ plant.suitableLocation }}</span>
+                    <div class="care-tips">Môi trường lý tưởng</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-header modern" *ngIf="plant.careInstructions">
+              <h3><span class="section-icon">📋</span> Hướng dẫn chăm sóc chi tiết</h3>
+            </div>
+            <div class="instructions-content modern" *ngIf="plant.careInstructions">
+              <p>{{ plant.careInstructions }}</p>
+            </div>
+            <div class="section-header modern" *ngIf="plant.commonDiseases">
+              <h3><span class="section-icon">🩺</span> Bệnh thường gặp</h3>
+            </div>
+            <div class="diseases-content modern" *ngIf="plant.commonDiseases">
+              <p>{{ plant.commonDiseases }}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </ng-template>
+    </ng-container>
   </div>
 </div>

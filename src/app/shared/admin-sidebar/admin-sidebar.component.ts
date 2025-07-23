@@ -39,7 +39,7 @@ export class AdminSidebarComponent {
       open: false,
       items: [
         { label: 'Danh sách báo cáo', link: '/admin/reports' },
-        { label: 'Quản lý ticket', link: '/admin/support/tickets' }
+        { label: 'Danh sách ticket', link: '/admin/support/tickets' }
       ]
     },
     {

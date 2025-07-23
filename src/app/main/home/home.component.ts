@@ -9,7 +9,7 @@ import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [NgFor, NgIf, TopNavigatorComponent],
+  imports: [TopNavigatorComponent],
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })

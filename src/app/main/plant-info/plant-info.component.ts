@@ -1,3 +1,5 @@
+
+
 import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
@@ -7,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, filter } from 'rxjs';
 import { PlantDataService } from '../../shared/plant-data.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 interface Plant {
   id: number;
@@ -23,6 +26,7 @@ interface Plant {
   status: string;
   imageUrls: string[];
   createdAt: string | null;
+  reportCount?: number; // số lần bị báo cáo
 }
 
 @Component({
@@ -33,6 +37,7 @@ interface Plant {
   styleUrl: './plant-info.scss'
 })
 export class PlantInfoComponent implements OnInit, OnDestroy {
+  private toast: ToastService;
   private plantsSubject = new BehaviorSubject<Plant[]>([]);
   plants$ = this.plantsSubject.asObservable();
 
@@ -43,6 +48,17 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
   // Getter cho template sử dụng các biến phân trang
   get totalPages() {
     return this.pageState.totalPages;
+  }
+
+  /**
+   * Trả về màu cảnh báo dựa trên số lượng report (reportCount)
+   * 0: xanh lá, 1-2: vàng, 3-4: cam, >=5: đỏ
+   */
+  getWarningColor(reportCount: number): string {
+    if (!reportCount || reportCount <= 0) return '#4caf50'; // xanh lá
+    if (reportCount <= 2) return '#ffc107'; // vàng
+    if (reportCount <= 4) return '#ff9800'; // cam
+    return '#f44336'; // đỏ
   }
   get currentPage() {
     return this.pageState.currentPage;
@@ -75,8 +91,10 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private plantDataService: PlantDataService
+    private plantDataService: PlantDataService,
+    toast: ToastService
   ) {
+    this.toast = toast;
     // Listen for navigation events to refresh data when coming from create page
     this.navigationSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -197,9 +215,13 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     const currentPlants = this.plantsSubject.value;
     const selectedPlant = currentPlants.find(p => p.id === plantId);
     if (selectedPlant) {
+      if (selectedPlant.status === 'INACTIVE') {
+        this.toast.show('Cây này đang bị khóa để kiểm tra bởi hệ thống', 'warning');
+        return;
+      }
       this.plantDataService.setSelectedPlant(selectedPlant);
+      this.router.navigate(['/plant-info/detail', plantId]);
     }
-    this.router.navigate(['/plant-info/detail', plantId]);
   }
 
   forceRefresh(): void {

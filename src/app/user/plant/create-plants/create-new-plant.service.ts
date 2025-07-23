@@ -75,31 +75,8 @@ export class CreateNewPlantService {
    * Lấy danh sách categories
    */
   getCategories(): Observable<Category[]> {
-    // Provide default categories immediately to avoid API call that's failing
-    const defaultCategories: Category[] = [
-      { id: 1, name: 'Cây cảnh trong nhà', description: 'Các loại cây phù hợp trồng trong nhà' },
-      { id: 2, name: 'Cây cảnh ngoài trời', description: 'Các loại cây phù hợp trồng ngoài trời' },
-      { id: 3, name: 'Cây ăn quả', description: 'Các loại cây cho trái có thể ăn được' },
-      { id: 4, name: 'Cây thảo dược', description: 'Các loại cây có tính chất thảo dược' },
-      { id: 5, name: 'Cây hoa', description: 'Các loại cây có hoa đẹp' },
-      { id: 6, name: 'Cây sen đá', description: 'Các loại cây sen đá và cây mọng nước' }
-    ];
-
-    // Try API first, fallback to default if fails
-    return this.http.get<Category[]>('/api/categories').pipe(
-      catchError(error => {
-        console.warn('Categories API not available, using default categories:', error.message);
-        return of(defaultCategories);
-      }),
-      // Add timeout to prevent hanging
-      tap(categories => {
-        if (categories === defaultCategories) {
-          console.info('Using default categories due to API unavailability');
-        } else {
-          console.info('Successfully loaded categories from API');
-        }
-      })
-    );
+    // Chỉ lấy danh mục từ API thật
+    return this.http.get<Category[]>('/api/plants/categories');
   }
 
   /**

@@ -18,24 +18,24 @@
       <a class="nav-link" routerLink="/about-us" (click)="closeMobileMenu()">Về chúng tôi</a>
     </div>
     <div class="nav-actions">
-      <span class="nav-icon notification">
-        <span class="material-icons">notifications</span>
-      </span>
-      
-      <span class="nav-icon support-dropdown" tabindex="0" [class.show-dropdown]="isSupportDropdownOpen">
-        <span class="fa fa-headset" (click)="toggleSupportDropdown($event)"></span>
-        <div class="support-dropdown-menu" (click)="$event.stopPropagation()">
-          <a class="dropdown-item" (click)="openSendTicketDialog(); closeSupportDropdown()">
-            <i class="fa fa-plus-circle"></i>
-            <span>Gửi thư hỗ trợ</span>
-          </a>
-          <a class="dropdown-item" routerLink="/user/my-tickets" (click)="closeSupportDropdown()">
-            <i class="fa fa-list-ul"></i>
-            <span>Xem thư đã gửi</span>
-          </a>
-        </div>
-      </span>
-      
+      @if (isLoggedIn) {
+        <span class="nav-icon notification">
+          <span class="material-icons">notifications</span>
+        </span>
+        <span class="nav-icon support-dropdown" tabindex="0" [class.show-dropdown]="isSupportDropdownOpen">
+          <span class="fa fa-headset" (click)="toggleSupportDropdown($event)"></span>
+          <div class="support-dropdown-menu" (click)="$event.stopPropagation()">
+            <a class="dropdown-item" (click)="openSendTicketDialog(); closeSupportDropdown()">
+              <i class="fa fa-plus-circle"></i>
+              <span>Gửi thư hỗ trợ</span>
+            </a>
+            <a class="dropdown-item" routerLink="/user/my-tickets" (click)="closeSupportDropdown()">
+              <i class="fa fa-list-ul"></i>
+              <span>Xem thư đã gửi</span>
+            </a>
+          </div>
+        </span>
+      }
       <span class="nav-icon user" tabindex="0" [class.show-dropdown]="showUserMenu">
         <span class="material-icons" (click)="toggleUserMenu($event)">account_circle</span>
         @if (showUserMenu) {

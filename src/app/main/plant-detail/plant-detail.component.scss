@@ -1,7 +1,27 @@
 @use '../../../styles/variables' as *;
 
+// Tooltip hover: đơn giản, nhỏ gọn, dễ nhìn
+.plant-tooltip {
+  font-size: 0.97rem;
+  font-weight: 400;
+  font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
+  background: #f8fafc;
+  color: #059669;
+  border-radius: 8px;
+  padding: 7px 14px;
+  box-shadow: 0 2px 8px rgba(16,185,129,0.10);
+  border: 1px solid #bbf7d0;
+  max-width: 320px;
+  line-height: 1.5;
+  z-index: 20;
+  transition: opacity 0.18s;
+}
+
 .plant-detail-container {
   background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f8fafc 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .plant-detail-content {
@@ -11,6 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
+  flex: 1 0 auto;
 }
 
 // Card info trên cùng

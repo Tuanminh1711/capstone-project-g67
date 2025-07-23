@@ -1,4 +1,4 @@
-import { environment } from '../../../../environments/environment';
+import { environment } from 'environments/environment';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,6 +29,7 @@ export class PlantCareReminderSetupComponent {
   ];
 
   form: FormGroup;
+  newCareTypeId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -39,8 +40,13 @@ export class PlantCareReminderSetupComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
-      schedules: this.fb.array([])
+      schedules: this.fb.array([]),
+      newCareTypeId: [null]
     });
+  }
+
+  openGuide() {
+    this.router.navigate(['/huong-dan-nhac-nho']);
   }
 
   ngOnInit() {
@@ -50,19 +56,36 @@ export class PlantCareReminderSetupComponent {
     }
   }
 
+  get hasWaterReminder(): boolean {
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 1);
+  }
+  get hasFertilizerReminder(): boolean {
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 2);
+  }
+  get hasPestReminder(): boolean {
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 3);
+  }
+
   get schedules() {
     return this.form.get('schedules') as FormArray;
   }
 
-  addSchedule() {
+  addSchedule(careTypeId?: number) {
+    const typeId = careTypeId || 1;
     this.schedules.push(this.fb.group({
-      careTypeId: [1, Validators.required],
+      careTypeId: [typeId, Validators.required],
       enabled: [true],
       frequencyDays: [1, [Validators.required, Validators.min(1)]],
       reminderTime: ['08:00', Validators.required],
       customMessage: ['', Validators.maxLength(100)],
       startDate: [new Date().toISOString().slice(0,10), Validators.required]
     }));
+    this.form.get('newCareTypeId')?.setValue(null);
+  }
+
+  getCareTypeName(id: number): string {
+    const found = this.careTypes.find(t => t.id === id);
+    return found ? found.name : 'Lịch nhắc';
   }
 
   removeSchedule(i: number) {

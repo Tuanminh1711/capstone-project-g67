@@ -24,7 +24,7 @@
           <div class="avatar-upload-area">
             <div class="avatar-preview">
               <ng-container *ngIf="userProfile; else avatarPlaceholder">
-                <img *ngIf="userProfile.avatar" [src]="getAvatarUrl(userProfile.avatar)" alt="Avatar" (error)="onAvatarError($event)" />
+                <img *ngIf="userProfile.avatar" [src]="userProfile.avatar" alt="Avatar" />
                 <div *ngIf="!userProfile.avatar" class="avatar-initial">
                   {{ userProfile.fullName ? userProfile.fullName.charAt(0).toUpperCase() : '👤' }}
                 </div>

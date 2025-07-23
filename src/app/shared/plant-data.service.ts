@@ -36,13 +36,38 @@ export class PlantDataService {
    */
   setSelectedPlant(plant: Plant): void {
     this.selectedPlantSubject.next(plant);
+    try {
+      localStorage.setItem('selectedPlant', JSON.stringify(plant));
+    } catch {}
   }
 
   /**
    * Lấy cây được chọn
    */
   getSelectedPlant(): Plant | null {
-    return this.selectedPlantSubject.value;
+    const current = this.selectedPlantSubject.value;
+    if (current) return current;
+    // Nếu chưa có trong subject, thử lấy từ localStorage
+    try {
+      const raw = localStorage.getItem('selectedPlant');
+      if (raw) {
+        const plant = JSON.parse(raw);
+        // Validate dữ liệu: phải có id
+        if (!plant || typeof plant.id !== 'number') {
+          this.clearData();
+          return null;
+        }
+        // Đảm bảo imageUrls luôn là mảng
+        if (!Array.isArray(plant.imageUrls)) {
+          plant.imageUrls = [];
+        }
+        this.selectedPlantSubject.next(plant);
+        return plant;
+      }
+    } catch {
+      this.clearData();
+    }
+    return null;
   }
 
   /**
@@ -66,5 +91,8 @@ export class PlantDataService {
   clearData(): void {
     this.selectedPlantSubject.next(null);
     this.plantsListSubject.next([]);
+    try {
+      localStorage.removeItem('selectedPlant');
+    } catch {}
   }
 }

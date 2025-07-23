@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AuthService } from '../../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule, NgIf, NgForOf } from '@angular/common';
@@ -56,12 +57,19 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {
     super();
   }
 
   ngOnInit() {
+    // Check role before loading data
+    const role = this.authService.getCurrentUserRole();
+    if (role !== 'ADMIN') {
+      this.router.navigate(['/login']);
+      return;
+    }
     // Load plants immediately if not already loaded
     if (!this.dataLoaded) {
       this.fetchPlants(0, '');

@@ -1,3 +1,67 @@
+// Card for daily totals table
+.daily-totals-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(178, 223, 219, 0.18);
+  padding: 24px 18px;
+  margin-top: 32px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.daily-totals-title {
+  color: #178a4c;
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.daily-totals-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(178, 223, 219, 0.10);
+  font-size: 1rem;
+}
+
+.daily-totals-table th, .daily-totals-table td {
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.daily-totals-table th {
+  background: #e8f5e9;
+  color: #178a4c;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+}
+
+.daily-totals-table tr {
+  transition: background 0.2s;
+}
+
+.daily-totals-table tr:nth-child(even) {
+  background: #f4f8f6;
+}
+
+.daily-totals-table td {
+  color: #1976d2;
+  font-weight: 500;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.daily-totals-table tr.today-row {
+  background: #fffde7 !important;
+  font-weight: bold;
+  color: #d84315;
+}
 .total-users-statistics-container {
   display: flex;
   flex-direction: column;

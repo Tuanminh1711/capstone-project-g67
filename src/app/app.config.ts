@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes, 
       withRouterConfig({
-        onSameUrlNavigation: 'reload'        // ✅ Cần thiết để reload component khi URL giống nhau
+        onSameUrlNavigation: 'reload'        
       })
     ),
     provideClientHydration(withEventReplay()),
