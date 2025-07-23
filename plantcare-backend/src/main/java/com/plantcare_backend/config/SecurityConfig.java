@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/support/**").authenticated()
                                 .requestMatchers("/api/user-plants/**").permitAll()
                                 .requestMatchers("/api/chat/**").authenticated()
+                                .requestMatchers("/api/plant-care/").authenticated()
                                 .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket").permitAll()
 
 //                                .requestMatchers(HttpMethod.DELETE, "/api/user-plants/delete/**").authenticated()

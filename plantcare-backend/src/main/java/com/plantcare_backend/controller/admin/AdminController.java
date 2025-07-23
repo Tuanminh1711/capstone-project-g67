@@ -41,7 +41,6 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
-    private final PlantService plantService;
 
     /**
      * Creates a new user account in the system.
