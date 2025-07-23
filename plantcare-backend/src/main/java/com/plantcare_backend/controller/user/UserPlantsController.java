@@ -34,8 +34,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserPlantsController {
     private final UserPlantsService userPlantsService;
 
-    @Operation(method = "POST", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
-    @PostMapping("/search")
+    @Operation(method = "GET", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
+    @GetMapping("/search")
     public ResponseData<UserPlantsSearchResponseDTO> searchUserPlants(@Valid @ModelAttribute UserPlantsSearchRequestDTO request, HttpServletRequest httpRequest) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         if (userId == null) {
