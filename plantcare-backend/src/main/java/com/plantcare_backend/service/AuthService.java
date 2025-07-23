@@ -17,4 +17,6 @@ public interface AuthService {
     ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, Integer userId);
 
     LoginResponse loginForAdminOrStaff(LoginRequestDTO loginRequestDTO, HttpServletRequest request);
+
+    LoginResponse loginForExpert(LoginRequestDTO loginRequestDTO, HttpServletRequest request);
 }

@@ -48,9 +48,9 @@ public class AdminController {
      *
      * @param userRequestDTO Contains the user details including username and password (must be valid).
      * @return ResponseData containing:
-     *            - HTTP 201 (Created) status with new user's ID if successful.
-     *            - HTTP 400 (Bad Request) status with error message if creation fails.
-     *  @throws Exception If any unexpected error occurs during user creation.
+     * - HTTP 201 (Created) status with new user's ID if successful.
+     * - HTTP 400 (Bad Request) status with error message if creation fails.
+     * @throws Exception If any unexpected error occurs during user creation.
      */
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
     @PostMapping(value = "/adduser")
@@ -62,12 +62,11 @@ public class AdminController {
             return new ResponseData<>(HttpStatus.CREATED.value(), Translator.toLocale("user.add.success"), userId);
         } catch (Exception e) {
             log.error("add user failed", e);
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Add user fail");
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
     }
 
     /**
-     *
      * @param pageNo
      * @param pageSize
      * @return
@@ -89,7 +88,6 @@ public class AdminController {
     }
 
     /**
-     *
      * @param userId
      * @return
      */
@@ -107,7 +105,6 @@ public class AdminController {
     }
 
     /**
-     *
      * @param userId
      * @param changeUserStatusRequestDTO
      * @return
@@ -158,7 +155,6 @@ public class AdminController {
     }
 
     /**
-     *
      * @param userId
      * @param pageNo
      * @param pageSize
@@ -180,7 +176,7 @@ public class AdminController {
     /**
      * update user by admin.
      *
-     * @param id id of user update.
+     * @param id             id of user update.
      * @param userRequestDTO entity of user update.
      * @return profile new of user.
      */
@@ -192,7 +188,6 @@ public class AdminController {
     }
 
     /**
-     *
      * @param userId
      * @return
      */
@@ -230,49 +225,6 @@ public class AdminController {
             return new ResponseData<>(HttpStatus.OK.value(), "Total plants by status retrieved successfully", total);
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get total plants by status");
-        }
-    }
-
-    /**
-     *
-     *
-     * @param pageNo
-     * @param pageSize
-     * @return
-     */
-    @GetMapping("/plants")
-    public ResponseData<List<Plants>> getAllPlants(
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        try {
-            List<Plants> plants = adminService.getAllPlants(pageNo, pageSize);
-            return new ResponseData<>(HttpStatus.OK.value(), "Plants retrieved successfully", plants);
-        } catch (Exception e) {
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get plants");
-        }
-    }
-
-    @Operation(method = "POST", summary = "Create new plant", description = "Admin creates a new plant in the system")
-    @PostMapping("/createplants")
-    public ResponseData<Long> createPlant(@Valid @RequestBody CreatePlantRequestDTO createPlantRequestDTO) {
-        log.info("Admin request to create new plant: {}", createPlantRequestDTO.getScientificName());
-
-        try {
-            Long plantId = plantService.createPlant(createPlantRequestDTO);
-            return new ResponseData<>(
-                    HttpStatus.CREATED.value(),
-                    Translator.toLocale("plant.create.success"),
-                    plantId
-            );
-        } catch (ResourceNotFoundException e) {
-            log.error("Category not found for plant creation", e);
-            return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-        } catch (InvalidDataException e) {
-            log.error("Invalid data for plant creation", e);
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-        } catch (Exception e) {
-            log.error("Create plant failed", e);
-            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Create plant failed");
         }
     }
 

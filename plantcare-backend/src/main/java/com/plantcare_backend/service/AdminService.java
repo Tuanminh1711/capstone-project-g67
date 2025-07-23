@@ -1,7 +1,6 @@
 package com.plantcare_backend.service;
 
 
-
 import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
 import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
@@ -36,7 +35,6 @@ public interface AdminService {
 
     long getTotalPlantsByStatus(Plants.PlantStatus status);
 
-    List<Plants> getAllPlants(int pageNo, int pageSize);
 
     /**
      * Searches for users based on the provided search criteria.

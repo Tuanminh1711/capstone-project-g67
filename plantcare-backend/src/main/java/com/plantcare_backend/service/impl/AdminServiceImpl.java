@@ -62,6 +62,15 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
+        if (userRepository.existsByUsername(userRequestDTO.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+        if (userProfileRepository.existsByPhone(userRequestDTO.getPhoneNumber())) {
+            throw new RuntimeException("Phone number already exists");
+        }
         try {
             Users user = Users.builder()
                     .username(userRequestDTO.getUsername())
@@ -98,7 +107,7 @@ public class AdminServiceImpl implements AdminService {
      * Updates basic information (email, status) and profile (full name, phone, gender)
      * for an existing user.
      *
-     * @param userId ID of the user to update
+     * @param userId         ID of the user to update
      * @param userRequestDTO DTO containing updated user and profile data
      * @throws RuntimeException if the user or profile is not found
      */
@@ -125,7 +134,7 @@ public class AdminServiceImpl implements AdminService {
      * Deletes a user by their ID.
      *
      * @param userId ID of the user to delete
-     * (Currently not implemented)
+     *               (Currently not implemented)
      */
     @Override
     public void deleteUser(int userId) {
@@ -166,7 +175,7 @@ public class AdminServiceImpl implements AdminService {
     /**
      * Retrieves a paginated list of all users with their detailed information.
      *
-     * @param pageNo Page number (starting from 0)
+     * @param pageNo   Page number (starting from 0)
      * @param pageSize Number of records per page
      * @return List of UserDetailResponse
      */
@@ -255,8 +264,8 @@ public class AdminServiceImpl implements AdminService {
     /**
      * Retrieves a paginated list of activity logs for a specific user.
      *
-     * @param userId ID of the user
-     * @param pageNo Page number
+     * @param userId   ID of the user
+     * @param pageNo   Page number
      * @param pageSize Number of logs per page
      * @return Page of UserActivityLogRequestDTO
      */
@@ -319,19 +328,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * Retrieves a paginated list of all plants.
-     *
-     * @param pageNo Page number
-     * @param pageSize Number of records per page
-     * @return List of Plants
-     */
-    @Override
-    public List<Plants> getAllPlants(int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        return plantRepository.findAll(pageable).getContent();
-    }
-
-    /**
      * Resets the password of a user to a new randomly generated one and sends it via email.
      *
      * @param userId ID of the user whose password is to be reset
@@ -349,7 +345,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     *
      * @param requestDTO
      * @return
      */
@@ -368,6 +363,7 @@ public class AdminServiceImpl implements AdminService {
         }
         return responseList;
     }
+
     /**
      * Generates a random 8-character alphanumeric password.
      *

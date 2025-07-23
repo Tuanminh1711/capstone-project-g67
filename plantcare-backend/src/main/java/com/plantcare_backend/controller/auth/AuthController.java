@@ -54,10 +54,17 @@ public class AuthController {
         return ResponseEntity.ok(loginResponse);
     }
 
+    @PostMapping("/login-expert")
+    public ResponseEntity<LoginResponse> loginExpert(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
+                                                     HttpServletRequest request) {
+        LoginResponse loginResponse = authService.loginForExpert(loginRequestDTO, request);
+        return ResponseEntity.ok(loginResponse);
+    }
+
     @Operation(summary = "User Login", description = "Login with username and password")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-            HttpServletRequest request) {
+                                               HttpServletRequest request) {
         LoginResponse loginResponse = authService.loginForUser(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }

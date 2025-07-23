@@ -71,7 +71,8 @@ public class Plants {
     private List<PlantImage> images;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
     @UpdateTimestamp
@@ -80,10 +81,12 @@ public class Plants {
 
     @Column(name = "created_by", nullable = true)
     private Long createdBy;
+
     //Cây có sẵn (import hoặc admin tạo)
     public boolean isOfficialPlant() {
         return createdBy == null;
     }
+
     // Cây do user tạo
     public boolean isUserCreatedPlant() {
         return createdBy != null;
