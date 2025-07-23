@@ -2,6 +2,7 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.response.plantsManager.*;
 import com.plantcare_backend.dto.request.plantsManager.*;
+import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.*;
@@ -46,29 +47,35 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      *                                        details to be created.
      * @return the ID of the newly created plant.
      */
-//    @Override
-//    public Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO) {
-//        PlantCategory plantCategory = plantCategoryRepository
-//                .findById(Long.valueOf(createPlantManagementRequestDTO.getCategoryId()))
-//                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-//        Plants plants = new Plants();
-//        plants.setScientificName(createPlantManagementRequestDTO.getScientificName());
-//        plants.setCommonName(createPlantManagementRequestDTO.getCommonName());
-//        plants.setCategory(plantCategory);
-//        plants.setDescription(createPlantManagementRequestDTO.getDescription());
-//        plants.setCareInstructions(createPlantManagementRequestDTO.getCareInstructions());
-//        plants.setLightRequirement(
-//                Plants.LightRequirement.valueOf(createPlantManagementRequestDTO.getLightRequirement()));
-//        plants.setWaterRequirement(
-//                Plants.WaterRequirement.valueOf(createPlantManagementRequestDTO.getWaterRequirement()));
-//        plants.setCareDifficulty(Plants.CareDifficulty.valueOf(createPlantManagementRequestDTO.getCareDifficulty()));
-//        plants.setSuitableLocation(createPlantManagementRequestDTO.getSuitableLocation());
-//        plants.setCommonDiseases(createPlantManagementRequestDTO.getCommonDiseases());
-//        plants.setStatus(Plants.PlantStatus.ACTIVE);
-//
-//        Plants saved = plantRepository.save(plants);
-//        return saved.getId();
-//    }
+    @Override
+    public Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO, Long userId) {
+        PlantCategory plantCategory = plantCategoryRepository
+                .findById(Long.valueOf(createPlantManagementRequestDTO.getCategoryId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        if (plantRepository.existsByScientificNameIgnoreCase(createPlantManagementRequestDTO.getScientificName())) {
+            throw new InvalidDataException("Plant with scientific name already exists: " + createPlantManagementRequestDTO.getScientificName());
+        }
+        if (plantRepository.existsByCommonNameIgnoreCase(createPlantManagementRequestDTO.getCommonName())) {
+            throw new InvalidDataException("Plant with common name already exists: " + createPlantManagementRequestDTO.getCommonName());
+        }
+        Plants plants = new Plants();
+        plants.setScientificName(createPlantManagementRequestDTO.getScientificName());
+        plants.setCommonName(createPlantManagementRequestDTO.getCommonName());
+        plants.setCategory(plantCategory);
+        plants.setDescription(createPlantManagementRequestDTO.getDescription());
+        plants.setCareInstructions(createPlantManagementRequestDTO.getCareInstructions());
+        plants.setLightRequirement(
+                Plants.LightRequirement.valueOf(createPlantManagementRequestDTO.getLightRequirement()));
+        plants.setWaterRequirement(
+                Plants.WaterRequirement.valueOf(createPlantManagementRequestDTO.getWaterRequirement()));
+        plants.setCareDifficulty(Plants.CareDifficulty.valueOf(createPlantManagementRequestDTO.getCareDifficulty()));
+        plants.setSuitableLocation(createPlantManagementRequestDTO.getSuitableLocation());
+        plants.setCommonDiseases(createPlantManagementRequestDTO.getCommonDiseases());
+        plants.setStatus(Plants.PlantStatus.ACTIVE);
+        plants.setCreatedBy(userId);
+        Plants saved = plantRepository.save(plants);
+        return saved.getId();
+    }
 
     /**
      * Retrieves a paginated list of all plants in the system.
@@ -76,7 +83,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      * @param page the page number to retrieve (0-based index).
      * @param size the number of records per page.
      * @return a {@link Page} of {@link PlantListResponseDTO} containing the plant
-     *         data.
+     * data.
      */
     @Override
     public Page<PlantListResponseDTO> getAllPlants(int page, int size) {
@@ -94,7 +101,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      *            difficulty,
      *            * status, and pagination info (page and size).
      * @return a {@link Page} of {@link PlantListResponseDTO} containing the
-     *         filtered plant results.
+     * filtered plant results.
      */
     @Override
     public Page<PlantListResponseDTO> searchPlants(PlantSearchRequestDTO dto) {
@@ -120,7 +127,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      *                      such as name, description, care instructions, category,
      *                      status, and images.
      * @return the updated {@link PlantDetailResponseDTO} representing the plant's
-     *         latest data.
+     * latest data.
      */
     @Override
     public PlantDetailResponseDTO updatePlant(Long plantId, UpdatePlantRequestDTO updateRequest) {
@@ -183,7 +190,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      *
      * @param plantId the ID of the plant to retrieve.
      * @return a {@link PlantDetailResponseDTO} containing detailed information
-     *         about the plant.
+     * about the plant.
      */
     @Override
     public PlantDetailResponseDTO getPlantDetail(Long plantId) {
@@ -241,7 +248,6 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     }
 
     /**
-     *
      * @param request
      * @return
      */
@@ -341,6 +347,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
             }
         }
     }
+
     @Override
     public PlantReportDetailResponseDTO getReportDetail(Long reportId) {
         PlantReport report = plantReportRepository.findById(reportId)
@@ -464,6 +471,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     private PlantListResponseDTO toDTO(Plants plant) {
         PlantListResponseDTO dto = new PlantListResponseDTO();
         dto.setId(plant.getId());
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
         dto.setScientificName(plant.getScientificName());
         dto.setCommonName(plant.getCommonName());
         dto.setDescription(plant.getDescription());

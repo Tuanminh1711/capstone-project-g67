@@ -12,6 +12,7 @@ import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.service.PlantManagementService;
 import com.plantcare_backend.service.PlantService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,20 +31,21 @@ public class PlantManagementController {
     @Autowired
     private final PlantService plantService;
 
-//    @PostMapping("/create-plant")
-//    // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
-//    public ResponseData<Long> createPlantManager(
-//            @Valid @RequestBody CreatePlantManagementRequestDTO createPlantManagementRequestDTO) {
-//        try {
-//            Long plantId = plantManagementService.createPlantByManager(createPlantManagementRequestDTO);
-//            return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created successfully", plantId);
-//        } catch (ResourceNotFoundException e) {
-//            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-//        } catch (Exception e) {
-//            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
-//        }
-//
-//    }
+    @PostMapping("/create-plant")
+    // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    public ResponseData<Long> createPlantManager(
+            @Valid @RequestBody CreatePlantManagementRequestDTO createPlantManagementRequestDTO,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        try {
+            Long plantId = plantManagementService.createPlantByManager(createPlantManagementRequestDTO, userId);
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created successfully", plantId);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
+        }
+    }
 
     @GetMapping("/get-all-plants")
     // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")

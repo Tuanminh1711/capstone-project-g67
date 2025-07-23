@@ -31,7 +31,8 @@ public class Role {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false, nullable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     @CreationTimestamp
     private Timestamp createdAt;
 
