@@ -60,7 +60,12 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
   fetchTickets() {
     this.loading = true;
     this.error = '';
-    this.http.get<any>(`${environment.apiUrl}/support/tickets`).subscribe({
+    const token = localStorage.getItem('token');
+    this.http.get<any>(`${environment.apiUrl}/support/tickets`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
       next: (res) => {
         const tickets = res.data || [];
         this.ticketsSubject.next(tickets);
@@ -80,7 +85,12 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
   fetchTicketDetail(ticketId: number) {
     this.loading = true;
     this.error = '';
-    this.http.get<any>(`${environment.apiUrl}/support/tickets/${ticketId}`).subscribe({
+    const token = localStorage.getItem('token');
+    this.http.get<any>(`${environment.apiUrl}/support/tickets/${ticketId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
       next: (res) => {
         this.selectedTicket = res.data || null;
         this.loading = false;

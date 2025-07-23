@@ -3,13 +3,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DialogManager } from '../../shared/dialog-manager.service';
 import { LoginDialogComponent } from '../../auth/login/login-dialog';
 import { RegisterDialogComponent } from '../../auth/register/register-dialog';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgOptimizedImage } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [TopNavigatorComponent],
+  imports: [TopNavigatorComponent, NgOptimizedImage],
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })
