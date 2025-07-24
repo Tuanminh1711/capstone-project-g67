@@ -30,6 +30,7 @@ public class PlantManagementController {
     @Autowired
     private final PlantService plantService;
 
+    //not use
     @PostMapping("/create-plant")
     // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     public ResponseData<Long> createPlantManager(
@@ -45,6 +46,7 @@ public class PlantManagementController {
 
     }
 
+    //not use
     @GetMapping("/get-all-plants")
     // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     public ResponseData<Page<PlantListResponseDTO>> getAllPlants(
