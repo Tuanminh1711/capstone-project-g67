@@ -15,6 +15,7 @@ import com.plantcare_backend.exception.RateLimitExceededException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.ValidationException;
 import com.plantcare_backend.service.UserPlantsService;
+import com.plantcare_backend.service.ActivityLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,10 +34,12 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:4200/")
 public class UserPlantsController {
     private final UserPlantsService userPlantsService;
+    private final ActivityLogService activityLogService;
 
-    @Operation(method = "POST", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
-    @PostMapping("/search")
-    public ResponseData<UserPlantsSearchResponseDTO> searchUserPlants(@Valid @ModelAttribute UserPlantsSearchRequestDTO request, HttpServletRequest httpRequest) {
+    @Operation(method = "GET", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
+    @GetMapping("/search")
+    public ResponseData<UserPlantsSearchResponseDTO> searchUserPlants(
+            @Valid @ModelAttribute UserPlantsSearchRequestDTO request, HttpServletRequest httpRequest) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
@@ -90,6 +93,11 @@ public class UserPlantsController {
                 return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
             }
             userPlantsService.deleteUserPlant(userPlantId, userId);
+
+            // Log the activity
+            activityLogService.logActivity(userId.intValue(), "DELETE_USER_PLANT",
+                    "Deleted user plant with ID: " + userPlantId, request);
+
             return new ResponseData<>(HttpStatus.OK.value(), "User plant deleted successfully");
         } catch (ResourceNotFoundException e) {
             log.error("User plant not found: {}", e.getMessage());
@@ -103,31 +111,40 @@ public class UserPlantsController {
     @PostMapping("/add")
     public ResponseData<?> addUserPlant(
             @RequestBody AddUserPlantRequestDTO requestDTO,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
         try {
             userPlantsService.addUserPlant(requestDTO, userId);
+
+            // Log the activity
+            activityLogService.logActivity(userId.intValue(), "ADD_USER_PLANT",
+                    "Added plant to user collection: " + requestDTO.getPlantId(), request);
+
             return new ResponseData<>(HttpStatus.OK.value(), "Plant added to user collection successfully");
         } catch (Exception e) {
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to add plant to user collection: " + e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(),
+                    "Failed to add plant to user collection: " + e.getMessage());
         }
     }
 
     @PutMapping("/update")
     public ResponseData<?> updateUserPlant(
             @RequestBody UpdateUserPlantRequestDTO requestDTO,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
         try {
             userPlantsService.updateUserPlant(requestDTO, userId);
+
+            // Log the activity
+            activityLogService.logActivity(userId.intValue(), "UPDATE_USER_PLANT",
+                    "Updated user plant with ID: " + requestDTO.getUserPlantId(), request);
+
             return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully");
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to update user plant: " + e.getMessage());
@@ -149,7 +166,13 @@ public class UserPlantsController {
 
         try {
             UserPlantResponseDTO result = userPlantsService.createNewPlant(request, userId);
-            return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created and added to collection successfully", result);
+
+            // Log the activity
+            activityLogService.logActivity(userId.intValue(), "CREATE_NEW_PLANT",
+                    "Created new plant: " + request.getCommonName(), httpRequest);
+
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created and added to collection successfully",
+                    result);
         } catch (ValidationException e) {
             log.error("Validation failed for new plant: {}", e.getMessage());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());

@@ -10,6 +10,7 @@ import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.PasswordResetService;
 import com.plantcare_backend.service.AuthService;
+import com.plantcare_backend.service.ActivityLogService;
 import com.plantcare_backend.util.JwtUtil;
 import com.plantcare_backend.service.OtpService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,12 +46,21 @@ public class AuthController {
     private final UserRepository userRepository;
     @Autowired
     private OtpService otpService;
+    @Autowired
+    private ActivityLogService activityLogService;
 
     @Operation(summary = "Admin/Staff Login", description = "Login for admin or staff")
     @PostMapping("/login-admin")
     public ResponseEntity<LoginResponse> loginAdmin(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-                                                    HttpServletRequest request) {
+            HttpServletRequest request) {
         LoginResponse loginResponse = authService.loginForAdminOrStaff(loginRequestDTO, request);
+        return ResponseEntity.ok(loginResponse);
+    }
+
+    @PostMapping("/login-expert")
+    public ResponseEntity<LoginResponse> loginExpert(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
+            HttpServletRequest request) {
+        LoginResponse loginResponse = authService.loginForExpert(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -118,6 +128,19 @@ public class AuthController {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+
+            // Get user info from token before blacklisting
+            try {
+                int userId = jwtUtil.getUserIdFromToken(token).intValue();
+                String username = jwtUtil.getUsernameFromToken(token);
+
+                // Log the logout activity
+                activityLogService.logActivity(userId, "LOGOUT",
+                        "User logged out: " + username, request);
+            } catch (Exception e) {
+                // Token might be invalid, just continue with logout
+            }
+
             jwtUtil.addToBlacklist(token);
 
             return ResponseEntity.ok()
