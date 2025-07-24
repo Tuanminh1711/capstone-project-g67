@@ -34,21 +34,13 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final JwtUtil jwtUtil;
-    @Autowired
     private final RoleRepository roleRepository;
-    @Autowired
     private final UserProfileRepository userProfileRepository;
-    @Autowired
     private final PasswordEncoder passwordEncoder;
-    @Autowired
     private final UserActivityLogRepository userActivityLogRepository;
-    @Autowired
     private final IpLocationService ipLocationService;
-    @Autowired
     private final OtpService otpService;
 
     @Override
@@ -70,7 +62,8 @@ public class AuthServiceImpl implements AuthService {
         if (user.getStatus() == Users.UserStatus.INACTIVE) {
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-            loginResponse.setMessage("tài khoản của bạn chưa xác thực, vui lòng kiểm tra email hoặc gửi lại mã xác minh.");
+            loginResponse
+                    .setMessage("tài khoản của bạn chưa xác thực, vui lòng kiểm tra email hoặc gửi lại mã xác minh.");
             loginResponse.setUsername(user.getUsername());
             loginResponse.setEmail(user.getEmail());
             loginResponse.setRequiresVerification(true);
@@ -117,7 +110,20 @@ public class AuthServiceImpl implements AuthService {
                         user.getRole().getRoleName() == Role.RoleName.EXPERT)) {
             throw new RuntimeException("Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập ở đây.");
         }
-        // (Có thể kiểm tra thêm trạng thái nếu muốn)
+
+        // Log the admin/staff login activity
+        String ipAddress = getClientIp(request);
+        String location = ipLocationService.getLocationFromIp(ipAddress);
+
+        UserActivityLog log = UserActivityLog.builder()
+                .user(user)
+                .action("LOGIN")
+                .ipAddress(ipAddress)
+                .timestamp(LocalDateTime.now())
+                .description("Admin/Staff logged in successfully " + location)
+                .build();
+        userActivityLogRepository.save(log);
+
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString(), user.getId());
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
@@ -138,13 +144,26 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("Password wrong!");
         }
-        // Chỉ cho phép ADMIN hoặc STAFF
+        // Chỉ cho phép EXPERT hoặc STAFF
         if (user.getRole() == null ||
                 !(user.getRole().getRoleName() == Role.RoleName.EXPERT ||
                         user.getRole().getRoleName() == Role.RoleName.STAFF)) {
-            throw new RuntimeException("Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập ở đây.");
+            throw new RuntimeException("Chỉ tài khoản EXPERT hoặc STAFF mới được phép đăng nhập ở đây.");
         }
-        // (Có thể kiểm tra thêm trạng thái nếu muốn)
+
+        // Log the expert login activity
+        String ipAddress = getClientIp(request);
+        String location = ipLocationService.getLocationFromIp(ipAddress);
+
+        UserActivityLog log = UserActivityLog.builder()
+                .user(user)
+                .action("LOGIN")
+                .ipAddress(ipAddress)
+                .timestamp(LocalDateTime.now())
+                .description("Expert logged in successfully " + location)
+                .build();
+        userActivityLogRepository.save(log);
+
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getRoleName().toString(), user.getId());
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
@@ -251,6 +270,15 @@ public class AuthServiceImpl implements AuthService {
 
             user.setPassword(passwordEncoder.encode(requestDTO.getNewPassword()));
             userRepository.save(user);
+
+            // Log the password change activity
+            UserActivityLog activityLog = UserActivityLog.builder()
+                    .user(user)
+                    .action("CHANGE_PASSWORD")
+                    .timestamp(LocalDateTime.now())
+                    .description("User changed password successfully")
+                    .build();
+            userActivityLogRepository.save(activityLog);
 
             return new ResponseData<>(HttpStatus.OK.value(), "Password changed successfully");
         } catch (Exception e) {
