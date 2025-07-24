@@ -1,8 +1,12 @@
 package com.plantcare_backend.controller.admin;
 
+import com.plantcare_backend.dto.request.admin.PlantAddedStatisticRequestDTO;
+import com.plantcare_backend.dto.request.admin.UserBrowseStatisticRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
+import com.plantcare_backend.dto.response.admin.PlantAddedStatisticResponseDTO;
+import com.plantcare_backend.dto.response.admin.UserBrowseStatisticResponseDTO;
 import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
@@ -45,10 +49,11 @@ public class AdminController {
     /**
      * Creates a new user account in the system.
      *
-     * @param userRequestDTO Contains the user details including username and password (must be valid).
+     * @param userRequestDTO Contains the user details including username and
+     *                       password (must be valid).
      * @return ResponseData containing:
-     * - HTTP 201 (Created) status with new user's ID if successful.
-     * - HTTP 400 (Bad Request) status with error message if creation fails.
+     *         - HTTP 201 (Created) status with new user's ID if successful.
+     *         - HTTP 400 (Bad Request) status with error message if creation fails.
      * @throws Exception If any unexpected error occurs during user creation.
      */
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
@@ -65,11 +70,6 @@ public class AdminController {
         }
     }
 
-    /**
-     * @param pageNo
-     * @param pageSize
-     * @return
-     */
     @Operation(method = "POST", summary = "Get list of users", description = "Get paginated list of users")
     @PostMapping("/listaccount")
     public ResponseData<List<UserDetailResponse>> getListAccount(
@@ -86,10 +86,6 @@ public class AdminController {
         }
     }
 
-    /**
-     * @param userId
-     * @return
-     */
     @Operation(method = "POST", summary = "Delete user", description = "Delete user by ID")
     @PostMapping("/deleteuser")
     public ResponseData<?> deleteUser(@RequestParam int userId) {
@@ -103,11 +99,6 @@ public class AdminController {
         }
     }
 
-    /**
-     * @param userId
-     * @param changeUserStatusRequestDTO
-     * @return
-     */
     @Operation(method = "PATCH", summary = "change user status", description = "Change user status (ACTIVE/INACTIVE/BANNED)")
     @PatchMapping("/changestatus/{userId}")
     public ResponseData<?> changeUserStatus(
@@ -153,12 +144,6 @@ public class AdminController {
         }
     }
 
-    /**
-     * @param userId
-     * @param pageNo
-     * @param pageSize
-     * @return
-     */
     @GetMapping("/activity-logs-user/{userId}")
     public ResponseData<Page<UserActivityLogRequestDTO>> getUserActivityLogs(
             @PathVariable int userId,
@@ -186,10 +171,6 @@ public class AdminController {
         return new ResponseData<>(HttpStatus.OK.value(), Translator.toLocale("user.update.success"));
     }
 
-    /**
-     * @param userId
-     * @return
-     */
     @PutMapping("/reset-password/{userId}")
     public ResponseEntity<?> resetPassword(@PathVariable int userId) {
         adminService.resetPassword(userId);
@@ -232,6 +213,51 @@ public class AdminController {
     public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(
             @RequestBody UserRegisterStatisticRequestDTO requestDTO) {
         return adminService.getUserRegisterStatistics(requestDTO);
+    }
+
+    /**
+     * Get plant added statistics by date range.
+     *
+     * @param requestDTO DTO containing start and end date for statistics
+     * @return List of PlantAddedStatisticResponseDTO containing date and total
+     *         plants added
+     */
+    @Operation(method = "POST", summary = "Get plant added statistics", description = "Get statistics of plants added by date range")
+    @PostMapping("/statistics/added-plants")
+    public ResponseData<List<PlantAddedStatisticResponseDTO>> getPlantAddedStatistics(
+            @Valid @RequestBody PlantAddedStatisticRequestDTO requestDTO) {
+        log.info("Request plant added statistics from {} to {}", requestDTO.getStartDate(), requestDTO.getEndDate());
+
+        try {
+            List<PlantAddedStatisticResponseDTO> statistics = adminService.getPlantAddedStatistics(requestDTO);
+            return new ResponseData<>(HttpStatus.OK.value(), "Plant added statistics retrieved successfully",
+                    statistics);
+        } catch (Exception e) {
+            log.error("Get plant added statistics failed", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(),
+                    "Failed to get plant added statistics: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get user browse statistics by date range.
+     *
+     * @param requestDTO DTO containing start and end date for statistics
+     * @return List of UserBrowseStatisticResponseDTO containing date and total active users
+     */
+    @Operation(method = "POST", summary = "Get user browse statistics", description = "Get statistics of active users by date range")
+    @PostMapping("/statistics/browse-users")
+    public ResponseData<List<UserBrowseStatisticResponseDTO>> getUserBrowseStatistics(
+            @Valid @RequestBody UserBrowseStatisticRequestDTO requestDTO) {
+        log.info("Request user browse statistics from {} to {}", requestDTO.getStartDate(), requestDTO.getEndDate());
+        
+        try {
+            List<UserBrowseStatisticResponseDTO> statistics = adminService.getUserBrowseStatistics(requestDTO);
+            return new ResponseData<>(HttpStatus.OK.value(), "User browse statistics retrieved successfully", statistics);
+        } catch (Exception e) {
+            log.error("Get user browse statistics failed", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get user browse statistics: " + e.getMessage());
+        }
     }
 
 }

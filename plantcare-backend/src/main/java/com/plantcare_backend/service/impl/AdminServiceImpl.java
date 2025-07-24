@@ -1,6 +1,10 @@
 package com.plantcare_backend.service.impl;
 
+import com.plantcare_backend.dto.request.admin.PlantAddedStatisticRequestDTO;
+import com.plantcare_backend.dto.request.admin.UserBrowseStatisticRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
+import com.plantcare_backend.dto.response.admin.PlantAddedStatisticResponseDTO;
+import com.plantcare_backend.dto.response.admin.UserBrowseStatisticResponseDTO;
 import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.auth.UserRequestDTO;
@@ -24,6 +28,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +61,11 @@ public class AdminServiceImpl implements AdminService {
     /**
      * Creates a new user along with their profile based on the provided data.
      *
-     * @param userRequestDTO DTO containing user information (username, email, password, role ID, phone, etc.)
+     * @param userRequestDTO DTO containing user information (username, email,
+     *                       password, role ID, phone, etc.)
      * @return the ID of the newly created user
-     * @throws RuntimeException if the specified role is not found or any error occurs during saving
+     * @throws RuntimeException if the specified role is not found or any error
+     *                          occurs during saving
      */
     @Override
     public long saveUser(UserRequestDTO userRequestDTO) {
@@ -104,7 +111,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * Updates basic information (email, status) and profile (full name, phone, gender)
+     * Updates basic information (email, status) and profile (full name, phone,
+     * gender)
      * for an existing user.
      *
      * @param userId         ID of the user to update
@@ -209,7 +217,8 @@ public class AdminServiceImpl implements AdminService {
      * Searches users based on keyword (username, email, full name, phone),
      * and optionally filters by role and status.
      *
-     * @param searchAccountRequestDTO DTO containing search keyword, role, status, and pagination
+     * @param searchAccountRequestDTO DTO containing search keyword, role, status,
+     *                                and pagination
      * @return List of UserDetailResponse matching the search criteria
      */
     @Override
@@ -283,7 +292,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * Converts a Users entity to a UserDetailResponse DTO, including profile data if available.
+     * Converts a Users entity to a UserDetailResponse DTO, including profile data
+     * if available.
      *
      * @param user Users entity
      * @return UserDetailResponse
@@ -328,7 +338,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * Resets the password of a user to a new randomly generated one and sends it via email.
+     * Resets the password of a user to a new randomly generated one and sends it
+     * via email.
      *
      * @param userId ID of the user whose password is to be reset
      * @throws RuntimeException if the user is not found
@@ -349,10 +360,10 @@ public class AdminServiceImpl implements AdminService {
      * @return
      */
     @Override
-    public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(UserRegisterStatisticRequestDTO requestDTO) {
+    public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(
+            UserRegisterStatisticRequestDTO requestDTO) {
         List<Object[]> results = userRepository.countUsersRegisteredByDate(
-                requestDTO.getStartDate(), requestDTO.getEndDate()
-        );
+                requestDTO.getStartDate(), requestDTO.getEndDate());
         List<UserRegisterStatisticResponseDTO> responseList = new ArrayList<>();
         for (Object[] row : results) {
             LocalDate date = (row[0] instanceof java.sql.Date)
@@ -360,6 +371,52 @@ public class AdminServiceImpl implements AdminService {
                     : (LocalDate) row[0];
             long total = ((Number) row[1]).longValue();
             responseList.add(new UserRegisterStatisticResponseDTO(date, total));
+        }
+        return responseList;
+    }
+
+    /**
+     * Gets plant added statistics by date range.
+     *
+     * @param requestDTO DTO containing start and end date for statistics
+     * @return List of PlantAddedStatisticResponseDTO containing date and total
+     *         plants added
+     */
+    @Override
+    public List<PlantAddedStatisticResponseDTO> getPlantAddedStatistics(PlantAddedStatisticRequestDTO requestDTO) {
+        List<Object[]> results = plantRepository.countPlantsAddedByDate(
+                Timestamp.valueOf(requestDTO.getStartDate()),
+                Timestamp.valueOf(requestDTO.getEndDate()));
+        List<PlantAddedStatisticResponseDTO> responseList = new ArrayList<>();
+        for (Object[] row : results) {
+            LocalDate date = (row[0] instanceof java.sql.Date)
+                    ? ((java.sql.Date) row[0]).toLocalDate()
+                    : (LocalDate) row[0];
+            long total = ((Number) row[1]).longValue();
+            responseList.add(new PlantAddedStatisticResponseDTO(date, total));
+        }
+        return responseList;
+    }
+
+    /**
+     * Gets user browse statistics by date range.
+     *
+     * @param requestDTO DTO containing start and end date for statistics
+     * @return List of UserBrowseStatisticResponseDTO containing date and total
+     *         active users
+     */
+    @Override
+    public List<UserBrowseStatisticResponseDTO> getUserBrowseStatistics(UserBrowseStatisticRequestDTO requestDTO) {
+        List<Object[]> results = userActivityLogRepository.countActiveUsersByDate(
+                requestDTO.getStartDate(),
+                requestDTO.getEndDate());
+        List<UserBrowseStatisticResponseDTO> responseList = new ArrayList<>();
+        for (Object[] row : results) {
+            LocalDate date = (row[0] instanceof java.sql.Date)
+                    ? ((java.sql.Date) row[0]).toLocalDate()
+                    : (LocalDate) row[0];
+            long total = ((Number) row[1]).longValue();
+            responseList.add(new UserBrowseStatisticResponseDTO(date, total));
         }
         return responseList;
     }
