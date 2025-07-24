@@ -92,30 +92,35 @@ export class PlantCareReminderSetupComponent {
     this.schedules.removeAt(i);
   }
 
-  submit() {
-    if (this.form.invalid || !this.userPlantId) return;
-    this.loading = true;
-    const token = localStorage.getItem('token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    this.http.post(
-      `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
-      this.form.value,
-      headers ? { headers } : undefined
-    ).subscribe({
-      next: (res: any) => {
-        this.toast.success(typeof res === 'string' ? res : 'Đã lưu lịch nhắc nhở thành công!');
-        setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
-      },
-      error: err => {
-        if (err.status === 403) {
-          this.toast.error('Bạn không có quyền thực hiện thao tác này!');
-        } else {
-          const msg = typeof err?.error === 'string' ? err.error : (err?.error?.message || 'Có lỗi xảy ra khi lưu.');
-          this.toast.error(msg);
-        }
-        this.loading = false;
-        this.cdr.detectChanges();
+ submit() {
+  if (this.form.invalid || !this.userPlantId) return;
+  this.loading = true;
+
+  const options = {
+    responseType: 'text' as 'text'
+    // Không cần headers nếu dùng interceptor
+  };
+
+  this.http.post(
+    `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
+    this.form.value,
+    options
+  ).subscribe({
+    next: (res: any) => {
+      this.toast.success(typeof res === 'string' ? res : 'Đã lưu lịch nhắc nhở thành công!');
+      setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
+    },
+    error: err => {
+      if (err.status === 403) {
+        this.toast.error('Bạn không có quyền thực hiện thao tác này!');
+      } else {
+        const msg = typeof err?.error === 'string' ? err.error : (err?.error?.message || 'Có lỗi xảy ra khi lưu.');
+        this.toast.error(msg);
       }
-    });
-  }
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
 }
