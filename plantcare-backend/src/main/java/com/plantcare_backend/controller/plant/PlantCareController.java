@@ -8,9 +8,12 @@ import com.plantcare_backend.repository.CareScheduleRepository;
 import com.plantcare_backend.service.CareScheduleService;
 import com.plantcare_backend.service.CareLogService;
 import com.plantcare_backend.service.PlantCareNotificationService;
+import com.plantcare_backend.service.ActivityLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -23,12 +26,24 @@ public class PlantCareController {
     @Autowired
     private CareLogService careLogService;
 
+    @Autowired
+    private ActivityLogService activityLogService;
+
     // Setup nhắc nhở cho từng loại công việc chăm sóc trên 1 cây
     @PostMapping("/{userPlantId}/care-reminders")
     public ResponseEntity<?> setupCareReminders(
             @PathVariable Long userPlantId,
-            @RequestBody CareScheduleSetupRequest request) {
+            @RequestBody CareScheduleSetupRequest request,
+            HttpServletRequest httpRequest) {
         careScheduleService.setupCareSchedules(userPlantId, request.getSchedules());
+
+        // Log the activity (assuming we can get userId from request)
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        if (userId != null) {
+            activityLogService.logActivity(userId.intValue(), "SETUP_CARE_REMINDERS",
+                    "Setup care reminders for user plant: " + userPlantId, httpRequest);
+        }
+
         return ResponseEntity.ok("Cập nhật nhắc nhở thành công!");
     }
 
@@ -43,8 +58,17 @@ public class PlantCareController {
     @PostMapping("/{userPlantId}/care-log")
     public ResponseEntity<?> logCareActivity(
             @PathVariable Long userPlantId,
-            @RequestBody CareCompletionRequest request) {
+            @RequestBody CareCompletionRequest request,
+            HttpServletRequest httpRequest) {
         careLogService.logCareActivity(userPlantId, request);
+
+        // Log the activity (assuming we can get userId from request)
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        if (userId != null) {
+            activityLogService.logActivity(userId.intValue(), "CARE_PLANT",
+                    "Logged care activity for user plant: " + userPlantId, httpRequest);
+        }
+
         return ResponseEntity.ok("Đã ghi nhật ký chăm sóc thành công!");
     }
 

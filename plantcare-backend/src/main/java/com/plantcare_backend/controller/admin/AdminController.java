@@ -3,11 +3,14 @@ package com.plantcare_backend.controller.admin;
 import com.plantcare_backend.dto.request.admin.PlantAddedStatisticRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserBrowseStatisticRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserRegisterStatisticRequestDTO;
+import com.plantcare_backend.dto.request.personal.PersonalActivityLogRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.admin.PlantAddedStatisticResponseDTO;
 import com.plantcare_backend.dto.response.admin.UserBrowseStatisticResponseDTO;
 import com.plantcare_backend.dto.response.admin.UserRegisterStatisticResponseDTO;
+import com.plantcare_backend.dto.response.personal.PersonalActivityLogResponseDTO;
+import com.plantcare_backend.dto.response.personal.PersonalActivitySummaryResponseDTO;
 import com.plantcare_backend.dto.response.auth.UserDetailResponse;
 import com.plantcare_backend.dto.request.admin.ChangeUserStatusRequestDTO;
 import com.plantcare_backend.dto.request.auth.UserRequestDTO;
@@ -18,7 +21,9 @@ import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.service.AdminService;
+import com.plantcare_backend.service.PersonalActivityService;
 import com.plantcare_backend.service.PlantService;
+import com.plantcare_backend.service.ActivityLogService;
 import com.plantcare_backend.util.Translator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,6 +50,8 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final PersonalActivityService personalActivityService;
+    private final ActivityLogService activityLogService;
 
     /**
      * Creates a new user account in the system.
@@ -63,6 +70,9 @@ public class AdminController {
 
         try {
             long userId = adminService.saveUser(userRequestDTO);
+
+            // Log the activity (assuming admin ID is available)
+            // Note: We need to get admin ID from request attribute
             return new ResponseData<>(HttpStatus.CREATED.value(), Translator.toLocale("user.add.success"), userId);
         } catch (Exception e) {
             log.error("add user failed", e);
@@ -243,20 +253,69 @@ public class AdminController {
      * Get user browse statistics by date range.
      *
      * @param requestDTO DTO containing start and end date for statistics
-     * @return List of UserBrowseStatisticResponseDTO containing date and total active users
+     * @return List of UserBrowseStatisticResponseDTO containing date and total
+     *         active users
      */
     @Operation(method = "POST", summary = "Get user browse statistics", description = "Get statistics of active users by date range")
     @PostMapping("/statistics/browse-users")
     public ResponseData<List<UserBrowseStatisticResponseDTO>> getUserBrowseStatistics(
             @Valid @RequestBody UserBrowseStatisticRequestDTO requestDTO) {
         log.info("Request user browse statistics from {} to {}", requestDTO.getStartDate(), requestDTO.getEndDate());
-        
+
         try {
             List<UserBrowseStatisticResponseDTO> statistics = adminService.getUserBrowseStatistics(requestDTO);
-            return new ResponseData<>(HttpStatus.OK.value(), "User browse statistics retrieved successfully", statistics);
+            return new ResponseData<>(HttpStatus.OK.value(), "User browse statistics retrieved successfully",
+                    statistics);
         } catch (Exception e) {
             log.error("Get user browse statistics failed", e);
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to get user browse statistics: " + e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(),
+                    "Failed to get user browse statistics: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get activity logs for a specific user (Admin/Staff only)
+     *
+     * @param userId     ID of the user to get activity logs for
+     * @param requestDTO DTO containing filters and pagination
+     * @return Page of PersonalActivityLogResponseDTO
+     */
+    @Operation(method = "POST", summary = "Get user activity logs", description = "Get activity logs for a specific user (Admin/Staff only)")
+    @PostMapping("/activity-logs/{userId}")
+    public ResponseData<Page<PersonalActivityLogResponseDTO>> getUserActivityLogs(
+            @PathVariable int userId,
+            @Valid @RequestBody PersonalActivityLogRequestDTO requestDTO) {
+        log.info("Admin requesting activity logs for user: {}", userId);
+
+        try {
+            Page<PersonalActivityLogResponseDTO> activityLogs = personalActivityService.getPersonalActivityLogs(userId,
+                    requestDTO);
+            return new ResponseData<>(HttpStatus.OK.value(), "User activity logs retrieved successfully", activityLogs);
+        } catch (Exception e) {
+            log.error("Failed to get activity logs for user: {}", userId, e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(),
+                    "Failed to get user activity logs: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get activity summary for a specific user (Admin/Staff only)
+     *
+     * @param userId ID of the user to get activity summary for
+     * @return PersonalActivitySummaryResponseDTO containing summary statistics
+     */
+    @Operation(method = "GET", summary = "Get user activity summary", description = "Get activity summary for a specific user (Admin/Staff only)")
+    @GetMapping("/activity-logs/{userId}/summary")
+    public ResponseData<PersonalActivitySummaryResponseDTO> getUserActivitySummary(@PathVariable int userId) {
+        log.info("Admin requesting activity summary for user: {}", userId);
+
+        try {
+            PersonalActivitySummaryResponseDTO summary = personalActivityService.getPersonalActivitySummary(userId);
+            return new ResponseData<>(HttpStatus.OK.value(), "User activity summary retrieved successfully", summary);
+        } catch (Exception e) {
+            log.error("Failed to get activity summary for user: {}", userId, e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(),
+                    "Failed to get user activity summary: " + e.getMessage());
         }
     }
 
