@@ -7,6 +7,7 @@ import com.plantcare_backend.dto.response.ticket_support.CreateTicketResponseDTO
 import com.plantcare_backend.dto.response.ticket_support.TicketListResponseDTO;
 import com.plantcare_backend.dto.response.ticket_support.TicketResponseDTO;
 import com.plantcare_backend.service.SupportTicketService;
+import com.plantcare_backend.service.ActivityLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -25,16 +27,23 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200/")
 public class SupportTicketController {
     private final SupportTicketService supportTicketService;
+    private final ActivityLogService activityLogService;
 
     @Operation(summary = "Create support ticket", description = "User creates a new support ticket")
     @PostMapping("/tickets")
     public ResponseData<Long> createTicket(
             @Valid @RequestBody CreateTicketRequestDTO request,
-            @RequestAttribute("userId") int userId) {
+            @RequestAttribute("userId") int userId,
+            HttpServletRequest httpRequest) {
         log.info("User {} creating support ticket: {}", userId, request.getTitle());
 
         try {
             Long ticketId = supportTicketService.createTicket(request, userId);
+
+            // Log the activity
+            activityLogService.logActivity(userId, "CREATE_SUPPORT_TICKET",
+                    "Created support ticket: " + request.getTitle(), httpRequest);
+
             return new ResponseData<>(HttpStatus.CREATED.value(), "Ticket created successfully", ticketId);
         } catch (Exception e) {
             log.error("Create ticket failed", e);
@@ -77,11 +86,17 @@ public class SupportTicketController {
     public ResponseData<?> addResponse(
             @PathVariable Long ticketId,
             @Valid @RequestBody CreateTicketResponseDTO request,
-            @RequestAttribute("userId") int userId) {
+            @RequestAttribute("userId") int userId,
+            HttpServletRequest httpRequest) {
         log.info("User {} adding response to ticket: {}", userId, ticketId);
 
         try {
             supportTicketService.addResponse(ticketId, request, userId);
+
+            // Log the activity
+            activityLogService.logActivity(userId, "ADD_TICKET_RESPONSE",
+                    "Added response to ticket: " + ticketId, httpRequest);
+
             return new ResponseData<>(HttpStatus.OK.value(), "Response added successfully");
         } catch (Exception e) {
             log.error("Add response failed", e);

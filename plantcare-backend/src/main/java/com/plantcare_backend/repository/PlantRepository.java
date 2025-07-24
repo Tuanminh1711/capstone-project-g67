@@ -35,7 +35,10 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
                         @Param("careDifficulty") Plants.CareDifficulty careDifficulty,
                         @Param("status") Plants.PlantStatus status,
                         Pageable pageable);
+
         boolean existsByScientificNameIgnoreCase(String scientificName);
+
+        boolean existsByCommonNameIgnoreCase(String commonName);
 
         Optional<Plants> findById(Long id);
 
@@ -44,8 +47,16 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
 
         @Query("SELECT COUNT(p) FROM Plants p WHERE p.createdBy = :userId AND p.createdAt BETWEEN :startTime AND :endTime")
         long countByCreatedByAndCreatedAtBetween(
-                @Param("userId") Long userId,
-                @Param("startTime") Timestamp startTime,
-                @Param("endTime") Timestamp endTime
-        );
+                        @Param("userId") Long userId,
+                        @Param("startTime") Timestamp startTime,
+                        @Param("endTime") Timestamp endTime);
+
+        @Query("SELECT DATE(p.createdAt) as date, COUNT(p) as totalAdded " +
+                        "FROM Plants p " +
+                        "WHERE p.createdAt BETWEEN :startDate AND :endDate " +
+                        "GROUP BY DATE(p.createdAt) " +
+                        "ORDER BY DATE(p.createdAt) ASC")
+        List<Object[]> countPlantsAddedByDate(
+                        @Param("startDate") Timestamp startDate,
+                        @Param("endDate") Timestamp endDate);
 }

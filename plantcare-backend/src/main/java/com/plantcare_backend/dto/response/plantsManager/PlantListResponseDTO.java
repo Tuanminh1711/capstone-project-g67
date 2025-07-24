@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 @Data
 public class PlantListResponseDTO {
     private Long id;
+    private String categoryName;
     private String imageUrl;
     private String scientificName;
     private String commonName;
