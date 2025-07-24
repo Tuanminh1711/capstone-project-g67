@@ -15,6 +15,10 @@
       <a class="nav-link" routerLink="/plant-info" (click)="closeMobileMenu()">Tìm kiếm cây cảnh</a>
       <a class="nav-link" routerLink="/user/my-garden" (click)="closeMobileMenu()">Khu vườn của tôi</a>
       <a class="nav-link" routerLink="/care-with-experts" (click)="closeMobileMenu()">Chăm sóc cùng chuyên gia</a>
+      <!-- Ẩn nút Chat VIP để tránh trùng lặp với Chat trực tuyến -->
+      <!-- @if (isVipUser) {
+        <a class="nav-link vip-chat-link" routerLink="/user/vip-chat" (click)="closeMobileMenu()">💬 Chat VIP</a>
+      } -->
       <a class="nav-link" routerLink="/about-us" (click)="closeMobileMenu()">Về chúng tôi</a>
     </div>
     <div class="nav-actions">

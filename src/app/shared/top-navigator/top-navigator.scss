@@ -904,3 +904,40 @@ body, app-root {
   font-size: 14px;
   font-weight: 500;
 }
+
+/* VIP Chat Link Styles */
+.nav-link.vip-chat-link {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333 !important;
+  border: 2px solid #ffd700;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  animation: vipGlow 2s ease-in-out infinite alternate;
+}
+
+.nav-link.vip-chat-link:hover {
+  background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+  color: #000 !important;
+  border-color: #ffed4e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+@keyframes vipGlow {
+  from {
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  }
+  to {
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+  }
+}
+
+/* Mobile responsive for VIP chat link */
+@media (max-width: 900px) {
+  .nav-link.vip-chat-link {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+    margin: 2px 0;
+  }
+}

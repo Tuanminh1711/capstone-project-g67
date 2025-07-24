@@ -52,7 +52,7 @@ export class EditAvatarComponent {
     this.avatarUploading = true;
     const formData = new FormData();
     formData.append('avatar', this.selectedAvatarFile);
-    this.http.post(`/api/user/update-avatar`, formData, { withCredentials: true }).subscribe({
+    this.http.put(`/api/user/update-avatar`, formData, { withCredentials: true }).subscribe({
       next: () => {
         this.toastService.success('Cập nhật ảnh đại diện thành công!');
         this.avatarUploading = false;

@@ -43,6 +43,13 @@ export class AdminSidebarComponent {
       ]
     },
     {
+      title: 'Chat & Hỗ trợ',
+      open: false,
+      items: [
+        { label: '💬 Chat với VIP Users', link: '/admin/expert-chat' }
+      ]
+    },
+    {
       title: 'Thống kê',
       open: false,
       items: [

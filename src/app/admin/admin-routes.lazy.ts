@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+
 export const ADMIN_ROUTES: Routes = [
   {
     path: '',
@@ -22,7 +23,8 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'plants/update/:id', loadComponent: () => import('./plant-manager/update-plant/update-plant.component').then(m => m.UpdatePlantComponent) },
       { path: 'plants', loadComponent: () => import('./plant-manager/plant-list/admin-plant-list.component').then(m => m.AdminPlantListComponent) },
       { path: 'support/tickets', loadComponent: () => import('./ticket/ticket-list/admin-support-tickets-list.component').then(m => m.AdminSupportTicketsListComponent) },
-      { path: 'support/tickets/:id', loadComponent: () => import('./ticket/ticket-detail/admin-support-ticket-detail.component').then(m => m.AdminSupportTicketDetailComponent) }
+      { path: 'support/tickets/:id', loadComponent: () => import('./ticket/ticket-detail/admin-support-ticket-detail.component').then(m => m.AdminSupportTicketDetailComponent) },
+      { path: 'expert-chat', loadComponent: () => import('./expert-chat/expert-chat.component').then(m => m.ExpertChatComponent) }
     ]
   }
 ];

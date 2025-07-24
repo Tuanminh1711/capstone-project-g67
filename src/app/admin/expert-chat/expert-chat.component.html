@@ -1,0 +1,73 @@
+<div class="expert-chat-container">
+    <div class="chat-header">
+      <div class="header-content">
+        <h1>👨‍🌾 Chat với VIP Users</h1>
+        <div class="connection-status">
+          <span class="status-indicator" [class.connected]="isConnected"></span>
+          {{ getConnectionStatus() }}
+        </div>
+      </div>
+      <p class="header-description">
+        Hỗ trợ và tư vấn cho các thành viên VIP về chăm sóc cây trồng
+      </p>
+    </div>
+
+    <div class="chat-body">
+      <div class="messages-container" #messagesContainer>
+        <div *ngIf="loading" class="loading-message">
+          <div class="spinner"></div>
+          <p>Đang tải tin nhắn...</p>
+        </div>
+
+        <div *ngIf="!loading && messages.length === 0" class="empty-message">
+          <div class="empty-icon">💬</div>
+          <h3>Chưa có tin nhắn nào</h3>
+          <p>Chờ các thành viên VIP gửi tin nhắn!</p>
+        </div>
+
+        <div 
+          *ngFor="let message of messages; trackBy: trackByMessageId" 
+          class="message-wrapper"
+          [class.own-message]="isOwnMessage(message)"
+        >
+          <div class="message">
+            <div class="message-header">
+              <span class="sender-name" [class.vip-user]="message.senderRole === 'VIP'">
+                {{ message.senderRole === 'VIP' ? '👤 VIP User' : '👨‍🌾 Chuyên gia' }}
+              </span>
+              <span class="message-time">{{ getMessageTime(message.timestamp || '') }}</span>
+            </div>
+            <div class="message-content">
+              {{ message.content }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="message-input-container">
+        <div class="input-wrapper">
+          <textarea
+            [(ngModel)]="newMessage"
+            (keypress)="onKeyPress($event)"
+            placeholder="Nhập tin nhắn trả lời..."
+            class="message-input"
+            rows="1"
+            maxlength="500"
+          ></textarea>
+          <button 
+            (click)="sendMessage()" 
+            [disabled]="!newMessage.trim() || !isConnected"
+            class="send-button"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-footer">
+          <span class="char-count">{{ newMessage.length }}/500</span>
+          <span class="input-hint">Nhấn Enter để gửi, Shift+Enter để xuống dòng</span>
+        </div>
+      </div>
+    </div>
+  </div> 

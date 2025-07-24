@@ -130,16 +130,16 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
       return;
     }
     this.avatarUploading = true;
-    const formData = new FormData();
-    formData.append('avatar', this.selectedAvatarFile);
-    this.http.post('http://localhost:8080/api/user/update-avatar', formData, { withCredentials: true }).subscribe({
+    // Gọi service uploadAvatar chuẩn
+    this.userProfileService.uploadAvatar(this.selectedAvatarFile).subscribe({
       next: (response: any) => {
         this.toastService.success('Cập nhật ảnh đại diện thành công!');
+        // Sau khi upload thành công, reload lại profile
         this.loadUserProfile();
         this.avatarUploading = false;
         this.cdr.markForCheck();
       },
-      error: (error) => {
+      error: (error: any) => {
         let errorMessage = 'Có lỗi xảy ra khi cập nhật ảnh đại diện.';
         if (error.status === 401) {
           errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
@@ -203,7 +203,6 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
       fullName: this.user.fullName.trim(),
       phoneNumber: this.user.phoneNumber.trim(),
       livingEnvironment: this.user.livingEnvironment?.trim() || '',
-      avatar: this.user.avatar || '',
       gender: gender
     };
 

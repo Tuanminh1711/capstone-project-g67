@@ -37,6 +37,34 @@
               <span class="badge verified">✓ Đã xác thực</span>
               <span class="badge member">👤 Thành viên</span>
             </div>
+            
+            <!-- Thêm khu vực upload avatar -->
+            <div class="avatar-upload-section" style="margin-top: 15px; text-align: center;">
+              <input 
+                #avatarInput 
+                type="file" 
+                accept="image/jpeg,image/jpg,image/png,image/gif" 
+                (change)="onAvatarChange($event)" 
+                style="display:none" />
+              
+              <button 
+                type="button" 
+                class="upload-avatar-btn" 
+                (click)="avatarInput.click()"
+                style="background-color: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                📷 Chọn ảnh mới
+              </button>
+              
+              <button 
+                type="button" 
+                class="save-avatar-btn" 
+                (click)="uploadAvatar()" 
+                [disabled]="!selectedAvatarFile || avatarUploading"
+                style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                <span *ngIf="!avatarUploading">💾 Lưu ảnh đại diện</span>
+                <span *ngIf="avatarUploading">⏳ Đang lưu...</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

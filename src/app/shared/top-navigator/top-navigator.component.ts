@@ -7,6 +7,7 @@ import { AuthDialogService } from '../../auth/auth-dialog.service';
 // import { SupportDialogService } from '../../support/shared/support-dialog.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 
 @Component({
   selector: 'app-top-navigator',
@@ -28,7 +29,8 @@ export class TopNavigatorComponent {
   constructor(
     public router: Router,
     public authService: AuthService,
-    private authDialog: AuthDialogService
+    private authDialog: AuthDialogService,
+    private jwtUserUtil: JwtUserUtilService
   ) {}
 
   toggleSupportDropdown = (event: MouseEvent): void => {
@@ -99,6 +101,10 @@ export class TopNavigatorComponent {
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
+  }
+
+  get isVipUser(): boolean {
+    return this.jwtUserUtil.getRoleFromToken() === 'VIP';
   }
 
   logout = (): void => {

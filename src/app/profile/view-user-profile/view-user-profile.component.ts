@@ -23,6 +23,10 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
   // Trạng thái loading và error
   loading = true;
   error: string | null = null;
+  
+  // Thêm các thuộc tính cho upload avatar
+  selectedAvatarFile: File | null = null;
+  avatarUploading = false;
 
   constructor(
     private userProfileService: UserProfileService,
@@ -50,24 +54,6 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
         }
       }, 100);
     }
-  }
-
-  private loadUserProfile() {
-    this.loading = true;
-    this.error = null;
-    this.cdr.detectChanges();
-    
-    // Kiểm tra xem có token không
-    const token = this.jwtUserUtil.getTokenInfo();
-    if (!token) {
-      this.error = 'Không thể xác thực người dùng. Vui lòng đăng nhập lại.';
-      this.loading = false;
-      this.cdr.detectChanges();
-      return;
-    }
-    
-    // Gọi API mới không cần truyền userId (sẽ lấy từ JWT token)
-    this.fetchUserProfile();
   }
 
   private fetchUserProfile() {
@@ -110,19 +96,42 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
       }
     });
   }
+  
+  // Thêm hàm loadUserProfile để reload profile
+  loadUserProfile() {
+    this.loading = true;
+    this.error = null;
+    this.cdr.detectChanges();
+    
+    // Kiểm tra xem có token không
+    const token = this.jwtUserUtil.getTokenInfo();
+    if (!token) {
+      this.error = 'Không thể xác thực người dùng. Vui lòng đăng nhập lại.';
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    // Gọi API mới không cần truyền userId (sẽ lấy từ JWT token)
+    this.fetchUserProfile();
+  }
 
   onAvatarChange(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        if (this.userProfile) {
-          this.userProfile = { ...this.userProfile, avatar: e.target.result };
-          this.cdr.detectChanges();
-        }
-      };
-      reader.readAsDataURL(file);
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
+        this.selectedAvatarFile = null;
+        return;
+      }
+      if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
+        this.toastService.error('Định dạng file không hỗ trợ. Vui lòng chọn file JPG, PNG hoặc GIF.');
+        this.selectedAvatarFile = null;
+        return;
+      }
+      this.selectedAvatarFile = file;
+      this.cdr.markForCheck();
     }
   }
 
@@ -152,12 +161,48 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
   getAvatarUrl(avatar: string): string {
     if (!avatar) return '';
     if (avatar.startsWith('http')) return avatar;
+    if (avatar.startsWith('/api/avatars/')) {
+      // Nếu backend trả về đúng đường dẫn, nối với domain nếu cần
+      return `${environment.baseUrl}${avatar}`;
+    }
     // Nếu chỉ là tên file, trả về đúng API lấy avatar
-    // Use environment.baseUrl for avatar URL
     return `${environment.baseUrl}/api/user/avatars/${avatar}`;
   }
 
   onAvatarError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/image/default-plant.png';
+  }
+  
+  // Thêm hàm upload avatar
+  uploadAvatar() {
+    if (!this.selectedAvatarFile) {
+      this.toastService.error('Vui lòng chọn ảnh trước khi cập nhật.');
+      return;
+    }
+    this.avatarUploading = true;
+    
+    this.userProfileService.uploadAvatar(this.selectedAvatarFile).subscribe({
+      next: (response: any) => {
+        this.toastService.success('Cập nhật ảnh đại diện thành công!');
+        // Sau khi upload thành công, reload lại profile
+        this.loadUserProfile();
+        this.selectedAvatarFile = null;
+        this.avatarUploading = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        let errorMessage = 'Có lỗi xảy ra khi cập nhật ảnh đại diện.';
+        if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+        } else if (error.status === 403) {
+          errorMessage = 'Không có quyền cập nhật ảnh đại diện.';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+        this.toastService.error(errorMessage);
+        this.avatarUploading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

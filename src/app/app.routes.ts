@@ -3,6 +3,7 @@ import { HomeComponent } from './main/home/home.component';
 import { PlantInfoComponent } from './main/plant-info/plant-info';
 import { PlantDetailComponent } from './main/plant-detail/plant-detail.component';
 import { AboutUsComponent } from './main/about-us/about-us';
+import { CareWithExpertsComponent } from './main/care-with-experts/care-with-experts.component';
 
 // USER FEATURE
 import { MyGardenComponent } from './user/plant/my-garden/my-garden.component';
@@ -19,6 +20,7 @@ import { EditUserProfileComponent } from './profile/edit-user-profile/edit-user-
 import { ChangePasswordComponent } from './profile/change-password/change-password.component';
 import { LoginAdminPageComponent } from './auth/login-admin/login-admin-page.component';
 
+
 // ADMIN FEATURE
 
 // SHARED/UTILS
@@ -32,6 +34,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   { path: 'about-us', component: AboutUsComponent },
+  { path: 'care-with-experts', component: CareWithExpertsComponent },
   { path: 'plant-info', component: PlantInfoComponent },
   { path: 'plant-detail/:id', component: PlantDetailComponent },
   { path: 'plant-info/detail/:id', component: PlantDetailComponent },
@@ -48,6 +51,7 @@ export const routes: Routes = [
   { path: 'user/collection/add-plant/:plantId', redirectTo: 'user/add-plant/:plantId', pathMatch: 'full' },
   { path: 'user/my-tickets', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
   { path: 'user/report-plant/:id', component: ReportPlantPageComponent },
+  { path: 'user/vip-chat', loadComponent: () => import('./user/chat/vip-chat/vip-chat.component').then(m => m.VipChatComponent) },
 
   // PROFILE & AUTH
   { path: 'view-user-profile', component: ViewUserProfileComponent },

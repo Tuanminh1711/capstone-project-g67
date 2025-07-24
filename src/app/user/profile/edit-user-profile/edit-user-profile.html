@@ -59,6 +59,20 @@
                 <span *ngIf="!avatarUploading">Cập nhật ảnh đại diện</span>
                 <span *ngIf="avatarUploading">Đang cập nhật...</span>
               </button>
+              
+              <!-- Thêm nút lưu ảnh đại diện riêng biệt -->
+              <button 
+                type="button" 
+                class="save-avatar-btn" 
+                (click)="uploadAvatar()" 
+                [disabled]="avatarUploading || !selectedAvatarFile"
+                style="margin-left: 10px; background-color: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                  <path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
+                </svg>
+                <span *ngIf="!avatarUploading">💾 Lưu ảnh đại diện</span>
+                <span *ngIf="avatarUploading">⏳ Đang lưu...</span>
+              </button>
             </div>
             <div class="avatar-info">
               <p class="avatar-guidelines">

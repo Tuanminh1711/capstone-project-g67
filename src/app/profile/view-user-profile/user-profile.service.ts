@@ -23,7 +23,7 @@ export interface UpdateUserProfileRequest {
   fullName: string;
   phoneNumber: string;
   livingEnvironment: string;
-  avatar: string;
+  avatar?: string; // Optional field
   gender: string;
 }
 
@@ -107,6 +107,24 @@ export class UserProfileService {
       catchError(error => {
         return throwError(() => error);
       })
+    );
+  }
+
+  /**
+   * Upload avatar cho user hiện tại.
+   * @param file File ảnh đại diện (File object từ input)
+   * @returns Observable với response từ backend
+   */
+  uploadAvatar(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.http.put<any>('/api/user/update-avatar', formData, {
+      withCredentials: true
+    }).pipe(
+      tap(response => {
+        this.profileCache.next(null);
+      }),
+      catchError(this.handleError)
     );
   }
 

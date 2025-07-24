@@ -2,6 +2,7 @@ export const environment = {
   production: false,
   apiUrl: '/api',  // Sử dụng proxy trong development
   baseUrl: 'http://localhost:8080',
+  wsUrl: 'http://localhost:8080', // WebSocket URL
   endpoints: {
     auth: '/api/auth',
     user: {

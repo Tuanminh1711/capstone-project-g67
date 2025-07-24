@@ -48,9 +48,11 @@ export class LoginAdminPageComponent {
             cookieService.setAuthToken(res.token, 7);
           });
         }
-        this.successMsg = res.message || 'Đăng nhập thành công!';
-        this.toast.success(this.successMsg);
-        this.router.navigate(['/admin']);
+        setTimeout(() => {
+          this.successMsg = res.message || 'Đăng nhập thành công!';
+          this.toast.success(this.successMsg);
+          this.router.navigate(['/admin']);
+        }, 0);
       },
       error: (err: any) => {
         this.loading = false;

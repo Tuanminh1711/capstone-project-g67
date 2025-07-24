@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AdminTopNavigatorComponent } from '../admin-top-navigator/admin-top-navigator.component';
 import { AdminSidebarComponent } from '../admin-sidebar/admin-sidebar.component';
 import { AdminFooterComponent } from '../admin-footer/admin-footer.component';
@@ -23,6 +23,14 @@ import { RouterOutlet } from '@angular/router';
   `,
   styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit {
   sidebarCollapsed = false;
+
+  constructor() {
+    console.log('🔍 Admin Layout Component - Constructor called');
+  }
+
+  ngOnInit() {
+    console.log('🔍 Admin Layout Component - ngOnInit called');
+  }
 }
