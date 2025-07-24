@@ -97,11 +97,9 @@ export class PlantCareReminderSetupComponent {
     this.loading = true;
     this.http.post(
       `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
-      this.form.value,
-      { responseType: 'text' as 'json' }
+      this.form.value
     ).subscribe({
       next: (res: any) => {
-        // res là string nếu backend trả về text
         this.toast.success(typeof res === 'string' ? res : 'Đã lưu lịch nhắc nhở thành công!');
         setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
       },
@@ -109,7 +107,6 @@ export class PlantCareReminderSetupComponent {
         if (err.status === 403) {
           this.toast.error('Bạn không có quyền thực hiện thao tác này!');
         } else {
-          // Nếu backend trả về text lỗi
           const msg = typeof err?.error === 'string' ? err.error : (err?.error?.message || 'Có lỗi xảy ra khi lưu.');
           this.toast.error(msg);
         }
