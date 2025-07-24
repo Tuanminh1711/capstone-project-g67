@@ -96,7 +96,13 @@ export class PlantCareReminderSetupComponent {
   if (this.form.invalid || !this.userPlantId) return;
   this.loading = true;
 
-  const token = localStorage.getItem('token');
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return '';
+  };
+  const token = getCookie('auth_token');
   const options: any = {
     responseType: 'text' as 'text',
     headers: token ? { Authorization: `Bearer ${token}` } : {}
