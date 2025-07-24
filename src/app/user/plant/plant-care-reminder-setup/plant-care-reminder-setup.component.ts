@@ -96,11 +96,11 @@ export class PlantCareReminderSetupComponent {
   if (this.form.invalid || !this.userPlantId) return;
   this.loading = true;
 
-  const options = {
-    responseType: 'text' as 'text'
-    // Không cần headers nếu dùng interceptor
+  const token = localStorage.getItem('token');
+  const options: any = {
+    responseType: 'text' as 'text',
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
   };
-
   this.http.post(
     `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
     this.form.value,
