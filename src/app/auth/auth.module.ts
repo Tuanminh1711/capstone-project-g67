@@ -9,11 +9,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 
 
 
-
 @NgModule({
   declarations: [],
   imports: [
-     CommonModule,
+    CommonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

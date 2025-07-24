@@ -1,0 +1,101 @@
+
+
+<div class="admin-support-ticket-detail-page">
+  <div class="ticket-detail-card">
+    <!-- Header -->
+    <div class="ticket-detail-header">
+      <div class="ticket-header-main">
+        <span class="ticket-title-main">{{ ticket?.title }}</span>
+      </div>
+      <div class="ticket-info-block">
+        <div class="ticket-info-item">
+          <span class="info-label">Mã phiếu:</span>
+          <span class="info-value">#{{ ticket?.ticketId }}</span>
+        </div>
+        <div class="ticket-info-item">
+          <span class="info-label">Người phụ trách:</span>
+          <span class="info-value">{{ ticket?.userName }}</span>
+        </div>
+        <div class="ticket-info-item">
+          <span class="info-label">Thời gian tạo:</span>
+          <span class="info-value">{{ ticket?.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="ticket-info-item">
+          <span class="info-label">Trạng thái:</span>
+          <span class="ticket-status-badge" [ngClass]="ticket?.status?.toLowerCase()">{{ ticket?.status }}</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Main Content: 2 columns (Description/Process/Responses) -->
+    <div class="ticket-detail-main-grid">
+      <div class="ticket-main-left">
+        <div class="ticket-section ticket-description-section">
+          <div class="section-label"><i class="fa fa-info-circle"></i> Mô tả</div>
+          <blockquote class="ticket-description-block">
+            {{ ticket?.description }}
+          </blockquote>
+          <ng-container *ngIf="ticket?.imageUrl">
+            <img [src]="ticket?.imageUrl || ''" alt="Ảnh phiếu hỗ trợ" class="ticket-image" />
+          </ng-container>
+        </div>
+      </div>
+      <div class="ticket-main-right">
+        <div class="ticket-section">
+          <div class="section-label"><i class="fa fa-comments"></i> Phản hồi</div>
+          <ng-container *ngIf="ticket?.responses?.length === 0">
+            <div class="empty-responses">Chưa có phản hồi nào.</div>
+          </ng-container>
+          <ul *ngIf="(ticket?.responses?.length ?? 0) > 0">
+            <li *ngFor="let res of ticket?.responses">
+              <div class="response-row">
+                <span class="response-user"><i class="fa fa-user"></i> {{ res.userName }}</span>
+                <span class="response-date">{{ res.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span class="response-content">{{ res.content }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log section below -->
+    <div class="ticket-log-block">
+      <div class="ticket-section">
+        <div class="section-label"><i class="fa fa-history"></i> Nhật ký xử lý</div>
+        <ng-container *ngIf="ticket?.logs?.length === 0">
+          <div class="empty-logs">Chưa có nhật ký xử lý.</div>
+        </ng-container>
+        <table *ngIf="(ticket?.logs?.length ?? 0) > 0" class="ticket-log-table">
+          <thead>
+            <tr>
+              <th>Hành động</th>
+              <th>Người thực hiện</th>
+              <th>Thời gian</th>
+              <th>Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of ticket?.logs">
+              <td><b>{{ getActionLabel(log.action) }}</b></td>
+              <td>{{ log.userName }}</td>
+              <td>{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td *ngIf="log.note">{{ log.note }}</td>
+              <td *ngIf="!log.note">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading/Error -->
+    <div *ngIf="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Đang tải chi tiết phiếu hỗ trợ...</p>
+    </div>
+    <div *ngIf="!loading && error" class="empty-container">
+      <h2>{{ error }}</h2>
+    </div>
+  </div>
+</div>

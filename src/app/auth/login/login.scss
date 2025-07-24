@@ -1,6 +1,25 @@
 @use '../../../styles/variables' as *;
 @use 'sass:color';
 
+// Fix z-index to ensure dialog appears above top navigation
+:host ::ng-deep {
+  .cdk-overlay-container {
+    z-index: 99999 !important;
+  }
+  
+  .cdk-overlay-backdrop {
+    z-index: 99998 !important;
+  }
+  
+  .mat-dialog-container {
+    z-index: 99999 !important;
+  }
+  
+  .cdk-overlay-pane {
+    z-index: 99999 !important;
+  }
+}
+
 /* ======= Layout chung ======= */
 :host-context(.mat-dialog-container),
 .dialog-panel-bg {

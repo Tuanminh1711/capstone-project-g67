@@ -1,0 +1,14 @@
+<div class="claim-dialog">
+  <h2>Nhận ticket hỗ trợ</h2>
+  <form [formGroup]="claimForm" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label for="note">Ghi chú khi nhận ticket</label>
+      <textarea id="note" formControlName="note" rows="3" placeholder="Nhập ghi chú..." class="input-note"></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="close()" class="cancel">Hủy</button>
+      <button type="submit" [disabled]="claimForm.invalid || loading" class="confirm">Xác nhận nhận ticket</button>
+    </div>
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+  </form>
+</div>

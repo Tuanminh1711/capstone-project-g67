@@ -1,0 +1,238 @@
+.admin-sidebar {
+  width: 320px;
+  min-width: 220px;
+  max-width: 420px;
+  background: #fff;
+  color: #fff;
+  position: fixed;
+  top: 64px; // chiều cao top navigator
+  bottom: 64px; // chiều cao footer
+  left: 0;
+  z-index: 100;
+  height: calc(100vh - 128px); // top + bottom
+  overflow: auto;
+  padding: 24px 0;
+  box-shadow: 2px 0 8px #ff980022;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  resize: horizontal;
+  transition: width 0.25s cubic-bezier(.4,2,.6,1), left 0.2s;
+
+  &::-webkit-resizer {
+    background: #145a32;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0 16px;
+    margin: 0;
+
+    ul {
+      padding-left: 0;
+    }
+  }
+
+  > ul > li {
+    margin-bottom: 16px;
+  }
+
+  a {
+    color: #f27123;
+    background: transparent;
+    transition: background 0.2s, color 0.2s;
+    display: block;
+    padding: 6px 0 6px 16px;
+    border-radius: 4px;
+    font-weight: 800;
+    text-decoration: none;
+
+    &:hover {
+      background: #f27123;
+      color: #fff;
+    }
+  }
+
+  &.collapsed {
+    width: 64px;
+    min-width: 64px;
+    max-width: 64px;
+
+    .sidebar-section-title,
+    .sidebar-item-label {
+      display: none;
+    }
+
+    .sidebar-item-dot {
+      margin-right: 0;
+    }
+  }
+}
+
+.sidebar-section-title {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 18px;
+  margin-bottom: 6px;
+  color: #222;
+  font-weight: 600;
+  font-size: 1.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s;
+  box-shadow: 0 1px 4px #7ed95718;
+  border: 1px solid #eafbe6;
+  letter-spacing: 0.01em;
+
+  &:hover,
+  &.active-section {
+    background: #f6fcf3;
+    color: #388e3c;
+    box-shadow: 0 2px 8px #7ed95722;
+    border: 1.5px solid #c8e6c9;
+  }
+}
+
+.arrow {
+  font-size: 1.08em;
+  margin-left: 8px;
+  color: #a5d6a7;
+  transition: transform 0.2s, color 0.18s;
+
+  &.open {
+    transform: rotate(180deg);
+    color: #388e3c;
+  }
+}
+
+.sidebar-item {
+  margin-bottom: 4px;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: box-shadow 0.18s, background 0.18s, transform 0.18s;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 18px;
+    border-radius: 6px;
+    font-size: 0.98em;
+    font-weight: 500;
+    color: #222;
+    background: #fff;
+    box-shadow: none;
+    letter-spacing: 0.01em;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.18s;
+
+    .sidebar-item-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #7ed957;
+      display: inline-block;
+      margin-right: 2px;
+      flex-shrink: 0;
+      transition: background 0.18s;
+    }
+
+    .sidebar-item-label {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #222;
+      font-size: 0.98em;
+      font-weight: 500;
+    }
+
+    &.active,
+    &:focus,
+    &:active {
+      background: #eafbe6;
+      color: #111;
+      box-shadow: 0 2px 8px #7ed95722;
+      font-weight: 600;
+      outline: none;
+
+      .sidebar-item-dot {
+        background: #388e3c;
+      }
+    }
+
+    &:hover {
+      background: #fff;
+      color: #f27123;
+      box-shadow: 0 2px 12px #f2712322;
+      z-index: 2;
+
+      .sidebar-item-label {
+        color: #f27123;
+      }
+
+      .sidebar-item-dot {
+        background: #f27123;
+      }
+    }
+  }
+}
+
+.admin-sidebar-toggle {
+  position: fixed;
+  left: 320px;
+  top: 80px;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #f2712322;
+  border: 1.5px solid #eafbe6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 120;
+  transition: background 0.18s, box-shadow 0.18s, left 0.25s cubic-bezier(.4,2,.6,1);
+
+  &:hover {
+    background: #f6fcf3;
+    box-shadow: 0 4px 16px #f2712322;
+  }
+
+  svg {
+    width: 22px;
+    height: 22px;
+    color: #f27123;
+    transition: transform 0.2s;
+  }
+}
+
+.admin-sidebar.collapsed .admin-sidebar-toggle {
+  left: 64px;
+}
+
+@media (max-width: 900px) {
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    min-width: unset;
+    max-width: unset;
+    resize: none;
+    top: unset;
+    bottom: unset;
+  }
+
+  .admin-sidebar-toggle {
+    left: 100vw;
+    top: 70px;
+  }
+
+  .admin-sidebar.collapsed .admin-sidebar-toggle {
+    left: 64px;
+  }
+}

@@ -1,12 +1,14 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { AuthDialogService } from './auth/auth-dialog.service';
 import { FooterComponent } from './shared/footer/footer.component';
-import { filter } from 'rxjs/operators';
+import { ToastComponent } from './shared/toast/toast.component';
+import { filter } from 'rxjs';
+import { ConfirmationDialogComponent } from './shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FooterComponent],
+  imports: [RouterOutlet, FooterComponent, ToastComponent, ConfirmationDialogComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -15,6 +17,11 @@ export class App {
 
   private router = inject(Router);
   private authDialog = inject(AuthDialogService);
+
+  isAdminPage(): boolean {
+    // Kiểm tra url có chứa '/admin' không
+    return this.router.url.startsWith('/admin');
+  }
 
   constructor() {
     this.router.events.pipe(

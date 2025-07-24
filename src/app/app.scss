@@ -1,1 +1,13 @@
 @use '../styles/variables' as *;
+
+/* App component styles - sử dụng layout đơn giản */
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* Footer positioning */
+app-footer {
+  clear: both;
+  width: 100%;
+}

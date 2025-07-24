@@ -1,57 +1,120 @@
 <app-top-navigator></app-top-navigator>
-<!-- Chỉ sử dụng <app-top-navigator *nếu* đã import vào main-module.ts hoặc app module. Nếu chưa, hãy import TopNavigatorComponent vào module chứa AboutUsComponent. -->
-<div class="about-container">
-  <div class="about-row about-row-top">
-    <div class="about-col about-col-1">
-      <!-- Nội dung cột 1 hàng trên -->
-      <h2>Về PLANTCARE</h2>
-      <p>Hỗ trợ những người mới biết đến cây cảnh trong việc tìm và chọn loại cây phù hợp</p>
-      <p>Cung cấp nền tảng thông báo lịch tưới và chăm sóc theo từng loại cây</p>
-      <p>Mang đến dịch vụ chăm sóc với chuyên gia theo nhu cầu</p>
+
+<div class="about-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">Về PlantCare</h1>
+        <p class="hero-subtitle">Nền tảng chăm sóc cây cảnh thông minh, đồng hành cùng người yêu cây</p>
+        <div class="hero-features">
+          <div class="feature-item">
+            <div class="feature-icon">🌱</div>
+            <p>Hỗ trợ tìm kiếm cây phù hợp</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⏰</div>
+            <p>Lịch tưới nước thông minh</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">👨‍🌾</div>
+            <p>Tư vấn từ chuyên gia</p>
+          </div>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-image" />
+      </div>
     </div>
-    <div class="about-col about-col-2">
-      <!-- Nội dung cột 2 hàng trên -->
-      <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="about-logo" />
-    </div>
-  </div>
-  <div class="about-row about-row-mentor">
-    <div class="about-mentor">
-      <h3>Giảng viên hướng dẫn</h3>
-      <div class="mentor-info">
-        <img src="assets/image/mentor.png" alt="Mentor" class="mentor-avatar" />
-        <div>
-          <div class="mentor-name">Thầy: Tạ Đình Tiến</div>
-          <div class="mentor-desc">acbdef</div>
+  </section>
+
+  <!-- Mission Section -->
+  <section class="mission-section">
+    <div class="container">
+      <h2 class="section-title">Sứ mệnh của chúng tôi</h2>
+      <div class="mission-grid">
+        <div class="mission-card">
+          <div class="mission-icon">🌿</div>
+          <h3>Dễ tiếp cận</h3>
+          <p>Giúp người mới bắt đầu dễ dàng tìm hiểu và chăm sóc cây cảnh một cách hiệu quả</p>
+        </div>
+        <div class="mission-card">
+          <div class="mission-icon">📱</div>
+          <h3>Công nghệ thông minh</h3>
+          <p>Ứng dụng AI và IoT để tối ưu hóa quá trình chăm sóc cây cảnh</p>
+        </div>
+        <div class="mission-card">
+          <div class="mission-icon">🤝</div>
+          <h3>Cộng đồng</h3>
+          <p>Xây dựng cộng đồng những người yêu cây, chia sẻ kinh nghiệm và hỗ trợ lẫn nhau</p>
         </div>
       </div>
     </div>
-  </div>
-  <div class="about-row about-row-bottom">
-    <div class="about-col about-col-bot"><img src="assets/image/mentor.png" alt="Member1" class="member1-avatar" />
-        <div>
-          <div class="member-name">Leader: Trần Tuấn Minh</div>
-          <div class="member-desc">acbdef</div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="container">
+      <h2 class="section-title">Tính năng chính</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Tìm kiếm cây thông minh</h3>
+          <p>Hệ thống gợi ý cây phù hợp dựa trên điều kiện không gian, thời gian chăm sóc và kinh nghiệm của bạn</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📅</div>
+          <h3>Lịch chăm sóc tự động</h3>
+          <p>Nhắc nhở tưới nước, bón phân, tỉa cành theo từng loại cây với lịch trình được tối ưu hóa</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Theo dõi sức khỏe cây</h3>
+          <p>Ghi nhận tình trạng cây theo thời gian, phân tích xu hướng và đưa ra lời khuyên cải thiện</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">💡</div>
+          <h3>Tư vấn chuyên gia</h3>
+          <p>Kho kiến thức phong phú về cách chăm sóc, xử lý bệnh và tối ưu hóa môi trường sống cho cây</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Ứng dụng đa nền tảng</h3>
+          <p>Truy cập dễ dàng trên web và mobile, đồng bộ dữ liệu giữa các thiết bị</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🌐</div>
+          <h3>Cộng đồng chia sẻ</h3>
+          <p>Kết nối với những người yêu cây khác, chia sẻ kinh nghiệm và học hỏi từ cộng đồng</p>
         </div>
       </div>
-    <div class="about-col about-col-bot"><img src="assets/image/mentor.png" alt="Member1" class="member1-avatar" />
-        <div>
-          <div class="member-name">Member: Nguyễn Tạ Hoàng</div>
-          <div class="member-desc">acbdef</div>
-        </div></div>
-    <div class="about-col about-col-bot"><img src="assets/image/mentor.png" alt="Member1" class="member1-avatar" />
-        <div>
-          <div class="member-name">Member: Lý Quang Phúc</div>
-          <div class="member-desc">acbdef</div>
-        </div></div>
-    <div class="about-col about-col-bot"><img src="assets/image/mentor.png" alt="Member1" class="member1-avatar" />
-        <div>
-          <div class="member-name">Member: Hoàng Hoàng Anh</div>
-          <div class="member-desc">acbdef</div>
-        </div></div>
-    <div class="about-col about-col-bot"><img src="assets/image/mentor.png" alt="Member1" class="member1-avatar" />
-        <div>
-          <div class="member-name">Member: Nguyễn Anh Dũng</div>
-          <div class="member-desc">acbdef</div>
-        </div></div>  
-  </div>
+    </div>
+  </section>
+
+
+  <!-- Contact Section -->
+  <section class="contact-section">
+    <div class="container">
+      <h2 class="section-title">Liên hệ với chúng tôi</h2>
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <p>Email: team&#64;plantcare.com</p>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📱</div>
+          <p>Hotline: 1900 xxxx</p>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🏢</div>
+          <p>Địa chỉ: Trường Đại học FPT Hà Nội</p>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

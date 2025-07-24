@@ -1,0 +1,73 @@
+<div class="admin-support-tickets-page">
+  <h1>Quản lý phiếu hỗ trợ</h1>
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Đang tải danh sách phiếu hỗ trợ...</p>
+  </div>
+  <div *ngIf="!isLoading && tickets.length > 0" class="tickets-table-container">
+
+    <table class="tickets-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tiêu đề</th>
+          <th>Mô tả</th>
+          <th>Người gửi</th>
+          <th>Trạng thái</th>
+          <th>Ngày tạo</th>
+          <th>Số phản hồi</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of filteredTickets" (click)="viewTicketDetail(ticket)">
+          <td>{{ ticket.ticketId }}</td>
+          <td>{{ ticket.title }}</td>
+          <td>{{ ticket.description }}</td>
+          <td>{{ ticket.userName }}</td>
+          <td>
+            <span class="status-label status-{{ ticket.status | lowercase }}">
+              {{ ticket.status }}
+            </span>
+          </td>
+          <td>{{ formatDate(ticket.createdAt) }}</td>
+          <td>{{ ticket.responseCount }}</td>
+          <td>
+            <button class="btn-detail btn-claim"
+                    (click)="openClaimDialog(ticket); $event.stopPropagation()"
+                    [disabled]="ticket.status === 'CLAIMED'"
+                    [attr.title]="ticket.status === 'CLAIMED' ? 'Ticket đã được nhận, không thể nhận lại' : 'Nhận ticket'">
+              <i class="fas fa-key small-icon"></i>
+            </button>
+            <button class="btn-detail btn-handle"
+                    (click)="openHandleDialog(ticket); $event.stopPropagation()"
+                    [disabled]="ticket.status !== 'CLAIMED'"
+                    [attr.title]="ticket.status !== 'CLAIMED' ? 'Chỉ xử lý được ticket đã nhận' : 'Xử lý ticket'">
+              <i class="fas fa-cogs small-icon"></i>
+            </button>
+            <button class="btn-detail btn-release"
+                    (click)="openReleaseDialog(ticket); $event.stopPropagation()"
+                    [disabled]="ticket.status !== 'CLAIMED'"
+                    [attr.title]="ticket.status !== 'CLAIMED' ? 'Chỉ trả lại được ticket đã nhận' : 'Trả lại ticket'">
+              <i class="fas fa-undo small-icon"></i>
+            </button>
+            <button class="btn-detail btn-response"
+                    (click)="openResponseDialog(ticket); $event.stopPropagation()"
+                    title="Phản hồi ticket">
+              <i class="fas fa-comment-dots small-icon"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button [disabled]="page === 0" (click)="onPageChange(page - 1)">&lt;</button>
+      <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
+      <button [disabled]="page + 1 >= totalPages" (click)="onPageChange(page + 1)">&gt;</button>
+    </div>
+  </div>
+  <div *ngIf="!isLoading && tickets.length === 0" class="empty-container">
+    <h2>Không có phiếu hỗ trợ nào</h2>
+    <p>Không có phiếu nào được gửi bởi người dùng.</p>
+  </div>
+</div>

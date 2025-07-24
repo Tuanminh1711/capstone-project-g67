@@ -1,0 +1,132 @@
+@use '../../../styles/variables' as *;
+@use 'sass:color';
+
+.login-admin-page-bg {
+  min-height: 100vh;
+  background: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-admin-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px #e0e0e0cc;
+  padding: 32px 28px 24px 28px;
+  min-width: 320px;
+  max-width: 95vw;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-direction: column;
+  margin-top: 8px;
+
+  .logo-img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    margin: 0 auto 4px auto;
+    box-shadow: 0 1px 4px #e0e0e033;
+  }
+
+  .logo-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+    margin-bottom: 2px;
+    text-align: center;
+    display: block;
+  }
+}
+
+.auth-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 18px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  background: none;
+  padding: 0;
+  margin-top: 8px;
+  display: block;
+  text-transform: uppercase;
+  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1.2px solid #d0d0d0;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  background: #fafbfc;
+  color: #222;
+  outline: none;
+  transition: border 0.2s;
+  &:focus {
+    border: 1.2px solid #178a4c;
+    background: #fff;
+  }
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px 0;
+  background: #178a4c;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px #e0e0e033;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  border: none;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  &:hover {
+    background: #145f36;
+    color: #fff;
+    box-shadow: 0 2px 8px #178a4c22;
+  }
+  &:disabled {
+    background: #e0e0e0;
+    color: #bdbdbd;
+    cursor: not-allowed;
+  }
+}
+
+.auth-error {
+  color: #e53935;
+  font-weight: 500;
+  margin: 0 0 10px 0;
+  text-align: center;
+  font-size: 1.01rem;
+  letter-spacing: 0.01em;
+}
+
+.auth-success {
+  color: #178a4c;
+  font-weight: 500;
+  margin: 0 0 10px 0;
+  text-align: center;
+  font-size: 1.01rem;
+  letter-spacing: 0.01em;
+}

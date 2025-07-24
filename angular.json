@@ -35,12 +35,7 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/cyan-orange.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            ]
           },
           "configurations": {
             "production": {
@@ -73,7 +68,8 @@
               "buildTarget": "fe_code:build:production"
             },
             "development": {
-              "buildTarget": "fe_code:build:development"
+              "buildTarget": "fe_code:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
@@ -100,8 +96,7 @@
               }
             ],
             "styles": [
-              "@angular/material/prebuilt-themes/cyan-orange.css",
-               "node_modules/@angular/material/prebuilt-themes/azure-blue.css"
+              "@angular/material/prebuilt-themes/cyan-orange.css"
             ]
           }
         }
@@ -112,4 +107,3 @@
     "analytics": "6d13021f-b15f-4886-9fff-f46001b7f452"
   }
 }
- 

@@ -1,0 +1,39 @@
+<div class="confirmation-dialog-overlay" 
+     *ngIf="isVisible" 
+     (click)="onBackdropClick()"
+     [@fadeIn]>
+  <div class="confirmation-dialog" 
+       (click)="onDialogClick($event)"
+       [@slideIn]>
+    
+    <!-- Dialog Header -->
+    <div class="dialog-header">
+      <div class="dialog-icon" [ngClass]="getIconClass()">
+        <span class="icon-emoji">{{ dialogData?.icon || '🗑️' }}</span>
+      </div>
+      <h3 class="dialog-title">{{ dialogData?.title || 'Xác nhận' }}</h3>
+    </div>
+    
+    <!-- Dialog Body -->
+    <div class="dialog-body">
+      <p class="dialog-message">{{ dialogData?.message }}</p>
+    </div>
+    
+    <!-- Dialog Footer -->
+    <div class="dialog-footer">
+      <button 
+        class="dialog-btn cancel-btn"
+        (click)="onCancel()"
+      >
+        {{ dialogData?.cancelText || 'Hủy' }}
+      </button>
+      <button 
+        class="dialog-btn confirm-btn"
+        [class.danger]="dialogData?.type === 'danger'"
+        (click)="onConfirm()"
+      >
+        {{ dialogData?.confirmText || 'Xác nhận' }}
+      </button>
+    </div>
+  </div>
+</div>

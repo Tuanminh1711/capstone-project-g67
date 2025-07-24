@@ -1,0 +1,50 @@
+<div class="avatar-card">
+  <h3>Ảnh đại diện</h3>
+  <div class="avatar-upload-area">
+    <div class="avatar-preview" (click)="avatarInput.click()" [class.uploading]="avatarUploading">
+      @if ((avatarPreview || avatar) && !avatarUploading) {
+        <img [src]="avatarPreview || avatar" alt="avatar" />
+      }
+      @if (!avatarPreview && !avatar && !avatarUploading) {
+        <div class="avatar-placeholder">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+          </svg>
+        </div>
+      }
+      @if (avatarUploading) {
+        <div class="avatar-loading">
+          <div class="loading-spinner"></div>
+          <span>Đang tải...</span>
+        </div>
+      }
+      @if (!avatarUploading) {
+        <div class="upload-overlay">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+          <span>Thay đổi ảnh</span>
+        </div>
+      }
+    </div>
+    <input #avatarInput type="file" accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onAvatarChange($event)" style="display:none" [disabled]="avatarUploading" />
+  </div>
+  <div style="text-align:center; margin-top: 12px;">
+    <button type="button" class="update-avatar-btn" (click)="uploadAvatar()" [disabled]="avatarUploading || !selectedAvatarFile">
+      @if (!avatarUploading) {
+        <span>Cập nhật ảnh đại diện</span>
+      }
+      @if (avatarUploading) {
+        <span>Đang cập nhật...</span>
+      }
+    </button>
+  </div>
+  <div class="avatar-info">
+    <p class="avatar-guidelines">
+      <strong>Hướng dẫn:</strong><br>
+      • Kích thước tối đa: 5MB<br>
+      • Định dạng: JPG, PNG, GIF<br>
+      • Tỷ lệ khuyến nghị: 1:1 (vuông)<br>
+    </p>
+  </div>
+</div>

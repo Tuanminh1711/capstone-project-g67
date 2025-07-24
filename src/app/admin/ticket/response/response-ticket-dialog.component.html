@@ -1,0 +1,13 @@
+<div class="response-dialog">
+  <h2>Phản hồi ticket</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label for="response">Nội dung phản hồi</label>
+      <textarea id="response" formControlName="response" rows="3" placeholder="Nhập nội dung phản hồi..." class="input-response"></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="close()" class="cancel">Hủy</button>
+      <button type="submit" [disabled]="form.invalid" class="confirm">Gửi phản hồi</button>
+    </div>
+  </form>
+</div>

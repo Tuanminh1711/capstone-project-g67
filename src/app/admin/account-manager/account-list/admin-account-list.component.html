@@ -1,0 +1,89 @@
+<div class="admin-account-list-container">
+  @if (accounts$ | async; as accounts) {
+    <div class="account-list-header">
+      <h2>Danh sách tài khoản</h2>
+      <button class="reload-btn" (click)="reloadAccounts()" title="Tải lại danh sách">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+          <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
+          <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
+        </svg>
+        Cập nhật
+      </button>
+    </div>
+    <div class="message-bar-wrapper">
+      @if (errorMsg) {
+        <div class="error-bar message-bar">{{ errorMsg }}</div>
+      }
+      @if (successMsg) {
+        <div class="success-bar message-bar">{{ successMsg }}</div>
+      }
+    </div>
+    <div class="table-wrapper">
+      <table class="account-table">
+        <thead>
+          <tr>
+            <th (click)="sortBy('username')">Tên đăng nhập</th>
+            <th (click)="sortBy('fullName')">Họ tên</th>
+            <th (click)="sortBy('email')">Email</th>
+            <th (click)="sortBy('phone')">Điện thoại</th>
+            <th (click)="sortBy('role')">Vai trò</th>
+            <th (click)="sortBy('status')">Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (acc of accounts; track acc.id) {
+            <tr>
+              <td>
+                <a (click)="viewDetail(acc)" class="account-link">{{ acc.username }}</a>
+              </td>
+              <td>
+                <a (click)="viewDetail(acc)" class="account-link">{{ acc.fullName }}</a>
+              </td>
+              <td>{{ acc.email }}</td>
+              <td>{{ acc.phone }}</td>
+              <td>{{ acc.role | titlecase }}</td>
+              <td>
+                <select class="status-dropdown" [ngClass]="{
+                  'active': acc.status.toLowerCase() === 'active',
+                  'inactive': acc.status.toLowerCase() === 'inactive',
+                  'banned': acc.status.toLowerCase() === 'banned'
+                }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)">
+                  <option value="ACTIVE">Hoạt động</option>
+                  <option value="INACTIVE">Đã khóa</option>
+                  <option value="BANNED">Cấm</option>
+                </select>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn" (click)="editUser(acc)" title="Chỉnh sửa tài khoản">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="logs-btn" (click)="viewActivityLogs(acc)" title="Xem nhật ký hoạt động">
+                    <i class="fas fa-history"></i>
+                  </button>
+                  <button class="reset-btn" (click)="resetPassword(acc)" title="Đặt lại mật khẩu">
+                    <i class="fas fa-key"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (accounts && accounts.length > 0) {
+      <div class="pagination-bar">
+        <button class="pagination-btn" (click)="prevPage()" [disabled]="pageNo === 0">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="pagination-index">{{ pageNo + 1 }} / {{ totalPages }}</span>
+        <button class="pagination-btn" (click)="nextPage()" [disabled]="pageNo + 1 >= totalPages">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    }
+    @if (loading) {
+      <div class="loading-bar">Đang tải...</div>
+    }
+  }

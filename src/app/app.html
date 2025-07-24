@@ -1,2 +1,8 @@
 <router-outlet />
-<app-footer></app-footer>
+<app-confirmation-dialog></app-confirmation-dialog>
+<!-- Footer chỉ hiển thị nếu không phải trang admin -->
+@if (!isAdminPage()) {
+  <app-footer></app-footer>
+}
+<!-- Toast notifications -->
+<app-toast></app-toast>
