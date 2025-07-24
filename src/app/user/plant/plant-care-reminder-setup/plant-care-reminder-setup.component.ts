@@ -2,7 +2,7 @@ import { environment } from 'environments/environment';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -95,9 +95,12 @@ export class PlantCareReminderSetupComponent {
   submit() {
     if (this.form.invalid || !this.userPlantId) return;
     this.loading = true;
+    const token = localStorage.getItem('token');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
     this.http.post(
       `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
-      this.form.value
+      this.form.value,
+      headers ? { headers } : undefined
     ).subscribe({
       next: (res: any) => {
         this.toast.success(typeof res === 'string' ? res : 'Đã lưu lịch nhắc nhở thành công!');
