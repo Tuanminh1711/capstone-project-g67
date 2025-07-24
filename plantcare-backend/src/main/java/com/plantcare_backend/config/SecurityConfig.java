@@ -76,7 +76,7 @@ public class SecurityConfig {
                 "http://40.81.23.51"
                 // Thêm domain nếu có, ví dụ: "https://yourdomain.com"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("PUT", "GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
