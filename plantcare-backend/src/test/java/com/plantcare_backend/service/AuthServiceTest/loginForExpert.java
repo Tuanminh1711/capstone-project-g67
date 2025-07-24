@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.AuthServiceTest;
 
-public class loginForAdminOrStaff {
+public class loginForExpert {
 }
