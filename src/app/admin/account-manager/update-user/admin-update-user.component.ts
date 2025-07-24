@@ -54,7 +54,7 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     username: '',
     email: '',
     password: '',
-    roleId: 2,
+    roleId: 2, // default: user
     fullName: '',
     phoneNumber: '',
     gender: 'male', // Use lowercase to match backend
@@ -181,7 +181,9 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     const roleMap: { [key: string]: number } = {
       'USER': 2,
       'ADMIN': 1,
-      'MANAGER': 3
+      'STAFF': 3,
+      'EXPERT': 4,
+      'VIP': 5
     };
     return roleMap[role?.toUpperCase()] || 2;
   }
@@ -232,7 +234,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         this.toastService.success('Cập nhật thông tin người dùng thành công!');
         this.updating = false;
         this.cdr.detectChanges();
-        
         // Reload user data to show updated info
         setTimeout(() => {
           this.loadUserDetail();
@@ -240,9 +241,11 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
       },
       error: (error: any) => {
         console.error('Error updating user:', error);
-        
         let errorMessage = '';
-        if (error.status === 0) {
+        // Ưu tiên hiện err.message nếu có (lỗi CORS, lỗi không phải JSON)
+        if (error && typeof error.message === 'string' && error.message.trim()) {
+          errorMessage = error.message;
+        } else if (error.status === 0) {
           errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
         } else if (error.status === 401) {
           errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
@@ -257,7 +260,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         } else {
           errorMessage = error?.error?.message || 'Không thể cập nhật thông tin. Vui lòng thử lại.';
         }
-        
         this.toastService.error(errorMessage);
         this.updating = false;
         this.cdr.detectChanges();
@@ -294,7 +296,9 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     const roleMap: { [key: string]: string } = {
       'USER': 'Người dùng',
       'ADMIN': 'Quản trị viên',
-      'MANAGER': 'Quản lý'
+      'STAFF': 'Nhân viên',
+      'EXPERT': 'Chuyên gia',
+      'VIP': 'VIP'
     };
     return roleMap[role?.toUpperCase()] || role;
   }

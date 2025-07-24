@@ -108,9 +108,7 @@ export class ReportPlantPageComponent implements OnInit {
     this.submitting = true;
     // Lấy token từ cookie
     const token = this.cookieService.getAuthToken();
-    console.log('[ReportPlantPageComponent] Token gửi lên:', token);
     const headers = token ? new HttpHeaders({ 'Authorization': `Bearer ${token}` }) : undefined;
-    console.log('[ReportPlantPageComponent] Gửi báo cáo với plantId:', this.plant.id, 'reason:', this.reason.trim());
     this.http.post('/api/plants-report/reason', {
       plantId: this.plant.id,
       reason: this.reason.trim()
@@ -122,7 +120,14 @@ export class ReportPlantPageComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.toast.error(err?.error?.message || 'Gửi báo cáo thất bại!');
+        // Ưu tiên hiện err.message nếu có, sau đó đến err.error.message
+        if (err?.message) {
+          this.toast.error(err.message);
+        } else if (err?.error?.message) {
+          this.toast.error(err.error.message);
+        } else {
+          this.toast.error('Gửi báo cáo thất bại!');
+        }
         this.submitting = false;
         this.cdr.detectChanges();
       }

@@ -163,3 +163,18 @@ input:focus, textarea:focus, select:focus {
   color: #fff;
   border: 1.5px solid #bdbdbd;
 }
+.update-plant-header {
+  margin-top: 32px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .update-plant-header {
+    margin-top: 20px;
+  }
+}
+
+.update-plant-page {
+  padding-top: 32px;
+}

@@ -42,6 +42,7 @@ export const routes: Routes = [
   { path: 'terms-of-use', component: TermsOfUseComponent },
 
   // USER
+  { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },
   { path: 'user/my-garden', component: MyGardenComponent },
   { path: 'user/create-new-plant', component: CreateNewPlantComponent },
   { path: 'user/user-plant-detail/:id', component: ViewUserPlantDetailComponent },
@@ -63,7 +64,7 @@ export const routes: Routes = [
   // ADMIN
   { 
     path: 'admin', 
-    loadChildren: () => import('./admin/admin-routes.lazy').then(m => m.ADMIN_ROUTES) 
+    loadChildren: () => import('./admin/admin-routes.lazy').then(m => m.default) 
   },
 
   // SHARED/UTILS

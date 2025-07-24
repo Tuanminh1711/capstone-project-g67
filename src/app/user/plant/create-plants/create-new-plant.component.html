@@ -43,18 +43,24 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="categoryId">Danh mục *</label>
-          <select 
-            id="categoryId"
-            formControlName="categoryId"
-            [class.error]="isFieldInvalid('categoryId')">
-            <option value="">-- Chọn danh mục --</option>
-            <option *ngFor="let category of categories" [value]="category.id">
-              {{ category.name }}
-            </option>
-          </select>
-          <div class="loading-text" *ngIf="isLoadingCategories">Đang tải danh mục...</div>
+        <div class="form-group category-group">
+          <label for="categoryId" class="category-label">Danh mục *</label>
+          <div class="category-select-wrapper">
+            <select 
+              id="categoryId"
+              formControlName="categoryId"
+              [class.error]="isFieldInvalid('categoryId')"
+              [disabled]="isLoadingCategories"
+              class="category-select">
+              <option value="">-- Chọn danh mục --</option>
+              <option *ngFor="let category of categories || []" [value]="category.id">
+                {{ category.name }}
+              </option>
+            </select>
+            <span class="loading-text" *ngIf="isLoadingCategories">
+              <i class="fas fa-spinner fa-spin"></i> Đang tải...
+            </span>
+          </div>
           <div class="error-message" *ngIf="isFieldInvalid('categoryId')">
             {{ getFieldError('categoryId') }}
           </div>

@@ -11,11 +11,6 @@
     <form [formGroup]="createPlantForm" (ngSubmit)="onSubmit()" class="create-plant-form">
       <!-- Basic Information Section -->
       <div class="form-section">
-        <h3 class="section-title">
-          <i class="fas fa-info-circle"></i>
-          Thông Tin Cơ Bản
-        </h3>
-        
         <div class="form-row">
           <div class="form-group">
             <label for="scientificName" class="form-label">
@@ -33,7 +28,6 @@
               {{ getFieldError('scientificName') }}
             </div>
           </div>
-
           <div class="form-group">
             <label for="commonName" class="form-label">
               Tên Thường Gọi <span class="required">*</span>
@@ -51,7 +45,6 @@
             </div>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label for="categoryId" class="form-label">
@@ -64,15 +57,16 @@
               [class.is-invalid]="createPlantForm.get('categoryId')?.touched && createPlantForm.get('categoryId')?.errors"
             >
               <option value="">-- Chọn danh mục --</option>
-              <option *ngFor="let category of categories" [value]="category.id">
-                {{ category.name }}
-              </option>
+              <ng-container *ngFor="let category of categories; trackBy: trackByCategoryId">
+                <option [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </ng-container>
             </select>
             <div class="error-message" *ngIf="getFieldError('categoryId')">
               {{ getFieldError('categoryId') }}
             </div>
           </div>
-
           <div class="form-group">
             <label for="suitableLocation" class="form-label">
               Vị Trí Phù Hợp <span class="required">*</span>
@@ -90,21 +84,22 @@
             </div>
           </div>
         </div>
-
-        <div class="form-group full-width">
-          <label for="description" class="form-label">
-            Mô Tả <span class="required">*</span>
-          </label>
-          <textarea
-            id="description"
-            formControlName="description"
-            class="form-control textarea"
-            rows="4"
-            placeholder="Mô tả chi tiết về cây..."
-            [class.is-invalid]="createPlantForm.get('description')?.touched && createPlantForm.get('description')?.errors"
-          ></textarea>
-          <div class="error-message" *ngIf="getFieldError('description')">
-            {{ getFieldError('description') }}
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="description" class="form-label">
+              Mô Tả <span class="required">*</span>
+            </label>
+            <textarea
+              id="description"
+              formControlName="description"
+              class="form-control textarea"
+              rows="4"
+              placeholder="Mô tả chi tiết về cây..."
+              [class.is-invalid]="createPlantForm.get('description')?.touched && createPlantForm.get('description')?.errors"
+            ></textarea>
+            <div class="error-message" *ngIf="getFieldError('description')">
+              {{ getFieldError('description') }}
+            </div>
           </div>
         </div>
       </div>
@@ -128,15 +123,16 @@
               [class.is-invalid]="createPlantForm.get('lightRequirement')?.touched && createPlantForm.get('lightRequirement')?.errors"
             >
               <option value="">-- Chọn yêu cầu ánh sáng --</option>
-              <option *ngFor="let option of lightOptions" [value]="option.value">
-                {{ option.label }}
-              </option>
+              <ng-container *ngFor="let option of lightOptions; trackBy: trackByOptionValue">
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </ng-container>
             </select>
             <div class="error-message" *ngIf="getFieldError('lightRequirement')">
               {{ getFieldError('lightRequirement') }}
             </div>
           </div>
-
           <div class="form-group">
             <label for="waterRequirement" class="form-label">
               Yêu Cầu Nước <span class="required">*</span>
@@ -148,13 +144,17 @@
               [class.is-invalid]="createPlantForm.get('waterRequirement')?.touched && createPlantForm.get('waterRequirement')?.errors"
             >
               <option value="">-- Chọn yêu cầu nước --</option>
-              <option *ngFor="let option of waterOptions" [value]="option.value">
-                {{ option.label }}
-              </option>
+              <ng-container *ngFor="let option of waterOptions; trackBy: trackByOptionValue">
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </ng-container>
             </select>
-            <div class="error-message" *ngIf="getFieldError('waterRequirement')">
-              {{ getFieldError('waterRequirement') }}
-            </div>
+            @if (getFieldError('waterRequirement')) {
+              <div class="error-message">
+                {{ getFieldError('waterRequirement') }}
+              </div>
+            }
           </div>
         </div>
 
@@ -170,15 +170,16 @@
               [class.is-invalid]="createPlantForm.get('careDifficulty')?.touched && createPlantForm.get('careDifficulty')?.errors"
             >
               <option value="">-- Chọn độ khó --</option>
-              <option *ngFor="let option of difficultyOptions" [value]="option.value">
-                {{ option.label }}
-              </option>
+              <ng-container *ngFor="let option of difficultyOptions; trackBy: trackByOptionValue">
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </ng-container>
             </select>
             <div class="error-message" *ngIf="getFieldError('careDifficulty')">
               {{ getFieldError('careDifficulty') }}
             </div>
           </div>
-
           <div class="form-group">
             <label for="commonDiseases" class="form-label">
               Bệnh Thường Gặp
@@ -193,20 +194,22 @@
           </div>
         </div>
 
-        <div class="form-group full-width">
-          <label for="careInstructions" class="form-label">
-            Hướng Dẫn Chăm Sóc <span class="required">*</span>
-          </label>
-          <textarea
-            id="careInstructions"
-            formControlName="careInstructions"
-            class="form-control textarea"
-            rows="5"
-            placeholder="Hướng dẫn chi tiết cách chăm sóc cây..."
-            [class.is-invalid]="createPlantForm.get('careInstructions')?.touched && createPlantForm.get('careInstructions')?.errors"
-          ></textarea>
-          <div class="error-message" *ngIf="getFieldError('careInstructions')">
-            {{ getFieldError('careInstructions') }}
+        <div class="form-row">
+          <div class="form-group">
+            <label for="careInstructions" class="form-label">
+              Hướng Dẫn Chăm Sóc <span class="required">*</span>
+            </label>
+            <textarea
+              id="careInstructions"
+              formControlName="careInstructions"
+              class="form-control textarea"
+              rows="5"
+              placeholder="Hướng dẫn chi tiết cách chăm sóc cây..."
+              [class.is-invalid]="createPlantForm.get('careInstructions')?.touched && createPlantForm.get('careInstructions')?.errors"
+            ></textarea>
+            <div class="error-message" *ngIf="getFieldError('careInstructions')">
+              {{ getFieldError('careInstructions') }}
+            </div>
           </div>
         </div>
       </div>

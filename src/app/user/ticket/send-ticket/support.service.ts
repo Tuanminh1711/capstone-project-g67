@@ -16,6 +16,13 @@ export class SupportService {
   // Create support ticket
   createTicket(data: { title: string; description: string; imageUrl?: string }): Observable<any> {
     return this.http.post(`${environment.apiUrl}/support/tickets`, data);
+   const token = localStorage.getItem('token');
+   return this.http.post<any>(`${environment.apiUrl}/support/tickets`, data, {
+     headers: {
+       'Content-Type': 'application/json',
+       Authorization: `Bearer ${token}`
+     }
+   });
   }
 
   // Get list of tickets (for dropdown)

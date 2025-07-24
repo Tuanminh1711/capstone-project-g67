@@ -90,18 +90,5 @@ export class AuthDialogService {
     });
   }
 
-  // openSupportTicketDialog(): void {
-  //   if (this.dialogOpened) return;
-  //   this.dialogOpened = true;
-  //   const dialogRef = this.dialog.open(CreateSupportTicketComponent, {
-  //     width: '500px',
-  //     disableClose: true,
-  //     panelClass: ['dialog-panel-bg', 'high-z-index'],
-  //     backdropClass: 'high-z-backdrop'
-  //   });
-  //   
-  //   dialogRef.afterClosed().subscribe(() => {
-  //     this.dialogOpened = false;
-  //   });
-  // }
+
 }

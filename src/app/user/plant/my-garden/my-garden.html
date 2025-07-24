@@ -217,14 +217,13 @@
                           </span>
                           <span class="detail-text">{{ plant.plantLocation || 'Chưa xác định' }}</span>
                         </div>
-                        <!-- Nhắc nhở chăm sóc -->
-                        <div class="reminder-toggle-row">
-                          <span class="reminder-label"></span>
-                          <button type="button" class="reminder-toggle-btn" [class.active]="plant.reminderEnabled" (click)="toggleAllReminders(plant); $event.stopPropagation()">
-                            {{ plant.reminderEnabled ? 'Bật tất cả nhắc nhở' : 'Tắt tất cả nhắc nhở' }}
+                        <!-- Nhắc nhở chăm sóc: chuyển lên góc trên bên phải -->
+                        <div class="reminder-floating-btns">
+                          <button type="button" class="reminder-icon-btn" [class.active]="plant.reminderEnabled" (click)="toggleAllReminders(plant); $event.stopPropagation()" title="{{ plant.reminderEnabled ? 'Tắt tất cả nhắc nhở' : 'Bật tất cả nhắc nhở' }}">
+                            <i class="fas" [ngClass]="plant.reminderEnabled ? 'fa-bell' : 'fa-bell-slash'"></i>
                           </button>
-                          <button type="button" class="reminder-type-btn" (click)="openReminderTypeDialog(plant); $event.stopPropagation()">
-                            Tuỳ chỉnh nhắc nhở
+                          <button type="button" class="reminder-icon-btn outline" (click)="openReminderTypeDialog(plant); $event.stopPropagation()" title="Tuỳ chỉnh nhắc nhở">
+                            <i class="fas fa-sliders-h"></i>
                           </button>
                         </div>
                       </div>

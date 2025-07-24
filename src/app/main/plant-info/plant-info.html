@@ -100,13 +100,14 @@
                         {{ plant.commonName }}
                         <span class="plant-scientific">
                           ({{ plant.scientificName }})
-                          @if (plant.status === 'INACTIVE') {
-                            <span class="plant-warning-icon" title="Cây này đang được xác thực thông tin bởi hệ thống">
+                          @if (plant.reportCount && plant.reportCount > 0) {
+                            <span class="plant-warning-icon tooltip-container">
                               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-                                <circle cx="10" cy="10" r="10" fill="#ffe066"/>
+                                <circle cx="10" cy="10" r="10" [attr.fill]="getWarningColor(plant.reportCount)"/>
                                 <path d="M10 5v5.5" stroke="#bfa100" stroke-width="1.6" stroke-linecap="round"/>
                                 <circle cx="10" cy="14.2" r="1.1" fill="#bfa100"/>
                               </svg>
+                              <span class="plant-warning-tooltip">Cây này đã bị báo cáo {{ plant.reportCount }} lần</span>
                             </span>
                           }
                         </span>
@@ -116,14 +117,18 @@
                       </div>
                       <div class="plant-desc">{{ plant.description }}</div>
                       <div class="plant-meta-simple">
-                        <span class="meta-label">Ánh sáng:</span>
-                        <span class="meta-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
-                        <span class="meta-sep">|</span>
-                        <span class="meta-label">Nước:</span>
-                        <span class="meta-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
-                        <span class="meta-sep">|</span>
-                        <span class="meta-label">Độ khó:</span>
-                        <span class="meta-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
+                        <span class="meta-item">
+                          <span class="meta-label">Ánh sáng:</span>
+                          <span class="meta-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
+                        </span>
+                        <span class="meta-item">
+                          <span class="meta-label">Nước:</span>
+                          <span class="meta-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
+                        </span>
+                        <span class="meta-item">
+                          <span class="meta-label">Độ khó:</span>
+                          <span class="meta-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
+                        </span>
                       </div>
                       <div class="plant-actions">
                         <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">

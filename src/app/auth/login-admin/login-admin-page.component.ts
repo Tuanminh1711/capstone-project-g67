@@ -13,9 +13,34 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login-admin-page.scss']
 })
 export class LoginAdminPageComponent {
+  // Dịch các message lỗi phổ biến sang tiếng Việt
+  private translateErrorMessage(msg: string): string {
+    if (!msg) return '';
+    const map: { [key: string]: string } = {
+      'password must be at least 6 characters': 'Mật khẩu phải có ít nhất 6 ký tự',
+      'passwords do not match': 'Mật khẩu xác nhận không khớp',
+      'username already exists': 'Tên đăng nhập đã tồn tại',
+      'email already exists': 'Email đã được sử dụng',
+      'invalid email format': 'Định dạng email không hợp lệ',
+      'invalid payload': 'Dữ liệu gửi lên không hợp lệ',
+      'user not found': 'Không tìm thấy người dùng',
+      'invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng',
+      'account is not verified': 'Tài khoản chưa được xác thực',
+      'account is locked': 'Tài khoản đã bị khóa',
+      'phone number already exists': 'Số điện thoại đã được sử dụng',
+      'password wrong!': 'Mật khẩu không đúng!',
+      'username wrong!': 'Tên đăng nhập không đúng!',
+      // Thêm các lỗi khác nếu cần
+    };
+    const msgNorm = msg.trim().toLowerCase();
+    if (map[msgNorm]) return map[msgNorm];
+    for (const key of Object.keys(map)) {
+      if (msgNorm.includes(key)) return map[key];
+    }
+    return msg;
+  }
   username = '';
   password = '';
-  errorMsg = '';
   successMsg = '';
   loading = false;
 
@@ -27,11 +52,10 @@ export class LoginAdminPageComponent {
 
   onSubmit() {
     if (!this.username || !this.password) {
-      this.errorMsg = 'Vui lòng nhập đầy đủ thông tin';
+      this.toast.error('Vui lòng nhập đầy đủ thông tin');
       return;
     }
     this.loading = true;
-    this.errorMsg = '';
     this.successMsg = '';
     this.authService.loginAdmin({
       username: this.username,
@@ -56,8 +80,16 @@ export class LoginAdminPageComponent {
       },
       error: (err: any) => {
         this.loading = false;
-        this.errorMsg = err?.error?.message || 'Đăng nhập thất bại!';
-        this.toast.error(this.errorMsg);
+        let msg = '';
+        if (err && err.error && err.error.message) {
+          msg = err.error.message;
+        } else if (err && err.error && typeof err.error === 'string') {
+          msg = err.error;
+        }
+        if (!msg && err && typeof err.message === 'string' && err.message.trim()) {
+          msg = err.message;
+        }
+        this.toast.error(this.translateErrorMessage(msg || 'Đăng nhập thất bại!'));
       }
     });
   }
