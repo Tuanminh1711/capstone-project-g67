@@ -68,8 +68,7 @@ public class AdminControllerTest {
         given(adminService.saveUser(any(UserRequestDTO.class))).willReturn(1L);
 
         //when
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/admin/adduser")
+        mockMvc.perform(post("/api/admin/adduser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content))
                 .andExpect(status().isOk())
@@ -85,8 +84,7 @@ public class AdminControllerTest {
     @Test
     void getListAccount_success() throws Exception {
         given(adminService.getAllUsers(0, 10)).willReturn(Collections.emptyList());
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/admin/listaccount")
+        mockMvc.perform(post("/api/admin/listaccount")
                 .param("pageNo", "0")
                 .param("pageSize", "10"))
                 .andExpect(status().isOk())
@@ -100,8 +98,7 @@ public class AdminControllerTest {
     @Test
     void deleteUser_success() throws Exception {
         int userId = 1;
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/admin/deleteuser")
+        mockMvc.perform(post("/api/admin/deleteuser")
                 .param("userId", String.valueOf(userId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User deleted successfully"));
@@ -116,8 +113,7 @@ public class AdminControllerTest {
         ChangeUserStatusRequestDTO statusRequest = new ChangeUserStatusRequestDTO();
         statusRequest.setStatus(Users.UserStatus.ACTIVE);
         String content = objectMapper.writeValueAsString(statusRequest);
-        mockMvc.perform(MockMvcRequestBuilders
-                .patch("/api/admin/changestatus/{userId}", userId)
+        mockMvc.perform(patch("/api/admin/changestatus/{userId}", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content))
                 .andExpect(status().isOk())
@@ -134,8 +130,8 @@ public class AdminControllerTest {
         searchRequest.setKeyword("test");
         String content = objectMapper.writeValueAsString(searchRequest);
         given(adminService.searchUsers(any(SearchAccountRequestDTO.class))).willReturn(Collections.emptyList());
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/admin/search-account")
+
+        mockMvc.perform(post("/api/admin/search-account")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content))
                 .andExpect(status().isOk())
@@ -151,8 +147,7 @@ public class AdminControllerTest {
         int userId = 1;
         UserDetailResponse userDetailResponse = new UserDetailResponse();
         given(adminService.getUserDetail(userId)).willReturn(userDetailResponse);
-        mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/admin/userdetail/{userId}", userId))
+        mockMvc.perform(get("/api/admin/userdetail/{userId}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User detail get successfully"));
         mockMvc.perform(get("/api/admin/userdetail/{userId}", userId))
@@ -163,8 +158,7 @@ public class AdminControllerTest {
     void updateUser_success() throws Exception {
         int userId = 1;
         String content = objectMapper.writeValueAsString(request);
-        mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/admin/updateuser/{userId}", userId)
+        mockMvc.perform(put("/api/admin/updateuser/{userId}", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content))
                 .andExpect(status().isOk())
@@ -178,8 +172,7 @@ public class AdminControllerTest {
     @Test
     void resetPassword_success() throws Exception {
         int userId = 1;
-        mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/admin/reset-password/{userId}", userId))
+        mockMvc.perform(put("/api/admin/reset-password/{userId}", userId))
                 .andExpect(status().isOk());
         mockMvc.perform(put("/api/admin/reset-password/{userId}", userId))
                 .andDo(print());
