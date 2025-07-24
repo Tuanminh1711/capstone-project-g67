@@ -1,5 +1,8 @@
 package com.plantcare_backend.service.AuthServiceTest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.response.auth.LoginResponse;
 import com.plantcare_backend.model.Role;
@@ -21,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,6 +56,11 @@ class LoginForUser {
 
     private LoginRequestDTO requestDTO;
     private Users user;
+    private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+
+    private void printResponse(LoginResponse response) throws JsonProcessingException {
+        System.out.println("LoginForUserResponse:\n" + mapper.writeValueAsString(response));
+    }
 
     @BeforeEach
     void setUp() {
@@ -70,105 +79,155 @@ class LoginForUser {
     }
 
     @Test
-    void loginForUser_success() {
-        // Arrange
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
-        given(jwtUtil.generateToken(any(String.class), any(String.class), any(int.class)))
-                .willReturn("jwt-token");
-        given(httpServletRequest.getRemoteAddr()).willReturn("127.0.0.1");
-        given(ipLocationService.getLocationFromIp("127.0.0.1")).willReturn("from Vietnam");
+    void loginForUser_success() throws Exception {
+        try {
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
+            given(jwtUtil.generateToken(any(String.class), any(String.class), any(int.class))).willReturn("jwt-token");
+            given(httpServletRequest.getRemoteAddr()).willReturn("127.0.0.1");
+            given(ipLocationService.getLocationFromIp("127.0.0.1")).willReturn("from Vietnam");
 
-        // Act
-        LoginResponse response = authService.loginForUser(requestDTO, httpServletRequest);
+            LoginResponse response = authService.loginForUser(requestDTO, httpServletRequest);
 
-        // Assert
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("Login successful", response.getMessage());
-        assertEquals("user123456", response.getUsername());
-        assertEquals("jwt-token", response.getToken());
-        assertEquals("USER", response.getRole());
+            assertEquals(HttpStatus.OK.value(), response.getStatus(), "Status code không phải 200 OK");
+            assertEquals("Login successful", response.getMessage(), "Message không đúng");
+            assertEquals("user123456", response.getUsername(), "Username không đúng");
+            assertEquals("jwt-token", response.getToken(), "Token không đúng");
+            assertEquals("USER", response.getRole(), "Role không đúng");
+
+            printResponse(response);
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_success' thất bại: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_success' thất bại");
+        }
     }
 
     @Test
     void loginForUser_usernameNotFound() {
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.empty());
+        try {
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.loginForUser(requestDTO, httpServletRequest);
-        });
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+                authService.loginForUser(requestDTO, httpServletRequest);
+            }, "Không ném exception khi username không tồn tại");
 
-        assertEquals("Username wrong!", exception.getMessage());
+            assertEquals("Username wrong!", ex.getMessage(), "Username không đúng");
+            System.out.println("Exception được ném như mong đợi: " + ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_usernameNotFound' lỗi: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_usernameNotFound' thất bại");
+        }
     }
 
     @Test
     void loginForUser_wrongPassword() {
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(false);
+        try {
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(false);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.loginForUser(requestDTO, httpServletRequest);
-        });
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+                authService.loginForUser(requestDTO, httpServletRequest);
+            }, "Không ném exception khi password sai");
 
-        assertEquals("password wrong!", exception.getMessage());
+            assertEquals("password wrong!", ex.getMessage(), "Password không đúng");
+            System.out.println("Exception được ném như mong đợi: " + ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_wrongPassword' lỗi: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_wrongPassword' thất bại");
+        }
     }
 
     @Test
     void loginForUser_userBanned() {
-        user.setStatus(Users.UserStatus.BANNED);
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
+        try {
+            user.setStatus(Users.UserStatus.BANNED);
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.loginForUser(requestDTO, httpServletRequest);
-        });
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+                authService.loginForUser(requestDTO, httpServletRequest);
+            }, "Không ném exception khi user bị BANNED");
 
-        assertEquals("tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.", exception.getMessage());
+            assertEquals("tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.", ex.getMessage(),
+                    "Status code phải là 401 UNAUTHORIZED nếu tài khoản bị khóa");
+            System.out.println("Exception được ném như mong đợi: " + ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_userBanned' lỗi: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_userBanned' thất bại");
+        }
     }
 
     @Test
     void loginForUser_invalidRoleAdmin() {
-        Role role = new Role();
-        role.setRoleName(Role.RoleName.ADMIN);
-        user.setRole(role);
+        try {
+            Role role = new Role();
+            role.setRoleName(Role.RoleName.ADMIN);
+            user.setRole(role);
 
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.loginForUser(requestDTO, httpServletRequest);
-        });
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+                authService.loginForUser(requestDTO, httpServletRequest);
+            }, "Không ném exception khi role không hợp lệ");
 
-        assertEquals("Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập ở đây.", exception.getMessage());
+            assertEquals("Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập ở đây.", ex.getMessage(),
+                    "Status code phải là 401 UNAUTHORIZED nếu tài khoản không phải là tài khoản của user hoặc vip");
+            System.out.println("Exception được ném như mong đợi: " + ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_invalidRoleAdmin' lỗi: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_invalidRoleAdmin' thất bại");
+        }
     }
+
 
     @Test
     void loginForUser_invalidRoleStaff() {
-        Role role = new Role();
-        role.setRoleName(Role.RoleName.STAFF);
-        user.setRole(role);
+        try {
+            Role role = new Role();
+            role.setRoleName(Role.RoleName.STAFF);
+            user.setRole(role);
 
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.loginForUser(requestDTO, httpServletRequest);
-        });
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+                authService.loginForUser(requestDTO, httpServletRequest);
+            }, "Không ném exception khi role không hợp lệ");
 
-        assertEquals("Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập ở đây.", exception.getMessage());
+            assertEquals("Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập ở đây.", ex.getMessage(),
+                    "Status code phải là 401 UNAUTHORIZED nếu tài khoản không phải là tài khoản của user hoặc vip");
+            System.out.println("Exception được ném như mong đợi: " + ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_invalidRoleStaff' lỗi: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_invalidRoleStaff' thất bại");
+        }
     }
 
     @Test
-    void loginForUser_userInactive() {
-        user.setStatus(Users.UserStatus.INACTIVE);
+    void loginForUser_userInactive() throws Exception {
+        try {
+            user.setStatus(Users.UserStatus.INACTIVE);
 
-        given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
-        given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
+            given(userRepository.findByUsername("user123456")).willReturn(Optional.of(user));
+            given(passwordEncoder.matches("123456@", "encodedPassword")).willReturn(true);
 
-        LoginResponse response = authService.loginForUser(requestDTO, httpServletRequest);
+            LoginResponse response = authService.loginForUser(requestDTO, httpServletRequest);
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-        assertEquals("tài khoản của bạn chưa xác thực, vui lòng kiểm tra email hoặc gửi lại mã xác minh.", response.getMessage());
-        assertEquals("user123456", response.getUsername());
+            assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus(), "Status không phải UNAUTHORIZED");
+            assertEquals("tài khoản của bạn chưa xác thực, vui lòng kiểm tra email hoặc gửi lại mã xác minh.",
+                    response.getMessage(), "Status code phải là 401 UNAUTHORIZED nếu tài khoản chưa được xác minh");
+
+            printResponse(response);
+        } catch (Exception e) {
+            System.out.println("Test 'loginForUser_userInactive' lỗi: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'loginForUser_userInactive' thất bại");
+        }
     }
-
 }
