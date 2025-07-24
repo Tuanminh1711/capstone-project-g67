@@ -148,6 +148,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         dto.setPhoneNumber(userProfile.getPhone());
         dto.setLivingEnvironment(userProfile.getLivingEnvironment());
         dto.setGender(userProfile.getGender() != null ? userProfile.getGender().toString() : null);
+        dto.setAvatar(userProfile.getAvatarUrl());
         return dto;
     }
 }
