@@ -3,6 +3,7 @@ import { HomeComponent } from './main/home/home.component';
 import { PlantInfoComponent } from './main/plant-info/plant-info';
 import { PlantDetailComponent } from './main/plant-detail/plant-detail.component';
 import { AboutUsComponent } from './main/about-us/about-us';
+import { CareExpertComponent } from './main/care-expert/care-expert.component';
 
 // USER FEATURE
 import { MyGardenComponent } from './user/plant/my-garden/my-garden.component';
@@ -14,9 +15,9 @@ import { ReportPlantPageComponent } from './user/plant/report-plant/report-plant
 import { UpdatePlantComponent as UserUpdatePlantComponent } from './user/plant/update-plant/update-plant.component';
 
 // PROFILE & AUTH
-import { ViewUserProfileComponent } from './profile/view-user-profile/view-user-profile.component';
-import { EditUserProfileComponent } from './profile/edit-user-profile/edit-user-profile.component';
-import { ChangePasswordComponent } from './profile/change-password/change-password.component';
+import { ViewUserProfileComponent } from './user/profile/view-user-profile/view-user-profile.component';
+import { EditUserProfileComponent } from './user/profile/edit-user-profile/edit-user-profile.component';
+import { ChangePasswordComponent } from './user/profile/change-password/change-password.component';
 import { LoginAdminPageComponent } from './auth/login-admin/login-admin-page.component';
 
 // ADMIN FEATURE
@@ -37,6 +38,7 @@ export const routes: Routes = [
   { path: 'plant-info/detail/:id', component: PlantDetailComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: 'terms-of-use', component: TermsOfUseComponent },
+  { path: 'care-expert', component: CareExpertComponent },
 
   // USER
   { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },

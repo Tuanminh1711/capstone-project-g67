@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, AfterViewInit, ViewChild } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserProfileService, UserProfile, UpdateUserProfileRequest } from '../view-user-profile/user-profile.service';
@@ -11,11 +11,12 @@ import { of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { CommonModule } from '@angular/common';
+import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
 @Component({
   selector: 'app-edit-user-profile',
   standalone: true,
-  imports: [FormsModule, TopNavigatorComponent, CommonModule],
+  imports: [FormsModule, TopNavigatorComponent, CommonModule, ImageCropperComponent],
   templateUrl: './edit-user-profile.html',
   styleUrls: ['./edit-user-profile.scss']
 })
@@ -28,6 +29,10 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
   saveMessage = '';
   saveError = '';
   avatarUploading = false;
+  showCropper = false;
+  imageChangedEvent: any = '';
+  croppedImage: string | null = null;
+  @ViewChild('imageCropper') imageCropper: any;
 
   constructor(
     private userProfileService: UserProfileService,
@@ -107,21 +112,91 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
       if (file.size > 5 * 1024 * 1024) {
         this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
         this.selectedAvatarFile = null;
+        this.cdr.detectChanges();
         return;
       }
       if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
         this.toastService.error('Định dạng file không hỗ trợ. Vui lòng chọn file JPG, PNG hoặc GIF.');
         this.selectedAvatarFile = null;
+        this.cdr.detectChanges();
         return;
       }
-      this.selectedAvatarFile = file;
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.avatarPreview = e.target.result;
-        this.cdr.markForCheck();
-      };
-      reader.readAsDataURL(file);
+      // Truyền lại event gốc cho imageChangedEvent (chuẩn ngx-image-cropper)
+      this.imageChangedEvent = event;
+      this.showCropper = true;
+      this.croppedImage = null;
+      this.selectedAvatarFile = null;
+      // Không reset avatarPreview ở đây, để giữ preview cho cropper
+      this.cdr.detectChanges();
     }
+  }
+
+  onImageCropped(event: ImageCroppedEvent) {
+    // Đã chuẩn, không cần log debug nữa
+    if (event.base64) {
+      this.croppedImage = event.base64;
+      this.avatarPreview = this.croppedImage;
+      this.cdr.detectChanges();
+    } else if (event.blob) {
+      // Nếu không có base64, tự convert blob sang base64
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.croppedImage = reader.result as string;
+        this.avatarPreview = this.croppedImage;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(event.blob);
+    } else {
+      this.croppedImage = null;
+      this.avatarPreview = null;
+      this.cdr.detectChanges();
+    }
+  }
+
+  onImageLoaded() {
+    // Không gọi crop() ở đây để tránh lỗi canvas width 0. Cropper sẽ tự động emit imageCropped khi sẵn sàng.
+  }
+
+  onCropperReady() {
+    // Không gọi crop ở đây nữa để tránh lỗi canvas width 0
+  }
+
+  onCropperLoadFail() {
+    this.toastService.error('Không thể tải ảnh. Vui lòng thử lại.');
+    this.showCropper = false;
+    this.cdr.detectChanges();
+  }
+
+  confirmCroppedAvatar() {
+    // Chuyển base64 sang file để upload
+    if (this.croppedImage) {
+      const file = this.dataURLtoFile(this.croppedImage, 'avatar.png');
+      this.selectedAvatarFile = file;
+      this.avatarPreview = this.croppedImage;
+      this.showCropper = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  cancelCropper() {
+    this.showCropper = false;
+    this.croppedImage = null;
+    this.avatarPreview = this.user.avatar || null;
+    this.selectedAvatarFile = null;
+    this.cdr.detectChanges();
+  }
+
+  dataURLtoFile(dataurl: string, filename: string) {
+    const arr = dataurl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const bstr = atob(arr[1]);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+    return new File([u8arr], filename, { type: mime });
   }
 
   uploadAvatar() {
@@ -132,10 +207,16 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
     this.avatarUploading = true;
     const formData = new FormData();
     formData.append('avatar', this.selectedAvatarFile);
-    this.http.post('http://localhost:8080/api/user/update-avatar', formData, { withCredentials: true }).subscribe({
-      next: (response: any) => {
-        this.toastService.success('Cập nhật ảnh đại diện thành công!');
-        this.loadUserProfile();
+    // Gửi PUT đúng contract backend, nhận về ResponseData<UpdateAvatarResponseDTO>
+    this.http.put<any>(`/api/user/update-avatar`, formData, { withCredentials: true }).subscribe({
+      next: (res) => {
+        // res: { code, message, data: { avatar: 'filename' } }
+        if (res?.data?.avatar) {
+          this.user.avatar = res.data.avatar;
+          this.avatarPreview = null;
+          this.selectedAvatarFile = null;
+        }
+        this.toastService.success(res?.message || 'Cập nhật ảnh đại diện thành công!');
         this.avatarUploading = false;
         this.cdr.markForCheck();
       },
@@ -146,6 +227,12 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
           this.showLoginDialog();
         } else if (error.status === 403) {
           errorMessage = 'Không có quyền cập nhật ảnh đại diện.';
+        } else if (error.status === 404) {
+          errorMessage = error.error?.message || 'Không tìm thấy người dùng.';
+        } else if (error.status === 400) {
+          errorMessage = error.error?.message || 'Dữ liệu không hợp lệ.';
+        } else if (error.status === 500) {
+          errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
         } else if (error.error?.message) {
           errorMessage = error.error.message;
         }

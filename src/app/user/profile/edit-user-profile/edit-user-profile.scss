@@ -1,14 +1,121 @@
+.update-avatar-btn {
+  min-width: 160px;
+  padding: 13px 22px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #4a7c35 0%, #6ba653 100%);
+  box-shadow: 0 4px 16px rgba(74, 124, 53, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s;
+  outline: none;
+}
+
+.update-avatar-btn.highlight {
+  background: linear-gradient(135deg, #6ba653 0%, #4a7c35 100%);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(107, 166, 83, 0.18);
+}
+
+.update-avatar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.update-avatar-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, #3e5f2f 0%, #6ba653 100%);
+  box-shadow: 0 10px 28px rgba(62, 95, 47, 0.22);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.update-avatar-btn svg {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+// Cropper overlay and modal styles
+.cropper-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 60, 30, 0.25);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.cropper-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(62, 122, 47, 0.25), 0 1.5px 8px rgba(0,0,0,0.08);
+  padding: 32px 28px 24px 28px;
+  z-index: 1010;
+  min-width: 320px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: cropperModalFadeIn 0.25s;
+}
+
+.cropper-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4a7c35;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+}
+
+.cropper-modal image-cropper {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(62, 122, 47, 0.10);
+  background: #f6fff6;
+  margin-bottom: 18px;
+  max-width: 320px;
+  width: 80vw;
+}
+
+.cropper-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.cropper-actions .update-avatar-btn {
+  min-width: 120px;
+  font-size: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1.5px 6px rgba(62, 122, 47, 0.08);
+}
+
+@keyframes cropperModalFadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
 .edit-profile-page {
   min-height: 100vh;
-  background: #f8f9fa;
-  padding: 20px;
+  background: linear-gradient(135deg, #eaf5e4 0%, #d4ecd4 100%);
+  padding: 40px 24px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
 
   .edit-profile-container {
-    max-width: 1000px;
+    max-width: 1280px;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -17,25 +124,26 @@
 
   .page-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 
     h1 {
-      font-size: 28px;
-      font-weight: 600;
-      color: #212529;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: #3e5f2f;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
     p {
-      font-size: 16px;
-      color: #6c757d;
-      margin-top: 5px;
+      font-size: 1.1rem;
+      color: #4e7a3a;
+      margin-top: 4px;
     }
   }
 
   .edit-profile-content {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 32px;
     width: 100%;
     justify-content: center;
     flex-wrap: wrap;
@@ -43,66 +151,44 @@
 
   .avatar-section {
     .avatar-card {
-      background: #ffffff;
-      padding: 25px;
-      border-radius: 8px;
-      border: 1px solid #dee2e6;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      min-width: 280px;
-      max-width: 320px;
+      background: linear-gradient(135deg, white, #d9f2d9);
+      padding: 32px;
+      border-radius: 16px;
+      border: 2px solid #8bc675;
+      box-shadow: 0 8px 24px rgba(62, 122, 47, 0.2);
+      min-width: 300px;
+      max-width: 360px;
 
       h3 {
         text-align: center;
-        font-size: 18px;
+        font-size: 1.4rem;
         font-weight: 600;
-        color: #212529;
-        margin-bottom: 20px;
+        color: #4a7c35;
+        margin-bottom: 24px;
+        border-left: 4px solid #6ba653;
+        padding-left: 8px;
       }
 
       .avatar-upload-area {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 15px;
+        gap: 16px;
       }
 
       .avatar-preview {
-        width: 120px;
-        height: 120px;
+        width: 140px;
+        height: 140px;
         border-radius: 50%;
         overflow: hidden;
-        border: 3px solid #dee2e6;
-        cursor: pointer;
+        border: 3px solid #4a7c35;
         position: relative;
+        transition: all 0.3s ease;
 
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-        }
-
-        &:hover {
-          .upload-overlay {
-            opacity: 1;
-          }
-        }
-
-        .upload-overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.6);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-
-          span {
-            font-size: 13px;
-            font-weight: 500;
-          }
         }
       }
 
@@ -319,13 +405,19 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
+    padding: 20px 16px;
+
     .edit-profile-content {
       flex-direction: column;
+      gap: 24px;
     }
 
-    .form-grid {
-      grid-template-columns: 1fr;
+    .avatar-section .avatar-card,
+    .form-section .form-card {
+      min-width: auto;
+      max-width: none;
+      width: 100%;
     }
 
     .page-header h1 {
@@ -333,17 +425,22 @@
     }
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 600px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
     .form-actions {
       flex-direction: column;
-      align-items: center;
-      gap: 12px;
+    }
 
-      .save-button,
-      .change-password-btn {
-        width: 100%;
-        max-width: 280px;
-      }
+    .save-button {
+      width: 100%;
+    }
+
+    .avatar-preview {
+      width: 120px;
+      height: 120px;
     }
   }
 }

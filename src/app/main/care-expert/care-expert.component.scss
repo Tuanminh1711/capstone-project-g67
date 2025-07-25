@@ -1,0 +1,132 @@
+.care-expert-vip {
+  max-width: 480px;
+  margin: 40px auto;
+  background: linear-gradient(135deg, #fffbe6 0%, #e0ffe6 100%);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px #43e97b22;
+  padding: 36px 28px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vip-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.logo-img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px #43e97b33;
+}
+
+.vip-badge {
+  background: linear-gradient(90deg, #ffe066 0%, #43e97b 100%);
+  color: #178a4c;
+  font-weight: 900;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  padding: 4px 18px;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px #ffe06644;
+  letter-spacing: 0.1em;
+}
+
+.vip-header h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #178a4c;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.vip-benefits {
+  margin: 18px 0 24px 0;
+  width: 100%;
+}
+
+.vip-benefits h2 {
+  color: #43e97b;
+  font-size: 1.18rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.vip-benefits ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.vip-benefits li {
+  background: #e6fff7;
+  color: #178a4c;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  padding: 10px 16px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #43e97b11;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vip-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 18px;
+  width: 100%;
+  justify-content: center;
+}
+
+.main-btn.vip-btn {
+  background: linear-gradient(90deg, #43e97b 0%, #ffe066 100%);
+  color: #178a4c;
+  font-weight: 700;
+  font-size: 1.13rem;
+  border-radius: 12px;
+  padding: 12px 24px;
+  box-shadow: 0 4px 16px #43e97b33;
+  border: none;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.main-btn.vip-btn:hover {
+  background: linear-gradient(90deg, #ffe066 0%, #43e97b 100%);
+  color: #178a4c;
+  box-shadow: 0 8px 24px #ffe06644;
+}
+
+.main-btn.outline-btn {
+  background: #fff;
+  color: #43e97b;
+  border: 2px solid #43e97b;
+  font-weight: 700;
+  font-size: 1.13rem;
+  border-radius: 12px;
+  padding: 12px 24px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.main-btn.outline-btn:hover {
+  background: #e6fff7;
+  color: #178a4c;
+  border: 2px solid #ffe066;
+}
+
+@media (max-width: 600px) {
+  .care-expert-vip {
+    padding: 18px 2vw 18px 2vw;
+    max-width: 99vw;
+  }
+  .vip-header h1 {
+    font-size: 1.25rem;
+  }
+}

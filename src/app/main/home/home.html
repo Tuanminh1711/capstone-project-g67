@@ -6,7 +6,12 @@
       <span class="hero-title-main">Giúp bạn yêu cây dễ dàng hơn</span>
     </h1>
     <p class="hero-desc">Tìm cây phù hợp – Chăm cây đúng cách – Kết nối với chuyên gia</p>
-    <button routerLink="/explore" class="cta-btn cta-animate">Bắt đầu ngay</button>
+    @if (!jwtUserUtil.isLoggedIn()) {
+      <button (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập ngay</button>
+    }
+    @if (jwtUserUtil.isLoggedIn()) {
+      <button (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Chăm sóc cùng chuyên gia</button>
+    }
   </div>
   <div class="hero-image">
     <img
@@ -18,153 +23,5 @@
 
 
 <!-- Các tính năng nổi bật dạng khối xếp tầng đẹp mắt -->
-<section class="features-stacked">
-
-  @for (feature of leftSlides; track feature.title) {
-    <div class="feature-block fancy-block">
-      <div class="feature-content">
-        @if (feature.icon) {
-          <div class="feature-icon">
-            <i [class]="feature.icon"></i>
-          </div>
-        }
-        @if (feature.title === 'Khám phá cây trồng') {
-          <img src="assets/image/feature-explore.jpg" alt="Khám phá cây trồng" class="feature-img" />
-        }
-        @if (feature.title === 'Chăm sóc cây thông minh') {
-          <img src="assets/image/feature-care.jpg" alt="Chăm sóc cây thông minh" class="feature-img" />
-        }
-        @if (feature.title === 'Kết nối chuyên gia') {
-          <img src="assets/image/feature-community.jpg" alt="Kết nối chuyên gia" class="feature-img" />
-        }
-        @if (feature.title === 'Theo dõi sức khỏe cây') {
-          <img src="assets/image/feature-health.jpg" alt="Theo dõi sức khỏe cây" class="feature-img" />
-        }
-        @if (feature.title === 'Gợi ý cây phù hợp') {
-          <img src="assets/image/feature-suggest.jpg" alt="Gợi ý cây phù hợp" class="feature-img" />
-        }
-        @if (feature.title === 'Khám phá cây trồng') {
-          <div class="feature-banner banner-explore">
-            <div class="banner-overlay"></div>
-            <div class="banner-content">
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <h4 class="feature-subtitle">Khám phá kho cây trồng đa dạng, chọn cây phù hợp cho mọi không gian sống.</h4>
-              <p class="feature-desc">
-                Khám phá kho cây trồng đa dạng, từ cây cảnh đến cây ăn quả, với thông tin chi tiết về đặc điểm, cách chăm sóc và ý nghĩa phong thủy. Giúp bạn lựa chọn loại cây phù hợp nhất cho không gian sống và sở thích cá nhân. Đội ngũ PlantCare luôn cập nhật xu hướng mới, giúp bạn bắt kịp phong cách sống xanh hiện đại.
-              </p>
-              <div class="banner-actions">
-                <button routerLink="/explore" class="feature-cta-btn">Khám phá ngay</button>
-              </div>
-            </div>
-          </div>
-        }
-        @if (feature.title === 'Chăm sóc cây thông minh') {
-          <div class="feature-banner banner-care">
-            <div class="banner-overlay"></div>
-            <div class="banner-content">
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <h4 class="feature-subtitle">Công nghệ AI hỗ trợ chăm cây đúng cách, phát triển xanh tốt quanh năm.</h4>
-              <p class="feature-desc">
-                Nhận hướng dẫn chăm sóc cây chi tiết, lịch tưới nước, bón phân và nhắc nhở tự động. Công nghệ AI giúp bạn chăm cây đúng cách, hạn chế sâu bệnh và phát triển xanh tốt quanh năm. Tất cả đều được cá nhân hóa theo từng loại cây và môi trường sống của bạn.
-              </p>
-              <div class="banner-actions">
-                <button routerLink="/care" class="feature-cta-btn">Bắt đầu chăm cây</button>
-              </div>
-            </div>
-          </div>
-        }
-        @if (feature.title === 'Kết nối chuyên gia') {
-          <div class="feature-banner banner-community">
-            <div class="banner-overlay"></div>
-            <div class="banner-content">
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <h4 class="feature-subtitle">Cộng đồng yêu cây, chuyên gia tư vấn, chia sẻ kinh nghiệm thực tế.</h4>
-              <p class="feature-desc">
-                Tham gia cộng đồng yêu cây, đặt câu hỏi và nhận tư vấn trực tiếp từ các chuyên gia giàu kinh nghiệm. Chia sẻ hình ảnh, kinh nghiệm và nhận hỗ trợ kịp thời khi cây gặp vấn đề. Mỗi thành viên đều có thể trở thành người truyền cảm hứng sống xanh.
-              </p>
-              <div class="banner-actions">
-                <button routerLink="/community" class="feature-cta-btn">Tham gia cộng đồng</button>
-              </div>
-            </div>
-          </div>
-        }
-        @if (feature.title === 'Theo dõi sức khỏe cây') {
-          <div class="feature-banner banner-health">
-            <div class="banner-overlay"></div>
-            <div class="banner-content">
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <h4 class="feature-subtitle">Theo dõi, cảnh báo sớm sức khỏe cây, xử lý kịp thời mọi vấn đề.</h4>
-              <p class="feature-desc">
-                Hệ thống theo dõi sức khỏe cây trồng thông minh, cảnh báo sớm các dấu hiệu bất thường. Giúp bạn phát hiện và xử lý kịp thời các vấn đề về sâu bệnh, thiếu dinh dưỡng hoặc môi trường không phù hợp. Đảm bảo cây luôn khỏe mạnh, xanh tốt quanh năm.
-              </p>
-            </div>
-          </div>
-        }
-        @if (feature.title === 'Gợi ý cây phù hợp') {
-          <div class="feature-banner banner-suggest">
-            <div class="banner-overlay"></div>
-            <div class="banner-content">
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <h4 class="feature-subtitle">Gợi ý cây trồng tối ưu cho từng vị trí, sở thích và mục tiêu sử dụng.</h4>
-              <p class="feature-desc">
-                Công cụ gợi ý cây trồng dựa trên sở thích, điều kiện môi trường và mục tiêu sử dụng. Đảm bảo bạn luôn chọn được loại cây phù hợp nhất cho từng vị trí trong nhà hoặc văn phòng. Tối ưu hóa không gian sống, nâng tầm phong cách cá nhân.
-              </p>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  }
-  @for (feature of rightSlides; track feature.title) {
-    <div class="feature-block fancy-block">
-      <div class="feature-content">
-        @if (feature.icon) {
-          <div class="feature-icon">
-            <i [class]="feature.icon"></i>
-          </div>
-        }
-        <div>
-          <h3 class="feature-title">{{ feature.title }}</h3>
-          @if (feature.title === 'Khám phá cây trồng') {
-            <h4 class="feature-subtitle">Khám phá kho cây trồng đa dạng, chọn cây phù hợp cho mọi không gian sống.</h4>
-          }
-          @if (feature.title === 'Chăm sóc cây thông minh') {
-            <h4 class="feature-subtitle">Công nghệ AI hỗ trợ chăm cây đúng cách, phát triển xanh tốt quanh năm.</h4>
-          }
-          @if (feature.title === 'Kết nối chuyên gia') {
-            <h4 class="feature-subtitle">Cộng đồng yêu cây, chuyên gia tư vấn, chia sẻ kinh nghiệm thực tế.</h4>
-          }
-          @if (feature.title === 'Theo dõi sức khỏe cây') {
-            <h4 class="feature-subtitle">Theo dõi, cảnh báo sớm sức khỏe cây, xử lý kịp thời mọi vấn đề.</h4>
-          }
-          @if (feature.title === 'Gợi ý cây phù hợp') {
-            <h4 class="feature-subtitle">Gợi ý cây trồng tối ưu cho từng vị trí, sở thích và mục tiêu sử dụng.</h4>
-          }
-          <p class="feature-desc">
-            {{ feature.title === 'Khám phá cây trồng' ?
-              'Khám phá kho cây trồng đa dạng, từ cây cảnh đến cây ăn quả, với thông tin chi tiết về đặc điểm, cách chăm sóc và ý nghĩa phong thủy. Giúp bạn lựa chọn loại cây phù hợp nhất cho không gian sống và sở thích cá nhân. Đội ngũ PlantCare luôn cập nhật xu hướng mới, giúp bạn bắt kịp phong cách sống xanh hiện đại.' :
-            feature.title === 'Chăm sóc cây thông minh' ?
-              'Nhận hướng dẫn chăm sóc cây chi tiết, lịch tưới nước, bón phân và nhắc nhở tự động. Công nghệ AI giúp bạn chăm cây đúng cách, hạn chế sâu bệnh và phát triển xanh tốt quanh năm. Tất cả đều được cá nhân hóa theo từng loại cây và môi trường sống của bạn.' :
-            feature.title === 'Kết nối chuyên gia' ?
-              'Tham gia cộng đồng yêu cây, đặt câu hỏi và nhận tư vấn trực tiếp từ các chuyên gia giàu kinh nghiệm. Chia sẻ hình ảnh, kinh nghiệm và nhận hỗ trợ kịp thời khi cây gặp vấn đề. Mỗi thành viên đều có thể trở thành người truyền cảm hứng sống xanh.' :
-            feature.title === 'Theo dõi sức khỏe cây' ?
-              'Hệ thống theo dõi sức khỏe cây trồng thông minh, cảnh báo sớm các dấu hiệu bất thường. Giúp bạn phát hiện và xử lý kịp thời các vấn đề về sâu bệnh, thiếu dinh dưỡng hoặc môi trường không phù hợp. Đảm bảo cây luôn khỏe mạnh, xanh tốt quanh năm.' :
-            feature.title === 'Gợi ý cây phù hợp' ?
-              'Công cụ gợi ý cây trồng dựa trên sở thích, điều kiện môi trường và mục tiêu sử dụng. Đảm bảo bạn luôn chọn được loại cây phù hợp nhất cho từng vị trí trong nhà hoặc văn phòng. Tối ưu hóa không gian sống, nâng tầm phong cách cá nhân.' :
-            feature.description }}
-          </p>
-          @if (feature.title === 'Khám phá cây trồng') {
-            <button routerLink="/explore" class="feature-cta-btn">Khám phá ngay</button>
-          }
-          @if (feature.title === 'Kết nối chuyên gia') {
-            <button routerLink="/community" class="feature-cta-btn">Tham gia cộng đồng</button>
-          }
-          @if (feature.title === 'Chăm sóc cây thông minh') {
-            <button routerLink="/care" class="feature-cta-btn">Bắt đầu chăm cây</button>
-          }
-        </div>
-      </div>
-    </div>
-  }
-</section>
+<!-- XÓA leftSlides và rightSlides, giữ lại section nếu cần thêm nội dung khác sau này -->
 

@@ -85,7 +85,22 @@ export class AuthService {
    * Đăng xuất - xóa token khỏi cookie
    */
   logout(): void {
-    this.cookieService.removeAuthToken();
+    const token = this.cookieService.getAuthToken();
+    if (token) {
+      this.http.post(`${this.apiUrl}/logout`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: () => {
+          this.cookieService.removeAuthToken();
+        },
+        error: () => {
+          // Dù lỗi vẫn xóa token phía client
+          this.cookieService.removeAuthToken();
+        }
+      });
+    } else {
+      this.cookieService.removeAuthToken();
+    }
   }
 
   /**

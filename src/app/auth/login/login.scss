@@ -21,14 +21,15 @@
 }
 
 /* ======= Layout chung ======= */
+
 :host-context(.mat-dialog-container),
 .dialog-panel-bg {
   background: #178a4c !important;
   border-radius: 18px !important;
   box-shadow: 0 12px 40px rgba(30, 174, 96, 0.22) !important;
-  padding: 28px 18px 18px 18px !important;
-  min-width: 280px;
-  max-width: 95vw;
+  padding: 38px 32px 32px 32px !important;
+  min-width: 380px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -39,6 +40,7 @@
   @media (max-width: 700px) {
     padding: 12px 2px 8px 2px !important;
     min-width: 0;
+    max-width: 98vw;
   }
 }
 

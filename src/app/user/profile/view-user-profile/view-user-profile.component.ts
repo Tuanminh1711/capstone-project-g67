@@ -18,6 +18,23 @@ import { RouterModule, Router } from '@angular/router';
 export class ViewUserProfileComponent implements OnInit, AfterViewInit {
   // Property trực tiếp để binding
   userProfile: UserProfile | null = null;
+  avatarBaseUrl = '/avatars/'; // Adjust this if your backend is on a different origin
+  /**
+   * Trả về URL ảnh đại diện dựa trên filename từ userProfile.avatar
+   * Nếu không có avatar, trả về ảnh mặc định
+   */
+  getAvatarUrl(): string {
+    if (this.userProfile && this.userProfile.avatar) {
+      // Nếu avatar là một đường dẫn base64 (user vừa upload), trả về trực tiếp
+      if (this.userProfile.avatar.startsWith('data:image')) {
+        return this.userProfile.avatar;
+      }
+      // Nếu là tên file, trả về endpoint backend
+      return this.avatarBaseUrl + encodeURIComponent(this.userProfile.avatar);
+    }
+    // Ảnh mặc định nếu chưa có avatar
+    return 'assets/image/default-avatar.png';
+  }
   
   // Trạng thái loading và error
   loading = true;

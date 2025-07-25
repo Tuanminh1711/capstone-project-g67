@@ -4,7 +4,7 @@
   <div class="edit-profile-container">
     <!-- Header -->
     <div class="page-header">
-      <h1>Chỉnh sửa hồ sơ</h1>
+      <h1>CHỈNH SỬA HỒ SƠ</h1>
       <p>Cập nhật thông tin cá nhân và ảnh đại diện của bạn</p>
     </div>
 
@@ -29,36 +29,81 @@
 
       <!-- Show profile content if user loaded -->
       <div *ngIf="user.id" class="edit-profile-content">
-        <!-- Avatar Section -->
+        <!-- Avatar Section (merged logic/UI) -->
         <div class="avatar-section">
           <div class="avatar-card">
             <h3>Ảnh đại diện</h3>
             <div class="avatar-upload-area">
               <div class="avatar-preview" (click)="avatarInput.click()" [class.uploading]="avatarUploading">
-                <img *ngIf="(avatarPreview || user.avatar) && !avatarUploading" [src]="avatarPreview || user.avatar" alt="avatar" />
-                <div *ngIf="!avatarPreview && !user.avatar && !avatarUploading" class="avatar-placeholder">
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
-                  </svg>
-                </div>
-                <div *ngIf="avatarUploading" class="avatar-loading">
-                  <div class="loading-spinner"></div>
-                  <span>Đang tải...</span>
-                </div>
-                <div *ngIf="!avatarUploading" class="upload-overlay">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                  </svg>
-                  <span>Thay đổi ảnh</span>
-                </div>
+                @if ((avatarPreview || user.avatar) && !avatarUploading) {
+                  <img [src]="avatarPreview || user.avatar" alt="avatar" />
+                }
+                @if (!avatarPreview && !user.avatar && !avatarUploading) {
+                  <div class="avatar-placeholder">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                    </svg>
+                  </div>
+                }
+                @if (avatarUploading) {
+                  <div class="avatar-loading">
+                    <div class="loading-spinner"></div>
+                    <span>Đang tải...</span>
+                  </div>
+                }
+                @if (!avatarUploading) {
+                  <div class="upload-overlay">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    <span>Thay đổi ảnh</span>
+                  </div>
+                }
               </div>
               <input #avatarInput type="file" accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onAvatarChange($event)" style="display:none" [disabled]="avatarUploading" />
+              <!-- Thêm cropper khi có ảnh mới -->
+              <div *ngIf="showCropper">
+                <div class="cropper-overlay"></div>
+                <div class="cropper-modal">
+                  <div class="cropper-header">Cắt & chỉnh ảnh đại diện</div>
+                  <image-cropper
+                    #imageCropper
+                    [imageChangedEvent]="imageChangedEvent"
+                    [maintainAspectRatio]="true"
+                    [aspectRatio]="1/1"
+                    [resizeToWidth]="256"
+                    format="png"
+                    (imageCropped)="onImageCropped($event)"
+                    (imageLoaded)="onImageLoaded()"
+                    (cropperReady)="onCropperReady()"
+                    (loadImageFailed)="onCropperLoadFail()"
+                  ></image-cropper>
+                  <div class="cropper-actions">
+                    <button type="button" class="update-avatar-btn highlight" (click)="confirmCroppedAvatar()" [disabled]="!croppedImage">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px;vertical-align:middle;">
+                        <path d="M5,20H19A2,2 0 0,0 21,18V8A2,2 0 0,0 19,6H15.82C15.4,4.84 14.3,4 13,4H11C9.7,4 8.6,4.84 8.18,6H5A2,2 0 0,0 3,8V18A2,2 0 0,0 5,20M12,7A2,2 0 1,1 10,9A2,2 0 0,1 12,7M5,8H19V18H5Z" />
+                      </svg>
+                      <span style="font-weight:600;letter-spacing:0.5px;">Xác nhận ảnh</span>
+                    </button>
+                    <button type="button" class="update-avatar-btn" (click)="cancelCropper()" style="margin-left:10px;">Huỷ</button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div style="text-align:center; margin-top: 12px;">
-              <button type="button" class="update-avatar-btn" (click)="uploadAvatar()" [disabled]="avatarUploading || !selectedAvatarFile">
-                <span *ngIf="!avatarUploading">Cập nhật ảnh đại diện</span>
-                <span *ngIf="avatarUploading">Đang cập nhật...</span>
-              </button>
+              @if (avatarPreview && !avatarUploading && !showCropper) {
+                <button type="button" class="update-avatar-btn highlight" (click)="uploadAvatar()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px;vertical-align:middle;">
+                    <path d="M5,20H19A2,2 0 0,0 21,18V8A2,2 0 0,0 19,6H15.82C15.4,4.84 14.3,4 13,4H11C9.7,4 8.6,4.84 8.18,6H5A2,2 0 0,0 3,8V18A2,2 0 0,0 5,20M12,7A2,2 0 1,1 10,9A2,2 0 0,1 12,7M5,8H19V18H5Z" />
+                  </svg>
+                  <span style="font-weight:600;letter-spacing:0.5px;">Lưu ảnh đại diện</span>
+                </button>
+              }
+              @if (avatarUploading) {
+                <button type="button" class="update-avatar-btn highlight" disabled>
+                  <span>Đang cập nhật...</span>
+                </button>
+              }
             </div>
             <div class="avatar-info">
               <p class="avatar-guidelines">

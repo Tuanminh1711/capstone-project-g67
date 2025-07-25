@@ -13,7 +13,12 @@ export class DialogManager {
   open(component: any): void {
     if (this.dialogOpened) return;
     this.dialogOpened = true;
-    const dialogRef = this.dialog.open(component, {
+    // Nếu là LoginDialogComponent thì không set width nhỏ, để mặc định
+    const isLoginDialog = component && component.name === 'LoginDialogComponent';
+    const dialogRef = this.dialog.open(component, isLoginDialog ? {
+      disableClose: true,
+      panelClass: 'dialog-panel-bg'
+    } : {
       disableClose: true,
       panelClass: 'dialog-panel-bg'
     });
