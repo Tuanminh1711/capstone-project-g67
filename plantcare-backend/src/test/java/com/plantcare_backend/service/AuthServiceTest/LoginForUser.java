@@ -56,6 +56,7 @@ class LoginForUser {
 
     private LoginRequestDTO requestDTO;
     private Users user;
+
     private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     private void printResponse(LoginResponse response) throws JsonProcessingException {
