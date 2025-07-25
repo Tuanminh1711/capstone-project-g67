@@ -68,7 +68,6 @@ public class registerForUser {
         request.setConfirmPassword("password123");
         request.setFullName("Test User");
         request.setPhone("0123456789");
-        request.setEmail("invalid-email");
     }
 
     @Test
@@ -167,14 +166,15 @@ public class registerForUser {
     @Test
     void registerForUser_invalidEmailFormat() {
         try {
+            request.setEmail("invalid-email");
+
             when(userRepository.existsByUsername("testuser")).thenReturn(false);
             when(userRepository.existsByEmail("invalid-email")).thenReturn(false);
 
             ResponseData<?> response = authService.registerForUser(request);
 
-            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus(),
-                    "Status code phải là 400 BAD_REQUEST nếu email không hợp lệ");
-            assertEquals("Invalid email", response.getMessage(), "Invalid email");
+            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
+            assertEquals("Email không hợp lệ", response.getMessage());
 
             printResponse(response);
         } catch (Exception e) {
@@ -188,9 +188,11 @@ public class registerForUser {
     void registerForUser_passwordTooShort() {
         request.setPassword("123");
         request.setConfirmPassword("123");
+
         try {
             when(userRepository.existsByUsername("testuser")).thenReturn(false);
-            when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
+            when(userRepository.existsByEmail("invalid-email")).thenReturn(false);
+
 
             ResponseData<?> response = authService.registerForUser(request);
 
@@ -233,8 +235,6 @@ public class registerForUser {
     @Test
     void registerForUser_roleNotFound() {
         try {
-            when(userRepository.existsByUsername("testuser")).thenReturn(false);
-            when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
             when(roleRepository.findByRoleName(Role.RoleName.USER)).thenReturn(Optional.empty());
 
             ResponseData<?> response = authService.registerForUser(request);
@@ -249,5 +249,52 @@ public class registerForUser {
             e.printStackTrace();
             fail("Test 'registerForUser_roleNotFound' thất bại");
         }
+    }
+
+    @Test
+    void registerForUser_invalidFullName() {
+        try {
+            request.setFullName("John123@!");
+
+            when(userRepository.existsByUsername("testuser")).thenReturn(false);
+            when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
+
+            ResponseData<?> response = authService.registerForUser(request);
+
+            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus(),
+                    "Status code phải là 400 BAD_REQUEST nếu fullname không hợp lệ");
+            assertEquals("Fullname không được chứa ký tự đặc biệt hoặc số", response.getMessage(),
+                    "Fullname không được chứa ký tự đặc biệt hoặc số");
+
+            printResponse(response);
+        } catch (Exception e) {
+            System.out.println("Test 'registerForUser_invalidFullName' thất bại: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'registerForUser_invalidFullName' thất bại");
+        }
+    }
+
+    @Test
+    void registerForUser_invalidPhoneNumber() {
+        try {
+            request.setPhone("123ABC@#");
+
+            when(userRepository.existsByUsername("testuser")).thenReturn(false);
+            when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
+
+            ResponseData<?> response = authService.registerForUser(request);
+
+            assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus(),
+                    "Status code phải là 400 BAD_REQUEST nếu số điện thoại không hợp lệ");
+            assertEquals("Số điện thoại không hợp lệ", response.getMessage(),
+                    "Số điện thoại không hợp lệ");
+
+            printResponse(response); // In ra toàn bộ response để debug nếu fail
+        } catch (Exception e) {
+            System.out.println("Test 'registerForUser_invalidPhoneNumber' thất bại: " + e.getMessage());
+            e.printStackTrace();
+            fail("Test 'registerForUser_invalidPhoneNumber' thất bại");
+        }
+
     }
 }
