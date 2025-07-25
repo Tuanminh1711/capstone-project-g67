@@ -85,26 +85,48 @@ public class ChatController {
     @GetMapping("/chat/history")
     public List<ChatMessage> getChatHistory() {
         log.info("Fetching chat history...");
-        List<com.plantcare_backend.model.ChatMessage> entities = chatMessageRepository.findAll();
-        log.info("Found {} chat messages in database", entities.size());
+        try {
+            List<com.plantcare_backend.model.ChatMessage> entities = chatMessageRepository.findAll();
+            log.info("Found {} chat messages in database", entities.size());
 
-        List<ChatMessage> result = entities.stream()
-                .map(entity -> {
-                    ChatMessage dto = ChatMessage.builder()
-                            .senderId(entity.getSender() != null ? entity.getSender().getId() : null)
-                            .receiverId(entity.getReceiver() != null ? entity.getReceiver().getId() : null)
-                            .senderRole(entity.getSender() != null ? entity.getSender().getRole().getRoleName().name()
-                                    : null)
-                            .content(entity.getContent())
-                            .timestamp(entity.getSentAt() != null ? entity.getSentAt().toInstant().toString() : null)
-                            .build();
-                    log.debug("Converted entity to DTO: {}", dto);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+            if (entities.isEmpty()) {
+                log.info("No chat messages found in database");
+                return List.of();
+            }
 
-        log.info("Returning {} chat messages", result.size());
-        return result;
+            List<ChatMessage> result = entities.stream()
+                    .map(entity -> {
+                        try {
+                            log.debug("Processing entity: ID={}, Sender={}, Content={}", 
+                                entity.getMessageId(), 
+                                entity.getSender() != null ? entity.getSender().getUsername() : "null",
+                                entity.getContent());
+                            
+                            ChatMessage dto = ChatMessage.builder()
+                                    .senderId(entity.getSender() != null ? entity.getSender().getId() : null)
+                                    .receiverId(entity.getReceiver() != null ? entity.getReceiver().getId() : null)
+                                    .senderRole(entity.getSender() != null && entity.getSender().getRole() != null ? 
+                                        entity.getSender().getRole().getRoleName().name() : null)
+                                    .content(entity.getContent())
+                                    .timestamp(entity.getSentAt() != null ? entity.getSentAt().toInstant().toString() : null)
+                                    .build();
+                            
+                            log.debug("Converted to DTO: {}", dto);
+                            return dto;
+                        } catch (Exception e) {
+                            log.error("Error converting entity to DTO: {}", e.getMessage(), e);
+                            return null;
+                        }
+                    })
+                    .filter(dto -> dto != null)
+                    .collect(Collectors.toList());
+
+            log.info("Successfully converted {} chat messages to DTOs", result.size());
+            return result;
+        } catch (Exception e) {
+            log.error("Error fetching chat history: {}", e.getMessage(), e);
+            return List.of();
+        }
     }
 
     @MessageExceptionHandler

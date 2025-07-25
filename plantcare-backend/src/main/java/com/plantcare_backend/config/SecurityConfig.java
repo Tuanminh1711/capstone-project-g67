@@ -94,6 +94,7 @@ public class SecurityConfig {
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/api/**", config);
+                source.registerCorsConfiguration("/chat/**", config); // Thêm CORS cho chat endpoints
                 return source;
         }
 
