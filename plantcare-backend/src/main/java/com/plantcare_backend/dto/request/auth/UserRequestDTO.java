@@ -25,7 +25,9 @@ public class UserRequestDTO implements Serializable {
     @NotBlank(message = "username must be not blank")
     private String username;
 
+
     @Email(message = "email invalid format! please try again")
+    @NotBlank(message = "username must be not blank")
     private String email;
 
     @Size(min = 8, message = "password must be at least 8 characters")
