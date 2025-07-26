@@ -5,6 +5,7 @@ import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
+import com.plantcare_backend.dto.validator.PasswordStrengthValidator;
 import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.UserActivityLog;
 import com.plantcare_backend.model.UserProfile;
@@ -42,6 +43,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserActivityLogRepository userActivityLogRepository;
     private final IpLocationService ipLocationService;
     private final OtpService otpService;
+    @Autowired
+    private PasswordStrengthValidator passwordStrengthValidator;
 
     @Override
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
@@ -260,12 +263,24 @@ public class AuthServiceImpl implements AuthService {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!passwordEncoder.matches(requestDTO.getCurrentPassword(), user.getPassword())) {
-                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Current password is incorrect");
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
+                        "Current password is incorrect. Please try again.");
             }
 
             if (!requestDTO.getNewPassword().equals(requestDTO.getConfirmPassword())) {
                 return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
                         "New password and confirm password do not match");
+            }
+
+            if (passwordEncoder.matches(requestDTO.getNewPassword(), user.getPassword())) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
+                        "New password must be different from current password");
+            }
+
+            if (!passwordStrengthValidator.isValidPassword(requestDTO.getNewPassword())) {
+                String message = passwordStrengthValidator.getPasswordStrengthMessage(requestDTO.getNewPassword());
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),
+                        "Password strength validation failed: " + message);
             }
 
             user.setPassword(passwordEncoder.encode(requestDTO.getNewPassword()));
@@ -280,7 +295,8 @@ public class AuthServiceImpl implements AuthService {
                     .build();
             userActivityLogRepository.save(activityLog);
 
-            return new ResponseData<>(HttpStatus.OK.value(), "Password changed successfully");
+            return new ResponseData<>(HttpStatus.OK.value(),
+                    "Password changed successfully. Please log in again with your new password.");
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Error changing password: " + e.getMessage());

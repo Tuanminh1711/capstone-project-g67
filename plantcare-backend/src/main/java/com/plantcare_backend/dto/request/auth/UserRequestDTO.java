@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.io.Serializable;
+
 import static com.plantcare_backend.util.Gender.*;
 
 /**
@@ -27,9 +28,14 @@ public class UserRequestDTO implements Serializable {
     @Email(message = "email invalid format! please try again")
     private String email;
 
-    @NotBlank(message = "password must be not blank")
-    @Size(min = 6, message = "password must be at least 6 characters")
+    @Size(min = 8, message = "password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
+            message = "Password must contain at least 8 characters, including uppercase, lowercase, number and special character"
+    )
     private String password;
+
+    private Boolean generatePassword = false;
 
     @NotBlank(message = "fullName must not be blank")
     @Pattern(

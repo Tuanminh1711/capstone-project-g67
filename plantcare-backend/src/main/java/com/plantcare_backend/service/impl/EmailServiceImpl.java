@@ -33,6 +33,7 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("Failed to send email: " + e.getMessage());
         }
     }
+
     @Override
     public void sendEmail(String to, String subject, String content) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -47,5 +48,22 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendEmailAsync(String to, String subject, String content) {
         sendEmail(to, subject, content);
+    }
+
+    @Override
+    public void sendWelcomeEmail(String email, String username, String password) {
+        String subject = "Welcome to PlantCare - Your Account Has Been Created";
+        String content = String.format(
+                "Xin Chào %s,\n\n" +
+                        "Tài khoản của bạn đã được tạo bởi quản trị viên.\n\n" +
+                        "Thông tin đăng nhập:\n" +
+                        "tài khoản: %s\n" +
+                        "mật khẩu: %s\n\n" +
+                        "Vui lòng thay đổi mật khẩu sau lần đăng nhập đầu tiên.\n\n" +
+                        "Trân trọng,\nPlantCare Team",
+                username, username, password
+        );
+
+        sendEmail(email, subject, content);
     }
 }

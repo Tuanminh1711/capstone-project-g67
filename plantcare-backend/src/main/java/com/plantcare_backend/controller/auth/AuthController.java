@@ -1,5 +1,6 @@
 package com.plantcare_backend.controller.auth;
 
+import com.plantcare_backend.annotation.RateLimit;
 import com.plantcare_backend.dto.response.auth.LoginResponse;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.request.auth.ForgotPasswordRequestDTO;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Create by TaHoang
@@ -206,6 +208,7 @@ public class AuthController {
      * Đổi mật khẩu cho user đã đăng nhập.
      */
     @Operation(summary = "Change Password", description = "Change user password")
+    @RateLimit(value = 3, timeUnit = TimeUnit.MINUTES) // gioi han 3 lan trong 5 phut.
     @PostMapping("/change-password")
     public ResponseEntity<ResponseData<?>> changePassword(
             @Valid @RequestBody ChangePasswordRequestDTO requestDTO,
