@@ -209,8 +209,14 @@ class saveUser {
 
             assertFalse(violations.isEmpty(), "Expected validation errors but got none");
 
+            Exception exception = assertThrows(Exception.class, () -> {
+                adminService.saveUser(request);
+            });
+            System.out.println("Caught exception of type: " + exception.getClass().getName());
+
             for (ConstraintViolation<UserRequestDTO> violation : violations) {
                 System.out.println("saveUser failed :" + violation.getMessage());
+
             }
         } catch (Exception e) {
             System.out.println("Test 'saveUser_blankFullName' thất bại: " + e.getMessage());
@@ -294,6 +300,7 @@ class saveUser {
             fail("Test 'saveUser_invalidFullName' thất bại");
         }
     }
+
     @Test
     void saveUser_invalidEmail() {
         try {
@@ -312,6 +319,7 @@ class saveUser {
             fail("Test 'saveUser_invalidFullName' thất bại");
         }
     }
+
     @Test
     void saveUser_invalidPhoneNumber() {
         try {
