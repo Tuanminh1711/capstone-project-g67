@@ -3,6 +3,7 @@ package com.plantcare_backend.dto.request.auth;
 import com.plantcare_backend.dto.validator.PhoneNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -18,7 +19,11 @@ public class RegisterRequestDTO {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 8, message = "password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
+            message = "Password must contain at least 8 characters, including uppercase, lowercase, number and special character"
+    )
     private String password;
 
     @NotBlank(message = "Confirm password is required")
