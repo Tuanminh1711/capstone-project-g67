@@ -1,5 +1,8 @@
--- Insert roles (nếu chưa có)
-INSERT IGNORE INTO roles (role_name, description)
+-- File: V2__Insert_initial_data.sql
+-- Insert dữ liệu mẫu
+
+-- 1. Insert roles TRƯỚC (vì users cần reference)
+INSERT INTO roles (role_name, description)
 VALUES ('ADMIN', 'Administrator'),
        ('STAFF', 'Staff member'),
        ('USER', 'Regular user'),
@@ -7,8 +10,8 @@ VALUES ('ADMIN', 'Administrator'),
        ('EXPERT', 'Plant expert'),
        ('VIP', 'VIP user');
 
--- Insert plant categories (nếu chưa có)
-INSERT IGNORE INTO plant_categories (name, description, created_at)
+-- 2. Insert plant categories TRƯỚC (vì plants cần reference)
+INSERT INTO plant_categories (name, description, created_at)
 VALUES ('Củ dong',
         'Nhóm thực vật có thân rễ phát triển dưới đất, thường có lá lớn, được trồng làm cảnh trong nhà hoặc sân vườn.',
         CURRENT_TIMESTAMP),
@@ -57,8 +60,30 @@ VALUES ('Củ dong',
        ('Xương rồng', 'Nhóm cây mọng nước có gai, sinh sống tốt trong điều kiện khô hạn, rất phổ biến trong trang trí.',
         CURRENT_TIMESTAMP);
 
--- Insert sample plant
-INSERT IGNORE INTO plants (scientific_name, common_name, category_id, description, care_instructions,
+-- 3. Insert care types (không có dependency)
+INSERT INTO care_types (care_type_name)
+VALUES ('Tưới nước'),
+       ('Bón phân'),
+       ('Cắt tỉa'),
+       ('Thay chậu'),
+       ('Kiểm tra sâu bệnh'),
+       ('Lau lá'),
+       ('Phun thuốc');
+
+-- 4. Insert article categories (không có dependency)
+INSERT INTO article_categories (name, description)
+VALUES ('Chăm sóc cơ bản', 'Hướng dẫn chăm sóc cây cảnh cơ bản'),
+       ('Bệnh và sâu hại', 'Cách phòng và trị bệnh cho cây'),
+       ('Kỹ thuật trồng', 'Kỹ thuật trồng và nhân giống cây'),
+       ('Phong thủy', 'Ý nghĩa phong thủy của các loại cây');
+
+-- 5. Insert admin user SAU KHI CÓ roles
+INSERT INTO users (username, email, password, role_id, status)
+VALUES ('admin', 'hotrochamsoccaycanhtainha@gmail.com', '$10$e2jvG5E8c2AT9I1qozycJ.zlAyqroKRHkHQZmunqAb.Cog8SgmAAC', 1,
+        'ACTIVE');
+
+-- 6. Insert sample plant SAU KHI CÓ plant_categories
+INSERT INTO plants (scientific_name, common_name, category_id, description, care_instructions,
                     light_requirement, water_requirement, care_difficulty, suitable_location,
                     common_diseases, created_by, status)
 VALUES ('Aglaonema commutatum', 'Vạn Niên Thanh', 12,
@@ -68,24 +93,6 @@ VALUES ('Aglaonema commutatum', 'Vạn Niên Thanh', 12,
         'MODERATE', 'Đặt ở phòng khách, bàn làm việc, gần cửa sổ có rèm lọc ánh sáng.',
         'Thối rễ, vàng lá, rệp sáp', 1, 'ACTIVE');
 
--- Insert admin user (password: admin123)
-INSERT IGNORE INTO users (username, email, password, role_id, status)
-VALUES ('admin', 'hotrochamsoccaycanhtainha@gmail.com', '$10$e2jvG5E8c2AT9I1qozycJ.zlAyqroKRHkHQZmunqAb.Cog8SgmAAC', 1,
-        'ACTIVE');
-
--- Insert care types
-INSERT IGNORE INTO care_types (care_type_name)
-VALUES ('Tưới nước'),
-       ('Bón phân'),
-       ('Cắt tỉa'),
-       ('Thay chậu'),
-       ('Kiểm tra sâu bệnh'),
-       ('Lau lá'),
-       ('Phun thuốc');
-
--- Insert sample article categories
-INSERT IGNORE INTO article_categories (name, description)
-VALUES ('Chăm sóc cơ bản', 'Hướng dẫn chăm sóc cây cảnh cơ bản'),
-       ('Bệnh và sâu hại', 'Cách phòng và trị bệnh cho cây'),
-       ('Kỹ thuật trồng', 'Kỹ thuật trồng và nhân giống cây'),
-       ('Phong thủy', 'Ý nghĩa phong thủy của các loại cây'); 
+-- 7. Insert admin profile SAU KHI CÓ users
+INSERT INTO user_profiles (user_id, full_name, phone, gender)
+VALUES (1, 'Administrator', '0123456789', 'OTHER');
