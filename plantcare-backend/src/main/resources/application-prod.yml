@@ -2,19 +2,19 @@ spring:
   config:
     activate:
       on-profile: prod
-      datasource:
-        url: jdbc:mysql://localhost:3306/plants_support?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-        username: root
-        password: 123456
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        jpa:
-          hibernate:
-            ddl-auto: update  # Không tự động tạo schema
-          show-sql: false
-          properties:
-            hibernate:
-              dialect: org.hibernate.dialect.MySQLDialect
-          flyway:
+  datasource:
+    url: jdbc:mysql://localhost:3306/plants_support?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update  # Không tự động tạo schema
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 0
