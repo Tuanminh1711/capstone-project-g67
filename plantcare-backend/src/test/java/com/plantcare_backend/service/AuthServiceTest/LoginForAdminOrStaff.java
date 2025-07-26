@@ -83,12 +83,10 @@ class LoginForAdminOrStaff {
         userStaff = new Users();
         userStaff.setUsername("userStaff");
         userStaff.setPassword("encodedPassword");
-        userStaff.setStatus(Users.UserStatus.ACTIVE);
 
         userAdmin = new Users();
         userAdmin.setUsername("userAdmin");
         userAdmin.setPassword("encodedPassword");
-        userAdmin.setStatus(Users.UserStatus.ACTIVE);
     }
 
     @Test
