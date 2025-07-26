@@ -1,4 +1,7 @@
--- 1. Bảng vai trò và phân quyền
+-- File: V1__Create_complete_schema.sql
+-- Tạo tất cả 26 bảng trong 1 file
+
+-- 1. Bảng vai trò và phân quyền (TẠO TRƯỚC)
 CREATE TABLE roles
 (
     role_id     INT PRIMARY KEY AUTO_INCREMENT,
@@ -7,6 +10,7 @@ CREATE TABLE roles
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
 CREATE TABLE permissions
 (
     permission_id  INT PRIMARY KEY AUTO_INCREMENT,
@@ -14,6 +18,7 @@ CREATE TABLE permissions
     description    VARCHAR(255)
 );
 
+-- 2. Bảng liên kết vai trò và quyền (SAU KHI CÓ roles và permissions)
 CREATE TABLE roles_permissions
 (
     role_id       INT,
@@ -22,7 +27,8 @@ CREATE TABLE roles_permissions
     FOREIGN KEY (role_id) REFERENCES roles (role_id) ON DELETE CASCADE,
     FOREIGN KEY (permission_id) REFERENCES permissions (permission_id) ON DELETE CASCADE
 );
--- 2. Bảng người dùng và hồ sơ
+
+-- 3. Bảng người dùng (SAU KHI CÓ roles)
 CREATE TABLE users
 (
     user_id    INT PRIMARY KEY AUTO_INCREMENT,
@@ -36,6 +42,7 @@ CREATE TABLE users
     FOREIGN KEY (role_id) REFERENCES roles (role_id)
 );
 
+-- 4. Bảng hồ sơ người dùng (SAU KHI CÓ users)
 CREATE TABLE user_profiles
 (
     profile_id         INT PRIMARY KEY AUTO_INCREMENT,
@@ -49,7 +56,8 @@ CREATE TABLE user_profiles
     updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
--- 3. Bảng VIP đơn hàng
+
+-- 5. Bảng VIP đơn hàng (SAU KHI CÓ users)
 CREATE TABLE vip_orders
 (
     order_id       INT PRIMARY KEY AUTO_INCREMENT,
@@ -64,7 +72,7 @@ CREATE TABLE vip_orders
             ON DELETE CASCADE
 );
 
--- 4. Nhật ký hoạt động người dùng
+-- 6. Nhật ký hoạt động người dùng (SAU KHI CÓ users)
 CREATE TABLE user_activity_log
 (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -80,7 +88,8 @@ CREATE TABLE user_activity_log
             REFERENCES users (user_id)
             ON DELETE CASCADE
 );
--- 5. Bảng danh mục cây
+
+-- 7. Bảng danh mục cây (TẠO TRƯỚC)
 CREATE TABLE plant_categories
 (
     category_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -89,7 +98,7 @@ CREATE TABLE plant_categories
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. Bảng cây
+-- 8. Bảng cây (SAU KHI CÓ plant_categories)
 CREATE TABLE plants
 (
     plant_id          INT PRIMARY KEY AUTO_INCREMENT,
@@ -110,7 +119,7 @@ CREATE TABLE plants
     FOREIGN KEY (category_id) REFERENCES plant_categories (category_id)
 );
 
--- 7. Hình ảnh cây
+-- 9. Hình ảnh cây (SAU KHI CÓ plants)
 CREATE TABLE plant_images
 (
     image_id    INT PRIMARY KEY AUTO_INCREMENT,
@@ -121,7 +130,8 @@ CREATE TABLE plant_images
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (plant_id) REFERENCES plants (plant_id) ON DELETE CASCADE
 );
--- 8. Bảng cây người dùng sở hữu
+
+-- 10. Bảng cây người dùng sở hữu (SAU KHI CÓ users và plants)
 CREATE TABLE user_plants
 (
     user_plant_id     INT PRIMARY KEY AUTO_INCREMENT,
@@ -135,7 +145,7 @@ CREATE TABLE user_plants
     FOREIGN KEY (plant_id) REFERENCES plants (plant_id)
 );
 
--- 9. Hình ảnh cây của người dùng
+-- 11. Hình ảnh cây của người dùng (SAU KHI CÓ user_plants)
 CREATE TABLE user_plant_images
 (
     image_id      INT PRIMARY KEY AUTO_INCREMENT,
@@ -146,14 +156,14 @@ CREATE TABLE user_plant_images
     FOREIGN KEY (user_plant_id) REFERENCES user_plants (user_plant_id)
 );
 
--- 10. Loại chăm sóc
+-- 12. Loại chăm sóc (TẠO TRƯỚC)
 CREATE TABLE care_types
 (
     care_type_id   INT PRIMARY KEY AUTO_INCREMENT,
     care_type_name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- 11. Lịch chăm sóc cây
+-- 13. Lịch chăm sóc cây (SAU KHI CÓ user_plants và care_types)
 CREATE TABLE care_schedules
 (
     schedule_id      INT PRIMARY KEY AUTO_INCREMENT,
@@ -171,7 +181,7 @@ CREATE TABLE care_schedules
     FOREIGN KEY (care_type_id) REFERENCES care_types (care_type_id)
 );
 
--- 12. Nhật ký chăm sóc cây
+-- 14. Nhật ký chăm sóc cây (SAU KHI CÓ user_plants và care_types)
 CREATE TABLE care_logs
 (
     log_id        INT PRIMARY KEY AUTO_INCREMENT,
@@ -184,7 +194,7 @@ CREATE TABLE care_logs
     FOREIGN KEY (care_type_id) REFERENCES care_types (care_type_id)
 );
 
--- 13. Kênh nhắc nhở
+-- 15. Kênh nhắc nhở (SAU KHI CÓ users)
 CREATE TABLE care_reminder_channels
 (
     channel_id     INT PRIMARY KEY AUTO_INCREMENT,
@@ -195,7 +205,7 @@ CREATE TABLE care_reminder_channels
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
--- 14. Báo cáo cây
+-- 16. Báo cáo cây (SAU KHI CÓ plants và users)
 CREATE TABLE plant_reports
 (
     report_id   INT PRIMARY KEY AUTO_INCREMENT,
@@ -215,7 +225,7 @@ CREATE TABLE plant_reports
     FOREIGN KEY (handled_by) REFERENCES users (user_id)
 );
 
--- 15. Nhật ký xử lý báo cáo
+-- 17. Nhật ký xử lý báo cáo (SAU KHI CÓ plant_reports và users)
 CREATE TABLE plant_report_logs
 (
     log_id     INT PRIMARY KEY AUTO_INCREMENT,
@@ -228,7 +238,7 @@ CREATE TABLE plant_report_logs
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
--- 16. Phản hồi báo cáo
+-- 18. Phản hồi báo cáo (SAU KHI CÓ plant_reports và users)
 CREATE TABLE report_responses
 (
     response_id  INT PRIMARY KEY AUTO_INCREMENT,
@@ -240,7 +250,7 @@ CREATE TABLE report_responses
     FOREIGN KEY (responder_id) REFERENCES users (user_id)
 );
 
--- 17. Danh mục bài viết
+-- 19. Danh mục bài viết (TẠO TRƯỚC)
 CREATE TABLE article_categories
 (
     category_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -249,7 +259,7 @@ CREATE TABLE article_categories
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 18. Bài viết chăm sóc
+-- 20. Bài viết chăm sóc (SAU KHI CÓ users và article_categories)
 CREATE TABLE care_articles
 (
     article_id  INT PRIMARY KEY AUTO_INCREMENT,
@@ -265,10 +275,10 @@ CREATE TABLE care_articles
     FOREIGN KEY (category_id) REFERENCES article_categories (category_id)
 );
 
--- 19. Hỗ trợ khách hàng
+-- 21. Hỗ trợ khách hàng (SAU KHI CÓ users)
 CREATE TABLE support_tickets
 (
-    ticket_id   INT PRIMARY KEY AUTO_INCREMENT,
+    ticket_id   BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id     INT,
     title       VARCHAR(200) NOT NULL,
     description TEXT,
@@ -284,7 +294,7 @@ CREATE TABLE support_tickets
     FOREIGN KEY (handled_by) REFERENCES users (user_id)
 );
 
--- 20. Nhật ký hỗ trợ
+-- 22. Nhật ký hỗ trợ (SAU KHI CÓ support_tickets và users)
 CREATE TABLE support_ticket_logs
 (
     log_id     BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -297,11 +307,11 @@ CREATE TABLE support_ticket_logs
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
--- 21. Phản hồi hỗ trợ
+-- 23. Phản hồi hỗ trợ (SAU KHI CÓ support_tickets và users)
 CREATE TABLE ticket_responses
 (
-    response_id  INT PRIMARY KEY AUTO_INCREMENT,
-    ticket_id    INT,
+    response_id  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    ticket_id    BIGINT,
     responder_id INT,
     content      TEXT,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -309,7 +319,7 @@ CREATE TABLE ticket_responses
     FOREIGN KEY (responder_id) REFERENCES users (user_id)
 );
 
--- 22. Hồ sơ chuyên gia
+-- 24. Hồ sơ chuyên gia (SAU KHI CÓ users)
 CREATE TABLE expert_profiles
 (
     expert_id        INT PRIMARY KEY AUTO_INCREMENT,
@@ -322,7 +332,7 @@ CREATE TABLE expert_profiles
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
--- 23. Tin nhắn
+-- 25. Tin nhắn (SAU KHI CÓ users)
 CREATE TABLE chat_messages
 (
     message_id  INT PRIMARY KEY AUTO_INCREMENT,

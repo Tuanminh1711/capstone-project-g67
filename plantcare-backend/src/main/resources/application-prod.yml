@@ -20,7 +20,7 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
     validate-on-migrate: true
-    clean-disabled: true  # Không cho phép xóa database trong production
+    clean-disabled: true
 server:
   port: 8080
 
