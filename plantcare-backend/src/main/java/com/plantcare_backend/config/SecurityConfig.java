@@ -40,12 +40,12 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/verify-reset-code",
                                 "/api/auth/reset-password",
-                                "/api/auth/change-password",
                                 "/api/auth/resend-verification",
                                 "/api/auth/verify-email",
                                 "/api/auth/login-expert",
                                 "/api/auth/login-admin")
                         .permitAll()
+                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/plants/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
