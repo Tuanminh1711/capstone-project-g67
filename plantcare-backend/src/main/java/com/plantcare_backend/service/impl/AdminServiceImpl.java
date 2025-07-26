@@ -32,6 +32,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -78,12 +79,29 @@ public class AdminServiceImpl implements AdminService {
         if (userProfileRepository.existsByPhone(userRequestDTO.getPhoneNumber())) {
             throw new RuntimeException("Phone number already exists");
         }
+        if (userRequestDTO.getRoleId() == 1) {
+            throw new RuntimeException("Cannot create admin account through this endpoint");
+        }
+        if (userRequestDTO.getGeneratePassword() == null || !userRequestDTO.getGeneratePassword()) {
+            // Nếu không random password thì bắt buộc phải có password
+            if (userRequestDTO.getPassword() == null || userRequestDTO.getPassword().trim().isEmpty()) {
+                throw new RuntimeException("Password is required when not generating random password");
+            }
+        }
         try {
+            String finalPassword;
+            if (userRequestDTO.getGeneratePassword() != null && userRequestDTO.getGeneratePassword()) {
+                finalPassword = generateStrongPassword();
+            } else {
+                finalPassword = userRequestDTO.getPassword();
+            }
+
             Users user = Users.builder()
                     .username(userRequestDTO.getUsername())
                     .email(userRequestDTO.getEmail())
-                    .password(passwordEncoder.encode(userRequestDTO.getPassword()))
-                    .status(Users.UserStatus.ACTIVE)
+                    .password(passwordEncoder.encode(finalPassword))
+                    .status(userRequestDTO.getStatus() != null ?
+                            userRequestDTO.getStatus() : Users.UserStatus.ACTIVE)
                     .role(roleRepository.findById(userRequestDTO.getRoleId())
                             .orElseThrow(() -> new RuntimeException("Role not found")))
                     .build();
@@ -99,6 +117,18 @@ public class AdminServiceImpl implements AdminService {
                     .build();
 
             userProfileRepository.save(userProfile);
+
+            try {
+                emailService.sendWelcomeEmail(
+                        savedUser.getEmail(),
+                        userRequestDTO.getUsername(),
+                        finalPassword
+                );
+                log.info("Welcome email sent to: {}", savedUser.getEmail());
+            } catch (Exception e) {
+                log.error("Failed to send welcome email to: {}", savedUser.getEmail(), e);
+                // Không throw exception vì user đã được tạo thành công
+            }
 
             log.info("User created by admin with role and profile limited fields");
 
@@ -380,7 +410,7 @@ public class AdminServiceImpl implements AdminService {
      *
      * @param requestDTO DTO containing start and end date for statistics
      * @return List of PlantAddedStatisticResponseDTO containing date and total
-     *         plants added
+     * plants added
      */
     @Override
     public List<PlantAddedStatisticResponseDTO> getPlantAddedStatistics(PlantAddedStatisticRequestDTO requestDTO) {
@@ -403,7 +433,7 @@ public class AdminServiceImpl implements AdminService {
      *
      * @param requestDTO DTO containing start and end date for statistics
      * @return List of UserBrowseStatisticResponseDTO containing date and total
-     *         active users
+     * active users
      */
     @Override
     public List<UserBrowseStatisticResponseDTO> getUserBrowseStatistics(UserBrowseStatisticRequestDTO requestDTO) {
@@ -430,4 +460,36 @@ public class AdminServiceImpl implements AdminService {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
     }
 
+    private String generateStrongPassword() {
+        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "0123456789";
+        String specialChars = "@#$%^&+=!";
+
+        StringBuilder password = new StringBuilder();
+        Random random = new Random();
+
+        // Đảm bảo có ít nhất 1 ký tự mỗi loại
+        password.append(upperCase.charAt(random.nextInt(upperCase.length())));
+        password.append(lowerCase.charAt(random.nextInt(lowerCase.length())));
+        password.append(numbers.charAt(random.nextInt(numbers.length())));
+        password.append(specialChars.charAt(random.nextInt(specialChars.length())));
+
+        // Thêm 4 ký tự ngẫu nhiên
+        String allChars = upperCase + lowerCase + numbers + specialChars;
+        for (int i = 0; i < 4; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        // Shuffle password
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+
+        return new String(passwordArray);
+    }
 }

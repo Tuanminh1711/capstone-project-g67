@@ -65,12 +65,14 @@ public class AdminController {
      */
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
     @PostMapping(value = "/adduser")
-    public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO userRequestDTO,
+                                      @RequestAttribute("userId") Integer adminId) {
         log.info("Request add user, {} {}", userRequestDTO.getUsername(), userRequestDTO.getPassword());
 
         try {
             long userId = adminService.saveUser(userRequestDTO);
-
+            activityLogService.logActivity(adminId, "CREATE_USER",
+                    "Admin created user: " + userRequestDTO.getUsername());
             // Log the activity (assuming admin ID is available)
             // Note: We need to get admin ID from request attribute
             return new ResponseData<>(HttpStatus.CREATED.value(), Translator.toLocale("user.add.success"), userId);
@@ -230,7 +232,7 @@ public class AdminController {
      *
      * @param requestDTO DTO containing start and end date for statistics
      * @return List of PlantAddedStatisticResponseDTO containing date and total
-     *         plants added
+     * plants added
      */
     @Operation(method = "POST", summary = "Get plant added statistics", description = "Get statistics of plants added by date range")
     @PostMapping("/statistics/added-plants")
@@ -254,7 +256,7 @@ public class AdminController {
      *
      * @param requestDTO DTO containing start and end date for statistics
      * @return List of UserBrowseStatisticResponseDTO containing date and total
-     *         active users
+     * active users
      */
     @Operation(method = "POST", summary = "Get user browse statistics", description = "Get statistics of active users by date range")
     @PostMapping("/statistics/browse-users")

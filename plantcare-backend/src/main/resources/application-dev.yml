@@ -50,3 +50,12 @@ paypal:
     id: ${PAYPAL_CLIENT_ID:temp-paypal-id}
     secret: ${PAYPAL_CLIENT_SECRET:temp-paypal-secret}
   mode: sandbox
+
+# VNPAY Configuration
+vnpay:
+  tmn-code: IZVMM9RJ
+  hash-secret: 0PS4G1NU0ZOFUGWQLHNZTFVLWT23RAJQ
+  payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  return-url: http://localhost:8080/api/payment/vnpay-return
+  ipn-url: http://localhost:8080/api/payment/vnpay-ipn
+  merchant-admin-url: https://sandbox.vnpayment.vn/merchantv2/

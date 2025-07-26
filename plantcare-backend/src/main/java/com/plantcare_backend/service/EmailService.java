@@ -7,4 +7,5 @@ public interface EmailService {
     void sendEmail(String to, String subject, String content);
     @Async
     void sendEmailAsync(String to, String subject, String content);
+    void sendWelcomeEmail(String email, String username, String password);
 }
