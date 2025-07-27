@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const cookieService = inject(CookieService);
-  const token = cookieService.getAuthToken();
+  const token = cookieService.getCookie('auth_token');
 
   // Chuẩn bị headers - merge với headers hiện có
   let headers = request.headers;
@@ -21,8 +21,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       headers = headers.set('Accept', 'application/json');
     }
   }
-  // Luôn set Authorization nếu có token
-  if (token) {
+  // Không gửi Authorization cho login/register
+  const isAuthApi = ['/api/auth/login', '/api/auth/register'].some(url => request.url.includes(url));
+  if (token && !isAuthApi) {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
 

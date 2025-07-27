@@ -1,5 +1,3 @@
-
-
 import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
@@ -26,7 +24,7 @@ interface Plant {
   status: string;
   imageUrls: string[];
   createdAt: string | null;
-  reportCount?: number; // số lần bị báo cáo
+  reportCount?: number;
 }
 
 @Component({
@@ -37,37 +35,27 @@ interface Plant {
   styleUrl: './plant-info.scss'
 })
 export class PlantInfoComponent implements OnInit, OnDestroy {
-  private toast: ToastService;
   private plantsSubject = new BehaviorSubject<Plant[]>([]);
+  private categoriesSubject = new BehaviorSubject<Array<{ id: number; name: string; description: string }>>([]);
+
   plants$ = this.plantsSubject.asObservable();
+  categories$ = this.categoriesSubject.asObservable();
 
   searchText = '';
   loading = false;
   error = '';
-  // Đã loại bỏ demo data
-  // Getter cho template sử dụng các biến phân trang
-  get totalPages() {
-    return this.pageState.totalPages;
-  }
+  loadingCategories = false;
+  errorCategories = '';
 
-  /**
-   * Trả về màu cảnh báo dựa trên số lượng report (reportCount)
-   * 0: xanh lá, 1-2: vàng, 3-4: cam, >=5: đỏ
-   */
-  getWarningColor(reportCount: number): string {
-    if (!reportCount || reportCount <= 0) return '#4caf50'; // xanh lá
-    if (reportCount <= 2) return '#ffc107'; // vàng
-    if (reportCount <= 4) return '#ff9800'; // cam
-    return '#f44336'; // đỏ
-  }
-  get currentPage() {
-    return this.pageState.currentPage;
-  }
-  get usingDemoData() {
-    return false;
-  }
+  selectedCategoryId: number | null = null;
+  selectedLightRequirement: string | null = null;
+  selectedWaterRequirement: string | null = null;
+  selectedCareDifficulty: string | null = null;
+  selectedStatus: string | null = null;
 
-  // Gom state phân trang vào một object
+  private navigationSubscription: Subscription;
+  private searchDebounce: any;
+
   pageState = {
     currentPage: 0,
     pageSize: 8,
@@ -76,44 +64,26 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     currentKeyword: ''
   };
 
-  private searchDebounce: any;
-  private currentKeyword = '';
-  private navigationSubscription: Subscription;
-
-  private categoriesSubject = new BehaviorSubject<Array<{ id: number; name: string; description: string }>>([]);
-  categories$ = this.categoriesSubject.asObservable();
-  loadingCategories = false;
-  errorCategories = '';
-
-  selectedCategoryId: number | null = null;
-
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private plantDataService: PlantDataService,
-    toast: ToastService
+    private toast: ToastService
   ) {
-    this.toast = toast;
-    // Listen for navigation events to refresh data when coming from create page
     this.navigationSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         if (event.url === '/main/plant-info') {
-          console.log('🔄 Detected navigation to plant-info, refreshing data...');
           setTimeout(() => this.refreshData(), 100);
         }
       });
   }
 
   ngOnInit(): void {
-    // Force refresh từ server mỗi khi component init
-    // Điều này đảm bảo luôn có dữ liệu mới nhất
-    console.log('🔄 PlantInfo Component init - fetching fresh data');
     this.fetchPlants(0, '');
     this.loadCategories();
 
-    // Đọc lại category đã chọn từ localStorage khi reload
     try {
       const savedCatId = localStorage.getItem('selectedCategoryId');
       if (savedCatId) {
@@ -122,60 +92,104 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     } catch {}
   }
 
-  private buildUrl(page: number, keyword: string): string {
-    let url = `/api/plants/search?pageNo=${page}&pageSize=${this.pageState.pageSize}`;
-    if (keyword.trim()) {
-      url += `&keyword=${encodeURIComponent(keyword.trim())}`;
+  get totalPages() {
+    return this.pageState.totalPages;
+  }
+
+  get currentPage() {
+    return this.pageState.currentPage;
+  }
+
+  getWarningColor(reportCount: number): string {
+    if (!reportCount || reportCount <= 0) return '#4caf50';
+    if (reportCount <= 2) return '#ffc107';
+    if (reportCount <= 4) return '#ff9800';
+    return '#f44336';
+  }
+
+  private buildSearchParams(page: number, keyword: string): any {
+    const trimmedKeyword = keyword.trim();
+    let categoryIdToSearch: number | null = null;
+
+    // Nếu có keyword và keyword trùng hoàn toàn tên category (EN/VI), thì search theo categoryId
+    if (trimmedKeyword) {
+      const found = this.categoriesSubject.value.find(
+        cat =>
+          cat.name.toLowerCase() === trimmedKeyword.toLowerCase() ||
+          this.translateCategoryName(cat.name).toLowerCase() === trimmedKeyword.toLowerCase()
+      );
+      if (found) {
+        categoryIdToSearch = found.id;
+      }
+    } else if (this.selectedCategoryId) {
+      // Nếu không có keyword nhưng có chọn category, search theo categoryId
+      categoryIdToSearch = this.selectedCategoryId;
     }
-    return url;
+
+    // Gom filter, chỉ truyền lên nếu có giá trị hợp lệ
+    const params: any = {
+      pageNo: page,
+      pageSize: this.pageState.pageSize
+    };
+    if (trimmedKeyword) params.keyword = trimmedKeyword;
+    if (categoryIdToSearch) params.categoryId = categoryIdToSearch;
+    if (this.selectedLightRequirement) params.lightRequirement = this.selectedLightRequirement;
+    if (this.selectedWaterRequirement) params.waterRequirement = this.selectedWaterRequirement;
+    if (this.selectedCareDifficulty) params.careDifficulty = this.selectedCareDifficulty;
+    if (this.selectedStatus) params.status = this.selectedStatus;
+
+    return params;
   }
 
   fetchPlants(page: number, keyword: string = ''): void {
     this.loading = true;
     this.error = '';
-    const trimmedKeyword = keyword.trim();
-    const url = this.buildUrl(page, trimmedKeyword);
+    const params = this.buildSearchParams(page, keyword);
 
-    this.http.get<any>(url).subscribe({
+    this.http.get<any>('/api/plants/search', { params }).subscribe({
       next: (res) => {
         const data = res?.data;
         this.loading = false;
-        this.pageState.currentKeyword = trimmedKeyword;
+        this.pageState.currentKeyword = keyword.trim();
 
-        if (!data || !Array.isArray(data.plants)) {
+        if (!Array.isArray(data?.plants)) {
           this.resetResults();
           this.plantsSubject.next([]);
-          this.cdr.detectChanges();
+          setTimeout(() => this.cdr.detectChanges());
           return;
         }
 
-        this.pageState.totalPages = data.totalPages ?? 1;
-        this.pageState.totalElements = data.totalElements ?? data.plants.length;
-        this.pageState.currentPage = page;
-        this.pageState.pageSize = data.pageSize ?? this.pageState.pageSize;
+        this.pageState = {
+          ...this.pageState,
+          totalPages: data.totalPages ?? 1,
+          totalElements: data.totalElements ?? data.plants.length,
+          currentPage: page,
+          pageSize: data.pageSize ?? this.pageState.pageSize
+        };
 
         this.plantsSubject.next(data.plants);
         this.plantDataService.setPlantsList(data.plants);
-        this.cdr.detectChanges();
+        setTimeout(() => this.cdr.detectChanges());
       },
-      error: (error) => {
+      error: () => {
         this.loading = false;
         this.error = 'Không thể tải dữ liệu cây.';
         this.plantsSubject.next([]);
-        this.cdr.detectChanges();
+        setTimeout(() => this.cdr.detectChanges());
       }
     });
   }
 
-  loadCategories() {
+  loadCategories(): void {
     this.loadingCategories = true;
     this.errorCategories = '';
+
     this.http.get<any>(`${environment.apiUrl}/plants/categories`).subscribe({
       next: (res) => {
         this.categoriesSubject.next(res.data || []);
         this.loadingCategories = false;
       },
-      error: (err) => {
+      error: () => {
         this.errorCategories = 'Không thể tải danh mục cây.';
         this.categoriesSubject.next([]);
         this.loadingCategories = false;
@@ -183,12 +197,6 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSearch(): void {
-    const keyword = this.searchText.trim();
-    if (keyword !== this.pageState.currentKeyword) {
-      this.fetchPlants(0, keyword);
-    }
-  }
   onSearchInputChange(): void {
     clearTimeout(this.searchDebounce);
     this.searchDebounce = setTimeout(() => {
@@ -205,69 +213,143 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     }
   }
 
-  private resetResults(): void {
-    this.pageState.totalPages = 1;
-    this.pageState.totalElements = 0;
-    this.pageState.currentPage = 0;
-  }
-
   viewPlantDetail(plantId: number): void {
-    const currentPlants = this.plantsSubject.value;
-    const selectedPlant = currentPlants.find(p => p.id === plantId);
-    if (selectedPlant) {
-      if (selectedPlant.status === 'INACTIVE') {
-        this.toast.show('Cây này đang bị khóa để kiểm tra bởi hệ thống', 'warning');
-        return;
-      }
-      this.plantDataService.setSelectedPlant(selectedPlant);
-      this.router.navigate(['/plant-info/detail', plantId]);
+    const selectedPlant = this.plantsSubject.value.find(p => p.id === plantId);
+    if (!selectedPlant || selectedPlant.status === 'INACTIVE') {
+      this.toast.show('Cây này đang bị khóa để kiểm tra bởi hệ thống', 'warning');
+      return;
     }
+    this.plantDataService.setSelectedPlant(selectedPlant);
+    this.router.navigate(['/plant-info/detail', plantId]);
   }
 
   forceRefresh(): void {
+    this.refreshData();
+  }
+
+  private refreshData(): void {
+    this.pageState = {
+      currentPage: 0,
+      pageSize: this.pageState.pageSize,
+      totalPages: 0,
+      totalElements: 0,
+      currentKeyword: ''
+    };
+    this.searchText = '';
     this.plantsSubject.next([]);
     this.fetchPlants(0, '');
   }
 
-  /**
-   * Translate light requirement enum to Vietnamese
-   */
-  translateLightRequirement(value: string): string {
-    const translations: { [key: string]: string } = {
-      'LOW': 'Ít ánh sáng',
-      'MEDIUM': 'Ánh sáng vừa phải',
-      'HIGH': 'Nhiều ánh sáng'
-    };
-    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+  private resetResults(): void {
+    this.pageState.totalPages = 1;
+    this.pageState.totalElements = 0;
+    this.pageState.currentPage = 0;
+    this.pageState.currentKeyword = '';
   }
 
-  /**
-   * Translate water requirement enum to Vietnamese
-   */
-  translateWaterRequirement(value: string): string {
-    const translations: { [key: string]: string } = {
-      'LOW': 'Ít nước',
-      'MEDIUM': 'Nước vừa phải',
-      'HIGH': 'Nhiều nước'
-    };
-    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+  trackByPlantId(index: number, plant: Plant): string {
+    return `${plant.id}-${index}`;
   }
 
-  /**
-   * Translate care difficulty enum to Vietnamese
-   */
-  translateCareDifficulty(value: string): string {
-    const translations: { [key: string]: string } = {
-      'EASY': 'Dễ chăm sóc',
-      'MODERATE': 'Trung bình',
-      'DIFFICULT': 'Khó chăm sóc'
-    };
-    return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+
+  handleCategoryClick(categoryId: number): void {
+    this.selectedCategoryId = categoryId;
+    this.searchText = '';
+    try {
+      localStorage.setItem('selectedCategoryId', String(categoryId));
+    } catch {}
+    this.fetchPlants(0, '');
+    setTimeout(() => this.cdr.detectChanges());
   }
 
-  /**
-   * Translate category name to Vietnamese
-   */
+  handleAllCategoryClick(): void {
+    this.selectedCategoryId = null;
+    this.searchText = '';
+    try {
+      localStorage.removeItem('selectedCategoryId');
+    } catch {}
+    this.fetchPlants(0, '');
+    setTimeout(() => this.cdr.detectChanges());
+  }
+
+  handleLightFilter(value: string | null): void {
+    this.selectedLightRequirement = value;
+    this.fetchPlants(0, this.searchText.trim());
+    setTimeout(() => this.cdr.detectChanges());
+  }
+
+  handleWaterFilter(value: string | null): void {
+    this.selectedWaterRequirement = value;
+    this.fetchPlants(0, this.searchText.trim());
+    setTimeout(() => this.cdr.detectChanges());
+  }
+
+  handleDifficultyFilter(value: string | null): void {
+    this.selectedCareDifficulty = value;
+    this.fetchPlants(0, this.searchText.trim());
+    setTimeout(() => this.cdr.detectChanges());
+  }
+
+  filterPlantsByCategory(plants: Plant[]): Plant[] {
+    if (this.selectedCategoryId == null) return plants;
+    return plants.filter(p => p.categoryName === this.getCategoryNameById(this.selectedCategoryId!));
+  }
+
+  getCategoryNameById(id: number): string {
+    return this.categoriesSubject.value.find(cat => cat.id === id)?.name || '';
+  }
+
+ translateEnum(
+  value: string,
+  type: 'light' | 'water' | 'difficulty'
+): string {
+  const map = {
+    light: {
+      LOW: 'Ít ánh sáng',
+      MEDIUM: 'Ánh sáng vừa phải',
+      HIGH: 'Nhiều ánh sáng',
+    },
+    water: {
+      LOW: 'Ít nước',
+      MEDIUM: 'Nước vừa phải',
+      HIGH: 'Nhiều nước',
+    },
+    difficulty: {
+      EASY: 'Dễ chăm sóc',
+      MODERATE: 'Trung bình',
+      DIFFICULT: 'Khó chăm sóc',
+    },
+  };
+
+  const upperValue = value?.toUpperCase();
+
+  switch (type) {
+    case 'light':
+    case 'water':
+      if (
+        upperValue === 'LOW' ||
+        upperValue === 'MEDIUM' ||
+        upperValue === 'HIGH'
+      ) {
+        return map[type][upperValue];
+      }
+      break;
+
+    case 'difficulty':
+      if (
+        upperValue === 'EASY' ||
+        upperValue === 'MODERATE' ||
+        upperValue === 'DIFFICULT'
+      ) {
+        return map.difficulty[upperValue];
+      }
+      break;
+  }
+
+  return 'Chưa có thông tin';
+}
+
+
   translateCategoryName(name: string): string {
     switch (name) {
       case 'Indoor Plants': return 'Cây trồng trong nhà';
@@ -277,44 +359,28 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     }
   }
 
-
   ngOnDestroy(): void {
-    if (this.navigationSubscription) {
-      this.navigationSubscription.unsubscribe();
-    }
+    this.navigationSubscription?.unsubscribe();
     if (this.searchDebounce) {
       clearTimeout(this.searchDebounce);
     }
   }
 
-  /**
-   * Track function để tránh duplicate keys
-   */
-  trackByPlantId(index: number, plant: Plant): string {
-    return `${plant.id}-${index}`;
-  }
+  onSearch(): void {
+  const keyword = this.searchText.trim();
+  this.fetchPlants(0, keyword);
+}
 
-  private refreshData() {
-    this.pageState.currentPage = 0;
-    this.searchText = '';
-    this.pageState.currentKeyword = '';
-    this.plantsSubject.next([]);
-    this.pageState.totalElements = 0;
-    this.pageState.totalPages = 0;
-    this.fetchPlants(0, '');
-  }
+translateLightRequirement(value: string): string {
+  return this.translateEnum(value, 'light');
+}
 
-  filterByCategory(categoryId: number) {
-    this.selectedCategoryId = categoryId;
-    // Lưu category đã chọn vào localStorage để giữ trạng thái khi reload
-    try {
-      localStorage.setItem('selectedCategoryId', String(categoryId));
-    } catch {}
-  }
+translateWaterRequirement(value: string): string {
+  return this.translateEnum(value, 'water');
+}
 
-  // Thêm hàm để filter trong template nếu cần
-  filterPlantsByCategory(plants: any[]): any[] {
-    if (!this.selectedCategoryId) return plants;
-    return plants.filter(p => p.categoryId === this.selectedCategoryId);
-  }
+translateCareDifficulty(value: string): string {
+  return this.translateEnum(value, 'difficulty');
+}
+
 }

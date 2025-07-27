@@ -14,7 +14,7 @@
       <a class="nav-link" routerLink="/home" (click)="closeMobileMenu()">Trang chủ</a>
       <a class="nav-link" routerLink="/plant-info" (click)="closeMobileMenu()">Tìm kiếm cây cảnh</a>
       <a class="nav-link" routerLink="/user/my-garden" (click)="closeMobileMenu()">Khu vườn của tôi</a>
-      <a class="nav-link" routerLink="/care-expert" (click)="closeMobileMenu()">Chăm sóc cùng chuyên gia</a>
+      <a class="nav-link" href="#" (click)="goToCareExpert(); closeMobileMenu(); $event.preventDefault();">Chăm sóc cùng chuyên gia</a>
       <a class="nav-link" routerLink="/about-us" (click)="closeMobileMenu()">Về chúng tôi</a>
     </div>
     <div class="nav-actions">
@@ -37,7 +37,11 @@
         </span>
       }
       <span class="nav-icon user" tabindex="0" [class.show-dropdown]="showUserMenu">
-        <span class="material-icons" (click)="toggleUserMenu($event)">account_circle</span>
+        @if (isLoggedIn) {
+          <img [src]="getUserAvatarUrl()" alt="avatar" class="user-avatar" (click)="toggleUserMenu($event)" />
+        } @else {
+          <span class="material-icons" (click)="toggleUserMenu($event)">account_circle</span>
+        }
         @if (showUserMenu) {
           <div class="user-dropdown" (click)="$event.stopPropagation()">
             @if (isLoggedIn) {

@@ -1,6 +1,32 @@
 @use '../../../styles/variables' as *;
 @use 'sass:color';
 
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #e0e0e0;
+  box-shadow: 0 2px 8px rgba(34, 139, 34, 0.10);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@media (max-width: 900px) {
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-avatar {
+    width: 22px;
+    height: 22px;
+  }
+}
+
 /* Top Navigator CSS - Green gradient */
 * {
   margin: 0;

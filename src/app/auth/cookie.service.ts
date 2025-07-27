@@ -2,6 +2,23 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class CookieService {
+  /**
+   * Lưu accessToken vào cookie với thời hạn ngắn và bảo mật
+   */
+  setAccessToken(token: string, minutes: number = 15): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (60 * 60 * 1000)); // Luôn 1 tiếng
+    let cookieString = `auth_token=${token}; expires=${expires.toUTCString()}; path=/;`;
+    if (location.protocol === 'https:') {
+      cookieString += ' Secure; SameSite=Strict';
+    } else {
+      cookieString += ' SameSite=Lax';
+    }
+    document.cookie = cookieString;
+  }
   
   /**
    * Lấy cookie theo tên
@@ -92,14 +109,16 @@ export class CookieService {
     return token;
   }
 
-  /**
-   * Lưu JWT token vào cookie với bảo mật cao
-   * @param token JWT token
-   * @param days Số ngày hết hạn (mặc định 7 ngày)
-   */
   setAuthToken(token: string, days: number = 7): void {
-    // Development: không dùng secure và strict
-    this.setCookie('auth_token', token, days, false, 'Lax');
+    // Luôn lưu token trong 1 tiếng, bảo mật cao
+    const isProd = location.protocol === 'https:';
+    this.setCookie(
+      'auth_token',
+      token,
+      0.0417, // 1 tiếng = 1/24 ngày
+      isProd, // Secure nếu production
+      isProd ? 'Strict' : 'Lax' // SameSite Strict cho production
+    );
   }
 
   /**

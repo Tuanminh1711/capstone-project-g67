@@ -149,33 +149,24 @@ body, .plant-info-layout {
   /* margin-bottom: 20px; */
 }
 
+// ...existing code...
 .sidebar-title {
-  font-size: 1.3rem;
-  font-weight: 500;
-  color: #f27123;
-  margin-bottom: 16px;
-  text-transform: capitalize;
-  font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 12px 0 6px 0;
 }
-
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  color: #178a4c;
-  font-size: 1rem;
-  font-weight: 400;
-  font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: #333;
   text-decoration: none;
   transition: background 0.2s, color 0.2s;
+  margin-bottom: 3px;
+  font-size: 0.92rem;
+  font-weight: 400;
+  font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
 
   &:hover, &.active {
     background: #e0f2f1;

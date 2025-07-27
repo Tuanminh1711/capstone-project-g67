@@ -10,7 +10,9 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string | null;
+  token?: string | null;
+  accessToken?: string;
+  refreshToken?: string;
   userId?: string;
   username?: string;
   message?: string;
@@ -46,7 +48,7 @@ export interface VerifyEmailResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = '/api/auth'; // Use relative URL to work with proxy
+  private apiUrl = 'http://localhost:8080/api'; // Direct to backend
 
   constructor(
     private http: HttpClient,
@@ -55,18 +57,22 @@ export class AuthService {
   ) {}
 
   login(data: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, data).pipe(
-      tap(response => {
-        // Lưu token vào cookie khi login thành công
-        if (response.token) {
-          this.cookieService.setAuthToken(response.token, 7); // 7 ngày
-        }
-      })
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, data).pipe(
+        tap(response => {
+          // Lưu token vào cookie 'auth_token', thời hạn 1 tiếng, bảo mật cao
+          if (response.token) {
+            this.cookieService.setAuthToken(response.token);
+          }
+          if (response.accessToken) {
+            this.cookieService.setAccessToken(response.accessToken);
+          }
+          // Không lưu refreshToken bằng JS, backend phải set cookie HttpOnly
+        })
     );
   }
 
   register(data: RegisterRequest): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, data);
   }
 
   verifyEmail(data: VerifyEmailRequest): Observable<VerifyEmailResponse> {
@@ -82,10 +88,10 @@ export class AuthService {
   }
 
   /**
-   * Đăng xuất - xóa token khỏi cookie
+   * Đăng xuất
    */
   logout(): void {
-    const token = this.cookieService.getAuthToken();
+    const token = this.cookieService.getCookie('auth_token');
     if (token) {
       this.http.post(`${this.apiUrl}/logout`, {}, {
         headers: { Authorization: `Bearer ${token}` }
@@ -130,8 +136,11 @@ export class AuthService {
   }
 
   // Lấy thông tin profile user
-  getProfile(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/profile`, { withCredentials: true });
+  getProfile(userId?: string): Observable<any> {
+    // Lấy token từ cookie
+    const token = this.cookieService.getCookie('auth_token');
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+    return this.http.get<any>(`${this.apiUrl}/user/profile`, Object.keys(headers).length ? { headers } : {});
   }
 
   loginAdmin(data: { username: string; password: string }) {

@@ -1,4 +1,4 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { SendTicketDialogComponent } from '../../user/ticket/send-ticket/send-ticket-dialog';
@@ -7,6 +7,7 @@ import { AuthDialogService } from '../../auth/auth-dialog.service';
 // import { SupportDialogService } from '../../support/shared/support-dialog.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 
 @Component({
   selector: 'app-top-navigator',
@@ -15,7 +16,8 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './top-navigator.html',
   styleUrl: './top-navigator.scss'
 })
-export class TopNavigatorComponent {
+export class TopNavigatorComponent implements OnInit {
+  userAvatarFilename: string | null = null;
   supportTickets: any[] = [];
   showUserMenu = false;
   showGreenSpaceDropdown = false;
@@ -25,11 +27,69 @@ export class TopNavigatorComponent {
   private dialog = inject(MatDialog);
   private supportService = inject(SupportService);
 
+  private cdr = inject(ChangeDetectorRef);
+
   constructor(
     public router: Router,
     public authService: AuthService,
-    private authDialog: AuthDialogService
+    private authDialog: AuthDialogService,
+    private jwtUtil: JwtUserUtilService
   ) {}
+
+  ngOnInit(): void {
+    // Luôn load avatar khi component khởi tạo (kể cả khi đã đăng nhập từ trước)
+    if (this.isLoggedIn) {
+      this.loadUserAvatar();
+    }
+    // Nếu AuthService có sự kiện đăng nhập thành công thì lắng nghe để reload avatar
+    if ((this.authService as any).userLoggedIn$) {
+      (this.authService as any).userLoggedIn$.subscribe(() => {
+        this.loadUserAvatar();
+      });
+    }
+  }
+
+  loadUserAvatar(): void {
+    this.authService.getProfile().subscribe({
+      next: (user: any) => {
+        this.userAvatarFilename = user?.avatar || null;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.userAvatarFilename = null;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getUserAvatarUrl(): string {
+    if (this.userAvatarFilename) {
+      // Nếu là base64 hoặc đã là URL, trả về trực tiếp
+      if (
+        this.userAvatarFilename.startsWith('data:image') ||
+        this.userAvatarFilename.startsWith('http') ||
+        this.userAvatarFilename.startsWith('/api/avatars/')
+      ) {
+        // Nếu là /api/avatars/... thì cần thêm host
+        if (this.userAvatarFilename.startsWith('/api/avatars/')) {
+          return `http://localhost:8080${this.userAvatarFilename}`;
+        }
+        return this.userAvatarFilename;
+      }
+      // Nếu là tên file, trả về endpoint backend đúng
+      return `http://localhost:8080/api/user/avatars/${encodeURIComponent(this.userAvatarFilename)}`;
+    }
+    // Không có avatar hoặc lỗi thì trả về chuỗi rỗng để hiện icon user
+    return '';
+  }
+  goToCareExpert(): void {
+    const role = this.jwtUtil.getRoleFromToken();
+    if (role && role.toUpperCase() === 'VIP') {
+      this.router.navigate(['/vip/welcome']);
+    } else {
+      this.router.navigate(['/care-expert']);
+    }
+  }
 
   toggleSupportDropdown = (event: MouseEvent): void => {
     event.stopPropagation();
@@ -65,6 +125,9 @@ export class TopNavigatorComponent {
   toggleUserMenu = (event: MouseEvent): void => {
     event.stopPropagation();
     this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu && this.isLoggedIn) {
+      this.loadUserAvatar();
+    }
   };
 
   closeUserMenu = (): void => {
@@ -90,11 +153,13 @@ export class TopNavigatorComponent {
   openLogin = (): void => {
     this.closeUserMenu();
     this.authDialog.openLoginDialog();
+    setTimeout(() => this.loadUserAvatar(), 500);
   };
 
   openRegister = (): void => {
     this.closeUserMenu();
     this.authDialog.openRegisterDialog();
+    setTimeout(() => this.loadUserAvatar(), 500);
   };
 
   get isLoggedIn(): boolean {

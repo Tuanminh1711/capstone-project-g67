@@ -13,10 +13,14 @@
           <div class="sidebar-error">{{ errorCategories }}</div>
         }
         @if (!loadingCategories) {
+          <!-- All category -->
+          <a class="sidebar-item" href="#" [class.active]="!selectedCategoryId" (click)="handleAllCategoryClick(); $event.preventDefault()">
+            <span class="sidebar-icon">🌳</span> Tất cả
+          </a>
           @if (categories$ | async; as categories) {
             @if (categories.length > 0) {
               @for (cat of categories; track cat.id) {
-                <a class="sidebar-item" href="#" (click)="filterByCategory(cat.id); $event.preventDefault()">
+                <a class="sidebar-item" href="#" [class.active]="selectedCategoryId === cat.id" (click)="handleCategoryClick(cat.id); $event.preventDefault()">
                   <span class="sidebar-icon">🌱</span>
                   {{ translateCategoryName(cat.name) }}
                 </a>
@@ -24,6 +28,50 @@
             }
           }
         }
+
+        <!-- Filter by Light Requirement -->
+        <div class="sidebar-title">Ánh sáng</div>
+        <a href="#" class="sidebar-item" [class.active]="!selectedLightRequirement" (click)="handleLightFilter(null); $event.preventDefault()">
+          <span class="sidebar-icon">💡</span> Tất cả
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedLightRequirement === 'LOW'" (click)="handleLightFilter('LOW'); $event.preventDefault()">
+          <span class="sidebar-icon">🟢</span> Ít ánh sáng
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedLightRequirement === 'MEDIUM'" (click)="handleLightFilter('MEDIUM'); $event.preventDefault()">
+          <span class="sidebar-icon">🟡</span> Ánh sáng vừa phải
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedLightRequirement === 'HIGH'" (click)="handleLightFilter('HIGH'); $event.preventDefault()">
+          <span class="sidebar-icon">🔴</span> Nhiều ánh sáng
+        </a>
+        <!-- Filter by Water Requirement -->
+        <div class="sidebar-title">Nước</div>
+        <a href="#" class="sidebar-item" [class.active]="!selectedWaterRequirement" (click)="handleWaterFilter(null); $event.preventDefault()">
+          <span class="sidebar-icon">💧</span> Tất cả
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedWaterRequirement === 'LOW'" (click)="handleWaterFilter('LOW'); $event.preventDefault()">
+          <span class="sidebar-icon">🟢</span> Ít nước
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedWaterRequirement === 'MEDIUM'" (click)="handleWaterFilter('MEDIUM'); $event.preventDefault()">
+          <span class="sidebar-icon">🟡</span> Nước vừa phải
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedWaterRequirement === 'HIGH'" (click)="handleWaterFilter('HIGH'); $event.preventDefault()">
+          <span class="sidebar-icon">🔴</span> Nhiều nước
+        </a>
+        <!-- Filter by Care Difficulty -->
+        <div class="sidebar-title">Độ khó</div>
+        <a href="#" class="sidebar-item" [class.active]="!selectedCareDifficulty" (click)="handleDifficultyFilter(null); $event.preventDefault()">
+          <span class="sidebar-icon">🎯</span> Tất cả
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedCareDifficulty === 'EASY'" (click)="handleDifficultyFilter('EASY'); $event.preventDefault()">
+          <span class="sidebar-icon">🟢</span> Dễ chăm sóc
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedCareDifficulty === 'MODERATE'" (click)="handleDifficultyFilter('MODERATE'); $event.preventDefault()">
+          <span class="sidebar-icon">🟡</span> Trung bình
+        </a>
+        <a href="#" class="sidebar-item" [class.active]="selectedCareDifficulty === 'DIFFICULT'" (click)="handleDifficultyFilter('DIFFICULT'); $event.preventDefault()">
+          <span class="sidebar-icon">🔴</span> Khó chăm sóc
+        </a>
+    
       </nav>
     </aside>
 
@@ -58,13 +106,6 @@
           </div>
         }
 
-        <!-- Demo data notice -->
-        @if (!loading && usingDemoData) {
-          <div class="status-msg info">
-            <i class="material-icons">info</i>
-            Đang hiển thị dữ liệu mẫu (API không khả dụng)
-          </div>
-        }
 
         <!-- Nội dung chính -->
         @if (!loading && !error) {

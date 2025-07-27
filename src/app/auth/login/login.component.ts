@@ -1,5 +1,3 @@
-
-// Dọn file: chỉ giữ lại 1 class LoginComponent, các import ở đầu file, các hàm helper nằm trong class
 import { Component, Optional, ChangeDetectorRef } from '@angular/core';
 import { ToastService } from '../../shared/toast/toast.service';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -81,7 +79,14 @@ export class LoginComponent {
     this.auth.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.loading = false;
-        if (res && res.token) {
+        const token = res?.accessToken || res?.token;
+        if (token) {
+          // Nếu có message lỗi, ưu tiên báo lỗi
+          if (res.message && res.message.toLowerCase().includes('error')) {
+            this.toast.error(this.translateErrorMessage(res.message));
+            this.cdRef.detectChanges();
+            return;
+          }
           // Kiểm tra role, không cho phép staff, admin, expert đăng nhập qua login thường
           const role = this.jwtUserUtil.getRoleFromToken();
           if (role && ['admin', 'staff', 'expert'].includes(role.toLowerCase())) {

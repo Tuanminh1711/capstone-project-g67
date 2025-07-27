@@ -5,19 +5,22 @@
     <h1 class="header-title-care small">CÀI ĐẶT NHẮC NHỞ CHĂM SÓC CÂY</h1>
   </div>
   <div class="add-schedule-actions outside-actions wide-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-  <button type="button" class="add-schedule-btn help-btn beautify-btn" (click)="openGuide()" title="Hướng dẫn sử dụng">
-    <i class="fas fa-question-circle"></i> Hướng dẫn
-  </button>
-  <div class="right-actions align-right">
-    @if (!hasFertilizerReminder) {
-      <button type="button" class="add-schedule-btn fertilizer outside beautify small-btn" (click)="addSchedule(2)" title="Thêm lịch nhắc bón phân">
-        <i class="fas fa-leaf icon-small"></i> Bón phân
-      </button>
-    }
-    <button type="button" class="add-schedule-btn pest outside beautify small-btn" disabled title="Sâu bệnh">
-      <i class="fas fa-bug icon-small"></i> Sâu bệnh
+    <button type="button" class="add-schedule-btn help-btn beautify-btn" (click)="openGuide()" title="Hướng dẫn sử dụng">
+      <i class="fas fa-question-circle"></i> Hướng dẫn
     </button>
-  </div>
+    <button type="button" class="add-schedule-btn beautify-btn" (click)="enableAllRemindersDefaultTomorrow8h()" title="Bật tất cả nhắc nhở mặc định">
+      <i class="fas fa-bell"></i> Bật tất cả nhắc nhở
+    </button>
+    <div class="right-actions align-right">
+      @if (!hasFertilizerReminder) {
+        <button type="button" class="add-schedule-btn fertilizer outside beautify small-btn" (click)="addSchedule(2)" title="Thêm lịch nhắc bón phân">
+          <i class="fas fa-leaf icon-small"></i> Bón phân
+        </button>
+      }
+      <button type="button" class="add-schedule-btn pest outside beautify small-btn" disabled title="Sâu bệnh">
+        <i class="fas fa-bug icon-small"></i> Sâu bệnh
+      </button>
+    </div>
   </div>
   <div class="add-schedule-actions full-width center">
 @if (!hasWaterReminder) {
@@ -73,6 +76,3 @@
     </div>
   </form>
 </div>
-
-
-

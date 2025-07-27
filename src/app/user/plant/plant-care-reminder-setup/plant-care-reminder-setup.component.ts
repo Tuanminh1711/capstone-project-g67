@@ -52,7 +52,7 @@ export class PlantCareReminderSetupComponent {
   ngOnInit() {
     this.userPlantId = this.route.snapshot.paramMap.get('userPlantId');
     if (this.schedules.length === 0) {
-      this.addSchedule();
+      this.enableAllRemindersDefaultTomorrow8h();
     }
   }
 
@@ -70,17 +70,32 @@ export class PlantCareReminderSetupComponent {
     return this.form.get('schedules') as FormArray;
   }
 
-  addSchedule(careTypeId?: number) {
+  addSchedule(careTypeId?: number, useTomorrow8h?: boolean) {
     const typeId = careTypeId || 1;
+    let startDate = new Date();
+    let reminderTime = '08:00';
+    if (useTomorrow8h) {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() + 1);
+      reminderTime = '08:00';
+    }
     this.schedules.push(this.fb.group({
       careTypeId: [typeId, Validators.required],
       enabled: [true],
       frequencyDays: [1, [Validators.required, Validators.min(1)]],
-      reminderTime: ['08:00', Validators.required],
-      customMessage: ['', Validators.maxLength(100)],
-      startDate: [new Date().toISOString().slice(0,10), Validators.required]
+      reminderTime: [reminderTime, Validators.required],
+      customMessage: ['Đã tới giờ chăm sóc cây', Validators.maxLength(100)],
+      startDate: [startDate.toISOString().slice(0,10), Validators.required]
     }));
     this.form.get('newCareTypeId')?.setValue(null);
+  }
+
+  // Hàm bật tất cả nhắc nhở với trạng thái mặc định 8h sáng ngày hôm sau
+  enableAllRemindersDefaultTomorrow8h() {
+    this.schedules.clear();
+    for (const type of this.careTypes) {
+      this.addSchedule(type.id, true);
+    }
   }
 
   getCareTypeName(id: number): string {
@@ -96,6 +111,20 @@ export class PlantCareReminderSetupComponent {
   if (this.form.invalid || !this.userPlantId) return;
   this.loading = true;
 
+  // Chỉ chuyển startDate sang ISO, giữ nguyên reminderTime là string
+  const raw = this.form.value;
+  const schedules = (raw.schedules || []).map((s: any) => {
+    let startDateObj = null;
+    if (s.startDate) {
+      startDateObj = new Date(s.startDate).toISOString();
+    }
+    return {
+      ...s,
+      reminderTime: s.reminderTime, // giữ nguyên string '08:00'
+      startDate: startDateObj
+    };
+  });
+
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -109,7 +138,7 @@ export class PlantCareReminderSetupComponent {
   };
   this.http.post(
     `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
-    this.form.value,
+    { schedules },
     options
   ).subscribe({
     next: (res: any) => {

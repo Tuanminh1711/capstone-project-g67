@@ -1,8 +1,26 @@
-// Danh sách careType cố định (có thể lấy từ API nếu cần động)
+
 export const CARE_TYPES = [
   { careTypeId: 1, careTypeName: 'Tưới nước' },
   { careTypeId: 2, careTypeName: 'Bón phân' }
 ];
+
+/**
+ * Trả về mảng schedules mặc định cho nút "Bật tất cả nhắc nhở" (8h sáng, message mặc định)
+ */
+export function getDefaultCareReminders(): any[] {
+  // Lấy ngày mai
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const startDate = tomorrow.toISOString().slice(0, 10); // yyyy-MM-dd
+  return CARE_TYPES.map(type => ({
+    careTypeId: type.careTypeId,
+    enabled: true,
+    frequencyDays: 1,
+    reminderTime: '08:00',
+    customMessage: 'Đã tới giờ chăm sóc cây',
+    startDate
+  }));
+}
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

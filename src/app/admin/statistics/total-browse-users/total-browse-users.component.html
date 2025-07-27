@@ -1,17 +1,22 @@
-<app-admin-layout>
-  <div class="total-browse-users-statistics-container">
+<div class="total-browse-users-statistics-container">
     <h2>Thống kê tổng số người dùng truy cập</h2>
     
     <button (click)="fetchTotalBrowseUsers()" [disabled]="loading" class="refresh-btn">
-      <span *ngIf="!loading">Làm mới</span>
-      <span *ngIf="loading">Đang tải...</span>
+      @if (!loading) {
+        <span>Làm mới</span>
+      } @else {
+        <span>Đang tải...</span>
+      }
     </button>
-    
-    <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
-    
-    <div *ngIf="totalBrowseUsers !== null && !loading" class="statistic-value">
-      <span class="stat-label">Tổng số người dùng đã truy cập:</span>
-      <span class="stat-number">{{ totalBrowseUsers }}</span>
-    </div>
+
+    @if (!loading) {
+      @if (errorMsg) {
+        <div class="error-msg">{{ errorMsg }}</div>
+      } @else {
+        <div class="statistic-value">
+          <span class="stat-label">Tổng số người dùng đã truy cập:</span>
+          <span class="stat-number">{{ totalBrowseUsers }}</span>
+        </div>
+      }
+    }
   </div>
-</app-admin-layout>

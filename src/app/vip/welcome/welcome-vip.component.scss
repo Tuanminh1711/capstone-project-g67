@@ -1,0 +1,38 @@
+.welcome-vip-page {
+  max-width: 500px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(62, 122, 47, 0.18);
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.welcome-vip-page h1 {
+  color: #e67e22;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+
+.welcome-vip-page p {
+  font-size: 1.2rem;
+  color: #4a7c35;
+  margin-bottom: 32px;
+}
+
+.btn-home {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #e67e22, #f7ca18);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.btn-home:hover {
+  background: linear-gradient(135deg, #d35400, #e67e22);
+}

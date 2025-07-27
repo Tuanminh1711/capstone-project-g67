@@ -8,7 +8,7 @@ export class JwtUserUtilService {
 
   getUserIdFromToken(): string | null {
     // Lấy token từ cookie thay vì localStorage
-    const token = this.cookieService.getAuthToken();
+    const token = this.cookieService.getCookie('auth_token');
     if (!token) return null;
     
     try {
@@ -22,7 +22,7 @@ export class JwtUserUtilService {
 
   getRoleFromToken(): string | null {
     // Lấy token từ cookie thay vì localStorage
-    const token = this.cookieService.getAuthToken();
+    const token = this.cookieService.getCookie('auth_token');
     if (!token) return null;
     
     try {
@@ -44,7 +44,7 @@ export class JwtUserUtilService {
    * Lấy thông tin đầy đủ từ token
    */
   getTokenInfo(): any | null {
-    const token = this.cookieService.getAuthToken();
+    const token = this.cookieService.getCookie('auth_token');
     if (!token) return null;
     
     try {

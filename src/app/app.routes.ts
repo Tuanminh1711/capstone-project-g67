@@ -6,6 +6,7 @@ import { AboutUsComponent } from './main/about-us/about-us';
 import { CareExpertComponent } from './main/care-expert/care-expert.component';
 
 // USER FEATURE
+import { VipPaymentComponent } from './user/exper/vip-payment.component';
 import { MyGardenComponent } from './user/plant/my-garden/my-garden.component';
 import { AddPlantComponent } from './user/plant/add-plant/add-plant.component';
 import { CreateNewPlantComponent } from './user/plant/create-plants/create-new-plant.component';
@@ -41,8 +42,10 @@ export const routes: Routes = [
   { path: 'care-expert', component: CareExpertComponent },
 
   // USER
+  { path: 'vip/welcome', loadComponent: () => import('./vip/welcome/welcome-vip.component').then(m => m.WelcomeVipComponent) },
   { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },
   { path: 'user/my-garden', component: MyGardenComponent },
+  { path: 'user/exper/vip-payment', component: VipPaymentComponent },
   { path: 'user/create-new-plant', component: CreateNewPlantComponent },
   { path: 'user/user-plant-detail/:id', component: ViewUserPlantDetailComponent },
   { path: 'user/plant-care-reminder/:userPlantId', component: PlantCareReminderSetupComponent },

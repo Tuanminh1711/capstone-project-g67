@@ -8,7 +8,7 @@ import { CookieService } from '../../../auth/cookie.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
 import { MyGardenService, UserPlant, ApiResponse, PaginatedResponse } from './my-garden.service';
-import { CareReminderService, CareReminderSchedule, CARE_TYPES } from './care-reminder.service';
+import { CareReminderService, CareReminderSchedule, CARE_TYPES, getDefaultCareReminders } from './care-reminder.service';
 import { CareReminderDialogComponent } from './care-reminder-dialog.component';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
@@ -49,16 +49,15 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   // Toggle all reminders for a plant (bật/tắt tất cả loại nhắc nhở)
   toggleAllReminders(plant: UserPlant): void {
     if (!plant) return;
-    // Gọi API bật/tắt tất cả loại nhắc nhở (giả sử careTypeId = 0 là tất cả)
     const enable = !plant.reminderEnabled;
-    const schedules: CareReminderSchedule[] = CARE_TYPES.map(t => ({
-      careTypeId: t.careTypeId,
+    // Lấy schedules mặc định (có message và giờ) và set enabled theo trạng thái mong muốn
+    const schedules = getDefaultCareReminders().map(s => ({
+      ...s,
       enabled: enable
     }));
     this.careReminderService.updateCareReminders(plant.userPlantId, schedules).subscribe({
       next: (res) => {
         plant.reminderEnabled = enable;
-        // Nếu response là string và có chữ "thành công" thì báo thành công
         if (typeof res === 'string' && res.includes('thành công')) {
           this.toastService.success(res);
         } else {
