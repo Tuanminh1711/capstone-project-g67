@@ -1,4 +1,5 @@
 package com.plantcare_backend.service.EmailServiceTest;
 
-public class sendResetCodeEmail {
+public class SendWelcomeEmailTest {
+
 }

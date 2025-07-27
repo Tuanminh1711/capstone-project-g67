@@ -22,7 +22,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class ResetPasswordTest {
+class ResetPasswordTest {
 
     @InjectMocks
     private AdminServiceImpl adminService;

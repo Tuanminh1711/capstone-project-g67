@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class sendEmail {
+class SendEmailTest {
     @InjectMocks
     private EmailServiceImpl emailService;
 
@@ -71,13 +71,13 @@ public class sendEmail {
     @Test
     void sendEmail_invalidEmail() {
         try {
-            String invalidEmail = "invalid-email";
+            to = "invalid-email";
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-                emailService.sendEmail(invalidEmail, subject, content);
+                emailService.sendEmail(to, subject, content);
             });
 
-            assertEquals("Invalid email address: " + invalidEmail, ex.getMessage());
+            assertEquals("Invalid email address: " + to, ex.getMessage());
             verify(emailSender, never()).send((MimeMessage) any());
 
             System.out.println("Test 'sendEmail_invalidEmail' thành công");

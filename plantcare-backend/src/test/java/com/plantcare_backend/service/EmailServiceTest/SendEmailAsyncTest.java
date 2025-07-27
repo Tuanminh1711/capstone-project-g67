@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.EmailServiceTest;
 
-public class sendEmailAsync {
+public class SendEmailAsyncTest {
 }
