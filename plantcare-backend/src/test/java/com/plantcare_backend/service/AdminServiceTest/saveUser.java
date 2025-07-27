@@ -69,15 +69,15 @@ class saveUser {
         request = new UserRequestDTO();
         request.setUsername("newuser");
         request.setEmail("newuser@example.com");
-        request.setPassword("securePass123");
+        request.setPassword("securePass@123");
         request.setPhoneNumber("0912345678");
         request.setFullName("Nguyen Van A");
         request.setGender(Gender.MALE);
-        request.setRoleId(1);
+        request.setRoleId(2);
 
         role = new Role();
-        role.setId(1);
-        role.setRoleName(Role.RoleName.ADMIN);
+        role.setId(2);
+        role.setRoleName(Role.RoleName.STAFF);
 
         savedUser = Users.builder()
                 .id(123)
@@ -117,8 +117,9 @@ class saveUser {
             RuntimeException exception = assertThrows(RuntimeException.class, () -> {
                 adminService.saveUser(request);
             });
+            System.out.println(exception.getClass().getSimpleName());
             assertEquals("Username already exists", exception.getMessage());
-            System.out.println("saveUser failed: " + exception.getMessage());
+            System.out.println(exception.getClass().getSimpleName()+ ": " + exception.getMessage());
         } catch (Exception e) {
             System.out.println("Test 'saveUser_usernameAlreadyExists' thất bại: " + e.getMessage());
             e.printStackTrace();
