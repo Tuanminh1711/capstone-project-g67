@@ -27,7 +27,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class updateUser {
+class UpdateUserTest {
 
     @InjectMocks
     private AdminServiceImpl adminService;

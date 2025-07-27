@@ -29,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class getUserDetail {
+public class GetUserDetailTest {
     @InjectMocks
     private AdminServiceImpl adminService;
 

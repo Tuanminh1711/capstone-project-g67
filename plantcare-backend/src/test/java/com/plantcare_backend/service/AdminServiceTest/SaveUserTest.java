@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class saveUser {
+class SaveUserTest {
 
     @InjectMocks
     private AdminServiceImpl adminService;
