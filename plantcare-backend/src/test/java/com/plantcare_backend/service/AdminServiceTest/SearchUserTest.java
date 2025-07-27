@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.AdminServiceTest;
 
-public class deleteUser {
+public class SearchUserTest {
 }

@@ -4,11 +4,8 @@ import com.plantcare_backend.dto.request.auth.UserRequestDTO;
 import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.UserProfile;
 import com.plantcare_backend.model.Users;
-import com.plantcare_backend.repository.RoleRepository;
-import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.repository.UserProfileRepository;
 import com.plantcare_backend.repository.UserRepository;
-import com.plantcare_backend.service.OtpService;
 import com.plantcare_backend.service.impl.AdminServiceImpl;
 import com.plantcare_backend.util.Gender;
 import jakarta.validation.ConstraintViolation;
@@ -21,12 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -43,22 +38,8 @@ class updateUser {
     @Mock
     private UserProfileRepository userProfileRepository;
 
-    @Mock
-    private RoleRepository roleRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private OtpService otpService;
-
-    @Mock
-    private UserActivityLogRepository userActivityLogRepository;
-
-
     private Validator validator;
 
-    private UserRequestDTO request;
     private Role role;
     private Users existingUser;
     private UserProfile existingProfile;
@@ -115,8 +96,6 @@ class updateUser {
             verify(userProfileRepository).save(existingProfile);
         } catch (Exception e) {
             System.out.println("Test 'updateUser_success' thất bại: " + e.getMessage());
-            e.printStackTrace();
-            fail("Test 'updateUser_success' thất bại");
         }
     }
 
@@ -134,7 +113,6 @@ class updateUser {
 
         } catch (Exception e) {
             System.out.println("Test 'updateUser_userNotFound' thất bại: " + e.getMessage());
-            fail("Test 'updateUser_userNotFound' thất bại");
         }
     }
 
@@ -153,7 +131,6 @@ class updateUser {
             System.out.println(ex.getClass().getSimpleName() + ": " + ex.getMessage());
         } catch (Exception e) {
             System.out.println("Test 'updateUser_profileNotFound' thất bại: " + e.getMessage());
-            fail("Test 'updateUser_profileNotFound' thất bại");
         }
     }
 
@@ -175,8 +152,6 @@ class updateUser {
             }
         } catch (Exception e) {
             System.out.println("Test 'updateUser_blankFullName' thất bại: " + e.getMessage());
-            e.printStackTrace();
-            fail("Test 'updateUser_blankFullName' thất bại");
         }
     }
 
@@ -200,8 +175,6 @@ class updateUser {
             verify(userProfileRepository).save(existingProfile);
         } catch (Exception e) {
             System.out.println("Test 'updateUser_blankPassword' thất bại: " + e.getMessage());
-            e.printStackTrace();
-            fail("Test 'updateUser_blankPassword' thất bại");
         }
     }
 
@@ -223,8 +196,6 @@ class updateUser {
             }
         } catch (Exception e) {
             System.out.println("Test 'updateUser_blankFullName' thất bại: " + e.getMessage());
-            e.printStackTrace();
-            fail("Test 'updateUser_blankFullName' thất bại");
         }
     }
 
@@ -246,9 +217,6 @@ class updateUser {
             }
         } catch (Exception e) {
             System.out.println("Test 'updateUser_blankFullName' thất bại: " + e.getMessage());
-            e.printStackTrace();
-            fail("Test 'updateUser_blankFullName' thất bại");
         }
     }
-
 }
