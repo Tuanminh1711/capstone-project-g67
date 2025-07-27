@@ -1,15 +1,12 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.plantsManager.*;
+import com.plantcare_backend.dto.response.plantsManager.*;
 import com.plantcare_backend.dto.request.plantsManager.*;
+import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
-import com.plantcare_backend.model.PlantCategory;
-import com.plantcare_backend.model.PlantImage;
-import com.plantcare_backend.model.PlantReport;
-import com.plantcare_backend.model.Plants;
-import com.plantcare_backend.repository.PlantCategoryRepository;
-import com.plantcare_backend.repository.PlantReportRepository;
-import com.plantcare_backend.repository.PlantRepository;
+import com.plantcare_backend.model.*;
+import com.plantcare_backend.repository.*;
+import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.PlantManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +15,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +33,12 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     private final PlantCategoryRepository plantCategoryRepository;
     @Autowired
     private final PlantReportRepository plantReportRepository;
+    @Autowired
+    private final UserRepository userRepository;
+    @Autowired
+    private final EmailService emailService;
+    @Autowired
+    private final PlantReportLogRepository plantReportLogRepository;
 
     /**
      * Creates a new plant entry in the system by an admin or staff member.
@@ -43,10 +48,16 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      * @return the ID of the newly created plant.
      */
     @Override
-    public Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO) {
+    public Long createPlantByManager(CreatePlantManagementRequestDTO createPlantManagementRequestDTO, Long userId) {
         PlantCategory plantCategory = plantCategoryRepository
                 .findById(Long.valueOf(createPlantManagementRequestDTO.getCategoryId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        if (plantRepository.existsByScientificNameIgnoreCase(createPlantManagementRequestDTO.getScientificName())) {
+            throw new InvalidDataException("Plant with scientific name already exists: " + createPlantManagementRequestDTO.getScientificName());
+        }
+        if (plantRepository.existsByCommonNameIgnoreCase(createPlantManagementRequestDTO.getCommonName())) {
+            throw new InvalidDataException("Plant with common name already exists: " + createPlantManagementRequestDTO.getCommonName());
+        }
         Plants plants = new Plants();
         plants.setScientificName(createPlantManagementRequestDTO.getScientificName());
         plants.setCommonName(createPlantManagementRequestDTO.getCommonName());
@@ -61,7 +72,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         plants.setSuitableLocation(createPlantManagementRequestDTO.getSuitableLocation());
         plants.setCommonDiseases(createPlantManagementRequestDTO.getCommonDiseases());
         plants.setStatus(Plants.PlantStatus.ACTIVE);
-
+        plants.setCreatedBy(userId);
         Plants saved = plantRepository.save(plants);
         return saved.getId();
     }
@@ -72,7 +83,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      * @param page the page number to retrieve (0-based index).
      * @param size the number of records per page.
      * @return a {@link Page} of {@link PlantListResponseDTO} containing the plant
-     *         data.
+     * data.
      */
     @Override
     public Page<PlantListResponseDTO> getAllPlants(int page, int size) {
@@ -90,7 +101,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
      *            difficulty,
      *            * status, and pagination info (page and size).
      * @return a {@link Page} of {@link PlantListResponseDTO} containing the
-     *         filtered plant results.
+     * filtered plant results.
      */
     @Override
     public Page<PlantListResponseDTO> searchPlants(PlantSearchRequestDTO dto) {
@@ -106,13 +117,17 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     }
 
     /**
-     * Updates the details of an existing plant, including its information, category,
+     * Updates the details of an existing plant, including its information,
+     * category,
      * status, and associated images based on the provided update request.
      *
-     * @param plantId the ID of the plant to be updated.
-     * @param updateRequest the {@link UpdatePlantRequestDTO} containing new values for the plant's fields,
-     *                      such as name, description, care instructions, category, status, and images.
-     * @return the updated {@link PlantDetailResponseDTO} representing the plant's latest data.
+     * @param plantId       the ID of the plant to be updated.
+     * @param updateRequest the {@link UpdatePlantRequestDTO} containing new values
+     *                      for the plant's fields,
+     *                      such as name, description, care instructions, category,
+     *                      status, and images.
+     * @return the updated {@link PlantDetailResponseDTO} representing the plant's
+     * latest data.
      */
     @Override
     public PlantDetailResponseDTO updatePlant(Long plantId, UpdatePlantRequestDTO updateRequest) {
@@ -167,12 +182,15 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     }
 
     /**
-     * Retrieves detailed information of a plant by its ID, including scientific name,
-     * common name, description, care instructions, category name, status, timestamps,
+     * Retrieves detailed information of a plant by its ID, including scientific
+     * name,
+     * common name, description, care instructions, category name, status,
+     * timestamps,
      * and associated images.
      *
      * @param plantId the ID of the plant to retrieve.
-     * @return a {@link PlantDetailResponseDTO} containing detailed information about the plant.
+     * @return a {@link PlantDetailResponseDTO} containing detailed information
+     * about the plant.
      */
     @Override
     public PlantDetailResponseDTO getPlantDetail(Long plantId) {
@@ -230,7 +248,6 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     }
 
     /**
-     *
      * @param request
      * @return
      */
@@ -244,8 +261,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         }
 
         Page<PlantReport> reportPage = plantReportRepository.findReportsWithFilters(
-                status, request.getPlantName(), request.getReporterName(), pageable
-        );
+                status, request.getPlantName(), request.getReporterName(), pageable);
 
         PlantReportListResponseDTO response = new PlantReportListResponseDTO();
         response.setReports(reportPage.getContent().stream()
@@ -257,6 +273,150 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         response.setPageSize(request.getSize());
 
         return response;
+    }
+
+    @Override
+    public void claimReport(Long reportId, Integer userId) {
+        PlantReport plantReport = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+        if (plantReport.getClaimedBy() != null) {
+            throw new IllegalArgumentException("Report đã được nhận sử lý bởi người khác!");
+        }
+        Users staff = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+        plantReport.setClaimedBy(staff);
+        plantReport.setClaimedAt(new Timestamp(System.currentTimeMillis()));
+        plantReport.setStatus(PlantReport.ReportStatus.CLAIMED);
+        plantReportRepository.save(plantReport);
+
+        PlantReportLog log = new PlantReportLog();
+        log.setReport(plantReport);
+        log.setAction(PlantReportLog.Action.CLAIM);
+        log.setUser(staff);
+        log.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        plantReportLogRepository.save(log);
+    }
+
+    @Override
+    public void handleReport(Long reportId, String status, String adminNotes, Integer userId) {
+        PlantReport report = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+        if (report.getClaimedBy() == null || report.getClaimedBy().getId() != userId.intValue()) {
+            throw new IllegalStateException("Bạn không phải là người nhận xử lý report này!");
+        }
+        report.setStatus(PlantReport.ReportStatus.valueOf(status));
+        report.setAdminNotes(adminNotes);
+        report.setHandledBy(report.getClaimedBy());
+        report.setHandledAt(new Timestamp(System.currentTimeMillis()));
+        plantReportRepository.save(report);
+
+        // Gửi email cho tất cả user đã report plant này
+        List<PlantReport> allReports = plantReportRepository.findByPlant_Id(report.getPlant().getId());
+        Set<Users> reporters = allReports.stream()
+                .map(PlantReport::getReporter)
+                .collect(Collectors.toSet());
+        for (Users user : reporters) {
+            String subject = "Báo cáo của bạn về cây " + report.getPlant().getCommonName() + " đã được xử lý";
+            String content = "Chào " + user.getUsername() + ",\n\n"
+                    + "Báo cáo của bạn về cây \"" + report.getPlant().getCommonName() + "\" đã được xử lý với kết quả: "
+                    + report.getStatus().name() + ".\n"
+                    + "Ghi chú từ admin/staff: " + report.getAdminNotes() + "\n\n"
+                    + "Cảm ơn bạn đã đóng góp cho hệ thống PlantCare!";
+            emailService.sendEmailAsync(user.getEmail(), subject, content);
+        }
+
+        // Ghi log
+        PlantReportLog log = new PlantReportLog();
+        log.setReport(report);
+        log.setAction(PlantReportLog.Action.HANDLE);
+        log.setUser(report.getClaimedBy());
+        log.setNote(adminNotes);
+        log.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        plantReportLogRepository.save(log);
+
+        // Kiểm tra nếu không còn report nào ở trạng thái PENDING hoặc CLAIMED
+        Long plantId = report.getPlant().getId();
+        int pendingCount = plantReportRepository.countByPlantIdAndStatusIn(
+                plantId,
+                List.of(PlantReport.ReportStatus.PENDING, PlantReport.ReportStatus.CLAIMED));
+        if (pendingCount == 0) {
+            Plants plant = report.getPlant();
+            if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
+                plant.setStatus(Plants.PlantStatus.ACTIVE);
+                plantRepository.save(plant);
+            }
+        }
+    }
+
+    @Override
+    public PlantReportDetailResponseDTO getReportDetail(Long reportId) {
+        PlantReport report = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
+
+        PlantReportDetailResponseDTO dto = new PlantReportDetailResponseDTO();
+        dto.setReportId(report.getReportId());
+        dto.setReason(report.getReason());
+        dto.setStatus(report.getStatus().name());
+        dto.setAdminNotes(report.getAdminNotes());
+        dto.setCreatedAt(report.getCreatedAt());
+
+        Plants plant = report.getPlant();
+        dto.setPlantId(plant.getId());
+        dto.setPlantName(plant.getCommonName());
+        dto.setScientificName(plant.getScientificName());
+        dto.setPlantDescription(plant.getDescription());
+        dto.setPlantStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
+
+        List<String> imageUrls = new ArrayList<>();
+        if (plant.getImages() != null) {
+            imageUrls = plant.getImages().stream()
+                    .map(PlantImage::getImageUrl)
+                    .collect(Collectors.toList());
+        }
+        dto.setPlantImageUrls(imageUrls);
+
+        Users reporter = report.getReporter();
+        dto.setReporterId((long) reporter.getId());
+        dto.setReporterName(reporter.getUsername());
+        dto.setReporterEmail(reporter.getEmail());
+
+        String reporterPhone = null;
+        try {
+            UserProfile userProfile = userRepository.findById(reporter.getId())
+                    .map(Users::getUserProfile)
+                    .orElse(null);
+            if (userProfile != null) {
+                reporterPhone = userProfile.getPhone();
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting reporter phone: " + e.getMessage());
+        }
+        dto.setReporterPhone(reporterPhone);
+
+        if (report.getClaimedBy() != null) {
+            Users claimedBy = report.getClaimedBy();
+            dto.setClaimedById((long) claimedBy.getId());
+            dto.setClaimedByName(claimedBy.getUsername());
+            dto.setClaimedByEmail(claimedBy.getEmail());
+            dto.setClaimedAt(report.getClaimedAt());
+        }
+
+        if (report.getHandledBy() != null) {
+            Users handledBy = report.getHandledBy();
+            dto.setHandledById((long) handledBy.getId());
+            dto.setHandledByName(handledBy.getUsername());
+            dto.setHandledByEmail(handledBy.getEmail());
+            dto.setHandledAt(report.getHandledAt());
+        }
+
+        List<PlantReportLog> logs = plantReportLogRepository.findByReport_ReportId(reportId);
+        List<PlantReportDetailResponseDTO.ReportLogDTO> logDTOs = logs.stream()
+                .map(this::convertToLogDTO)
+                .collect(Collectors.toList());
+        dto.setReportLogs(logDTOs);
+
+        return dto;
     }
 
     /**
@@ -311,6 +471,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     private PlantListResponseDTO toDTO(Plants plant) {
         PlantListResponseDTO dto = new PlantListResponseDTO();
         dto.setId(plant.getId());
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
         dto.setScientificName(plant.getScientificName());
         dto.setCommonName(plant.getCommonName());
         dto.setDescription(plant.getDescription());
@@ -348,6 +509,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         dto.setCreatedAt(plant.getCreatedAt());
         return dto;
     }
+
     private PlantReportResponseDTO convertToDTO(PlantReport report) {
         PlantReportResponseDTO dto = new PlantReportResponseDTO();
         dto.setReportId(report.getReportId());
@@ -361,6 +523,17 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         dto.setStatus(report.getStatus().name());
         dto.setAdminNotes(report.getAdminNotes());
         dto.setCreatedAt(report.getCreatedAt());
+        return dto;
+    }
+
+    private PlantReportDetailResponseDTO.ReportLogDTO convertToLogDTO(PlantReportLog log) {
+        PlantReportDetailResponseDTO.ReportLogDTO dto = new PlantReportDetailResponseDTO.ReportLogDTO();
+        dto.setLogId(log.getLogId());
+        dto.setAction(log.getAction().name());
+        dto.setUserName(log.getUser().getUsername());
+        dto.setUserEmail(log.getUser().getEmail());
+        dto.setNote(log.getNote());
+        dto.setCreatedAt(log.getCreatedAt());
         return dto;
     }
 }

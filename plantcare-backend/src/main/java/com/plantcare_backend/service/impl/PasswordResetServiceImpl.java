@@ -7,6 +7,7 @@ import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.PasswordResetService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PasswordResetServiceImpl implements PasswordResetService {
-
     @Autowired
     private EmailService emailService;
     @Autowired

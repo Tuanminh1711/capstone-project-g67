@@ -1,7 +1,7 @@
 package com.plantcare_backend.service;
 
-import com.plantcare_backend.dto.reponse.auth.LoginResponse;
-import com.plantcare_backend.dto.reponse.ResponseData;
+import com.plantcare_backend.dto.response.auth.LoginResponse;
+import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
 import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
@@ -15,4 +15,8 @@ public interface AuthService {
     ResponseData<?> logout(HttpServletRequest httpServletRequest);
 
     ResponseData<?> changePassword(ChangePasswordRequestDTO requestDTO, Integer userId);
+
+    LoginResponse loginForAdminOrStaff(LoginRequestDTO loginRequestDTO, HttpServletRequest request);
+
+    LoginResponse loginForExpert(LoginRequestDTO loginRequestDTO, HttpServletRequest request);
 }

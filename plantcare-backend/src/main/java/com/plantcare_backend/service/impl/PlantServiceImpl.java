@@ -1,18 +1,20 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.reponse.Plants.PlantResponseDTO;
-import com.plantcare_backend.dto.reponse.Plants.PlantSearchResponseDTO;
-import com.plantcare_backend.dto.reponse.Plants.UserPlantDetailResponseDTO;
-import com.plantcare_backend.dto.reponse.plantsManager.PlantDetailResponseDTO;
+
+import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
+import com.plantcare_backend.dto.response.Plants.PlantResponseDTO;
+import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
+import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
-import com.plantcare_backend.model.PlantCategory;
-import com.plantcare_backend.model.PlantImage;
-import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.PlantCategoryRepository;
+import com.plantcare_backend.repository.PlantReportRepository;
 import com.plantcare_backend.repository.PlantRepository;
+import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.PlantService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,11 @@ public class PlantServiceImpl implements PlantService {
     private final PlantRepository plantRepository;
     @Autowired
     private final PlantCategoryRepository categoryRepository;
+    @Autowired
+    private final UserRepository userRepository;
+    @Autowired
+    private final PlantReportRepository plantReportRepository;
+
 
     /**
      * search plants filter
@@ -54,7 +61,7 @@ public class PlantServiceImpl implements PlantService {
                 sortBy);
 
         Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize(), sort);
-        request.setStatus(Plants.PlantStatus.ACTIVE);
+//        request.setStatus(Plants.PlantStatus.ACTIVE);
 
         Page<Plants> plantsPage = plantRepository.searchPlants(
                 request.getKeyword(),
@@ -147,6 +154,8 @@ public class PlantServiceImpl implements PlantService {
         dto.setSuitableLocation(plant.getSuitableLocation());
         dto.setCommonDiseases(plant.getCommonDiseases());
         dto.setStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
+        dto.setLightRequirement(plant.getLightRequirement());
+        dto.setWaterRequirement(plant.getWaterRequirement());
         dto.setStatusDisplay(getStatusDisplay(plant.getStatus()));
         dto.setCreatedAt(plant.getCreatedAt());
         dto.setUpdatedAt(plant.getUpdatedAt());
@@ -175,6 +184,8 @@ public class PlantServiceImpl implements PlantService {
         userDto.setSuitableLocation(dto.getSuitableLocation());
         userDto.setCommonDiseases(dto.getCommonDiseases());
         userDto.setStatus(dto.getStatus());
+        userDto.setLightRequirement(dto.getLightRequirement());
+        userDto.setWaterRequirement(dto.getWaterRequirement());
         userDto.setCategoryName(dto.getCategoryName());
         userDto.setImageUrls(dto.getImageUrls());
         return userDto;
@@ -189,6 +200,67 @@ public class PlantServiceImpl implements PlantService {
         }
     }
 
+
+    /**
+     * Process a plant report from a user.
+     *
+     * @param request The DTO contains report information, including plant ID and reason.
+     * @param reporterId User ID of the report.
+     */
+    @Override
+    public void reportPlant(PlantReportRequestDTO request, Long reporterId) {
+        // 1. Lấy thông tin user
+        Users reporter = userRepository.findById(Math.toIntExact(reporterId))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // 2. Lấy thông tin plant
+        Plants plant = plantRepository.findById(request.getPlantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found"));
+        // Kiểm tra trạng thái plant
+        if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
+            throw new IllegalArgumentException("Cây này đã bị khóa do bị report quá nhiều!");
+        }
+
+        // 4. Kiểm tra user đã report chưa
+        if (plantReportRepository.existsByPlantAndReporterAndStatus(plant, reporter,
+                PlantReport.ReportStatus.PENDING)) {
+            throw new IllegalArgumentException("Bạn đã report cây này rồi! vui lòng chờ xử lý.");
+        }
+
+        // 3. Tạo report mới
+        PlantReport report = PlantReport.builder()
+                .plant(plant)
+                .reporter(reporter)
+                .reason(request.getReason())
+                .status(PlantReport.ReportStatus.PENDING)
+                .build();
+        plantReportRepository.save(report);
+
+        // 4. Đếm số lượng report của plant này
+        int reportCount = plantReportRepository.countByPlantId(plant.getId());
+
+        // 5. Nếu >= 2, chuyển plant sang INACTIVE
+        if (reportCount >= 3 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
+            plant.setStatus(Plants.PlantStatus.INACTIVE);
+            plantRepository.save(plant);
+        }
+
+        // 6. Gửi email cho staff và admin
+//        List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN", "STAFF"));
+//        for (Users user : staffAndAdmins) {
+//            emailService.sendEmail(
+//                    user.getEmail(),
+//                    "Có báo cáo mới về cây cảnh",
+//                    "Xin chào " + user.getUsername() + ",\n\n" +
+//                            "Cây: " + plant.getCommonName() + "\n" +
+//                            "Người báo cáo: " + reporter.getUsername() + "\n" +
+//                            "Lý do báo cáo:\n" +
+//                            request.getReason() + "\n\n" +
+//                            "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
+//                            "Trân trọng,\n" +
+//                            "Hệ thống PlantCare"
+//            );
+    }
     /**
      * Chuyển đổi Plants entity sang PlantResponseDTO
      */
@@ -207,7 +279,8 @@ public class PlantServiceImpl implements PlantService {
         dto.setCommonDiseases(plant.getCommonDiseases());
         dto.setStatus(plant.getStatus());
         dto.setCreatedAt(plant.getCreatedAt());
-
+        int reportCount = plantReportRepository.countByPlantId(plant.getId());
+        dto.setReportCount(reportCount);
         if (plant.getImages() != null && !plant.getImages().isEmpty()) {
             List<String> imageUrls = plant.getImages().stream()
                     .map(image -> image.getImageUrl())

@@ -16,4 +16,5 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Intege
     @Query("SELECT up FROM UserProfile up JOIN up.user u WHERE u.id = :userId AND u.status = 'ACTIVE'")
     Optional<UserProfile> findUserProfileDetails(@Param("userId") Integer userId);
 
+    boolean existsByPhone(String phone);
 }

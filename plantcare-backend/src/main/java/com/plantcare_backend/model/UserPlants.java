@@ -1,9 +1,11 @@
 package com.plantcare_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,8 +35,9 @@ public class UserPlants {
     @Column(name = "location_in_house")
     private String plantLocation;
 
-    @Column(name = "reminder_enabled")
-    private boolean reminder_enabled;
+    @OneToMany(mappedBy = "userPlants", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<UserPlantImage> images;
 
     @Column(name = "created_at")
     private Timestamp created_at;

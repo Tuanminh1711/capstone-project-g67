@@ -19,7 +19,7 @@ public class UserProfileRequestDTO {
     private String fullName;
     @PhoneNumber(message = "phone invalid format")
     private String phoneNumber;
-    private String avatar;
     private String gender;
     private String livingEnvironment;
+    private String avatar;
 }

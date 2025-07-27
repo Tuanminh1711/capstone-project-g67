@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,28 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
                         @Param("careDifficulty") Plants.CareDifficulty careDifficulty,
                         @Param("status") Plants.PlantStatus status,
                         Pageable pageable);
+
         boolean existsByScientificNameIgnoreCase(String scientificName);
 
+        boolean existsByCommonNameIgnoreCase(String commonName);
+
         Optional<Plants> findById(Long id);
+
+        @Query("SELECT COUNT(p) > 0 FROM Plants p WHERE LOWER(p.scientificName) = LOWER(:scientificName) AND p.createdBy IS NULL")
+        boolean existsByScientificNameIgnoreCaseAndCreatedByIsNull(@Param("scientificName") String scientificName);
+
+        @Query("SELECT COUNT(p) FROM Plants p WHERE p.createdBy = :userId AND p.createdAt BETWEEN :startTime AND :endTime")
+        long countByCreatedByAndCreatedAtBetween(
+                        @Param("userId") Long userId,
+                        @Param("startTime") Timestamp startTime,
+                        @Param("endTime") Timestamp endTime);
+
+        @Query("SELECT DATE(p.createdAt) as date, COUNT(p) as totalAdded " +
+                        "FROM Plants p " +
+                        "WHERE p.createdAt BETWEEN :startDate AND :endDate " +
+                        "GROUP BY DATE(p.createdAt) " +
+                        "ORDER BY DATE(p.createdAt) ASC")
+        List<Object[]> countPlantsAddedByDate(
+                        @Param("startDate") Timestamp startDate,
+                        @Param("endDate") Timestamp endDate);
 }
