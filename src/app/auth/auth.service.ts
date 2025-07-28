@@ -79,13 +79,13 @@ export class AuthService {
   verifyEmail(data: VerifyEmailRequest): Observable<VerifyEmailResponse> {
     // Truyền email và otp qua query string
     return this.http.post<VerifyEmailResponse>(
-      `${this.apiUrl}/verify-email?email=${encodeURIComponent(data.email)}&otp=${encodeURIComponent(data.otp)}`,
+      `${this.apiUrl}/auth/verify-email?email=${encodeURIComponent(data.email)}&otp=${encodeURIComponent(data.otp)}`,
       {}
     );
   }
 
   resendVerificationEmail(email: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/resend-verification?email=${encodeURIComponent(email)}`, {});
+    return this.http.post<any>(`${this.apiUrl}/auth/resend-verification?email=${encodeURIComponent(email)}`, {});
   }
 
   /**
