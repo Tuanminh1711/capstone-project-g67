@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.PlantManagementServiceTest;
 
-public class lockOrUnlockPlant {
+public class UpdatePlantTest {
 }

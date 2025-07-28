@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.PlantManagementServiceTest;
 
-public class updatePlant {
+public class GetReportListTest {
 }
