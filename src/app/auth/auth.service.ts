@@ -94,7 +94,7 @@ export class AuthService {
   logout(): void {
     const token = this.cookieService.getCookie('auth_token');
     if (token) {
-      this.http.post(`${this.apiUrl}/logout`, {}, {
+      this.http.post(`${this.apiUrl}/auth/logout`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: () => {

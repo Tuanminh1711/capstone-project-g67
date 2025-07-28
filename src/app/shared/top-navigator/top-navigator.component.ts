@@ -70,14 +70,14 @@ export class TopNavigatorComponent implements OnInit {
         this.userAvatarFilename.startsWith('http') ||
         this.userAvatarFilename.startsWith('/api/avatars/')
       ) {
-        // Nếu là /api/avatars/... thì cần thêm host
+        // Nếu là /api/avatars/... thì cần thêm host từ environment
         if (this.userAvatarFilename.startsWith('/api/avatars/')) {
-          return `http://localhost:8080${this.userAvatarFilename}`;
+          return `${this.authService['apiUrl'].replace(/\/api$/, '')}${this.userAvatarFilename}`;
         }
         return this.userAvatarFilename;
       }
       // Nếu là tên file, trả về endpoint backend đúng
-      return `http://localhost:8080/api/user/avatars/${encodeURIComponent(this.userAvatarFilename)}`;
+      return `${this.authService['apiUrl'].replace(/\/api$/, '')}/api/user/avatars/${encodeURIComponent(this.userAvatarFilename)}`;
     }
     // Không có avatar hoặc lỗi thì trả về chuỗi rỗng để hiện icon user
     return '';
