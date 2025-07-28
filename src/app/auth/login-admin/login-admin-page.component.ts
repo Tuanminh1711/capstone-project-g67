@@ -73,8 +73,10 @@ export class LoginAdminPageComponent {
           });
         }
         this.successMsg = res.message || 'Đăng nhập thành công!';
-        this.toast.success(this.successMsg);
-        this.router.navigate(['/admin']);
+        setTimeout(() => {
+          this.toast.success(this.successMsg);
+          this.router.navigate(['/admin']);
+        });
       },
       error: (err: any) => {
         this.loading = false;

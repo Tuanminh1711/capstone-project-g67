@@ -15,6 +15,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
 export class HandleTicketDialogComponent {
   handleForm: FormGroup;
   loading = false;
+  error: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -30,14 +31,17 @@ export class HandleTicketDialogComponent {
 
   submit() {
     if (this.handleForm.invalid) return;
+    this.error = null;
     this.loading = true;
     this.ticketsService.handleTicket(this.data.ticketId, this.handleForm.value.note).subscribe({
       next: () => {
         this.toast.success('Xử lý ticket thành công!');
         this.dialogRef.close(true);
+        this.error = null;
       },
       error: () => {
         this.toast.error('Xử lý ticket thất bại!');
+        this.error = 'Xử lý ticket thất bại!';
         this.loading = false;
       }
     });

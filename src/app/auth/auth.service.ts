@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { CookieService } from './cookie.service';
 import { JwtUserUtilService } from './jwt-user-util.service';
+import { environment } from '../../environments/environment'; 
 
 export interface LoginRequest {
   username: string;
@@ -48,7 +49,7 @@ export interface VerifyEmailResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api'; // Direct to backend
+  private apiUrl = environment.apiUrl; // Direct to backend
 
   constructor(
     private http: HttpClient,

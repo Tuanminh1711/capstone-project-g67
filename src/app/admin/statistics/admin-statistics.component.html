@@ -1,0 +1,28 @@
+<div class="admin-statistics-container beautiful">
+  <div class="header">
+    <span class="icon">📊</span>
+    <h2>Thống kê tổng hợp hệ thống</h2>
+  </div>
+  <button (click)="fetchAllStatistics()" [disabled]="loading" class="refresh-btn">
+    <span *ngIf="!loading">Làm mới</span>
+    <span *ngIf="loading">Đang tải...</span>
+  </button>
+  <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
+  <div *ngIf="!loading && !errorMsg" class="stat-list">
+    <div class="statistic-card">
+      <div class="stat-icon users">👥</div>
+      <div class="stat-label">Tổng số người dùng đã truy cập</div>
+      <div class="stat-number">{{ totalBrowseUsers ?? '-' }}</div>
+    </div>
+    <div class="statistic-card">
+      <div class="stat-icon reg">📝</div>
+      <div class="stat-label">Tổng số người dùng đã đăng ký</div>
+      <div class="stat-number">{{ totalRegisteredUsers ?? '-' }}</div>
+    </div>
+    <div class="statistic-card">
+      <div class="stat-icon plant">🌱</div>
+      <div class="stat-label">Tổng số cây đã được thêm</div>
+      <div class="stat-number">{{ totalAddedPlants ?? '-' }}</div>
+    </div>
+  </div>
+</div>

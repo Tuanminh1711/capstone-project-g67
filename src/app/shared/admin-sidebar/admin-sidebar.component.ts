@@ -46,10 +46,7 @@ export class AdminSidebarComponent {
       title: 'Thống kê',
       open: false,
       items: [
-        { label: 'Tổng số cây đã thêm', link: '/admin/statistics/total-plants' },
-        { label: 'Tổng số người dùng đăng ký', link: '/admin/statistics/total-users' },
-        { label: 'Tổng số người dùng truy cập', link: '/admin/statistics/total-browse-users' }
-        // Nếu có route cho thống kê lọc, thêm vào đây
+        { label: 'Tổng hợp thống kê', link: '/admin/statistics/overview' }
       ]
     }
   ];

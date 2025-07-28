@@ -1,13 +1,26 @@
-<div class="response-dialog">
-  <h2>Phản hồi ticket</h2>
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="form-group">
-      <label for="response">Nội dung phản hồi</label>
-      <textarea id="response" formControlName="response" rows="3" placeholder="Nhập nội dung phản hồi..." class="input-response"></textarea>
-    </div>
-    <div class="actions">
-      <button type="button" (click)="close()" class="cancel">Hủy</button>
-      <button type="submit" [disabled]="form.invalid" class="confirm">Gửi phản hồi</button>
-    </div>
-  </form>
+<div class="respond-dialog-beautiful">
+  <div class="respond-header-gradient">
+    <span class="respond-icon-large">💬</span>
+  </div>
+  <div class="respond-content">
+    <div class="respond-title">Phản hồi ticket</div>
+    <div class="respond-desc">Vui lòng nhập nội dung phản hồi cho ticket này để hỗ trợ khách hàng tốt hơn.</div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="respond-form">
+      <label for="response" class="respond-label">Nội dung phản hồi</label>
+      <textarea id="response" formControlName="response" rows="3" placeholder="Nhập nội dung phản hồi..." class="respond-input"></textarea>
+      @if (error) {
+        <div class="respond-error"><span class="respond-error-icon">&#9888;</span> {{ error }}</div>
+      }
+      <div class="respond-actions">
+        <button type="button" (click)="close()" class="respond-cancel">Hủy</button>
+        <button type="submit" [disabled]="form.invalid || loading" class="respond-confirm">
+          @if (!loading) {
+            Gửi phản hồi
+          } @else {
+            <span class="loading-spinner"></span> Đang gửi...
+          }
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

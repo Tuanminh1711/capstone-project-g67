@@ -107,15 +107,10 @@ export class AdminSupportTicketsListComponent implements OnInit {
       width: '400px',
       autoFocus: false
     });
-    dialogRef.afterClosed().subscribe(response => {
-      if (response) {
-        this.ticketsService.responseTicket(ticket.ticketId, response).subscribe({
-          next: () => {
-            this.toast.success('Gửi phản hồi thành công!');
-            this.loadTickets();
-          },
-          error: () => this.toast.error('Gửi phản hồi thất bại!')
-        });
+    dialogRef.afterClosed().subscribe(success => {
+      if (success) {
+        this.toast.success('Gửi phản hồi thành công!');
+        this.loadTickets();
       }
     });
   }

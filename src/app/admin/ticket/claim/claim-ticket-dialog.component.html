@@ -1,14 +1,24 @@
-<div class="claim-dialog">
-  <h2>Nhận ticket hỗ trợ</h2>
-  <form [formGroup]="claimForm" (ngSubmit)="submit()">
-    <div class="form-group">
-      <label for="note">Ghi chú khi nhận ticket</label>
-      <textarea id="note" formControlName="note" rows="3" placeholder="Nhập ghi chú..." class="input-note"></textarea>
+<div class="claim-dialog-modern">
+  <div class="dialog-modern-header">
+    <span class="dialog-modern-icon">🎫</span>
+    <div class="dialog-modern-title">Nhận ticket hỗ trợ</div>
+    <div class="dialog-modern-desc">Vui lòng nhập ghi chú để nhận ticket hỗ trợ này.</div>
+  </div>
+  <form [formGroup]="claimForm" (ngSubmit)="submit()" class="dialog-modern-form">
+    <label for="note" class="dialog-modern-label">Ghi chú</label>
+    <textarea id="note" formControlName="note" rows="4" placeholder="Nhập ghi chú..." class="dialog-modern-input"></textarea>
+    @if (error) {
+      <div class="dialog-modern-error"><span class="error-icon">&#9888;</span> {{ error }}</div>
+    }
+    <div class="dialog-modern-actions">
+      <button type="button" (click)="close()" class="dialog-modern-cancel">Hủy</button>
+      <button type="submit" [disabled]="claimForm.invalid || loading" class="dialog-modern-confirm">
+        @if (!loading) {
+          Xác nhận
+        } @else {
+          <span class="loading-spinner"></span> Đang gửi...
+        }
+      </button>
     </div>
-    <div class="actions">
-      <button type="button" (click)="close()" class="cancel">Hủy</button>
-      <button type="submit" [disabled]="claimForm.invalid || loading" class="confirm">Xác nhận nhận ticket</button>
-    </div>
-    <div *ngIf="error" class="error-message">{{ error }}</div>
   </form>
 </div>

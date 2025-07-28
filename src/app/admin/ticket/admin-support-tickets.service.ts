@@ -45,8 +45,8 @@ export class AdminSupportTicketsService {
     return this.http.put(`/api/admin/support/tickets/${ticketId}/status`, { status });
   }
 
-  responseTicket(ticketId: number, response: string) {
-    return this.http.post(`/api/admin/support/tickets/${ticketId}/responses`, { response });
+  responseTicket(ticketId: number, content: string) {
+    return this.http.post(`/api/admin/support/tickets/${ticketId}/responses`, { content });
   }
 
   private apiUrl = '/api/admin/support/tickets';

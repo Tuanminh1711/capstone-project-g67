@@ -10,28 +10,13 @@ import { CommonModule } from '@angular/common';
   selector: 'app-response-ticket-dialog',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
-  template: `
-    <div class="response-dialog">
-      <h2>Phản hồi ticket</h2>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="form-group">
-          <label for="response">Nội dung phản hồi</label>
-          <textarea id="response" formControlName="response" rows="3" placeholder="Nhập nội dung phản hồi..."></textarea>
-        </div>
-        <div class="actions">
-          <button type="button" (click)="close()">Hủy</button>
-          <button type="submit" [disabled]="form.invalid || loading">Gửi phản hồi</button>
-        </div>
-        <div class="error-message" *ngIf="errorMsg">{{ errorMsg }}</div>
-      </form>
-    </div>
-  `,
+  templateUrl: './response-ticket-dialog.component.html',
   styleUrls: ['./response-ticket-dialog.component.scss']
 })
 export class ResponseTicketDialogComponent {
   form: FormGroup;
   loading = false;
-  errorMsg = '';
+  error: string | null = null;
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ResponseTicketDialogComponent>,
@@ -45,7 +30,7 @@ export class ResponseTicketDialogComponent {
   submit() {
     if (this.form.invalid || this.loading) return;
     this.loading = true;
-    this.errorMsg = '';
+    this.error = null;
     const body = { content: this.form.value.response };
     this.http.post<any>(`http://localhost:8080/api/admin/support/tickets/${this.data.ticketId}/responses`, body).subscribe({
       next: (res) => {
@@ -54,7 +39,7 @@ export class ResponseTicketDialogComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMsg = 'Gửi phản hồi thất bại. Vui lòng thử lại.';
+        this.error = err?.error?.message || 'Gửi phản hồi thất bại. Vui lòng thử lại.';
       }
     });
   }

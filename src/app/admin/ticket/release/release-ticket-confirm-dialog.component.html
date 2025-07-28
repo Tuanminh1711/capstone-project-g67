@@ -1,8 +1,13 @@
-<div class="release-dialog">
-  <h2>Xác nhận trả lại ticket</h2>
-  <p>Bạn có chắc chắn muốn trả lại ticket này?</p>
-  <div class="actions">
-    <button type="button" (click)="close(false)" class="cancel">Hủy</button>
-    <button type="button" (click)="close(true)" class="confirm">Xác nhận</button>
+<div class="release-dialog-beautiful">
+  <div class="release-header-gradient">
+    <span class="release-icon">↩️</span>
+  </div>
+  <div class="release-content">
+    <div class="release-title">Xác nhận trả lại ticket</div>
+    <div class="release-desc">Bạn có chắc chắn muốn trả lại ticket này cho hệ thống?<br>Thao tác này sẽ chuyển ticket về trạng thái chờ xử lý.</div>
+    <div class="release-actions">
+      <button type="button" (click)="close(false)" class="release-cancel">Hủy</button>
+      <button type="button" (click)="close(true)" class="release-confirm">Xác nhận</button>
+    </div>
   </div>
 </div>
