@@ -31,6 +31,12 @@ plantcare:
       frequency-days: ${PLANTCARE_DEFAULT_WATERING_DAYS:3}
     fertilizing:
       frequency-days: ${PLANTCARE_DEFAULT_FERTILIZING_DAYS:30}
+  # AI Configuration
+  ai:
+    plant-id:
+      api-key: ${PLANTCARE_AI_PLANT_ID_API_KEY:dHWJveFsVCycSKGouiySYtC8jvSvlZysh9PyL1nJQkurMaUAos}
+      base-url: ${PLANTCARE_AI_PLANT_ID_BASE_URL:https://api.plant.id/v2}
+      timeout: ${PLANTCARE_AI_TIMEOUT:30000}
 
 # Health check
 management:

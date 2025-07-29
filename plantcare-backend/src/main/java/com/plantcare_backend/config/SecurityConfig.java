@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/plant-care/").authenticated()
                         .requestMatchers("/api/personal/**").authenticated()
                         .requestMatchers("/api/avatars/**").permitAll()
+                        .requestMatchers("/api/ai/**").authenticated()
                         // VNPAY
                         .requestMatchers("/api/payment/vnpay-return").permitAll()
                         .requestMatchers("/api/payment/vnpay-ipn").permitAll()

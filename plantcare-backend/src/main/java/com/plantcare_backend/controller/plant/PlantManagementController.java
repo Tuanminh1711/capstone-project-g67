@@ -16,10 +16,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -45,6 +54,53 @@ public class PlantManagementController {
             return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
+        }
+    }
+    // up load anh cho plant
+    @PostMapping("/upload-plant-image")
+    public ResponseEntity<ResponseData<String>> uploadPlantImage(@RequestParam("image") MultipartFile image) {
+        try {
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File is empty", null));
+            }
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File must be an image", null));
+            }
+            if (image.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 5MB", null));
+            }
+            String uploadDir = "uploads/plants/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String originalFilename = image.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + fileExtension;
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(image.getInputStream(), filePath);
+            String imageUrl = "/api/plants/" + newFilename;
+            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
+        }
+    }
+    // trích xuất ảnh
+    @GetMapping("/plants/{filename}")
+    public ResponseEntity<Resource> getPlantImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get("uploads/plants/").resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
         }
     }
 

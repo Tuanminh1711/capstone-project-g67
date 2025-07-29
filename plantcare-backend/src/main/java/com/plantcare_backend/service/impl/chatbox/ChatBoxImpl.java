@@ -22,6 +22,9 @@ public class ChatBoxImpl implements ChatService {
     @Value("${openrouter.api.model:openai/gpt-3.5-turbo}")
     private String openRouterModel;
 
+    @Value("${app.base-url:http://40.81.23.51}")
+    private String baseUrl;
+
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
     private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -57,7 +60,7 @@ public class ChatBoxImpl implements ChatService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + openRouterApiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("HTTP-Referer", "http://localhost:8080"); // hoặc domain của bạn
+        headers.set("HTTP-Referer", baseUrl); // hoặc domain của bạn
 
         // Sử dụng model từ config
         String model = openRouterModel;
