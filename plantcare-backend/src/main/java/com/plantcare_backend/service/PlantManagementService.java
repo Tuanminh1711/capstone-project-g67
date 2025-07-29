@@ -19,7 +19,7 @@ public interface PlantManagementService {
 
     PlantDetailResponseDTO getPlantDetail(Long plantId);
 
-    Plants.PlantStatus lockOrUnlockPlant(Long plantId, boolean lock);
+        Plants.PlantStatus lockOrUnlockPlant(Long plantId, boolean lock);
 
     PlantReportListResponseDTO getReportList(PlantReportSearchRequestDTO request);
 

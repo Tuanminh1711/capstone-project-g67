@@ -37,7 +37,7 @@ class SearchPlantsTest {
         searchRequest.setLightRequirement(null);
         searchRequest.setWaterRequirement(null);
         searchRequest.setCareDifficulty(null);
-        searchRequest.setStatus(Plants.PlantStatus.ACTIVE);
+        searchRequest.setStatus(String.valueOf(Plants.PlantStatus.ACTIVE));
         searchRequest.setPage(0);
         searchRequest.setSize(10);
     }
