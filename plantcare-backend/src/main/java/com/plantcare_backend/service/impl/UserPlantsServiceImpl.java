@@ -8,6 +8,7 @@ import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
 import com.plantcare_backend.dto.request.userPlants.UpdateUserPlantRequestDTO;
 import com.plantcare_backend.dto.validator.UserPlantValidator;
 import com.plantcare_backend.exception.ResourceNotFoundException;
+import com.plantcare_backend.exception.ValidationException;
 import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantImageRepository;
@@ -287,16 +288,25 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     private void savePlantImages(Plants plant, List<String> imageUrls) {
-        List<PlantImage> plantImages = imageUrls.stream()
-                .map(url -> {
-                    PlantImage image = new PlantImage();
-                    image.setPlant(plant);
-                    image.setImageUrl(url);
-                    return image;
-                })
-                .collect(Collectors.toList());
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
 
-        // Lưu images (cần inject PlantImageRepository)
+        List<PlantImage> plantImages = new ArrayList<>();
+
+        for (int i = 0; i < imageUrls.size(); i++) {
+            String url = imageUrls.get(i);
+            PlantImage image = new PlantImage();
+            image.setPlant(plant);
+            image.setImageUrl(url);
+            image.setIsPrimary(i == 0);
+            plantImages.add(image);
+        }
+
+        plantImageRepository.saveAll(plantImages);
+
+        plant.setImages(plantImages);
+        plantRepository.save(plant);
     }
 
     private UserPlantResponseDTO convertToUserPlantResponseDTO(Plants plant, UserPlants userPlant) {
