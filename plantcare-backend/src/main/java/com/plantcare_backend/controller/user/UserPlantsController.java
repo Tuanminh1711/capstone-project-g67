@@ -48,10 +48,9 @@ public class UserPlantsController {
     private final UserPlantsService userPlantsService;
     private final ActivityLogService activityLogService;
 
-    @Operation(method = "GET", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
-    @GetMapping("/search")
-    public ResponseData<UserPlantsSearchResponseDTO> searchUserPlants(
-            @Valid @ModelAttribute UserPlantsSearchRequestDTO request, HttpServletRequest httpRequest) {
+    @Operation(method = "POST", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
+    @PostMapping("/search")
+    public ResponseData<UserPlantsSearchResponseDTO> searchUserPlants(@Valid @ModelAttribute UserPlantsSearchRequestDTO request, HttpServletRequest httpRequest) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");

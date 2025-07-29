@@ -59,8 +59,8 @@ public class AdminController {
      * @param userRequestDTO Contains the user details including username and
      *                       password (must be valid).
      * @return ResponseData containing:
-     * - HTTP 201 (Created) status with new user's ID if successful.
-     * - HTTP 400 (Bad Request) status with error message if creation fails.
+     *         - HTTP 201 (Created) status with new user's ID if successful.
+     *         - HTTP 400 (Bad Request) status with error message if creation fails.
      * @throws Exception If any unexpected error occurs during user creation.
      */
     @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")

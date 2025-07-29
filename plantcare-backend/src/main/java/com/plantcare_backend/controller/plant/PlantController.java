@@ -39,7 +39,7 @@ public class PlantController {
      * @param request DTO chứa các tiêu chí tìm kiếm
      * @return Kết quả tìm kiếm với phân trang
      */
-    @Operation(method = "GET", summary = "Search plants", description = "Search plants by various criteria with pagination")
+    @Operation(method = "GET", summary = "Search plants", description = "User Search plants by various criteria with pagination")
     @GetMapping("/search")
     public ResponseData<PlantSearchResponseDTO> searchPlants(@Valid @ModelAttribute PlantSearchRequestDTO request) {
         log.info("Request search plants with criteria: {}", request);

@@ -24,6 +24,5 @@ public interface PlantService {
 
     void reportPlant(PlantReportRequestDTO plantReportRequestDTO, Long reporterUsername);
 
-
 }
 

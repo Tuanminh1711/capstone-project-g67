@@ -231,7 +231,7 @@ public class AuthServiceImpl implements AuthService {
 
             otpService.generateAndSendOtp(user.getEmail(), "REGISTER");
 
-            return new ResponseData<>(HttpStatus.CREATED.value(), "đăng ký thành công. vui lòng kiểm tra email" +
+            return new ResponseData<>(HttpStatus.CREATED.value(), "đăng ký thành công. vui lòng kiểm tra email " +
                     "để xác thực tài khoản ", savedUser);
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),

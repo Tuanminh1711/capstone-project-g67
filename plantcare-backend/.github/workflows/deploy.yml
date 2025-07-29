@@ -1,65 +1,236 @@
-name: Deploy to Azure VM
+name: Build and Deploy Spring Boot
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ "main", "plantcare-be" ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        
-    - name: Cache Maven packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Build with Maven
-      run: |
-        cd plantcare-backend
-        mvn clean package -DskipTests
-        
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: plantcare-app
-        path: plantcare-backend/target/*.jar
-        
-    - name: Deploy to Azure VM
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.AZURE_HOST }}
-        username: ${{ secrets.AZURE_USERNAME }}
-        key: ${{ secrets.AZURE_PRIVATE_KEY }}
-        port: 22
-        script: |
-          # Stop existing application
-          sudo systemctl stop plantcare-app || true
-          
-          # Create app directory if not exists
-          sudo mkdir -p /opt/plantcare-app
-          
-          # Download artifact
-          cd /opt/plantcare-app
-          rm -f plantcare-app.jar
-          
-          # Wait for artifact to be available
-          sleep 10
-          
-          # Start application
-          sudo systemctl start plantcare-app
-          
-          # Check status
-          sudo systemctl status plantcare-app 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Build sẽ tự động chạy test, nếu test fail sẽ dừng tại đây
+      - name: Build with Maven
+        run: |
+          cd plantcare-backend
+          mvn -B clean package
+      - name: List target directory
+        run: ls -l plantcare-backend/target
+
+      - name: Archive JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: plantcare-backend
+          path: plantcare-backend/target/*.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: plantcare-backend
+
+      - name: Debug - List downloaded files
+        run: |
+          pwd
+          ls -la
+          echo "JAR files:"
+          ls -la *.jar || echo "No JAR files found"
+
+      # 🔥 THÊM BƯỚC NÀY: Setup và Migration Database
+      - name: Setup and Migrate Database
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            echo "🗄️ Setting up database..."
+            
+            # Cài đặt MySQL client nếu chưa có
+            if ! command -v mysql &> /dev/null; then
+              echo "📦 Installing MySQL client..."
+              sudo apt-get update
+              sudo apt-get install -y mysql-client
+            fi
+            
+            # Test connection và tạo database nếu chưa tồn tại
+            echo "🔗 Testing database connection..."
+            mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "SELECT 1;" || {
+              echo "❌ Database connection failed"
+              exit 1
+            }
+            
+            # Tạo database nếu chưa tồn tại
+            echo "📊 Creating database if not exists..."
+            mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS plants_support;"
+            
+            echo "✅ Database setup completed"
+
+      # 🔥 THÊM BƯỚC NÀY: Backup Database trước khi deploy
+      - name: Backup Database
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            echo "💾 Creating database backup..."
+            
+            # Tạo thư mục backup nếu chưa có
+            sudo mkdir -p /opt/plantcare-app/backups
+            sudo chown azureuser:azureuser /opt/plantcare-app/backups
+            
+            # Backup database với timestamp
+            BACKUP_FILE="/opt/plantcare-app/backups/backup_$(date +%Y%m%d_%H%M%S).sql"
+            mysqldump -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} plants_support > $BACKUP_FILE
+            
+            # Giữ lại 5 backup gần nhất
+            cd /opt/plantcare-app/backups
+            ls -t *.sql | tail -n +6 | xargs -r rm
+            
+            echo "✅ Database backup created: $BACKUP_FILE"
+
+      # Backup JAR cũ trước khi deploy
+      - name: Backup old JAR on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            # Tạo thư mục và set permissions
+            sudo mkdir -p /opt/plantcare-app
+            sudo chown azureuser:azureuser /opt/plantcare-app
+            sudo chmod 755 /opt/plantcare-app
+            
+            # Backup file cũ
+            if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar ]; then
+              sudo cp /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak
+            fi
+
+      - name: Copy JAR to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          source: "*.jar"
+          target: "/opt/plantcare-app"
+
+      - name: Set permissions and restart app
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            # Set proper permissions
+            sudo chown azureuser:azureuser /opt/plantcare-app/*.jar
+            sudo chmod 755 /opt/plantcare-app/*.jar
+            
+            # Stop existing application
+            sudo systemctl stop plantcare-app || true
+            
+            # 🔥 THÊM: Chạy database migration trước khi start app
+            echo "🔄 Running database migration..."
+            cd /opt/plantcare-app
+            
+            # Tạo file application-prod.yml tạm thời với database config
+            cat > application-prod.yml << EOF
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://localhost:3306/plants_support?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: api-service
+    server: ${API_URL:DUMMY-API-URL}
+    title: API Document
+    version: 1.0.0
+EOF
+            
+            # Chạy migration bằng cách start app với profile prod
+            echo "🚀 Starting application with migration..."
+            sudo systemctl start plantcare-app
+            
+            # Wait a moment and check status
+            sleep 10
+            sudo systemctl status plantcare-app
+            
+            # Check if app is running
+            if pgrep -f "plantcare-backend" > /dev/null; then
+              echo "✅ Application started successfully with database migration"
+            else
+              echo "❌ Application failed to start"
+              exit 1
+            fi
+
+      # Rollback nếu deploy lỗi
+      - name: Rollback if deploy failed
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          script: |
+            echo "🔄 Rolling back to previous version..."
+            
+            # Rollback JAR file
+            if [ -f /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak ]; then
+              sudo mv /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar.bak /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
+              sudo systemctl restart plantcare-app
+              echo "✅ JAR rollback completed"
+            else
+              echo "❌ No JAR backup file found for rollback"
+            fi
+            
+            # 🔥 THÊM: Rollback database nếu cần
+            echo "🔄 Checking if database rollback is needed..."
+            LATEST_BACKUP=$(ls -t /opt/plantcare-app/backups/*.sql 2>/dev/null | head -1)
+            if [ -n "$LATEST_BACKUP" ]; then
+              echo " Restoring database from backup: $LATEST_BACKUP"
+              mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} plants_support < $LATEST_BACKUP
+              echo "✅ Database rollback completed"
+            else
+              echo "❌ No database backup found for rollback"
+            fi 

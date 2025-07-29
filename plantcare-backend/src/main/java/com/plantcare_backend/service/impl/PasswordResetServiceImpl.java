@@ -7,6 +7,7 @@ import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.PasswordResetService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +20,11 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class PasswordResetServiceImpl implements PasswordResetService {
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -97,4 +97,5 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         int code = 100000 + random.nextInt(900000); // Số ngẫu nhiên từ 100000 đến 999999
         return String.valueOf(code);
     }
+
 }
