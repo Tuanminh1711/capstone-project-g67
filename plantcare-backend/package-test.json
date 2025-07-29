@@ -1,0 +1,17 @@
+{
+  "name": "plantcare-ai-test",
+  "version": "1.0.0",
+  "description": "Test script for PlantCare AI Service",
+  "main": "test-ai-service.js",
+  "scripts": {
+    "test": "node test-ai-service.js",
+    "install-deps": "npm install form-data node-fetch"
+  },
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.6.7"
+  },
+  "keywords": ["plantcare", "ai", "test"],
+  "author": "PlantCare Team",
+  "license": "MIT"
+} 

@@ -59,4 +59,10 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
         List<Object[]> countPlantsAddedByDate(
                         @Param("startDate") Timestamp startDate,
                         @Param("endDate") Timestamp endDate);
+
+        // AI Plant Identification methods
+        Optional<Plants> findByScientificNameIgnoreCase(String scientificName);
+
+        List<Plants> findByScientificNameContainingIgnoreCaseOrCommonNameContainingIgnoreCase(
+                        String scientificName, String commonName);
 }
