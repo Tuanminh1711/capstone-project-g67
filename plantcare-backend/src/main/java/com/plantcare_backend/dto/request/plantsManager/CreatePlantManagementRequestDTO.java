@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class CreatePlantManagementRequestDTO {
 
@@ -31,4 +33,6 @@ public class CreatePlantManagementRequestDTO {
     @NotBlank(message = "commonDiseases must not blank")
     @Size(max = 300, message = "Description must not exceed 300 characters")
     private String commonDiseases;
+    @NotNull(message = "image not null")
+    private List<String> imageUrls;
 }
