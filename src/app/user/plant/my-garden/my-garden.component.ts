@@ -14,12 +14,14 @@ import { CareReminderDialogComponent } from './care-reminder-dialog.component';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
 
+import { ChangeDetectionStrategy } from '@angular/core';
 @Component({
   selector: 'app-my-garden',
   standalone: true,
   imports: [CommonModule, TopNavigatorComponent, ConfirmationDialogComponent, CareReminderDialogComponent],
   templateUrl: './my-garden.html',
-  styleUrls: ['./my-garden.scss']
+  styleUrls: ['./my-garden.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MyGardenComponent implements OnInit, OnDestroy {
   // Map to store reminder enabled state for each userPlantId
@@ -65,15 +67,18 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     for (const plant of this.userPlants) {
       this.fetchReminderState(plant.userPlantId);
     }
+    this.cdr.markForCheck();
   }
 
   private fetchReminderState(userPlantId: number) {
     this.http.get<any[]>(`${environment.apiUrl}/plant-care/${userPlantId}/care-reminders`).subscribe({
       next: (schedules) => {
         this.reminderEnabledMap[userPlantId] = schedules.some(s => s.enabled);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.reminderEnabledMap[userPlantId] = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -214,31 +219,35 @@ export class MyGardenComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.isLoading = false;
-          if (response?.data?.content && Array.isArray(response.data.content)) {
-            // Map API response to userPlants array
-            this.userPlants = response.data.content.map((p: any) => ({
-              userPlantId: p.userPlantId,
-              plantId: p.plantId,
-              imageUrl: p.imageUrl,
-              nickname: p.nickname,
-              plantLocation: p.plantLocation,
-              // Add default values for fields not present in API
-              reminderEnabled: false
-            }));
-            this.errorMessage = '';
-            this.onUserPlantsLoaded();
-          } else {
-            this.userPlants = [];
-            this.errorMessage = 'Không tìm thấy dữ liệu';
-          }
-          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.isLoading = false;
+            if (response?.data?.content && Array.isArray(response.data.content)) {
+              // Map API response to userPlants array
+              this.userPlants = response.data.content.map((p: any) => ({
+                userPlantId: p.userPlantId,
+                plantId: p.plantId,
+                imageUrl: p.imageUrl,
+                nickname: p.nickname,
+                plantLocation: p.plantLocation,
+                // Add default values for fields not present in API
+                reminderEnabled: false
+              }));
+              this.errorMessage = '';
+              this.onUserPlantsLoaded();
+            } else {
+              this.userPlants = [];
+              this.errorMessage = 'Không tìm thấy dữ liệu';
+            }
+            this.cdr.markForCheck();
+          }, 0);
         },
         error: (error) => {
-          this.isLoading = false;
-          this.userPlants = [];
-          this.handleApiError(error);
-          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.isLoading = false;
+            this.userPlants = [];
+            this.handleApiError(error);
+            this.cdr.markForCheck();
+          }, 0);
         }
       });
   }
@@ -321,46 +330,52 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     // Hiển thị loading state
     this.isLoading = true;
     this.errorMessage = '';
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
 
     this.myGardenService.removePlantFromCollection(userPlantId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {          
-          this.isLoading = false;
-          
-          // Kiểm tra response có thực sự success không
-          if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
-            // Hiển thị toast thông báo thành công
-            const successMessage = plantName 
-              ? `Đã xóa cây "${plantName}" khỏi bộ sưu tập thành công!`
-              : 'Đã xóa cây khỏi bộ sưu tập thành công!';
-            this.toastService.success(successMessage);
-            
-            // Force reload data với delay để đảm bảo server đã xử lý xong
-            setTimeout(() => {
-              this.loadPlantDataImmediate();
-            }, 500);
-          } else {
-            // Response không success
-            this.toastService.error('Có lỗi xảy ra khi xóa cây. Vui lòng thử lại.');
-          }
+        next: (response) => {
+          setTimeout(() => {
+            this.isLoading = false;
+            // Kiểm tra response có thực sự success không
+            if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
+              // Hiển thị toast thông báo thành công
+              const successMessage = plantName 
+                ? `Đã xóa cây "${plantName}" khỏi bộ sưu tập thành công!`
+                : 'Đã xóa cây khỏi bộ sưu tập thành công!';
+              this.toastService.success(successMessage);
+              // Force reload data với delay để đảm bảo server đã xử lý xong
+              setTimeout(() => {
+                this.loadPlantDataImmediate();
+                // Sau khi reload danh sách cây, đồng bộ lại reminder
+                setTimeout(() => {
+                  this.fetchAllReminders();
+                  this.cdr.markForCheck();
+                }, 300);
+              }, 500);
+            } else {
+              // Response không success
+              this.toastService.error('Có lỗi xảy ra khi xóa cây. Vui lòng thử lại.');
+            }
+            this.cdr.markForCheck();
+          }, 0);
         },
-        error: (err) => {          
-          this.isLoading = false;
-          
-          // Hiển thị toast thông báo lỗi chi tiết
-          let errorMessage = 'Không thể xóa cây. Vui lòng thử lại.';
-          if (err.status === 404) {
-            errorMessage = 'Không tìm thấy cây để xóa.';
-          } else if (err.status === 401 || err.status === 403) {
-            errorMessage = 'Bạn không có quyền xóa cây này.';
-          } else if (err.status === 500) {
-            errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
-          }
-          
-          this.toastService.error(errorMessage);
-          this.cdr.detectChanges();
+        error: (err) => {
+          setTimeout(() => {
+            this.isLoading = false;
+            // Hiển thị toast thông báo lỗi chi tiết
+            let errorMessage = 'Không thể xóa cây. Vui lòng thử lại.';
+            if (err.status === 404) {
+              errorMessage = 'Không tìm thấy cây để xóa.';
+            } else if (err.status === 401 || err.status === 403) {
+              errorMessage = 'Bạn không có quyền xóa cây này.';
+            } else if (err.status === 500) {
+              errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+            }
+            this.toastService.error(errorMessage);
+            this.cdr.markForCheck();
+          }, 0);
         }
       });
   }

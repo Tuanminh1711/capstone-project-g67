@@ -3,6 +3,7 @@ import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-vip-payment',
@@ -44,8 +45,11 @@ export class VipPaymentComponent {
     const userId = this.jwtUtil.getUserIdFromToken() || 1;
     const amount = 100000;
     const params = `userId=${encodeURIComponent(userId)}&amount=${encodeURIComponent(amount)}`;
+    // Sử dụng environment để lấy baseUrl phù hợp môi trường
+    const apiUrl = environment.apiUrl;
+    const paymentUrl = `${apiUrl}/payment/vnpay/create?${params}`;
     this.http.post<any>(
-      `http://localhost:8080/api/payment/vnpay/create?${params}`,
+      paymentUrl,
       {}
     ).subscribe({
       next: (res) => {

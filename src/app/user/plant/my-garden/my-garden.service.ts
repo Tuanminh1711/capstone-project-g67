@@ -73,7 +73,12 @@ export class MyGardenService {
       .set('size', size.toString())
       .set('_t', timestamp.toString()); // Cache buster
 
-    return this.http.get<ApiResponse<PaginatedResponse<UserPlant>>>(`${this.baseUrl}/user-plants/get-all-user-plants`, { params });
+    // Thêm header Cache-Control để luôn lấy dữ liệu mới nhất
+    const headers = { 'Cache-Control': 'no-cache' };
+    return this.http.get<ApiResponse<PaginatedResponse<UserPlant>>>(
+      `${this.baseUrl}/user-plants/get-all-user-plants`,
+      { params, headers }
+    );
   }
 
   removePlantFromCollection(plantId: number): Observable<ApiResponse> {
