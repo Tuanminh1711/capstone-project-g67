@@ -1,3 +1,4 @@
+import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,10 +15,17 @@ export class AdminTopNavigatorComponent {
   @Input() sidebarOpen = true;
   @Output() sidebarToggle = new EventEmitter<void>();
 
+  username: string = '';
+
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private jwtUserUtil: JwtUserUtilService
   ) {}
+  ngOnInit() {
+    const info = this.jwtUserUtil.getTokenInfo();
+    this.username = info?.sub || info?.username || 'Admin';
+  }
 
   toggleSidebar() {
     this.sidebarToggle.emit();

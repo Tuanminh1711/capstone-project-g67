@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -50,8 +51,22 @@ export class AdminCreatePlantService {
     return firstValueFrom(this.http.post<CreatePlantResponse>(url, request, { headers }));
   }
 
+
   async getCategories(): Promise<PlantCategory[]> {
-    // Gọi API thật để lấy danh sách categories bằng POST
-    return firstValueFrom(this.http.post<PlantCategory[]>('http://localhost:8080/api/plants/categories', {}));
+    // Gọi API thật để lấy danh sách categories (dùng baseUrl để phù hợp mọi môi trường)
+    const url = `${this.baseUrl}/plants/categories`;
+    return firstValueFrom(this.http.get<PlantCategory[]>(url));
+  }
+
+  async uploadPlantImage(file: File): Promise<string> {
+    const url = `${this.baseUrl}/manager/upload-plant-image`;
+    const formData = new FormData();
+    formData.append('image', file);
+    // Không set Content-Type, để browser tự set multipart/form-data
+    const res: any = await firstValueFrom(this.http.post(url, formData));
+    if (res && res.status === 200 && res.data) {
+      return res.data; // chính là imageUrl trả về từ backend
+    }
+    throw new Error(res?.message || 'Upload ảnh thất bại');
   }
 }

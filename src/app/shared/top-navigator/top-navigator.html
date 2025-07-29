@@ -7,7 +7,7 @@
 
   <div class="logo">
     <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
-    <span>PLANTCARE</span>
+    <a routerLink="/home" (click)="closeMobileMenu()" class="logo-text">PLANTCARE</a>
   </div>
   <div class="nav-links-actions">
     <div class="nav-links" [class.mobile-active]="showMobileMenu">

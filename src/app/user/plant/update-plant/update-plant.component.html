@@ -8,39 +8,49 @@
       <p class="page-subtitle">Cập nhật thông tin cho cây trong vườn của bạn</p>
     </div>
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="state-section loading-state">
-      <div class="state-content">
-        <div class="loading-spinner"></div>
-        <h3>Đang tải thông tin</h3>
-        <p>Vui lòng chờ trong giây lát...</p>
+    @if (isLoading) {
+      <div class="state-section loading-state">
+        <div class="state-content">
+          <div class="loading-spinner"></div>
+          <h3>Đang tải thông tin</h3>
+          <p>Vui lòng chờ trong giây lát...</p>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Error State -->
-    <div *ngIf="errorMessage && !isLoading" class="state-section error-state">
-      <div class="state-content">
-        <div class="error-icon">Lỗi</div>
-        <h3>Có lỗi xảy ra</h3>
-        <p>{{ errorMessage }}</p>
-        <button class="retry-btn" (click)="loadPlantData()">Thử lại</button>
+    @if (errorMessage && !isLoading) {
+      <div class="state-section error-state">
+        <div class="state-content">
+          <div class="error-icon">Lỗi</div>
+          <h3>Có lỗi xảy ra</h3>
+          <p>{{ errorMessage }}</p>
+          <button class="retry-btn" (click)="loadPlantData()">Thử lại</button>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Update Form -->
-    <div *ngIf="!isLoading && !errorMessage && currentPlant" class="form-section">
-      <!-- Plant Info Header -->
+    @if (!isLoading && !errorMessage && currentPlant) {
+      <div class="form-section">
+
+      <!-- Plant Info Header with Image Gallery (đồng bộ view-user-plant-detail) -->
       <div class="plant-info-card">
-        <div class="plant-avatar">
-          <div class="plant-text">Cây</div>
+        <div class="plant-images" style="margin-bottom: 18px;">
+          @if (getAllPlantImageUrls().length > 0) {
+            @for (img of getAllPlantImageUrls(); track img) {
+              <img [src]="img" alt="Ảnh cây" class="plant-img" (error)="onImageError($event)" />
+            }
+          } @else {
+            <div class="no-image-placeholder">
+              <span class="placeholder-icon">🌱</span>
+              <span class="placeholder-text">Chưa có ảnh</span>
+            </div>
+          }
         </div>
         <div class="plant-details">
           <h2 class="plant-name">{{ currentPlant.nickname }}</h2>
           <p class="plant-location">{{ currentPlant.plantLocation }}</p>
-          <div class="plant-status">
-            <span class="status-badge" [class.active]="currentPlant.reminderEnabled">
-              {{ currentPlant.reminderEnabled ? 'Có nhắc nhở' : 'Không nhắc nhở' }}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -67,9 +77,11 @@
                 placeholder="Nhập tên gọi cho cây của bạn"
                 maxlength="100"
               />
-              <div *ngIf="isFieldInvalid('nickname')" class="error-message">
-                {{ getFieldError('nickname') }}
-              </div>
+              @if (isFieldInvalid('nickname')) {
+                <div class="error-message">
+                  {{ getFieldError('nickname') }}
+                </div>
+              }
             </div>
 
             <!-- Location Field -->
@@ -86,9 +98,11 @@
                 placeholder="Ví dụ: Phòng khách, Ban công, Phòng ngủ..."
                 maxlength="50"
               />
-              <div *ngIf="isFieldInvalid('locationInHouse')" class="error-message">
-                {{ getFieldError('locationInHouse') }}
-              </div>
+              @if (isFieldInvalid('locationInHouse')) {
+                <div class="error-message">
+                  {{ getFieldError('locationInHouse') }}
+                </div>
+              }
             </div>
 
             <!-- Planting Date Field -->
@@ -103,35 +117,13 @@
                 class="form-input"
                 [class.error]="isFieldInvalid('plantingDate')"
               />
-              <div *ngIf="isFieldInvalid('plantingDate')" class="error-message">
-                {{ getFieldError('plantingDate') }}
-              </div>
+              @if (isFieldInvalid('plantingDate')) {
+                <div class="error-message">
+                  {{ getFieldError('plantingDate') }}
+                </div>
+              }
             </div>
 
-            <!-- Reminder Toggle -->
-            <div class="form-group full-width">
-              <div class="toggle-section">
-                <div class="toggle-info">
-                  <label for="reminderEnabled" class="toggle-label">
-                    Nhắc nhở chăm sóc
-                  </label>
-                  <p class="toggle-description">
-                    Nhận thông báo nhắc nhở chăm sóc cây định kỳ
-                  </p>
-                </div>
-                <div class="toggle-wrapper">
-                  <input
-                    type="checkbox"
-                    id="reminderEnabled"
-                    formControlName="reminderEnabled"
-                    class="toggle-input"
-                  />
-                  <label for="reminderEnabled" class="toggle-switch">
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Form Actions -->
@@ -141,12 +133,15 @@
               class="btn btn-primary"
               [disabled]="updateForm.invalid || isSubmitting"
             >
-              <span *ngIf="isSubmitting" class="btn-loading"></span>
+              @if (isSubmitting) {
+                <span class="btn-loading"></span>
+              }
               <span>{{ isSubmitting ? 'Đang cập nhật...' : 'Cập nhật thông tin' }}</span>
             </button>
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    }
   </div>
 </div>

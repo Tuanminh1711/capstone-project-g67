@@ -119,6 +119,12 @@ export class CookieService {
       isProd, // Secure nếu production
       isProd ? 'Strict' : 'Lax' // SameSite Strict cho production
     );
+    // Debug: log cookie sau khi set
+    setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        console.log('[DEBUG] Cookie sau khi set:', document.cookie);
+      }
+    }, 100);
   }
 
   /**

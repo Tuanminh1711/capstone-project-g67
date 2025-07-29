@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { Inject, Optional } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 interface ChatMessage {
   sender: 'user' | 'ai';
@@ -44,7 +45,8 @@ export class ChatAiComponent {
     if (!msg) return;
     this.messages.push({ sender: 'user', content: msg, timestamp: new Date().toISOString() });
     this.loading = true;
-    this.http.post<{ reply: string }>('/api/chat', { message: msg }).subscribe({
+    const apiUrl = environment.apiUrl + '/chat';
+    this.http.post<{ reply: string }>(apiUrl, { message: msg }).subscribe({
       next: (res) => {
         this.messages.push({ sender: 'ai', content: res.reply, timestamp: new Date().toISOString() });
         this.loading = false;

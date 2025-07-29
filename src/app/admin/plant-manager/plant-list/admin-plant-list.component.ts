@@ -98,12 +98,18 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
   fetchPlants(page: number, keyword: string) {
     this.setLoading(true);
     this.setError('');
-    const url = this.buildUrl(page, keyword);
-    
-    this.http.get<any>(url).subscribe({
+    const url = `http://localhost:8080/api/manager/search-plants`;
+    const body: any = { status: 'ACTIVE', page, size: this.pageSize };
+    if (keyword && keyword.trim()) {
+      body.keyword = keyword.trim();
+    }
+    if (this.sortField) {
+      body.sort = `${this.sortField},${this.sortDirection}`;
+    }
+    this.http.post<any>(url, body).subscribe({
       next: (res) => {
         const data = res?.data;
-        const plants = data?.content || data?.plants;
+        const plants = data?.content;
         if (!data || !Array.isArray(plants)) {
           this.plantsSubject.next([]);
           this.setError('Không có dữ liệu cây.');
@@ -111,22 +117,18 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
           this.cdr.detectChanges();
           return;
         }
-        
-        // Show all plants (both ACTIVE and INACTIVE) for admin management
         const plantsWithDefaults = plants.map((plant: Plant) => ({
           ...plant,
           locked: plant.locked ?? false,
           isUpdating: false
         }));
-        
         this.plantsSubject.next(plantsWithDefaults);
-        this.totalElements = data.totalElements || data.totalElements || plants.length;
-        this.totalPages = data.totalPages || Math.ceil(plants.length / this.pageSize);
-        this.pageNo = data.number || data.page || page;
+        this.totalElements = data.totalElements || plantsWithDefaults.length;
+        this.totalPages = data.totalPages || Math.ceil(plantsWithDefaults.length / this.pageSize);
+        this.pageNo = data.number || page;
         this.setLoading(false);
         this.currentKeyword = keyword;
         this.dataLoaded = true;
-        
         this.cdr.detectChanges();
       },
       error: (error) => {

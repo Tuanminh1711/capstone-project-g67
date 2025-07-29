@@ -222,26 +222,25 @@
         </h3>
         
         <div formArrayName="imageUrls" class="image-urls-container">
-          <div *ngFor="let imageUrl of imageUrls.controls; let i = index" 
-               class="image-url-group">
+          <div *ngFor="let imageUrl of imageUrls.controls; let i = index" class="image-url-group">
             <div class="form-group">
               <label class="form-label">
-                URL Hình Ảnh {{ i + 1 }} <span class="required">*</span>
+                Ảnh {{ i + 1 }} <span class="required">*</span>
               </label>
               <div class="input-group">
                 <input
-                  type="text"
-                  [formControlName]="i"
-                  class="form-control"
-                  placeholder="url1, url2, hoặc https://example.com/image.jpg"
-                  [class.is-invalid]="imageUrl.touched && imageUrl.errors"
+                  type="file"
+                  accept="image/*"
+                  (change)="onImageFileSelected($event, i)"
+                  class="form-control mt-1"
+                  title="Chọn ảnh để upload"
                 />
                 <button
                   type="button"
                   class="btn btn-danger btn-sm"
                   (click)="removeImageUrl(i)"
                   [disabled]="imageUrls.length <= 1"
-                  title="Xóa URL"
+                  title="Xóa ảnh"
                 >
                   <i class="fas fa-trash"></i>
                 </button>

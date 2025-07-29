@@ -69,14 +69,38 @@ export class LoginAdminPageComponent {
           import('../../auth/cookie.service').then(({ CookieService }) => {
             const cookieService = new CookieService();
             cookieService.setAuthToken(res.token, 7);
+            // Đảm bảo token đã set xong mới chuyển trang
+            setTimeout(() => {
+              this.successMsg = res.message || 'Đăng nhập thành công!';
+              // Debug: log role, res và userId từ token
+              console.log('[DEBUG] Login response:', res);
+              let role = '';
+              if (res.role) {
+                role = res.role.toLowerCase();
+              } else if (res.user && res.user.role) {
+                role = res.user.role.toLowerCase();
+              }
+              import('../../auth/jwt-user-util.service').then(({ JwtUserUtilService }) => {
+                const jwtUtil = new JwtUserUtilService(cookieService);
+                const userIdFromToken = jwtUtil.getUserIdFromToken();
+                console.log('[DEBUG] userId from token:', userIdFromToken);
+              });
+              console.log('[DEBUG] Role:', role);
+              this.cdr.detectChanges();
+              this.toast.success(this.successMsg);
+              this.loading = false;
+              this.cdr.detectChanges();
+              this.router.navigate(['/admin']);
+            }, 150);
           });
-        }
-        this.successMsg = res.message || 'Đăng nhập thành công!';
-        this.cdr.detectChanges();
-        setTimeout(() => {
+        } else {
+          this.successMsg = res.message || 'Đăng nhập thành công!';
+          this.cdr.detectChanges();
           this.toast.success(this.successMsg);
+          this.loading = false;
+          this.cdr.detectChanges();
           this.router.navigate(['/admin']);
-        });
+        }
       },
       error: (err: any) => {
         this.loading = false;

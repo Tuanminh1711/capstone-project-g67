@@ -4,7 +4,6 @@ export const CARE_TYPES = [
   { careTypeId: 2, careTypeName: 'Bón phân' },
   { careTypeId: 3, careTypeName: 'Cắt tỉa' },
   { careTypeId: 4, careTypeName: 'Bón phân' }
-
 ];
 
 /**
@@ -46,9 +45,8 @@ export class CareReminderService {
 
   updateCareReminders(UserPlant: number, schedules: CareReminderSchedule[]): Observable<any> {
     const url = `${this.baseUrl}/plant-care/${UserPlant}/care-reminders`;
-    // Nếu muốn truyền customMessage, thêm vào body
+    // Không gửi customMessage vì backend không hỗ trợ
     const body: any = { schedules };
-    body.customMessage = 'Đã đến lúc tưới nước/bón phân cho cây!';
     return this.http.post(url, body, { responseType: 'text' as 'json' });
   }
 

@@ -60,7 +60,7 @@
           <td>{{ formatDate(plant.createdAt) || '-' }}</td>
           <td>
             <button (click)="viewPlantDetail(plant)" class="view-btn">Chi tiết</button>
-            <button (click)="deletePlant(plant)" class="delete-btn">Xóa</button>
+            <!-- <button (click)="deletePlant(plant)" class="delete-btn">Xóa</button> -->
           </td>
         </tr>
         <tr *ngIf="!(plants$ | async)?.length && !loading">

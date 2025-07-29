@@ -114,19 +114,22 @@
               <div class="plant-list">
                 @for (plant of plants; track trackByPlantId($index, plant)) {
                   <div class="plant-card">
-                    @if (plant.imageUrls && plant.imageUrls.length > 0) {
-                      <img
-                        [src]="plant.imageUrls[0]"
-                        [alt]="plant.commonName"
-                        class="plant-img"
-                        (click)="viewPlantDetail(plant.id)"
-                      />
-                    } @else {
-                      <div class="no-image-placeholder" (click)="viewPlantDetail(plant.id)">
-                        <i class="fas fa-seedling"></i>
-                        <span>Chưa có ảnh</span>
-                      </div>
-                    }
+                    <img
+                      *ngIf="plant.imageUrls && plant.imageUrls.length > 0 && !plant.imageError"
+                      [src]="getPlantImageSrc(plant.imageUrls[0])"
+                      [alt]="plant.commonName"
+                      class="plant-img"
+                      (click)="viewPlantDetail(plant.id)"
+                      (error)="plant.imageError = true"
+                    />
+                    <div
+                      *ngIf="!plant.imageUrls || plant.imageUrls.length === 0 || plant.imageError"
+                      class="no-image-placeholder"
+                      (click)="viewPlantDetail(plant.id)"
+                    >
+                      <i class="fas fa-seedling"></i>
+                      <span>Chưa có ảnh</span>
+                    </div>
                     <div class="plant-info" (click)="viewPlantDetail(plant.id)">
                       <div class="plant-title">
                         {{ plant.commonName }}

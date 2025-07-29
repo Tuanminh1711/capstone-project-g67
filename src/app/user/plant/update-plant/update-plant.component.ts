@@ -25,6 +25,10 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   userPlantId: string | null = null;
   currentPlant: UserPlant | null = null;
   allUserPlants: UserPlant[] = [];
+  
+  // Thêm các biến quản lý ảnh
+  currentImageIndex = 0;
+  placeholderImage = '';
 
   private destroy$ = new Subject<void>();
 
@@ -39,23 +43,78 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.updateForm = this.createForm();
-    // Clear current plant initially
     this.currentPlant = null;
   }
 
+  // Các phương thức hiển thị ảnh
+  get currentImage(): string {
+    const images = this.getAllPlantImageUrls();
+    if (images.length === 0) return this.placeholderImage;
+    return images[this.currentImageIndex];
+  }
+
+  get hasMultipleImages(): boolean {
+    return this.getAllPlantImageUrls().length > 1;
+  }
+
+  nextImage(): void {
+    const images = this.getAllPlantImageUrls();
+    if (images.length === 0) return;
+    this.currentImageIndex = (this.currentImageIndex + 1) % images.length;
+  }
+
+  prevImage(): void {
+    const images = this.getAllPlantImageUrls();
+    if (images.length === 0) return;
+    this.currentImageIndex = (this.currentImageIndex - 1 + images.length) % images.length;
+  }
+
+  selectImage(index: number): void {
+    const images = this.getAllPlantImageUrls();
+    if (index >= 0 && index < images.length) {
+      this.currentImageIndex = index;
+    }
+  }
+
+  // Lấy tất cả URL ảnh của cây
+  getAllPlantImageUrls(): string[] {
+    if (!this.currentPlant) return [];
+    
+    // Ưu tiên trường imageUrls nếu có
+    let imageUrls: string[] = [];
+    if (Array.isArray((this.currentPlant as any).imageUrls)) {
+      imageUrls = (this.currentPlant as any).imageUrls;
+    } 
+    // Fallback cho trường images nếu imageUrls không có
+    else if (Array.isArray((this.currentPlant as any).images)) {
+      imageUrls = (this.currentPlant as any).images
+        .map((img: any) => img?.imageUrl)
+        .filter((url: string) => !!url);
+    }
+    
+    return imageUrls.length > 0 ? imageUrls : [this.placeholderImage];
+  }
+
+  // Xử lý lỗi ảnh
+  onImageError(event: any): void {
+    if (event?.target) {
+      event.target.src = this.placeholderImage;
+      event.target.style.opacity = '0.6';
+      event.target.style.objectFit = 'cover';
+    }
+  }
+
+  // Phần còn lại giữ nguyên...
   ngOnInit(): void {
-    // Clear current plant if not authenticated
     if (!this.checkAuthenticationSafely()) {
       this.currentPlant = null;
       this.allUserPlants = [];
     }
 
-    // Delay to ensure cookie service is ready on page reload
     setTimeout(() => {
       this.initializeComponent();
     }, 100);
 
-    // Listen to route parameter changes
     this.route.params
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
@@ -63,29 +122,24 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         if (this.userPlantId && this.allUserPlants.length > 0) {
           this.findAndSetCurrentPlant();
         } else if (this.userPlantId) {
-          // If we have userPlantId but no plants data, load it
           this.initializeComponent();
         }
       });
 
-    // Listen to route navigation changes
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        // Reload if we're on the update-plant route
         if (this.router.url.includes('/update-plant')) {
           this.initializeComponent();
         }
       });
 
-    // Listen to successful login events
     this.authDialogService.loginSuccess$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        // Reload data after successful login
         setTimeout(() => {
           this.initializeComponent();
         }, 300);
@@ -211,18 +265,20 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       });
   }
 
-  private findAndSetCurrentPlant(): void {
+   private findAndSetCurrentPlant(): void {
     if (!this.userPlantId || this.allUserPlants.length === 0) {
       this.currentPlant = null;
       this.errorMessage = 'Không tìm thấy thông tin cây';
       return;
     }
 
-    this.currentPlant = this.allUserPlants.find(p => p.userPlantId.toString() === this.userPlantId) || null;
+    this.currentPlant = this.allUserPlants.find(p => String(p.userPlantId) === String(this.userPlantId)) || null;
     
     if (this.currentPlant) {
       this.populateForm();
       this.errorMessage = '';
+      // Reset image index khi thay đổi cây
+      this.currentImageIndex = 0;
     } else {
       this.errorMessage = 'Không tìm thấy cây để chỉnh sửa';
       this.toastService.error('Không tìm thấy cây để chỉnh sửa');

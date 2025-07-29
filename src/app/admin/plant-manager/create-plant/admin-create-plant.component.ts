@@ -1,3 +1,4 @@
+// ...
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
@@ -33,6 +34,20 @@ export interface CreatePlantRequest {
   styleUrls: ['./admin-create-plant.component.scss']
 })
 export class AdminCreatePlantComponent extends BaseAdminListComponent implements OnInit {
+
+  async onImageFileSelected(event: Event, index: number) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    try {
+      const imageUrl = await this.createPlantService.uploadPlantImage(file);
+      this.imageUrls.at(index).setValue(imageUrl);
+      this.toastService.success('Upload ảnh thành công!');
+      this.cdr.markForCheck();
+    } catch (err: any) {
+      this.toastService.error(err?.message || 'Upload ảnh thất bại');
+    }
+  }
   createPlantForm: FormGroup;
   categories: PlantCategory[] = [];
   isSubmitting = false;
@@ -116,18 +131,20 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
   private async loadCategories(): Promise<void> {
     try {
       const res = await this.createPlantService.getCategories();
-      this.categories = Array.isArray(res) ? res : (res as any).data;
-      this.cdr.detectChanges();
+      if (res && Array.isArray((res as any).data)) {
+        this.categories = (res as any).data;
+      } else if (Array.isArray(res)) {
+        this.categories = res;
+      } else {
+        this.categories = [];
+      }
+      this.cdr.markForCheck();
     } catch (error) {
       this.toastService.error('Không thể tải danh sách danh mục');
-      // Fallback categories
-      this.categories = [
-        { id: 1, name: 'Cây cảnh' },
-        { id: 2, name: 'Cây ăn quả' },
-        { id: 3, name: 'Cây thuốc' },
-        { id: 4, name: 'Cây thủy sinh' },
-        { id: 5, name: 'Cây sen đá' }
-      ];
+      Promise.resolve().then(() => {
+        this.categories = [];
+        this.cdr.markForCheck();
+      });
     }
   }
 
@@ -187,15 +204,18 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
   }
 
   private handleApiError(error: any) {
+    let errorMessage = error?.error?.message || error?.message || 'Có lỗi xảy ra khi tạo cây mới';
     if (error?.status === 403) {
-      this.setError('Bạn không có quyền thực hiện hành động này');
+      errorMessage = 'Bạn không có quyền thực hiện hành động này';
     } else if (error?.status === 401) {
-      this.setError('Vui lòng đăng nhập lại');
-      this.router.navigate(['/login']);
-    } else {
-      const errorMessage = error?.error?.message || error?.message || 'Có lỗi xảy ra khi tạo cây mới';
+      errorMessage = 'Vui lòng đăng nhập lại';
+      this.toastService.error(errorMessage);
       this.setError(errorMessage);
+      this.router.navigate(['/login']);
+      return;
     }
+    this.toastService.error(errorMessage);
+    this.setError(errorMessage);
   }
 
   onCancel(): void {

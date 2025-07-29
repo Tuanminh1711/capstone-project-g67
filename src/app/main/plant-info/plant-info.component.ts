@@ -26,6 +26,7 @@ interface Plant {
   imageUrls: string[];
   createdAt: string | null;
   reportCount?: number;
+  imageError?: boolean;
 }
 
 @Component({
@@ -36,6 +37,19 @@ interface Plant {
   styleUrl: './plant-info.scss'
 })
 export class PlantInfoComponent implements OnInit, OnDestroy {
+
+  getPlantImageSrc(imageUrl: string): string {
+    if (!imageUrl) return 'assets/image/default-avatar.png';
+    if (
+      imageUrl.startsWith('data:image') ||
+      imageUrl.startsWith('http') ||
+      imageUrl.startsWith('/api/')
+    ) {
+      return imageUrl;
+    }
+    // Nếu chỉ là tên file
+    return `/api/manager/plants${imageUrl ? '/' + encodeURIComponent(imageUrl) : ''}`;
+  }
   private plantsSubject = new BehaviorSubject<Plant[]>([]);
   private categoriesSubject = new BehaviorSubject<Array<{ id: number; name: string; description: string }>>([]);
 
@@ -182,9 +196,10 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
           pageSize: data.pageSize ?? this.pageState.pageSize
         };
 
-        // Luôn phát ra mảng mới để async pipe nhận biết thay đổi
-        this.plantsSubject.next([...data.plants]);
-        this.plantDataService.setPlantsList([...data.plants]);
+        // Gán imageError = false cho mỗi plant để tránh lỗi binding
+        const plantsWithErrorFlag = data.plants.map((p: Plant) => ({ ...p, imageError: false }));
+        this.plantsSubject.next([...plantsWithErrorFlag]);
+        this.plantDataService.setPlantsList([...plantsWithErrorFlag]);
         this.cdr.markForCheck();
       },
       error: () => {

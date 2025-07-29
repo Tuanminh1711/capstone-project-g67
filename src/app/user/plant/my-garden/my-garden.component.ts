@@ -433,17 +433,11 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     this.authDialogService.openLoginDialog();
   }
 
-  editPlant(plantId: number, plantName?: string): void {
-    // Find the plant object to get the correct userPlantId
-    const targetPlant = this.userPlants.find(p => p.plantId === plantId);
-    if (!targetPlant) {
-      this.toastService.error('Không tìm thấy cây trong bộ sưu tập');
-      return;
-    }
-    const userPlantId = targetPlant.userPlantId;
+  // Sửa lại: truyền đúng userPlantId cho nút sửa
+  editPlant(userPlantId: number, plantName?: string): void {
     if (!userPlantId) {
       this.toastService.error('Không thể chỉnh sửa cây này');
-      return; 
+      return;
     }
     this.router.navigate(['/update-plant', userPlantId]);
   }

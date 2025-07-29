@@ -33,6 +33,11 @@ export class HomeComponent {
   }
 
   goToCareExpert() {
-    this.router.navigate(['/care-expert']);
+    const role = this.jwtUserUtil.getRoleFromToken();
+    if (role && role.toLowerCase() === 'vip') {
+      this.router.navigate(['/vip/welcome-vip']);
+    } else {
+      this.router.navigate(['/care-expert']);
+    }
   }
 }
