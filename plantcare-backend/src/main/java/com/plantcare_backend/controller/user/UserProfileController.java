@@ -4,6 +4,8 @@ import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.request.auth.UserProfileRequestDTO;
 import com.plantcare_backend.dto.response.auth.UpdateAvatarResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
+import com.plantcare_backend.model.Users;
+import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * created by TaHoang
@@ -35,6 +39,7 @@ import java.nio.file.Paths;
 public class UserProfileController {
     @Autowired
     private final UserProfileService userProfileService;
+    private final UserRepository userRepository;
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfileRequestDTO> getCurrentUserProfile(@RequestAttribute("userId") Integer userId) {
@@ -188,6 +193,32 @@ public class UserProfileController {
                             null
                     )
             );
+        }
+    }
+
+    @GetMapping("/current-user-status")
+    public ResponseEntity<ResponseData<Map<String, Object>>> getCurrentUserStatus(
+            @RequestAttribute("userId") Integer userId) {
+
+        try {
+            Users user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Map<String, Object> userStatus = new HashMap<>();
+            userStatus.put("userId", user.getId());
+            userStatus.put("username", user.getUsername());
+            userStatus.put("role", user.getRole().getRoleName().toString());
+            userStatus.put("status", user.getStatus().toString());
+
+            return ResponseEntity.ok(new ResponseData<>(
+                    HttpStatus.OK.value(),
+                    "User status retrieved successfully",
+                    userStatus));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "Failed to get user status: " + e.getMessage(), null));
         }
     }
 }
