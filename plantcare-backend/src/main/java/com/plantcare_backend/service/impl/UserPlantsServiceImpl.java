@@ -25,10 +25,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.plantcare_backend.repository.CareScheduleRepository;
 import com.plantcare_backend.repository.CareTypeRepository;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,11 +93,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     @Override
-    public List<UserPlants> getAllUserPlants() {
-        return userPlantRepository.findAll();
-    }
-
-    @Override
     public UserPlantDetailResponseDTO getUserPlantDetail(Long plantId) {
         UserPlants userPlants = userPlantRepository.findById(plantId)
                 .orElseThrow(() -> new ResourceNotFoundException("User Plant not found"));
@@ -144,7 +145,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     @Override
-    public void addUserPlant(AddUserPlantRequestDTO requestDTO, Long userId) {
+    public void addUserPlant(AddUserPlantRequestDTO requestDTO, List<MultipartFile> images, Long userId) {
         UserPlants userPlant = new UserPlants();
         userPlant.setUserId(userId);
         userPlant.setPlantId(requestDTO.getPlantId());
@@ -152,33 +153,77 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
+        UserPlants savedUserPlant = userPlantRepository.save(userPlant);
+        if (images != null && !images.isEmpty()) {
+            saveUserPlantImages(savedUserPlant, images);
+        }
         userPlantRepository.save(userPlant);
 
     }
 
-    private void createDefaultCareSchedules(Long userPlantId) {
+    private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
+        log.info("Saving {} images for user plant ID: {}", images.size(), userPlant.getUserPlantId());
+
+        String uploadDir = "uploads/user-plants/";
+        Path uploadPath = Paths.get(uploadDir);
+
         try {
-            // Tạo lịch tưới nước (mỗi 3 ngày)
-            CareSchedule wateringSchedule = new CareSchedule();
-            wateringSchedule.setUserPlant(userPlantRepository.findById(userPlantId).orElse(null));
-            wateringSchedule.setCareType(careTypeRepository.findByCareTypeName("WATERING").orElse(null));
-            wateringSchedule.setFrequencyDays(3);
-            wateringSchedule.setNextCareDate(new Date());
-            wateringSchedule.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-            careScheduleRepository.save(wateringSchedule);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            List<UserPlantImage> userPlantImages = new ArrayList<>();
+            for (MultipartFile image : images) {
+                if (image == null || image.isEmpty()) {
+                    log.warn("Skipping empty image file");
+                    continue;
+                }
 
-            // Tạo lịch bón phân (mỗi 30 ngày)
-            CareSchedule fertilizingSchedule = new CareSchedule();
-            fertilizingSchedule.setUserPlant(userPlantRepository.findById(userPlantId).orElse(null));
-            fertilizingSchedule.setCareType(careTypeRepository.findByCareTypeName("FERTILIZING").orElse(null));
-            fertilizingSchedule.setFrequencyDays(30);
-            fertilizingSchedule.setNextCareDate(new Date());
-            fertilizingSchedule.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-            careScheduleRepository.save(fertilizingSchedule);
+                String contentType = image.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    log.warn("Skipping non-image file: {}", image.getOriginalFilename());
+                    continue;
+                }
 
-            log.info("Created default care schedules for user plant: {}", userPlantId);
-        } catch (Exception e) {
-            log.error("Failed to create default care schedules for user plant: {}", userPlantId, e);
+                if (image.getSize() > 5 * 1024 * 1024) {
+                    log.warn("Skipping file too large: {} ({} bytes)", image.getOriginalFilename(), image.getSize());
+                    continue;
+                }
+
+                String originalFilename = image.getOriginalFilename();
+                if (originalFilename == null) {
+                    log.warn("Skipping file with null original filename");
+                    continue;
+                }
+
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String newFilename = UUID.randomUUID().toString() + fileExtension;
+
+                Path filePath = uploadPath.resolve(newFilename);
+                Files.copy(image.getInputStream(), filePath);
+
+                String imageUrl = "/api/user-plants/" + newFilename;
+
+                UserPlantImage userPlantImage = UserPlantImage.builder()
+                        .userPlants(userPlant)
+                        .imageUrl(imageUrl)
+                        .description("User uploaded image for plant: " + userPlant.getPlantName())
+                        .build();
+
+                userPlantImages.add(userPlantImage);
+
+                log.info("Saved image: {} -> {}", originalFilename, imageUrl);
+            }
+            if (!userPlantImages.isEmpty()) {
+                userPlant.setImages(userPlantImages);
+                userPlantRepository.save(userPlant);
+
+                log.info("Successfully saved {} images for user plant ID: {}",
+                        userPlantImages.size(), userPlant.getUserPlantId());
+            }
+
+        } catch (IOException e) {
+            log.error("Error saving user plant images: {}", e.getMessage());
+            throw new RuntimeException("Failed to save user plant images", e);
         }
     }
 
@@ -301,6 +346,10 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         dto.setPlantId(userPlant.getPlantId());
         dto.setNickname(userPlant.getPlantName());
         dto.setPlantLocation(userPlant.getPlantLocation());
+        if (userPlant.getImages() != null && !userPlant.getImages().isEmpty()) {
+            dto.setImageUrl(userPlant.getImages().get(0).getImageUrl());
+        }
+
         return dto;
     }
 } 

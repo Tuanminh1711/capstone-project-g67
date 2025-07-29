@@ -20,15 +20,28 @@ public class PlantCareScheduler {
     @Autowired
     private CareScheduleRepository careScheduleRepository;
 
-    // Chạy mỗi ngày lúc 8:00 AM
-    @Scheduled(cron = "0 0 8 * * ?")
+    // Chạy mỗi giờ để kiểm tra reminders
+    @Scheduled(cron = "0 0 * * * ?")
     public void sendReminders() {
-        LocalTime now = LocalTime.now().withSecond(0).withNano(0);
-        Date today = new Date();
-        List<CareSchedule> dueSchedules = careScheduleRepository.findDueReminders(today, now);
-        System.out.println("Scheduler found " + dueSchedules.size() + " due schedules at " + now);
-        for (CareSchedule schedule : dueSchedules) {
-            notificationService.sendReminder(schedule);
+        try {
+            LocalTime now = LocalTime.now().withSecond(0).withNano(0);
+            Date today = new Date();
+            List<CareSchedule> dueSchedules = careScheduleRepository.findDueReminders(today, now);
+
+            log.info("Found {} due schedules at {}", dueSchedules.size(), now);
+
+            for (CareSchedule schedule : dueSchedules) {
+                try {
+                    notificationService.sendReminder(schedule);
+                    log.info("Sent reminder for schedule: {}", schedule.getScheduleId());
+                } catch (Exception e) {
+                    log.error("Failed to send reminder for schedule: {}", schedule.getScheduleId(), e);
+                }
+            }
+
+            log.info("Completed processing {} reminders", dueSchedules.size());
+        } catch (Exception e) {
+            log.error("Critical error in reminder scheduler", e);
         }
     }
 }

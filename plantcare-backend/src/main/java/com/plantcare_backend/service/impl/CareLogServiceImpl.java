@@ -10,6 +10,7 @@ import com.plantcare_backend.repository.CareLogRepository;
 import com.plantcare_backend.repository.CareScheduleRepository;
 import com.plantcare_backend.repository.CareTypeRepository;
 import com.plantcare_backend.repository.UserPlantRepository;
+import com.plantcare_backend.service.ActivityLogService;
 import com.plantcare_backend.service.CareLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
+import java.util.Calendar;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class CareLogServiceImpl implements CareLogService {
     private final UserPlantRepository userPlantRepository;
     private final CareScheduleRepository careScheduleRepository;
     private final CareTypeRepository careTypeRepository;
+    private final ActivityLogService activityLogService;
 
     @Override
     @Transactional
@@ -61,11 +65,16 @@ public class CareLogServiceImpl implements CareLogService {
     public void logCareActivity(Long userPlantId, Long careTypeId, String notes, String imageUrl) {
         UserPlants userPlant = userPlantRepository.findById(userPlantId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found with id: " + userPlantId));
+
+        // Lấy userId từ userPlant
+        Long userId = userPlant.getUserId();
+
         CareType careType = null;
         if (careTypeId != null) {
             careType = careTypeRepository.findById(careTypeId)
                     .orElseThrow(() -> new ResourceNotFoundException("Care type not found with id: " + careTypeId));
         }
+
         CareLog careLog = CareLog.builder()
                 .userPlant(userPlant)
                 .careType(careType)
@@ -75,6 +84,18 @@ public class CareLogServiceImpl implements CareLogService {
                 .build();
         careLogRepository.save(careLog);
         updateCareSchedulesLastCareDate(userPlantId);
+
+        // Ghi activity log
+        if (userId != null) {
+            try {
+                activityLogService.logActivity(userId.intValue(), "CONFIRM_CARE_FROM_EMAIL",
+                        "Confirmed care activity from email for user plant: " + userPlantId +
+                                " - Care type: " + (careType != null ? careType.getCareTypeName() : "Unknown"));
+            } catch (Exception e) {
+                log.error("Failed to log activity for user: {}", userId, e);
+            }
+        }
+
         log.info("Logged care activity (confirm) for user plant: {}", userPlantId);
     }
 
@@ -94,6 +115,23 @@ public class CareLogServiceImpl implements CareLogService {
     private void updateCareSchedulesLastCareDate(Long userPlantId) {
         Date now = new Date();
         careScheduleRepository.updateLastCareDateByUserPlantId(userPlantId, now);
+
+        // Cập nhật next_care_date cho tất cả schedules của cây này
+        List<CareSchedule> schedules = careScheduleRepository.findByUserPlant_UserPlantId(userPlantId);
+        for (CareSchedule schedule : schedules) {
+            if (schedule.getFrequencyDays() != null && schedule.getLastCareDate() != null) {
+                Date nextCareDate = calculateNextCareDate(schedule.getLastCareDate(), schedule.getFrequencyDays());
+                schedule.setNextCareDate(nextCareDate);
+                careScheduleRepository.save(schedule);
+            }
+        }
+    }
+
+    private Date calculateNextCareDate(Date lastCareDate, Integer frequencyDays) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(lastCareDate);
+        cal.add(Calendar.DAY_OF_MONTH, frequencyDays);
+        return cal.getTime();
     }
 
     private CareLogResponse toCareLogResponse(CareLog careLog) {
@@ -150,19 +188,6 @@ public class CareLogServiceImpl implements CareLogService {
             public CareLogResponse build() {
                 return response;
             }
-        }
-
-        // Getters
-        public Long getLogId() {
-            return logId;
-        }
-
-        public Date getCareDate() {
-            return careDate;
-        }
-
-        public String getNotes() {
-            return notes;
         }
 
         public String getImageUrl() {
