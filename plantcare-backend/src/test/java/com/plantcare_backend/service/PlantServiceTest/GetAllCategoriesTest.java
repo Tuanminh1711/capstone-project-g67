@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.PlantServiceTest;
 
-public class createPlant {
+public class GetAllCategoriesTest {
 }
