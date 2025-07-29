@@ -14,3 +14,18 @@ openapi:
     server: ${API_URL:DUMMY-API-URL}
     title: API Document
     version: 1.0.0
+
+# AI Configuration
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+
+openrouter:
+  api:
+    key: ${OPENROUTER_API_KEY}
+    base-url: https://openrouter.ai/api/v1
+    model: openai/gpt-3.5-turbo
+
+# App Configuration
+app:
+  base-url: ${APP_BASE_URL:http://40.81.23.51}
