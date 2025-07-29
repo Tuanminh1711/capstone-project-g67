@@ -54,14 +54,14 @@ public class AuthController {
     @Operation(summary = "Admin/Staff Login", description = "Login for admin or staff")
     @PostMapping("/login-admin")
     public ResponseEntity<LoginResponse> loginAdmin(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-            HttpServletRequest request) {
+                                                    HttpServletRequest request) {
         LoginResponse loginResponse = authService.loginForAdminOrStaff(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/login-expert")
     public ResponseEntity<LoginResponse> loginExpert(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-            HttpServletRequest request) {
+                                                     HttpServletRequest request) {
         LoginResponse loginResponse = authService.loginForExpert(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }
@@ -69,7 +69,7 @@ public class AuthController {
     @Operation(summary = "User Login", description = "Login with username and password")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> Login(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-            HttpServletRequest request) {
+                                               HttpServletRequest request) {
         LoginResponse loginResponse = authService.loginForUser(loginRequestDTO, request);
         return ResponseEntity.ok(loginResponse);
     }
@@ -215,5 +215,45 @@ public class AuthController {
             @RequestAttribute("userId") Integer userId) {
         ResponseData<?> response = authService.changePassword(requestDTO, userId);
         return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ResponseData<LoginResponse>> refreshToken(
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseData<>(HttpStatus.UNAUTHORIZED.value(),
+                            "User not authenticated", null));
+        }
+
+        try {
+            Users user = userRepository.findById(userId.intValue())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            String newToken = jwtUtil.generateToken(
+                    user.getUsername(),
+                    user.getRole().getRoleName().toString(),
+                    user.getId()
+            );
+
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setToken(newToken);
+            loginResponse.setUsername(user.getUsername());
+            loginResponse.setMessage("Token refreshed successfully");
+            loginResponse.setStatus(HttpStatus.OK.value());
+            loginResponse.setRole(user.getRole().getRoleName().toString());
+
+            return ResponseEntity.ok(new ResponseData<>(
+                    HttpStatus.OK.value(),
+                    "Token refreshed successfully",
+                    loginResponse));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "Failed to refresh token: " + e.getMessage(), null));
+        }
     }
 }

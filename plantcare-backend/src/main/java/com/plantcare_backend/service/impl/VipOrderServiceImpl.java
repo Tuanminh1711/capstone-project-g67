@@ -7,10 +7,12 @@ import com.plantcare_backend.repository.RoleRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.repository.VipOrderRepository;
 import com.plantcare_backend.service.VipOrderService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+
 
 @Service
 public class VipOrderServiceImpl implements VipOrderService {
@@ -34,14 +36,25 @@ public class VipOrderServiceImpl implements VipOrderService {
     }
 
     @Override
-    public void handlePaymentSuccess(Integer orderId) {
-        VipOrder order = vipOrderRepository.findById(orderId).orElseThrow();
+    @Transactional
+    public VipOrder handlePaymentSuccess(Integer orderId) {
+        VipOrder order = vipOrderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() == VipOrder.Status.SUCCESS) {
+            return order;
+        }
+
         order.setStatus(VipOrder.Status.SUCCESS);
         vipOrderRepository.save(order);
 
-        Role vipRole = roleRepository.findByRoleName(Role.RoleName.VIP).orElseThrow();
+        // Update user role
+        Role vipRole = roleRepository.findByRoleName(Role.RoleName.VIP)
+                .orElseThrow(() -> new RuntimeException("VIP role not found"));
         Users user = order.getUser();
         user.setRole(vipRole);
         userRepository.save(user);
+
+        return order;
     }
 }
