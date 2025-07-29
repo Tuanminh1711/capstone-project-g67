@@ -154,8 +154,11 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     forkJoin(uploadObservables).subscribe((results: any[]) => {
       const validUrls = results.map((r: any) => r.url).filter((url: any) => url !== null) as string[];
       this.imageUrls = [...this.imageUrls, ...validUrls];
-      this.isUploadingImages = false;
-      this.cdr.detectChanges();
+      // Sửa lỗi ExpressionChangedAfterItHasBeenCheckedError bằng setTimeout
+      setTimeout(() => {
+        this.isUploadingImages = false;
+        this.cdr.detectChanges();
+      });
 
       // Reset input file để tránh double upload dialog
       if (this.imageUpload && this.imageUpload.nativeElement) {

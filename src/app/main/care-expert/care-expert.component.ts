@@ -16,11 +16,6 @@ export class CareExpertComponent {
   constructor(private router: Router, private jwtUtil: JwtUserUtilService) {}
 
   goToVipPayment() {
-    const role = this.jwtUtil.getRoleFromToken();
-    if (role && role.toUpperCase() === 'VIP') {
-      this.router.navigate(['/vip/welcome']);
-    } else {
-      this.router.navigate(['/care-expert']);
-    }
+    this.router.navigate(['/user/exper/vip-payment']);
   }
 }

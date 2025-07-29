@@ -71,17 +71,22 @@ export class AddPlantComponent implements OnInit {
   ngOnInit(): void {
     this.initializeForm();
     const plantId = this.route.snapshot.paramMap.get('plantId');
-    if (plantId) {
-      const cached = this.plantDataService.getSelectedPlant();
-      if (cached && cached.id === Number(plantId)) {
-        this.plant = cached;
-        this.formData.plantId = cached.id;
-        this.setPlantImageUrl();
-        this.setDefaultNickname();
-      }
-      // Luôn gọi lại API để đảm bảo dữ liệu mới nhất (giống plant-detail)
-      this.loadPlantInfo();
+    if (!plantId) {
+      this.toastService.error('Bạn cần chọn cây trước khi thêm vào bộ sưu tập');
+      this.router.navigate(['/plant-info']);
+      return;
     }
+    const id = Number(plantId);
+    this.formData.plantId = id;
+    // Nếu cache đúng id thì dùng tạm để hiển thị nhanh, nhưng vẫn luôn gọi API để lấy mới nhất
+    const cached = this.plantDataService.getSelectedPlant();
+    if (cached && cached.id === id) {
+      this.plant = cached;
+      this.setPlantImageUrl();
+      this.setDefaultNickname();
+    }
+    // Luôn gọi lại API để đảm bảo dữ liệu mới nhất (giống plant-detail)
+    this.loadPlantInfo();
   }
 
 
@@ -142,8 +147,9 @@ export class AddPlantComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.isFormValid()) {
-      this.toastService.error('Vui lòng điền đầy đủ thông tin');
+    // Kiểm tra tất cả trường bắt buộc
+    if (!this.formData.plantId || !this.formData.nickname.trim() || !this.formData.plantingDate || !this.formData.locationInHouse) {
+      this.toastService.error('Vui lòng điền đầy đủ thông tin và chọn cây hợp lệ');
       return;
     }
 
@@ -165,7 +171,18 @@ export class AddPlantComponent implements OnInit {
       reminderEnabled: this.formData.reminderEnabled
     };
 
-    this.http.post<any>(`${environment.apiUrl}/user-plants/add`, requestData).subscribe({
+    // Tạo FormData đúng chuẩn backend @RequestPart("requestDTO") và @RequestPart("images")
+    const formData = new FormData();
+    formData.append('requestDTO', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
+
+    // Nếu có upload ảnh, append từng file vào formData với key 'images'
+    if (this.selectedImages && this.selectedImages.length > 0) {
+      for (const file of this.selectedImages) {
+        formData.append('images', file);
+      }
+    }
+
+    this.http.post<any>(`${environment.apiUrl}/user-plants/add`, formData).subscribe({
       next: (response) => {
         this.loading = false;
         this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
@@ -174,7 +191,6 @@ export class AddPlantComponent implements OnInit {
       error: (err) => {
         this.loading = false;
         console.error('Error adding plant to collection:', err);
-        
         if (err.status === 401 || err.status === 403) {
           this.toastService.error('Bạn không có quyền thực hiện hành động này');
         } else if (err.status === 409) {
@@ -184,6 +200,18 @@ export class AddPlantComponent implements OnInit {
         }
       }
     });
+  }
+
+  // Lưu trữ file ảnh người dùng chọn
+  selectedImages: File[] = [];
+
+  // Hàm xử lý khi chọn file ảnh
+  onImageSelected(event: any): void {
+    const files: FileList = event.target.files;
+    this.selectedImages = [];
+    for (let i = 0; i < files.length; i++) {
+      this.selectedImages.push(files[i]);
+    }
   }
 
   private isFormValid(): boolean {

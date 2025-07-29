@@ -87,12 +87,25 @@ export class TopNavigatorComponent implements OnInit {
     return '';
   }
   goToCareExpert(): void {
-    const role = this.jwtUtil.getRoleFromToken();
-    if (role && role.toUpperCase() === 'VIP') {
-      this.router.navigate(['/vip/welcome']);
-    } else {
-      this.router.navigate(['/care-expert']);
-    }
+    this.authService.getProfile().subscribe({
+      next: (user: any) => {
+        const role = user?.role || this.jwtUtil.getRoleFromToken();
+        if (role && role.toUpperCase() === 'VIP') {
+          this.router.navigate(['/vip/welcome']);
+        } else {
+          this.router.navigate(['/care-expert']);
+        }
+      },
+      error: () => {
+        // fallback nếu lỗi thì dùng token cũ
+        const role = this.jwtUtil.getRoleFromToken();
+        if (role && role.toUpperCase() === 'VIP') {
+          this.router.navigate(['/vip/welcome']);
+        } else {
+          this.router.navigate(['/care-expert']);
+        }
+      }
+    });
   }
 
   toggleSupportDropdown = (event: MouseEvent): void => {

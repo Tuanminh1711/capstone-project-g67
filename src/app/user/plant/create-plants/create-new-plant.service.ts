@@ -84,7 +84,7 @@ export class CreateNewPlantService {
    */
   uploadImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file); // Sửa 'image' thành 'file' để backend nhận đúng
     
     return this.http.post<{url: string}>('/api/upload/image', formData).pipe(
       catchError(error => {

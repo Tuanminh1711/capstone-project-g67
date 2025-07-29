@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -21,6 +22,8 @@ import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog
   styleUrls: ['./my-garden.scss']
 })
 export class MyGardenComponent implements OnInit, OnDestroy {
+  // Map to store reminder enabled state for each userPlantId
+  reminderEnabledMap: { [userPlantId: number]: boolean } = {};
   userPlants: UserPlant[] = [];
   isLoading = false;
   errorMessage = '';
@@ -28,7 +31,18 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   // Chỉ còn layout garden, không cần biến layout nữa
   // Không cần filter nữa
   
+
   private destroy$ = new Subject<void>();
+
+  // Helper method to safely check authentication status
+  private checkAuthenticationSafely(): boolean {
+    try {
+      // You may want to check for a valid token or session here
+      return !!this.cookieService.getAuthToken();
+    } catch {
+      return false;
+    }
+  }
 
   constructor(
     private http: HttpClient,
@@ -38,7 +52,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     private myGardenService: MyGardenService,
     private authDialogService: AuthDialogService,
     private confirmationDialogService: ConfirmationDialogService,
-
     private cdr: ChangeDetectorRef,
     private careReminderService: CareReminderService
   ) {
@@ -46,10 +59,34 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     this.userPlants = [];
   }
 
+  // After loading userPlants, fetch reminder state for each
+  private fetchAllReminders() {
+    if (!this.userPlants) return;
+    for (const plant of this.userPlants) {
+      this.fetchReminderState(plant.userPlantId);
+    }
+  }
+
+  private fetchReminderState(userPlantId: number) {
+    this.http.get<any[]>(`${environment.apiUrl}/plant-care/${userPlantId}/care-reminders`).subscribe({
+      next: (schedules) => {
+        this.reminderEnabledMap[userPlantId] = schedules.some(s => s.enabled);
+      },
+      error: () => {
+        this.reminderEnabledMap[userPlantId] = false;
+      }
+    });
+  }
+
+  // Call fetchAllReminders after userPlants are loaded/refreshed
+  private onUserPlantsLoaded() {
+    this.fetchAllReminders();
+  }
+
   // Toggle all reminders for a plant (bật/tắt tất cả loại nhắc nhở)
   toggleAllReminders(plant: UserPlant): void {
     if (!plant) return;
-    const enable = !plant.reminderEnabled;
+    const enable = !this.reminderEnabledMap[plant.userPlantId];
     // Lấy schedules mặc định (có message và giờ) và set enabled theo trạng thái mong muốn
     const schedules = getDefaultCareReminders().map(s => ({
       ...s,
@@ -57,7 +94,8 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     }));
     this.careReminderService.updateCareReminders(plant.userPlantId, schedules).subscribe({
       next: (res) => {
-        plant.reminderEnabled = enable;
+        // Sau khi cập nhật, reload lại toàn bộ danh sách cây để đảm bảo đồng bộ trạng thái
+        this.loadPlantDataImmediate();
         if (typeof res === 'string' && res.includes('thành công')) {
           this.toastService.success(res);
         } else {
@@ -85,7 +123,7 @@ export class MyGardenComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.toastService.error('Không lấy được trạng thái nhắc nhở.');
+        this.toastService.error('Không thể lấy thông tin nhắc nhở.');
       }
     });
   }
@@ -100,7 +138,7 @@ export class MyGardenComponent implements OnInit, OnDestroy {
         if (typeof res === 'string' && res.includes('thành công')) {
           this.toastService.success(res);
         } else {
-          this.toastService.success('Đã cập nhật nhắc nhở từng loại!');
+          this.toastService.success('Cập nhật nhắc nhở thành công!');
         }
         this.showCareReminderDialog = false;
         this.cdr.markForCheck();
@@ -119,24 +157,18 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
 
-  private checkAuthenticationSafely(): boolean {
-    try {
-      if (typeof document === 'undefined') return false;
-      const token = this.cookieService.getAuthToken();
-      return !!token && token.trim().length > 0;
-    } catch {
-      return false;
-    }
-  }
+
+
 
   get isLoggedIn(): boolean {
     return this.checkAuthenticationSafely();
   }
 
-  // Computed properties for backward compatibility with template
+
   get loading(): boolean {
     return this.isLoading;
   }
+
 
   get error(): string {
     return this.errorMessage;
@@ -178,17 +210,24 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
-    this.myGardenService.getUserPlants(0, 50)
+    this.myGardenService.getUserPlants(0, 10)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           this.isLoading = false;
-          if (response?.data?.content) {
-            this.userPlants = response.data.content;
+          if (response?.data?.content && Array.isArray(response.data.content)) {
+            // Map API response to userPlants array
+            this.userPlants = response.data.content.map((p: any) => ({
+              userPlantId: p.userPlantId,
+              plantId: p.plantId,
+              imageUrl: p.imageUrl,
+              nickname: p.nickname,
+              plantLocation: p.plantLocation,
+              // Add default values for fields not present in API
+              reminderEnabled: false
+            }));
             this.errorMessage = '';
-          } else if (Array.isArray(response)) {
-            this.userPlants = response;
-            this.errorMessage = '';
+            this.onUserPlantsLoaded();
           } else {
             this.userPlants = [];
             this.errorMessage = 'Không tìm thấy dữ liệu';
@@ -260,9 +299,7 @@ export class MyGardenComponent implements OnInit, OnDestroy {
       this.toastService.error('Không thể xóa cây này');
       return;
     }
-    
     const displayName = plantName || targetPlant.nickname || 'cây này';
-    
     const dialogData = {
       title: 'Xóa cây khỏi bộ sưu tập',
       message: `Bạn có chắc chắn muốn xóa cây "${displayName}" khỏi bộ sưu tập không?\n\nHành động này không thể hoàn tác.`,
@@ -271,12 +308,10 @@ export class MyGardenComponent implements OnInit, OnDestroy {
       icon: '🗑️',
       type: 'danger' as const
     };
-
     this.confirmationDialogService.showDialog(dialogData)
       .pipe(takeUntil(this.destroy$))
       .subscribe((confirmed: boolean) => {
         if (confirmed) {
-          // Use userPlantId for deletion
           this.performDeletePlant(userPlantId, displayName);
         }
       });
@@ -390,14 +425,11 @@ export class MyGardenComponent implements OnInit, OnDestroy {
       this.toastService.error('Không tìm thấy cây trong bộ sưu tập');
       return;
     }
-
     const userPlantId = targetPlant.userPlantId;
     if (!userPlantId) {
       this.toastService.error('Không thể chỉnh sửa cây này');
-      return;
+      return; 
     }
-    
-    // Navigate to update plant page
     this.router.navigate(['/update-plant', userPlantId]);
   }
 }
