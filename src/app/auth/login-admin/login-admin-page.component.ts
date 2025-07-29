@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { Router } from '@angular/router';
@@ -47,7 +47,8 @@ export class LoginAdminPageComponent {
   constructor(
     private authService: AuthService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   onSubmit() {
@@ -65,14 +66,13 @@ export class LoginAdminPageComponent {
         this.loading = false;
         // Nếu backend trả về token, lưu vào cookie bảo mật
         if (res.token) {
-          // Lưu JWT vào cookie (7 ngày, SameSite=Lax, không Secure ở dev)
-          // Đảm bảo CookieService đã được import đúng
           import('../../auth/cookie.service').then(({ CookieService }) => {
             const cookieService = new CookieService();
             cookieService.setAuthToken(res.token, 7);
           });
         }
         this.successMsg = res.message || 'Đăng nhập thành công!';
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.toast.success(this.successMsg);
           this.router.navigate(['/admin']);
@@ -80,6 +80,8 @@ export class LoginAdminPageComponent {
       },
       error: (err: any) => {
         this.loading = false;
+        this.successMsg = '';
+        this.cdr.detectChanges();
         let msg = '';
         if (err && err.error && err.error.message) {
           msg = err.error.message;

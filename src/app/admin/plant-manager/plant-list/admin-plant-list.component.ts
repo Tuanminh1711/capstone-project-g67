@@ -66,8 +66,8 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
   ngOnInit() {
     // Check role before loading data
     const role = this.authService.getCurrentUserRole();
-    if (role !== 'ADMIN') {
-      this.router.navigate(['/login']);
+    if (role !== 'ADMIN' && role !== 'STAFF') {
+      this.router.navigate(['/login-admin']);
       return;
     }
     // Load plants immediately if not already loaded

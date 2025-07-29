@@ -1,27 +1,160 @@
 <app-top-navigator></app-top-navigator>
+
 <!-- Hero Section -->
-<div class="hero-section">
-  <div class="hero-content">
-    <h1 class="hero-title">
-      <span class="hero-title-main">Giúp bạn yêu cây dễ dàng hơn</span>
+<section class="home-hero">
+  <div class="home-hero-content">
+    <h1 class="home-hero-title">
+      <span>PlantCare - Nền tảng chăm sóc cây toàn diện</span>
     </h1>
-    <p class="hero-desc">Tìm cây phù hợp – Chăm cây đúng cách – Kết nối với chuyên gia</p>
-    @if (!jwtUserUtil.isLoggedIn()) {
-      <button (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập ngay</button>
-    }
-    @if (jwtUserUtil.isLoggedIn()) {
-      <button (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Chăm sóc cùng chuyên gia</button>
-    }
+    <p class="home-hero-desc">
+      Khám phá, quản lý, chăm sóc và kết nối cộng đồng yêu cây cảnh. Tất cả trong một ứng dụng!
+    </p>
+    <div class="home-hero-cta">
+      @if (!jwtUserUtil.isLoggedIn()) {
+        <button (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập ngay</button>
+      }
+      @if (jwtUserUtil.isLoggedIn()) {
+        <button (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Chăm sóc cùng chuyên gia</button>
+      }
+    </div>
   </div>
-  <div class="hero-image">
-    <img
-      [ngSrc]="'assets/image/img-hero-section.png'"
-      width="600" height="339" priority alt="Giới thiệu PlantCare" />
+  <div class="home-hero-image">
+    <img [ngSrc]="'assets/image/img-hero-section.png'" width="520" height="320" alt="PlantCare Hero" />
   </div>
-</div>
+</section>
 
+<!-- Promo Banner Section -->
+<section class="home-promo-banner">
+  <div class="promo-banner-content">
+    <img src="assets/image/logo.png" alt="PlantCare Logo" class="promo-logo" />
+    <div class="promo-text">
+      <h2>Ưu đãi đặc biệt mùa hè!</h2>
+      <p>Đăng ký tài khoản mới ngay hôm nay để nhận <b>1 tháng sử dụng PlantCare VIP miễn phí</b> cùng nhiều phần quà hấp dẫn.</p>
+      <button class="cta-btn cta-main" (click)="onConnectExpertClick()">Nhận ưu đãi ngay</button>
+    </div>
+  </div>
+</section>
 
+<!-- Features Section -->
+<section class="home-features">
+  <h2 class="features-title">Tính năng nổi bật</h2>
+  <div class="features-list">
+    <div class="feature-item">
+      <i class="fas fa-search feature-icon"></i>
+      <h3>Tìm kiếm & Khám phá cây</h3>
+      <p>Tra cứu thông tin, hình ảnh, đặc điểm và điều kiện sống của hàng trăm loại cây cảnh.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-seedling feature-icon"></i>
+      <h3>Khu vườn của tôi</h3>
+      <p>Quản lý bộ sưu tập cây cá nhân, đặt tên, ghi chú, theo dõi tình trạng từng cây.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-bell feature-icon"></i>
+      <h3>Nhắc nhở chăm sóc</h3>
+      <p>Thiết lập lịch tưới nước, bón phân, cắt tỉa... và nhận thông báo tự động.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-user-md feature-icon"></i>
+      <h3>Chuyên gia tư vấn</h3>
+      <p>Kết nối, trò chuyện và nhận lời khuyên từ các chuyên gia cây cảnh giàu kinh nghiệm.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-comments feature-icon"></i>
+      <h3>Cộng đồng & Hỏi đáp</h3>
+      <p>Tham gia diễn đàn, chia sẻ kinh nghiệm, đặt câu hỏi và nhận hỗ trợ từ cộng đồng.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-chart-line feature-icon"></i>
+      <h3>Thống kê & Theo dõi</h3>
+      <p>Xem báo cáo, thống kê quá trình chăm sóc, sức khỏe cây và tiến trình phát triển.</p>
+    </div>
+  </div>
+</section>
 
-<!-- Các tính năng nổi bật dạng khối xếp tầng đẹp mắt -->
-<!-- XÓA leftSlides và rightSlides, giữ lại section nếu cần thêm nội dung khác sau này -->
+<!-- How it works Section -->
+<section class="home-how-it-works">
+  <h2>Cách PlantCare hoạt động</h2>
+  <div class="how-steps">
+    <div class="how-step">
+      <span class="how-step-number">1</span>
+      <div>
+        <h4>Đăng ký tài khoản</h4>
+        <p>Tạo tài khoản miễn phí để bắt đầu hành trình chăm sóc cây của bạn.</p>
+      </div>
+    </div>
+    <div class="how-step">
+      <span class="how-step-number">2</span>
+      <div>
+        <h4>Thêm cây vào vườn</h4>
+        <p>Chọn cây từ thư viện hoặc tự thêm cây mới vào bộ sưu tập cá nhân.</p>
+      </div>
+    </div>
+    <div class="how-step">
+      <span class="how-step-number">3</span>
+      <div>
+        <h4>Thiết lập nhắc nhở</h4>
+        <p>Cài đặt lịch chăm sóc phù hợp cho từng loại cây.</p>
+      </div>
+    </div>
+    <div class="how-step">
+      <span class="how-step-number">4</span>
+      <div>
+        <h4>Kết nối chuyên gia & cộng đồng</h4>
+        <p>Nhận tư vấn, chia sẻ và học hỏi kinh nghiệm từ chuyên gia và người dùng khác.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="home-testimonials">
+  <h2 class="testimonials-title">Cảm nhận từ người dùng</h2>
+  <div class="testimonials-list">
+    <div class="testimonial-item">
+      <div class="testimonial-avatar"><img src="assets/image/default-avatar.png" alt="User 1" /></div>
+      <div class="testimonial-content">
+        <p>"PlantCare giúp tôi chăm sóc khu vườn nhỏ của mình dễ dàng hơn rất nhiều. Nhắc nhở tưới nước cực kỳ tiện lợi!"</p>
+        <span class="testimonial-user">- Minh, Hà Nội</span>
+      </div>
+    </div>
+    <div class="testimonial-item">
+      <div class="testimonial-avatar"><img src="assets/image/default-avatar.png" alt="User 2" /></div>
+      <div class="testimonial-content">
+        <p>"Tôi rất thích tính năng hỏi đáp với chuyên gia, mọi thắc mắc về cây đều được giải đáp nhanh chóng."</p>
+        <span class="testimonial-user">- Lan, TP.HCM</span>
+      </div>
+    </div>
+    <div class="testimonial-item">
+      <div class="testimonial-avatar"><img src="assets/image/default-avatar.png" alt="User 3" /></div>
+      <div class="testimonial-content">
+        <p>"Giao diện đẹp, dễ dùng, cộng đồng thân thiện. Tôi đã học hỏi được rất nhiều kinh nghiệm chăm cây."</p>
+        <span class="testimonial-user">- Hùng, Đà Nẵng</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="home-cta-final">
+  <div class="cta-final-callout">
+    <i class="fas fa-leaf"></i>
+    <div>
+      <h2>Bắt đầu hành trình chăm cây của bạn ngay hôm nay!</h2>
+      <p>Khám phá các tính năng, kết nối cộng đồng và nhận tư vấn miễn phí từ chuyên gia PlantCare.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Partners/Sponsors Section -->
+<section class="home-partners">
+  <h2 class="partners-title">Đối tác & Nhà tài trợ</h2>
+  <div class="partners-list">
+    <img src="assets/image/logo.png" alt="PlantCare" title="PlantCare" />
+    <img src="assets/image/logo-remove.png" alt="GreenWorld" title="GreenWorld" />
+    <img src="assets/image/logo.png" alt="EcoGrow" title="EcoGrow" />
+    <img src="assets/image/logo-remove.png" alt="GardenPro" title="GardenPro" />
+  </div>
+</section>
+
 

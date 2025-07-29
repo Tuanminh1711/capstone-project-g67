@@ -1,7 +1,10 @@
 
 export const CARE_TYPES = [
   { careTypeId: 1, careTypeName: 'Tưới nước' },
-  { careTypeId: 2, careTypeName: 'Bón phân' }
+  { careTypeId: 2, careTypeName: 'Bón phân' },
+  { careTypeId: 3, careTypeName: 'Cắt tỉa' },
+  { careTypeId: 4, careTypeName: 'Bón phân' }
+
 ];
 
 /**

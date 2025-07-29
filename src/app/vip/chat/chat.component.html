@@ -1,0 +1,48 @@
+<app-top-navigator></app-top-navigator>
+<div class="vip-chat-page">
+  <div class="vip-chat-card">
+    <div class="chat-header">
+      <div class="chat-title">Phòng chat cộng đồng VIP</div>
+      <div class="chat-actions">
+        <button class="chat-action-btn" disabled matTooltip="Tính năng đang phát triển">
+          <i class="icon-call"></i>
+        </button>
+        <button class="chat-action-btn" disabled matTooltip="Tính năng đang phát triển">
+          <i class="icon-video"></i>
+        </button>
+        <button class="chat-action-btn" disabled matTooltip="Tính năng đang phát triển">
+          <i class="icon-calendar"></i>
+        </button>
+        <button class="chat-action-btn" disabled matTooltip="Tính năng đang phát triển">
+          <i class="icon-info"></i>
+        </button>
+      </div>
+    </div>
+    <div class="chat-box">
+      <div class="chat-history" *ngIf="!loading && messages.length > 0">
+        <div *ngFor="let msg of messages; let i = index" class="chat-message" [ngClass]="{'from-me': msg.senderRole === 'VIP', 'from-other': msg.senderRole !== 'VIP'}">
+          <img class="chat-avatar" src="assets/image/default-avatar.png" alt="avatar" />
+          <div class="chat-bubble">
+            <div class="chat-meta">{{ msg.senderRole || 'Người dùng' }}</div>
+            <div class="chat-content">{{ msg.content }}</div>
+            <div class="chat-time">{{ msg.timestamp | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="loading" class="chat-loading">Đang tải lịch sử chat...</div>
+      <div *ngIf="error" class="chat-error">{{ error }}</div>
+      @if (!loading) {
+        <form class="chat-input-row" (ngSubmit)="sendMessage()">
+          <button class="chat-input-action" type="button" disabled matTooltip="Tính năng đang phát triển">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#43a047" stroke-width="2" d="M4 17.5V6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5Z"/><circle cx="8.5" cy="8.5" r="1.5" fill="#43a047"/><path stroke="#43a047" stroke-width="2" d="m20 15-5.5-5.5-7 7"/></svg>
+          </button>
+          <button class="chat-input-action" type="button" disabled matTooltip="Tính năng đang phát triển">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#43a047" stroke-width="2" d="M17 7a5 5 0 0 1 0 7l-5 5a5 5 0 0 1-7-7l3-3"/><path stroke="#43a047" stroke-width="2" d="M7 17a5 5 0 0 1 0-7l5-5a5 5 0 0 1 7 7l-3 3"/></svg>
+          </button>
+          <input [(ngModel)]="newMessage" name="newMessage" placeholder="Nhập tin nhắn..." autocomplete="off" />
+          <button type="submit" [disabled]="!newMessage.trim()">Gửi</button>
+        </form>
+      }
+    </div>
+  </div>
+</div>

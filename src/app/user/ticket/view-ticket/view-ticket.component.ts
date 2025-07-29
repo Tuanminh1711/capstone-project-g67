@@ -1,3 +1,4 @@
+
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { DatePipe, CommonModule } from '@angular/common';
@@ -6,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TicketDetailComponent } from '../ticket-detail/ticket-detail.component';
 
 interface Ticket {
   ticketId: number;
@@ -21,7 +23,7 @@ interface Ticket {
   selector: 'app-view-ticket',
   templateUrl: './view-ticket.component.html',
   styleUrls: ['./view-ticket.component.scss'],
-  imports: [CommonModule, DatePipe, TopNavigatorComponent],
+  imports: [CommonModule, DatePipe, TopNavigatorComponent, TicketDetailComponent],
 })
 export class ViewTicketComponent implements OnInit, AfterViewInit {
   private ticketsSubject = new BehaviorSubject<Ticket[]>([]);
@@ -29,7 +31,7 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
   loading = false;
   error = '';
   private dataLoaded = false;
-  selectedTicket: Ticket | null = null;
+  selectedTicket: any = null;
 
   constructor(
     private http: HttpClient,
@@ -105,11 +107,14 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
     });
   }
 
-  viewTicketDetail(ticket: Ticket) {
+  viewDetail(ticket: any) {
+    // Gọi API lấy chi tiết ticket (nếu cần), hoặc truyền luôn nếu đã có đủ dữ liệu
     if (ticket && ticket.ticketId) {
-      this.router.navigate(['/user/my-tickets', ticket.ticketId]);
-    } else {
-      this.error = 'Không tìm thấy ticket.';
+      this.fetchTicketDetail(ticket.ticketId);
     }
+  }
+
+  closeDetail() {
+    this.selectedTicket = null;
   }
 }

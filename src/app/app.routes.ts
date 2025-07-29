@@ -6,7 +6,7 @@ import { AboutUsComponent } from './main/about-us/about-us';
 import { CareExpertComponent } from './main/care-expert/care-expert.component';
 
 // USER FEATURE
-import { VipPaymentComponent } from './user/exper/vip-payment.component';
+import { VipPaymentComponent } from './user/expert/vip-payment.component';
 import { MyGardenComponent } from './user/plant/my-garden/my-garden.component';
 import { AddPlantComponent } from './user/plant/add-plant/add-plant.component';
 import { CreateNewPlantComponent } from './user/plant/create-plants/create-new-plant.component';
@@ -43,6 +43,9 @@ export const routes: Routes = [
 
   // USER
   { path: 'vip/welcome', loadComponent: () => import('./vip/welcome/welcome-vip.component').then(m => m.WelcomeVipComponent) },
+  { path: 'vip/chat', loadComponent: () => import('./vip/chat/chat.component').then(m => m.ChatComponent) },
+  // { path: 'vip/chat-ai', loadComponent: () => import('./vip/chat-ai/chat-ai.component').then(m => m.ChatAiComponent) },
+  { path: 'user/chat-ai', loadComponent: () => import('./user/chat-ai/chat-ai.component').then(m => m.ChatAiComponent) },
   { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },
   { path: 'user/my-garden', component: MyGardenComponent },
   { path: 'user/exper/vip-payment', component: VipPaymentComponent },
@@ -53,6 +56,7 @@ export const routes: Routes = [
   { path: 'user/collection', redirectTo: 'user/my-garden', pathMatch: 'full' },
   { path: 'user/collection/add-plant/:plantId', redirectTo: 'user/add-plant/:plantId', pathMatch: 'full' },
   { path: 'user/my-tickets', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
+  { path: 'user/activity-logs', loadComponent: () => import('./user/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
   { path: 'user/report-plant/:id', component: ReportPlantPageComponent },
 
   // PROFILE & AUTH

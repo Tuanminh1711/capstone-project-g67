@@ -17,9 +17,16 @@
           <i class="fas fa-leaf icon-small"></i> Bón phân
         </button>
       }
-      <button type="button" class="add-schedule-btn pest outside beautify small-btn" disabled title="Sâu bệnh">
-        <i class="fas fa-bug icon-small"></i> Sâu bệnh
-      </button>
+      @if (!hasPruneReminder) {
+        <button type="button" class="add-schedule-btn prune outside beautify small-btn" (click)="addSchedule(3)" title="Thêm lịch nhắc cắt tỉa">
+          <i class="fas fa-cut icon-small"></i> Cắt tỉa
+        </button>
+      }
+      @if (!hasSprayReminder) {
+        <button type="button" class="add-schedule-btn spray outside beautify small-btn" (click)="addSchedule(4)" title="Thêm lịch nhắc phun thuốc">
+          <i class="fas fa-spray-can icon-small"></i> Phun thuốc
+        </button>
+      }
     </div>
   </div>
   <div class="add-schedule-actions full-width center">

@@ -15,9 +15,37 @@ import { ToastService } from '../../../shared/toast/toast.service';
 })
 
 export class AdminCreateAccountComponent extends BaseAdminListComponent {
+  private translateErrorMessage(msg: string): string {
+    const map: { [key: string]: string } = {
+      'password must be at least 8 characters': 'Mật khẩu phải có ít nhất 8 ký tự',
+      'password must be at least 6 characters': 'Mật khẩu phải có ít nhất 6 ký tự',
+      'passwords do not match': 'Mật khẩu xác nhận không khớp',
+      'username already exists': 'Tên đăng nhập đã tồn tại',
+      'email already exists': 'Email đã được sử dụng',
+      'invalid email format': 'Định dạng email không hợp lệ',
+      'invalid payload': 'Dữ liệu gửi lên không hợp lệ',
+      'user not found': 'Không tìm thấy người dùng',
+      'invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng',
+      'account is not verified': 'Tài khoản chưa được xác thực',
+      'account is locked': 'Tài khoản đã bị khóa',
+      'phone number already exists': 'Số điện thoại đã được sử dụng',
+      'password wrong!': 'Mật khẩu không đúng!',
+      'username wrong!': 'Tên đăng nhập không đúng!',
+      'password must contain at least 8 characters, including uppercase, lowercase, number and special character': 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
+    };
+    const msgNorm = msg.trim().toLowerCase();
+    return map[msgNorm] || msg;
+  }
+  showPassword = false;
+  showConfirmPassword = false;
   username = '';
   password = '';
   confirmPassword = '';
+  passwordsMatch = true;
+
+  checkPasswordsMatch() {
+    this.passwordsMatch = this.password === this.confirmPassword;
+  }
   fullName = '';
   email = '';
   phoneNumber = '';
@@ -41,23 +69,38 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     super();
   }
 
+  validateForm(): string | null {
+    if (!this.username || !this.password || !this.confirmPassword || !this.fullName || !this.email || !this.phoneNumber || !this.gender || !this.roleId) {
+      return 'Vui lòng nhập đầy đủ thông tin.';
+    }
+    if (!/^[a-zA-Z0-9_]{4,32}$/.test(this.username)) {
+      return 'Tên đăng nhập chỉ gồm chữ, số, gạch dưới và từ 4-32 ký tự.';
+    }
+    if (!/^.{8,}$/.test(this.password)) {
+      return 'Mật khẩu phải có ít nhất 8 ký tự.';
+    }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}/.test(this.password)) {
+      return 'Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt.';
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(this.email)) {
+      return 'Email không hợp lệ.';
+    }
+    if (!/^\d{10}$/.test(this.phoneNumber)) {
+      return 'Số điện thoại phải có 10 số.';
+    }
+    if (!this.fullName.trim()) {
+      return 'Họ tên không được để trống.';
+    }
+    return null;
+  }
+
   onSubmit() {
     this.setError('');
     this.setSuccess('');
-    if (!this.username || !this.password || !this.confirmPassword || !this.fullName || !this.email || !this.phoneNumber || !this.gender || !this.roleId) {
-      this.toastService.error('Vui lòng nhập đầy đủ thông tin.');
-      return;
-    }
-    if (this.roleId === 4) {
-      this.toastService.error('Không thể tạo tài khoản Guest!');
-      return;
-    }
-    if (this.password.length < 6) {
-      this.toastService.error('Mật khẩu phải có ít nhất 6 ký tự.');
-      return;
-    }
-    if (this.password !== this.confirmPassword) {
-      this.toastService.error('Mật khẩu nhập lại không khớp.');
+    const errMsg = this.validateForm();
+    if (errMsg) {
+      this.toastService.error(this.translateErrorMessage(errMsg));
       return;
     }
     const body = {
@@ -72,33 +115,41 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     };
     this.createAccountService.addUser(body).subscribe({
       next: (res) => {
-        this.toastService.success('Tạo tài khoản thành công!');
-        this.setSuccess('Tạo tài khoản thành công!');
-        this.setError('');
-        // Sau khi tạo thành công, cập nhật lại data hoặc reload danh sách
-        this.username = '';
-        this.password = '';
-        this.confirmPassword = '';
-        this.fullName = '';
-        this.email = '';
-        this.phoneNumber = '';
-        this.gender = 'male';
-        this.roleId = 3;
-        this.cdr.detectChanges();
-        setTimeout(() => {
-          this.router.navigate(['/admin/accounts'], { queryParams: { successMsg: this.successMsg } });
-        }, 800);
+        // Nếu có message từ backend thì coi là lỗi, không có message thì coi là thành công
+        if (res && res.message) {
+          let msg = res.message || 'Tạo tài khoản thất bại!';
+          this.toastService.error(this.translateErrorMessage(msg));
+        } else {
+          this.toastService.success('Tạo tài khoản thành công!');
+          this.setSuccess('Tạo tài khoản thành công!');
+          this.setError('');
+          this.username = '';
+          this.password = '';
+          this.confirmPassword = '';
+          this.fullName = '';
+          this.email = '';
+          this.phoneNumber = '';
+          this.gender = 'male';
+          this.roleId = 3;
+          this.cdr.detectChanges();
+          setTimeout(() => {
+            this.router.navigate(['/admin/accounts'], { queryParams: { successMsg: this.successMsg } });
+          }, 800);
+        }
       },
       error: (err) => {
-        let msg = 'Tạo tài khoản thất bại!';
+        let msg = '';
+        // Ưu tiên lấy message từ backend
         if (err?.error?.message) {
-          msg += ' ' + err.error.message;
+          msg = err.error.message;
         } else if (err?.error && typeof err.error === 'string') {
-          msg += ' ' + err.error;
-        } else if (err?.status) {
-          msg += ` (status: ${err.status})`;
+          msg = err.error;
+        } else if (err?.message) {
+          msg = err.message;
+        } else {
+          msg = 'Tạo tài khoản thất bại!';
         }
-        this.toastService.error(msg);
+        this.toastService.error(this.translateErrorMessage(msg));
       }
     });
   }

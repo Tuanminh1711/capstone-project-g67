@@ -1,5 +1,7 @@
 <div class="welcome-vip-page">
   <h1>Chào mừng bạn đến với VIP!</h1>
   <p>Bạn đã nâng cấp thành công tài khoản VIP. Hãy tận hưởng các đặc quyền dành riêng cho thành viên VIP.</p>
-  <a routerLink="/home" class="btn-home">Về trang chủ</a>
+  <app-top-navigator></app-top-navigator>
+  <!-- Đã xóa nút về trang chủ theo yêu cầu -->
+  <button class="btn-chat-vip" (click)="goToChat()">Vào phòng chat VIP</button>
 </div>

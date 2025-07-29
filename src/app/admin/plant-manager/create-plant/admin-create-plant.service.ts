@@ -41,7 +41,7 @@ export class AdminCreatePlantService {
   }
 
   async createPlant(request: CreatePlantRequest): Promise<CreatePlantResponse> {
-    const url = `${this.baseUrl}/admin/createplants`;
+    const url = `${this.baseUrl}/manager/create-plant`;
     
     const headers = {
       'Content-Type': 'application/json'
@@ -51,7 +51,7 @@ export class AdminCreatePlantService {
   }
 
   async getCategories(): Promise<PlantCategory[]> {
-    // Gọi API thật để lấy danh sách categories
-    return firstValueFrom(this.http.get<PlantCategory[]>('http://localhost:8080/api/plants/categories'));
+    // Gọi API thật để lấy danh sách categories bằng POST
+    return firstValueFrom(this.http.post<PlantCategory[]>('http://localhost:8080/api/plants/categories', {}));
   }
 }

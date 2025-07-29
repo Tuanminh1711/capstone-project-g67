@@ -43,50 +43,6 @@
     </div>
   </section>
 
-  <!-- Controls -->
-  @if (!loading && !error && userPlants.length > 0) {
-    <section class="garden-controls">
-      <div class="controls-wrapper">
-        <div class="view-controls">
-          <button 
-            [class.active]="layout === 'garden'" 
-            (click)="layout = 'garden'"
-            class="control-btn garden-view"
-          >
-            <span class="btn-icon">🌱</span>
-            <span>Khu Vườn</span>
-          </button>
-          <button 
-            [class.active]="layout === 'grid'" 
-            (click)="layout = 'grid'"
-            class="control-btn grid-view"
-          >
-            <span class="btn-icon">⊞</span>
-            <span>Lưới</span>
-          </button>
-          <button 
-            [class.active]="layout === 'list'" 
-            (click)="layout = 'list'"
-            class="control-btn list-view"
-          >
-            <span class="btn-icon">☰</span>
-            <span>Danh sách</span>
-          </button>
-        </div>
-
-        <div class="filter-controls">
-          <button 
-            [class.active]="filter === 'all'" 
-            (click)="filter = 'all'"
-            class="filter-btn"
-          >
-            Tất cả
-          </button>
-        </div>
-      </div>
-    </section>
-  }
-
   <!-- Loading State -->
   @if (loading) {
     <div class="loading-garden">
@@ -177,216 +133,69 @@
   <!-- Plants Display -->
   @if (!loading && !error && userPlants.length > 0) {
     <div class="plants-display">
-      
-      <!-- Garden Layout -->
-      @if (layout === 'garden') {
-        <div class="garden-layout">
-          <div class="garden-ground">
-            <div class="plants-garden">
-              @for (plant of filteredPlants; track plant.userPlantId; let i = $index) {
-                <div 
-                  class="plant-spot"
-                  [style.animation-delay]="i * 0.1 + 's'"
-                >
-                  <div class="plant-container" (click)="viewPlantDetail(plant.userPlantId)">
-                    <div class="plant-image-wrapper">
-                      <div class="plant-image-container">
-                        @if (plant.imageUrl) {
-                          <img 
-                            [src]="plant.imageUrl" 
-                            [alt]="plant.nickname"
-                            class="plant-image"
-                            (error)="$any($event.target).style.display='none'"
-                          />
-                        } @else {
-                          <div class="plant-placeholder">
-                            <i class="fas fa-seedling"></i>
-                          </div>
-                        }
-                      </div>
-                      <div class="plant-glow"></div>
-                    </div>
-                    
-                    <div class="plant-info">
-                      <h3 class="plant-name">{{ plant.nickname || 'Cây không tên' }}</h3>
-                      
-                      <div class="plant-details">
-                        <div class="detail-row">
-                          <span class="detail-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                          </span>
-                          <span class="detail-text">{{ plant.plantLocation || 'Chưa xác định' }}</span>
-                        </div>
-                        <!-- Nhắc nhở chăm sóc: chuyển lên góc trên bên phải -->
-                        <div class="reminder-floating-btns">
-                          <button type="button" class="reminder-icon-btn" [class.active]="plant.reminderEnabled" (click)="toggleAllReminders(plant); $event.stopPropagation()" title="{{ plant.reminderEnabled ? 'Tắt tất cả nhắc nhở' : 'Bật tất cả nhắc nhở' }}">
-                            <i class="fas" [ngClass]="plant.reminderEnabled ? 'fa-bell' : 'fa-bell-slash'"></i>
-                          </button>
-                          <button type="button" class="reminder-icon-btn outline" (click)="openReminderTypeDialog(plant); $event.stopPropagation()" title="Tuỳ chỉnh nhắc nhở">
-                            <i class="fas fa-sliders-h"></i>
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div class="plant-actions">
-                        <button class="action-btn care-btn" (click)="carePlant(plant.plantId); $event.stopPropagation()">
-                          <i class="fas fa-heart"></i>
-                          <span>Chăm sóc</span>
-                        </button>
-                        <button class="action-btn edit-btn" (click)="editPlant(plant.plantId, plant.nickname); $event.stopPropagation()">
-                          <i class="fas fa-edit"></i>
-                          <span>Sửa</span>
-                        </button>
-                        <button class="action-btn remove-btn" (click)="removePlantFromCollection(plant.plantId); $event.stopPropagation()">
-                          <i class="fas fa-trash"></i>
-                          <span>Xóa</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Grid Layout -->
-      @if (layout === 'grid') {
-        <div class="grid-layout">
-          <div class="plants-grid">
-            @for (plant of filteredPlants; track plant.userPlantId; let i = $index) {
+      <div class="garden-layout">
+        <div class="garden-ground">
+          <div class="plants-garden">
+            @for (plant of userPlants; track plant.userPlantId; let i = $index) {
               <div 
-                class="plant-card"
+                class="plant-spot"
                 [style.animation-delay]="i * 0.1 + 's'"
               >
-                <div class="card-header">
-                  <div class="plant-image-container">
-                    @if (plant.imageUrl) {
+                <div class="plant-container" (click)="viewPlantDetail(plant.userPlantId)">
+                  <div class="plant-image-wrapper">
+                    <div class="plant-image-container">
                       <img 
-                        [src]="plant.imageUrl" 
+                        [src]="plant.imageUrl ? plant.imageUrl : '/assets/image/logo.png'" 
                         [alt]="plant.nickname"
                         class="plant-image"
-                        (error)="$any($event.target).style.display='none'"
-                        (click)="viewPlantDetail(plant.userPlantId)"
-                        style="cursor: pointer;"
+                        (error)="$any($event.target).src='/assets/image/logo.png'"
                       />
-                    } @else {
-                      <div class="plant-placeholder" (click)="viewPlantDetail(plant.userPlantId)" style="cursor: pointer;">
-                        <div class="placeholder-icon">
-                          <i class="fas fa-seedling"></i>
-                        </div>
+                    </div>
+                    <div class="plant-glow"></div>
+                  </div>
+                  
+                  <div class="plant-info">
+                    <h3 class="plant-name">{{ plant.nickname || 'Cây không tên' }}</h3>
+                    
+                    <div class="plant-details">
+                      <div class="detail-row">
+                        <span class="detail-icon">
+                          <i class="fas fa-map-marker-alt"></i>
+                        </span>
+                        <span class="detail-text">{{ plant.plantLocation || 'Chưa xác định' }}</span>
                       </div>
-                    }
-                  </div>
-                </div>
-                
-                <div class="card-body" (click)="viewPlantDetail(plant.userPlantId)" style="cursor: pointer;">
-                  <h3 class="plant-title">{{ plant.nickname || 'Cây không tên' }}</h3>
-                  
-                  <div class="plant-meta">
-                    <div class="meta-item">
-                      <span class="meta-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                      </span>
-                      <span class="meta-text">{{ plant.plantLocation || 'Chưa xác định' }}</span>
+                      <!-- Nhắc nhở chăm sóc: chuyển lên góc trên bên phải -->
+                      <div class="reminder-floating-btns">
+                        <button type="button" class="reminder-icon-btn" [class.active]="plant.reminderEnabled" (click)="toggleAllReminders(plant); $event.stopPropagation()" title="{{ plant.reminderEnabled ? 'Tắt tất cả nhắc nhở' : 'Bật tất cả nhắc nhở' }}">
+                          <i class="fas" [ngClass]="plant.reminderEnabled ? 'fa-bell' : 'fa-bell-slash'"></i>
+                        </button>
+                        <button type="button" class="reminder-icon-btn outline" (click)="openReminderTypeDialog(plant); $event.stopPropagation()" title="Tuỳ chỉnh nhắc nhở">
+                          <i class="fas fa-sliders-h"></i>
+                        </button>
+                      </div>
                     </div>
-                    <div class="reminder-toggle-row">
-                      <span class="reminder-label">Nhắc nhở:</span>
-                      <button type="button" class="reminder-toggle-btn" [class.active]="plant.reminderEnabled" (click)="toggleAllReminders(plant); $event.stopPropagation()">
-                        {{ plant.reminderEnabled ? 'Đang bật tất cả' : 'Đang tắt tất cả' }}
+                    
+                    <div class="plant-actions">
+                      <button class="action-btn care-btn" (click)="carePlant(plant.plantId); $event.stopPropagation()">
+                        <i class="fas fa-heart"></i>
+                        <span>Chăm sóc</span>
                       </button>
-                      <button type="button" class="reminder-type-btn" (click)="openReminderTypeDialog(plant); $event.stopPropagation()">
-                        Tuỳ chỉnh từng loại
+                      <button class="action-btn edit-btn" (click)="editPlant(plant.plantId, plant.nickname); $event.stopPropagation()">
+                        <i class="fas fa-edit"></i>
+                        <span>Sửa</span>
+                      </button>
+                      <button class="action-btn remove-btn" (click)="removePlantFromCollection(plant.plantId); $event.stopPropagation()">
+                        <i class="fas fa-trash"></i>
+                        <span>Xóa</span>
                       </button>
                     </div>
                   </div>
-                </div>
-                
-                <div class="card-footer">
-                  <button 
-                    class="card-btn secondary"
-                    (click)="editPlant(plant.plantId, plant.nickname)"
-                  >
-                    <i class="fas fa-edit"></i>
-                    <span>Sửa</span>
-                  </button>
-                  <button 
-                    class="card-btn danger"
-                    (click)="removePlantFromCollection(plant.plantId)"
-                  >
-                    <i class="fas fa-trash"></i>
-                    <span>Xóa</span>
-                  </button>
                 </div>
               </div>
             }
           </div>
         </div>
-      }
-
-      <!-- List Layout -->
-      @if (layout === 'list') {
-        <div class="list-layout">
-          <div class="plants-list">
-            @for (plant of filteredPlants; track plant.userPlantId; let i = $index) {
-              <div 
-                class="plant-list-item"
-                [style.animation-delay]="i * 0.05 + 's'"
-              >
-                <div class="list-item-image">
-                  <img 
-                    src="/assets/image/logo.png" 
-                    [alt]="plant.nickname"
-                  />
-                </div>
-                
-                <div class="list-item-content" (click)="viewPlantDetail(plant.userPlantId)" style="cursor: pointer;">
-                  <div class="content-header">
-                    <h3 class="plant-name">{{ plant.nickname }}</h3>
-                    <div class="plant-age">Đã trồng</div>
-                  </div>
-                  
-                  <div class="content-details">
-                    <div class="detail-group">
-                      <span class="detail-icon">📍</span>
-                      <span>{{ plant.plantLocation }}</span>
-                    </div>
-                    <div class="detail-group">
-                      <span class="detail-icon">📅</span>
-                      <span>Được thêm vào vườn</span>
-                    </div>
-                    <div class="reminder-toggle-row">
-                      <span class="reminder-label">Nhắc nhở:</span>
-                      <button type="button" class="reminder-toggle-btn" [class.active]="plant.reminderEnabled" (click)="toggleAllReminders(plant); $event.stopPropagation()">
-                        {{ plant.reminderEnabled ? 'Đang bật tất cả' : 'Đang tắt tất cả' }}
-                      </button>
-                      <button type="button" class="reminder-type-btn" (click)="openReminderTypeDialog(plant); $event.stopPropagation()">
-                        Tuỳ chỉnh từng loại
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="list-item-actions">
-                  <button 
-                    class="list-action-btn edit"
-                    (click)="editPlant(plant.plantId, plant.nickname)"
-                  >
-                    <span>✏️</span> Sửa
-                  </button>
-                  <button 
-                    class="list-action-btn remove"
-                    (click)="removePlantFromCollection(plant.plantId)"
-                  >
-                    <span>🗑️</span> Xóa
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      }
+      </div>
     </div>
   }
 </div>

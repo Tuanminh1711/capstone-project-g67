@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CommonModule } from '@angular/common';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, filter } from 'rxjs';
@@ -30,7 +31,7 @@ interface Plant {
 @Component({
   selector: 'app-plant-info',
   standalone: true,
-  imports: [TopNavigatorComponent, CommonModule, FormsModule],
+  imports: [TopNavigatorComponent, CommonModule, FormsModule, MatExpansionModule],
   templateUrl: './plant-info.html',
   styleUrl: './plant-info.scss'
 })
@@ -64,6 +65,10 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     currentKeyword: ''
   };
 
+  trackByCatId(index: number, cat: { id: number; name: string; description: string }) {
+    return cat.id;
+  }
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -81,15 +86,25 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.fetchPlants(0, '');
     this.loadCategories();
-
+    // Restore filter state from localStorage
+    let pageToLoad = 0;
     try {
       const savedCatId = localStorage.getItem('selectedCategoryId');
-      if (savedCatId) {
-        this.selectedCategoryId = Number(savedCatId);
+      if (savedCatId) this.selectedCategoryId = Number(savedCatId);
+      const savedLight = localStorage.getItem('selectedLightRequirement');
+      if (savedLight) this.selectedLightRequirement = savedLight;
+      const savedWater = localStorage.getItem('selectedWaterRequirement');
+      if (savedWater) this.selectedWaterRequirement = savedWater;
+      const savedDiff = localStorage.getItem('selectedCareDifficulty');
+      if (savedDiff) this.selectedCareDifficulty = savedDiff;
+      const savedPage = localStorage.getItem('plantInfoCurrentPage');
+      if (savedPage) {
+        pageToLoad = Number(savedPage) || 0;
+        localStorage.removeItem('plantInfoCurrentPage');
       }
     } catch {}
+    this.fetchPlants(pageToLoad, this.searchText.trim());
   }
 
   get totalPages() {
@@ -155,7 +170,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
         if (!Array.isArray(data?.plants)) {
           this.resetResults();
           this.plantsSubject.next([]);
-          setTimeout(() => this.cdr.detectChanges());
+          this.cdr.markForCheck();
           return;
         }
 
@@ -167,15 +182,16 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
           pageSize: data.pageSize ?? this.pageState.pageSize
         };
 
-        this.plantsSubject.next(data.plants);
-        this.plantDataService.setPlantsList(data.plants);
-        setTimeout(() => this.cdr.detectChanges());
+        // Luôn phát ra mảng mới để async pipe nhận biết thay đổi
+        this.plantsSubject.next([...data.plants]);
+        this.plantDataService.setPlantsList([...data.plants]);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.error = 'Không thể tải dữ liệu cây.';
         this.plantsSubject.next([]);
-        setTimeout(() => this.cdr.detectChanges());
+        this.cdr.markForCheck();
       }
     });
   }
@@ -219,6 +235,10 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
       this.toast.show('Cây này đang bị khóa để kiểm tra bởi hệ thống', 'warning');
       return;
     }
+    // Lưu lại trang hiện tại trước khi chuyển sang detail
+    try {
+      localStorage.setItem('plantInfoCurrentPage', String(this.pageState.currentPage));
+    } catch {}
     this.plantDataService.setSelectedPlant(selectedPlant);
     this.router.navigate(['/plant-info/detail', plantId]);
   }
@@ -258,7 +278,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     try {
       localStorage.setItem('selectedCategoryId', String(categoryId));
     } catch {}
-    this.fetchPlants(0, '');
+    this.fetchPlants(0, this.searchText.trim());
     setTimeout(() => this.cdr.detectChanges());
   }
 
@@ -268,24 +288,36 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     try {
       localStorage.removeItem('selectedCategoryId');
     } catch {}
-    this.fetchPlants(0, '');
+    this.fetchPlants(0, this.searchText.trim());
     setTimeout(() => this.cdr.detectChanges());
   }
 
   handleLightFilter(value: string | null): void {
     this.selectedLightRequirement = value;
+    try {
+      if (value) localStorage.setItem('selectedLightRequirement', value);
+      else localStorage.removeItem('selectedLightRequirement');
+    } catch {}
     this.fetchPlants(0, this.searchText.trim());
     setTimeout(() => this.cdr.detectChanges());
   }
 
   handleWaterFilter(value: string | null): void {
     this.selectedWaterRequirement = value;
+    try {
+      if (value) localStorage.setItem('selectedWaterRequirement', value);
+      else localStorage.removeItem('selectedWaterRequirement');
+    } catch {}
     this.fetchPlants(0, this.searchText.trim());
     setTimeout(() => this.cdr.detectChanges());
   }
 
   handleDifficultyFilter(value: string | null): void {
     this.selectedCareDifficulty = value;
+    try {
+      if (value) localStorage.setItem('selectedCareDifficulty', value);
+      else localStorage.removeItem('selectedCareDifficulty');
+    } catch {}
     this.fetchPlants(0, this.searchText.trim());
     setTimeout(() => this.cdr.detectChanges());
   }

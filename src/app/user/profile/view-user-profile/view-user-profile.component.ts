@@ -19,6 +19,7 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
   // Property trực tiếp để binding
   userProfile: UserProfile | null = null;
   avatarBaseUrl = '/avatars/'; // Adjust this if your backend is on a different origin
+  userRole: string | null = null;
   /**
    * Trả về URL ảnh đại diện dựa trên filename từ userProfile.avatar
    * Nếu không có avatar, trả về ảnh mặc định
@@ -53,6 +54,8 @@ export class ViewUserProfileComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
+    // Lấy role từ token để hiển thị badge
+    this.userRole = this.jwtUserUtil.getRoleFromToken();
     // Load profile immediately on component init
     this.loadUserProfile();
   }

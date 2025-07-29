@@ -35,18 +35,9 @@
     <div class="plant-info">
       <div class="info-row"><b>Ngày trồng:</b> <span>{{ plant.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span></div>
       <div class="info-row"><b>Vị trí:</b> <span>{{ plant.locationInHouse || 'Chưa cập nhật' }}</span></div>
-      <div class="info-row"><b>Nhắc nhở:</b> <span [class.enabled]="plant.reminderEnabled">{{ plant.reminderEnabled ? 'Bật' : 'Tắt' }}</span></div>
+      <!-- <div class="info-row"><b>Nhắc nhở:</b> <span [class.enabled]="plant.reminderEnabled">{{ plant.reminderEnabled ? 'Bật' : 'Tắt' }}</span></div> -->
     </div>
     
-    <div class="plant-images-detail" *ngIf="plant.images && plant.images.length">
-      <h4>Ảnh & mô tả:</h4>
-      <div class="image-detail-list">
-        <div class="image-detail-item" *ngFor="let img of plant.images">
-          <img [src]="img.imageUrl" alt="Ảnh" class="plant-img-detail" 
-               (error)="onImageError($event)" />
-          <p class="img-desc">{{ img.description }}</p>
-        </div>
-      </div>
-    </div>
+  
   </ng-container>
 </div>

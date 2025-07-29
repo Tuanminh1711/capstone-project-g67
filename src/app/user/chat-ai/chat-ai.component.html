@@ -1,0 +1,31 @@
+<div *ngIf="isLoggedIn; else notLoggedIn" class="ai-chat-container">
+  <div class="chat-header">
+    <h2>Chat với AI</h2>
+    <button class="chat-close-btn" type="button" (click)="$event.preventDefault(); closeDialog()" aria-label="Đóng">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="chat-history">
+    <div *ngFor="let msg of messages" [ngClass]="{'user-msg': msg.sender === 'user', 'ai-msg': msg.sender === 'ai'}" class="chat-message">
+      <div class="chat-bubble">
+        <span class="chat-meta">{{ msg.sender === 'user' ? 'Bạn' : 'AI' }}</span>
+        <span class="chat-content">{{ msg.content }}</span>
+        <span class="chat-time">{{ msg.timestamp | date:'short' }}</span>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="loading" class="chat-loading">AI đang trả lời...</div>
+  <div *ngIf="error" class="chat-error">{{ error }}</div>
+  <form class="chat-input-row" (ngSubmit)="sendMessage()">
+    <input [(ngModel)]="newMessage" name="newMessage" placeholder="Nhập tin nhắn cho AI..." autocomplete="off" />
+    <button type="submit" [disabled]="!newMessage.trim() || loading">Gửi</button>
+  </form>
+</div>
+<ng-template #notLoggedIn>
+  <div class="ai-chat-container" style="display: flex; align-items: center; justify-content: center; min-height: 200px;">
+    <div style="text-align: center; width: 100%; color: #888; font-size: 1.1rem;">
+      Vui lòng đăng nhập để sử dụng Chat AI.<br />
+      <button type="button" class="chat-close-btn" (click)="closeDialog()">Đóng</button>
+    </div>
+  </div>
+</ng-template>

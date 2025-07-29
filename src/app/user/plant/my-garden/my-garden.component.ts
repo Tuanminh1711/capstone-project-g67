@@ -25,8 +25,8 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
-  layout: 'grid' | 'list' | 'garden' = 'garden';
-  filter: 'all' | 'reminder' | 'no-reminder' | 'recent' = 'all';
+  // Chỉ còn layout garden, không cần biến layout nữa
+  // Không cần filter nữa
   
   private destroy$ = new Subject<void>();
 
@@ -118,18 +118,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  get filteredPlants(): UserPlant[] {
-    switch (this.filter) {
-      case 'reminder':
-        return this.userPlants.filter(p => p.reminderEnabled);
-      case 'no-reminder':
-        return this.userPlants.filter(p => !p.reminderEnabled);
-      case 'recent':
-        return this.userPlants; // Có thể bổ sung trường plantedDate nếu backend hỗ trợ
-      default:
-        return this.userPlants;
-    }
-  }
 
   private checkAuthenticationSafely(): boolean {
     try {

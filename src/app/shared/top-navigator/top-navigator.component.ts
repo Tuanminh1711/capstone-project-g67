@@ -24,6 +24,10 @@ export class TopNavigatorComponent implements OnInit {
   showMobileMenu = false;
   isSupportDropdownOpen = false;
 
+ viewActivityLogs(): void {
+    this.closeUserMenu();
+    this.router.navigate(['/user/activity-logs']);
+  }
   private dialog = inject(MatDialog);
   private supportService = inject(SupportService);
 

@@ -1,9 +1,18 @@
 import { Component } from '@angular/core';
+import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-welcome-vip',
   standalone: true,
   templateUrl: './welcome-vip.component.html',
-  styleUrls: ['./welcome-vip.component.scss']
+  styleUrls: ['./welcome-vip.component.scss'],
+  imports: [TopNavigatorComponent]
 })
-export class WelcomeVipComponent {}
+export class WelcomeVipComponent {
+  constructor(private router: Router) {}
+
+  goToChat() {
+    this.router.navigate(['/vip/chat']);
+  }
+}

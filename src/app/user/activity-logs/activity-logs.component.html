@@ -1,0 +1,37 @@
+<app-top-navigator></app-top-navigator>
+<div class="activity-logs-page">
+  <h2>Nhật ký hoạt động</h2>
+  @if (loading) {
+    <div class="loading">Đang tải...</div>
+  }
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+  @if (!loading && !error) {
+    <div class="logs-table-wrapper">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>Hành động</th>
+            <th>Thời gian</th>
+            <th>Mô tả</th>
+            <th>Địa chỉ IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs; track log) {
+            <tr>
+              <td class="log-action">{{ translateAction(log.action) }}</td>
+              <td class="log-time">{{ log.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="log-detail">{{ translateDescription(log) }}</td>
+              <td class="log-ip">{{ log.ipAddress }}</td>
+            </tr>
+          }
+          @if (logs.length === 0) {
+            <tr><td colspan="4" class="empty">Không có nhật ký nào.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

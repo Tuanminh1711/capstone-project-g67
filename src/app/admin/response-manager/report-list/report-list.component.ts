@@ -49,8 +49,8 @@ export class ReportListComponent implements OnInit, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc';
 
   // Giả lập thông tin đăng nhập và role
-  isLoggedIn = true; // Đổi thành false để test chuyển hướng
-  userRole: 'admin' | 'staff' | 'user' = 'admin'; // Đổi thành 'user' để test chuyển hướng
+  isLoggedIn = true;
+  userRole: 'admin' | 'staff' | 'user' = 'admin';
 
   private toast = inject(ToastService);
   private confirmationDialog = inject(ConfirmationDialogService);
@@ -61,9 +61,13 @@ export class ReportListComponent implements OnInit, OnDestroy {
   constructor() {}
 
   ngOnInit() {
-    // Kiểm tra phân quyền
+    // Kiểm tra phân quyền thực tế từ JWT
+    const jwtUtil = this.jwtUserUtil;
+    const role = jwtUtil.getRoleFromToken();
+    this.isLoggedIn = !!role;
+    this.userRole = (role || '').toLowerCase() as any;
     if (!this.isLoggedIn || (this.userRole !== 'admin' && this.userRole !== 'staff')) {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/login-admin']);
       return;
     }
     this.loadReports();

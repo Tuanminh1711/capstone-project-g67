@@ -10,6 +10,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
 
+
+
 @Component({
   selector: 'app-plant-care-reminder-setup',
   standalone: true,
@@ -62,8 +64,11 @@ export class PlantCareReminderSetupComponent {
   get hasFertilizerReminder(): boolean {
     return this.schedules.controls.some(s => s.get('careTypeId')?.value === 2);
   }
-  get hasPestReminder(): boolean {
+  get hasPruneReminder(): boolean {
     return this.schedules.controls.some(s => s.get('careTypeId')?.value === 3);
+  }
+  get hasSprayReminder(): boolean {
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 4);
   }
 
   get schedules() {

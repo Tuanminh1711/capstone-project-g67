@@ -1,0 +1,53 @@
+.activity-logs-page {
+  max-width: 1100px;
+  margin: 32px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+  padding: 32px 28px;
+}
+h2 {
+  margin-bottom: 24px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #43a047;
+}
+.logs-table-wrapper {
+  overflow-x: auto;
+}
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  min-width: 900px;
+}
+.logs-table th, .logs-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+.logs-table th {
+  background: #e8f5e9;
+  font-weight: 600;
+  color: #388e3c;
+}
+.log-action {
+  font-weight: 600;
+  color: #388e3c;
+}
+.log-time {
+  color: #888;
+  font-size: 14px;
+}
+.log-detail {
+  color: #444;
+}
+.log-ip {
+  color: #888;
+  font-size: 13px;
+}
+.empty {
+  color: #bdbdbd;
+  text-align: center;
+  margin: 24px 0;
+}

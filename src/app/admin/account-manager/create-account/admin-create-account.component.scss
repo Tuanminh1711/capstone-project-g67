@@ -1,9 +1,34 @@
-.admin-create-account-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #f1f5f9;
+.password-group {
+  align-items: flex-start;
 }
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.password-input-wrapper input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 38px;
+}
+.toggle-password-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  width: 28px;
+  z-index: 2;
+}
+// ...existing code...
+// Đã có style position absolute ở trên, không cần lặp lại block này nữa
 .admin-create-account-main {
   flex: 1 1 auto;
   display: flex;

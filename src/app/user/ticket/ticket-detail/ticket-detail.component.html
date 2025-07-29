@@ -1,0 +1,86 @@
+@if (ticket) {
+  <div class="ticket-detail-card modern-card">
+    <div class="ticket-header">
+      <button class="back-btn-mini" (click)="onClose()" title="Quay lại"><i class="fas fa-arrow-left"></i></button>
+      <div class="header-title-group">
+        <h2 class="ticket-title">{{ ticket.title }}</h2>
+        <span class="ticket-status status-{{ ticket.status.toLowerCase() }}">
+          {{
+            ticket.status === 'OPEN' ? 'Đang mở' :
+            ticket.status === 'CLOSED' ? 'Đã đóng' :
+            ticket.status === 'CLAIMED' ? 'Đã nhận' :
+            ticket.status === 'IN_PROGRESS' ? 'Đang xử lý' :
+            ticket.status
+          }}
+        </span>
+      </div>
+    </div>
+    <div class="ticket-section info-section">
+      <div class="info-row">
+        <span class="info-label">Mô tả:</span>
+        <span class="info-value">{{ ticket.description }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Người gửi:</span>
+        <span class="info-value">{{ ticket.userName }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Ngày tạo:</span>
+        <span class="info-value">{{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      @if (ticket.claimedByUserName) {
+        <div class="info-row">
+          <span class="info-label">Người nhận:</span>
+          <span class="info-value">{{ ticket.claimedByUserName }}</span>
+        </div>
+      }
+      @if (ticket.claimedAt) {
+        <div class="info-row">
+          <span class="info-label">Thời gian nhận:</span>
+          <span class="info-value">{{ ticket.claimedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      }
+      @if (ticket.imageUrl) {
+        <div class="info-row">
+          <span class="info-label">Ảnh đính kèm:</span>
+          <span class="info-value"><img [src]="ticket.imageUrl" alt="ticket image" class="ticket-image"></span>
+        </div>
+      }
+    </div>
+    <div class="ticket-section response-section">
+      <h3><i class="fas fa-comments"></i> Phản hồi</h3>
+      @if (ticket.responses?.length) {
+        @for (resp of ticket.responses; track resp) {
+          <div class="ticket-response-item">
+            <div class="response-header">
+              <span class="responder-name"><b>{{ resp.responderName }}</b> <span class="role-badge">{{ resp.responderRole }}</span></span>
+              <span class="response-date">{{ resp.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="response-content">{{ resp.content }}</div>
+          </div>
+        }
+      }
+      @if (!ticket.responses?.length) {
+        <div class="empty">Chưa có phản hồi nào.</div>
+      }
+    </div>
+    <div class="ticket-section log-section">
+      <h3><i class="fas fa-history"></i> Lịch sử thao tác</h3>
+      @if (ticket.logs?.length) {
+        <ul class="log-list">
+          @for (log of ticket.logs; track log) {
+            <li>
+              <b>{{ log.action }}</b> bởi {{ log.userName }} <span class="log-date">({{ log.createdAt | date:'dd/MM/yyyy HH:mm' }})</span>
+              @if (log.note) {
+                <span class="log-note">: {{ log.note }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+      @if (!ticket.logs?.length) {
+        <div class="empty">Chưa có lịch sử thao tác.</div>
+      }
+    </div>
+  </div>
+}

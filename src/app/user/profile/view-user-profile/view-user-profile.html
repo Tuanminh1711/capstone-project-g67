@@ -34,8 +34,11 @@
               </ng-template>
             </div>
             <div class="profile-badges">
-              <span class="badge verified">✓ Đã xác thực</span>
-              <span class="badge member">👤 Thành viên</span>
+              <ng-container [ngSwitch]="userRole">
+                <span *ngSwitchCase="'VIP'" class="badge vip">🌟 Thành viên VIP</span>
+                <span *ngSwitchCase="'MEMBER'" class="badge member">👤 Thành viên</span>
+                <span *ngSwitchDefault class="badge member">👤 Người dùng</span>
+              </ng-container>
             </div>
           </div>
         </div>

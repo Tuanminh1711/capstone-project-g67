@@ -36,3 +36,20 @@
 .btn-home:hover {
   background: linear-gradient(135deg, #d35400, #e67e22);
 }
+
+.btn-chat-vip {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #4a7c35, #a8e063);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 10px;
+  text-decoration: none;
+  margin-left: 16px;
+  transition: background 0.3s;
+}
+
+.btn-chat-vip:hover {
+  background: linear-gradient(135deg, #388e3c, #4a7c35);
+}

@@ -42,8 +42,8 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
 
   careDifficulties = [
     { value: 'EASY', label: 'Dễ chăm sóc' },
-    { value: 'MEDIUM', label: 'Trung bình' },
-    { value: 'HARD', label: 'Khó chăm sóc' }
+    { value: 'MODERATE', label: 'Trung bình' },
+    { value: 'DIFFICULT', label: 'Khó chăm sóc' }
   ];
 
   constructor(
@@ -94,20 +94,16 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
           this.categories = [];
         }
         this.isLoadingCategories = false;
-        // Đẩy enable select sang tick tiếp theo để tránh lỗi ExpressionChangedAfterItHasBeenCheckedError
-        setTimeout(() => {
-          this.createPlantForm.get('categoryId')?.enable();
-        });
+        this.createPlantForm.get('categoryId')?.enable();
+        this.cdr.detectChanges();
         console.info('Loaded', this.categories.length, 'categories successfully');
       },
       error: (error) => {
         console.error('Error loading categories:', error);
         this.toastService.error('Không thể tải danh mục cây. Vui lòng thử lại sau.');
         this.isLoadingCategories = false;
-        // Đẩy enable select sang tick tiếp theo để tránh lỗi ExpressionChangedAfterItHasBeenCheckedError
-        setTimeout(() => {
-          this.createPlantForm.get('categoryId')?.enable();
-        });
+        this.createPlantForm.get('categoryId')?.enable();
+        this.cdr.detectChanges();
       }
     });
     this.subscriptions.add(sub);
