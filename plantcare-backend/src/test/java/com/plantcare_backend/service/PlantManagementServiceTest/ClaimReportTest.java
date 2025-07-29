@@ -107,4 +107,18 @@ public class ClaimReportTest {
         assertEquals("Report đã được nhận sử lý bởi người khác!", ex.getMessage());
         System.out.println("Test 'claimReport_alreadyClaimed_shouldThrow' thành công");
     }
+
+    @Test
+    void claimReport_statusNotPending_shouldThrow() {
+        plantReport.setStatus(PlantReport.ReportStatus.APPROVED);
+
+        when(plantReportRepository.findById(1L)).thenReturn(Optional.of(plantReport));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> plantManagementService.claimReport(1L, 10));
+
+        assertEquals("Chỉ có thể nhận xử lý report đang chờ xử lý (PENDING)", ex.getMessage());
+        System.out.println("Test 'claimReport_statusNotPending_shouldThrow' thành công");
+    }
+
 }
