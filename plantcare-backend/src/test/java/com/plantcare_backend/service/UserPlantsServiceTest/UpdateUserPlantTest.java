@@ -1,4 +1,4 @@
 package com.plantcare_backend.service.UserPlantsServiceTest;
 
-public class getAllUserPlants {
+public class UpdateUserPlantTest {
 }

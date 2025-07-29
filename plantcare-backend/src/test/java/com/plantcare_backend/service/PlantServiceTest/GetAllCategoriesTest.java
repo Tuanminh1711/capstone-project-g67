@@ -2,7 +2,6 @@ package com.plantcare_backend.service.PlantServiceTest;
 
 import com.plantcare_backend.model.PlantCategory;
 import com.plantcare_backend.repository.PlantCategoryRepository;
-import com.plantcare_backend.service.impl.PlantManagementServiceImpl;
 import com.plantcare_backend.service.impl.PlantServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
