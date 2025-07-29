@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.plantcare_backend.model.PlantCategory;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.service.PlantService;
+import com.plantcare_backend.service.impl.PlantServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +29,7 @@ class PlantCategoryServiceTest {
     private PlantCategoryRepository categoryRepository;
 
     @InjectMocks
-    private PlantService plantCategoryService;
+    private PlantServiceImpl plantCategoryService;
 
     private ObjectMapper objectMapper;
 
@@ -61,4 +62,24 @@ class PlantCategoryServiceTest {
         // Verify repository được gọi đúng 1 lần
         verify(categoryRepository, times(1)).findAll();
     }
+    @Test
+    void testGetAllCategories_WhenNoCategoriesInDB_ReturnsEmptyList() throws JsonProcessingException {
+        // Arrange: giả lập repository trả về danh sách rỗng
+        when(categoryRepository.findAll()).thenReturn(List.of());
+
+        // Act
+        List<PlantCategory> result = plantCategoryService.getAllCategories();
+
+        // Assert
+        assertNotNull(result, "Kết quả không được null");
+        assertTrue(result.isEmpty(), "Danh sách trả về phải rỗng");
+
+        // In kết quả (nếu cần log)
+        String jsonResult = objectMapper.writeValueAsString(result);
+        System.out.println("Kết quả khi DB không có category:\n" + jsonResult);
+
+        // Verify repository được gọi đúng 1 lần
+        verify(categoryRepository, times(1)).findAll();
+    }
+
 }
