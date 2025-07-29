@@ -6,5 +6,5 @@ import java.math.BigDecimal;
 
 public interface VipOrderService {
     VipOrder createOrder(Integer userId, BigDecimal amount);
-    void handlePaymentSuccess(Integer orderId);
+    VipOrder handlePaymentSuccess(Integer orderId);
 }
