@@ -22,9 +22,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user-plants")
@@ -109,16 +119,15 @@ public class UserPlantsController {
 
     @PostMapping("/add")
     public ResponseData<?> addUserPlant(
-            @RequestBody AddUserPlantRequestDTO requestDTO,
-            HttpServletRequest request) {
+            @ModelAttribute AddUserPlantRequestDTO requestDTO,
+            HttpServletRequest request,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
         try {
-            userPlantsService.addUserPlant(requestDTO, userId);
-
-            // Log the activity
+            userPlantsService.addUserPlant(requestDTO, images, userId);
             activityLogService.logActivity(userId.intValue(), "ADD_USER_PLANT",
                     "Added plant to user collection: " + requestDTO.getPlantId(), request);
 
@@ -126,6 +135,24 @@ public class UserPlantsController {
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(),
                     "Failed to add plant to user collection: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/user-plants/{filename}")
+    public ResponseEntity<Resource> getUserPlantImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get("uploads/user-plants/").resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
         }
     }
 

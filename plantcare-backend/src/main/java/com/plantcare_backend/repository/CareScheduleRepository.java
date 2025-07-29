@@ -15,23 +15,24 @@ import java.util.Optional;
 
 @Repository
 public interface CareScheduleRepository extends JpaRepository<CareSchedule, Long> {
-    List<CareSchedule> findByUserPlant_UserPlantId(Long userPlantId);
+  List<CareSchedule> findByUserPlant_UserPlantId(Long userPlantId);
 
-    Optional<CareSchedule> findByUserPlant_UserPlantIdAndCareType_CareTypeId(Long userPlantId, Long careTypeId);
+  Optional<CareSchedule> findByUserPlant_UserPlantIdAndCareType_CareTypeId(Long userPlantId, Long careTypeId);
 
-    @Query("""
-                SELECT cs FROM CareSchedule cs
-                JOIN FETCH cs.userPlant up
-                JOIN FETCH cs.careType ct
-                WHERE cs.reminderEnabled = true
-                  AND cs.nextCareDate <= :date
-                  AND cs.reminderTime = :reminderTime
-            """)
-    List<CareSchedule> findDueReminders(@Param("date") Date date, @Param("reminderTime") LocalTime reminderTime);
+  @Query("""
+          SELECT cs FROM CareSchedule cs
+          JOIN FETCH cs.userPlant up
+          JOIN FETCH cs.careType ct
+          WHERE cs.reminderEnabled = true
+            AND cs.nextCareDate <= :date
+            AND cs.reminderTime = :reminderTime
+            AND cs.nextCareDate IS NOT NULL
+      """)
+  List<CareSchedule> findDueReminders(@Param("date") Date date, @Param("reminderTime") LocalTime reminderTime);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE CareSchedule cs SET cs.lastCareDate = :lastCareDate WHERE cs.userPlant.userPlantId = :userPlantId")
-    void updateLastCareDateByUserPlantId(@Param("userPlantId") Long userPlantId,
-                                         @Param("lastCareDate") Date lastCareDate);
+  @Modifying
+  @Transactional
+  @Query("UPDATE CareSchedule cs SET cs.lastCareDate = :lastCareDate WHERE cs.userPlant.userPlantId = :userPlantId")
+  void updateLastCareDateByUserPlantId(@Param("userPlantId") Long userPlantId,
+      @Param("lastCareDate") Date lastCareDate);
 }

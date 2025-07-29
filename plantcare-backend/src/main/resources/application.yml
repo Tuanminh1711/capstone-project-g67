@@ -16,6 +16,22 @@ spring:
       file-size-threshold: 2KB
       location: ${java.io.tmpdir}
 
+# PlantCare Configuration
+plantcare:
+  base-url: ${PLANTCARE_BASE_URL:http://localhost:4200}
+  scheduler:
+    cron: ${PLANTCARE_SCHEDULER_CRON:0 0 8 * * ?}
+    timezone: ${PLANTCARE_SCHEDULER_TIMEZONE:Asia/Ho_Chi_Minh}
+    batch-size: ${PLANTCARE_BATCH_SIZE:100}
+  email:
+    retry-attempts: ${PLANTCARE_EMAIL_RETRY_ATTEMPTS:3}
+    retry-delay: ${PLANTCARE_EMAIL_RETRY_DELAY:1000}
+  default-schedules:
+    watering:
+      frequency-days: ${PLANTCARE_DEFAULT_WATERING_DAYS:3}
+    fertilizing:
+      frequency-days: ${PLANTCARE_DEFAULT_FERTILIZING_DAYS:30}
+
 # Health check
 management:
   endpoints:
