@@ -74,6 +74,20 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         plants.setStatus(Plants.PlantStatus.ACTIVE);
         plants.setCreatedBy(userId);
         Plants saved = plantRepository.save(plants);
+        if (createPlantManagementRequestDTO.getImageUrls() != null && !createPlantManagementRequestDTO.getImageUrls().isEmpty()) {
+            List<PlantImage> images = new ArrayList<>();
+            for (int i = 0; i < createPlantManagementRequestDTO.getImageUrls().size(); i++) {
+                String url = createPlantManagementRequestDTO.getImageUrls().get(i);
+                PlantImage image = PlantImage.builder()
+                        .plant(saved) // Dùng saved thay vì plants
+                        .imageUrl(url)
+                        .isPrimary(i == 0) // Ảnh đầu tiên làm ảnh chính
+                        .build();
+                images.add(image);
+            }
+            saved.setImages(images);
+            plantRepository.save(saved);
+        }
         return saved.getId();
     }
 

@@ -1,0 +1,30 @@
+### Test AI Plant Identification API
+
+### 1. Test Plant Identification
+POST http://localhost:8080/api/ai/identify-plant
+Content-Type: multipart/form-data
+
+# Thay đổi đường dẫn file ảnh theo máy của bạn
+# Ví dụ: C:\Users\YourName\Pictures\plant-image.jpg
+# Hoặc: /home/username/pictures/plant-image.jpg
+
+# Windows
+# < ./plant-image.jpg
+
+# Linux/Mac
+# < /path/to/plant-image.jpg
+
+### 2. Test Plant Image Validation
+POST http://localhost:8080/api/ai/validate-plant-image
+Content-Type: multipart/form-data
+
+# < ./plant-image.jpg
+
+### 3. Test Database Search
+GET http://localhost:8080/api/ai/search-plants?plantName=Ficus
+
+### 4. Test với curl (Windows PowerShell)
+# curl -X POST http://localhost:8080/api/ai/identify-plant -F "image=@C:\path\to\plant-image.jpg" -F "language=vi" -F "maxResults=5"
+
+### 5. Test với curl (Linux/Mac)
+# curl -X POST http://localhost:8080/api/ai/identify-plant -F "image=@/path/to/plant-image.jpg" -F "language=vi" -F "maxResults=5" 
