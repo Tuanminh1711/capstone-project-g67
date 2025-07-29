@@ -85,22 +85,14 @@ public class PlantCareController {
     @PostMapping("/{userPlantId}/care-reminders/{careTypeId}/confirm")
     public ResponseEntity<?> confirmCare(
             @PathVariable Long userPlantId,
-            @PathVariable Long careTypeId) {
+            @PathVariable Long careTypeId,
+            HttpServletRequest httpRequest) {
         careLogService.logCareActivity(userPlantId, careTypeId, "Xác nhận từ email nhắc nhở", null);
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        if (userId != null) {
+            activityLogService.logActivity(userId.intValue(), "CONFIRM_CARE_FROM_EMAIL",
+                    "Confirmed care activity from email for user plant: " + userPlantId, httpRequest);
+        }
         return ResponseEntity.ok("Đã ghi nhận bạn đã chăm sóc cây!");
-    }
-
-    @Autowired
-    private PlantCareNotificationService notificationService;
-    @Autowired
-    private CareScheduleRepository careScheduleRepository;
-
-    // API test gửi nhắc nhở ngay lập tức
-    @PostMapping("/test-send-reminder/{careScheduleId}")
-    public ResponseEntity<?> testSendReminder(@PathVariable Long careScheduleId) {
-        CareSchedule schedule = careScheduleRepository.findById(careScheduleId)
-                .orElseThrow(() -> new RuntimeException("Not found"));
-        notificationService.sendReminder(schedule);
-        return ResponseEntity.ok("Đã gửi mail test!");
     }
 }
