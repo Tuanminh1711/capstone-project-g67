@@ -82,10 +82,8 @@ export class MyGardenService {
   }
 
   removePlantFromCollection(plantId: number): Observable<ApiResponse> {
-    console.log('Service DELETE call for plantId:', plantId);
-    // Sử dụng method DELETE như chuẩn REST API
-    const endpoint = `${this.baseUrl}/user-plants/delete/${plantId}`;
-    console.log('DELETE URL:', endpoint);
+    // Sử dụng method DELETE như chuẩn REST API, luôn dùng apiUrl để đảm bảo đúng route
+    const endpoint = `${environment.apiUrl}/user-plants/delete/${plantId}`;
     return this.http.delete<ApiResponse>(endpoint);
   }
 

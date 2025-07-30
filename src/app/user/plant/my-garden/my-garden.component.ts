@@ -295,17 +295,10 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     }
   }
 
-  removePlantFromCollection(plantId: number, plantName?: string): void {
-    // Find the plant object to get the correct userPlantId
-    const targetPlant = this.userPlants.find(p => p.plantId === plantId);
+  removePlantFromCollection(userPlantId: number, plantName?: string): void {
+    const targetPlant = this.userPlants.find(p => p.userPlantId === userPlantId);
     if (!targetPlant) {
       this.toastService.error('Không tìm thấy cây trong bộ sưu tập');
-      return;
-    }
-
-    const userPlantId = targetPlant.userPlantId;
-    if (!userPlantId) {
-      this.toastService.error('Không thể xóa cây này');
       return;
     }
     const displayName = plantName || targetPlant.nickname || 'cây này';

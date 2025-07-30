@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -84,18 +85,21 @@ export class CreateNewPlantService {
    */
   uploadImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
-    formData.append('file', file); // Sửa 'image' thành 'file' để backend nhận đúng
-    
-    return this.http.post<{url: string}>('/api/upload/image', formData).pipe(
+    formData.append('image', file); // Backend yêu cầu field là 'image'
+    return this.http.post<any>('/api/user-plants/upload-plant-image', formData).pipe(
       catchError(error => {
         console.warn('Image upload API not available, using mock URL:', error.message);
-        
-        // Create a mock URL for development/demo purposes
         const mockUrl = this.createMockImageUrl(file);
         return of({ url: mockUrl });
       }),
-      tap(response => {
-        console.info('Image upload result:', response.url);
+      // Map response về dạng {url: ...} lấy từ response.data
+      // tap không trả về giá trị, nên dùng map
+      map(response => {
+        const url = response?.data || null;
+        if (url) {
+          console.info('Image upload result:', url);
+        }
+        return { url };
       })
     );
   }

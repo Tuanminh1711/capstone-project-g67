@@ -190,10 +190,10 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
 
         this.pageState = {
           ...this.pageState,
-          totalPages: data.totalPages ?? 1,
-          totalElements: data.totalElements ?? data.plants.length,
-          currentPage: page,
-          pageSize: data.pageSize ?? this.pageState.pageSize
+          totalPages: Number(data.totalPages) ?? 1,
+          totalElements: Number(data.totalElements) ?? data.plants.length,
+          currentPage: Number(page),
+          pageSize: Number(data.pageSize) ?? this.pageState.pageSize
         };
 
         // Gán imageError = false cho mỗi plant để tránh lỗi binding

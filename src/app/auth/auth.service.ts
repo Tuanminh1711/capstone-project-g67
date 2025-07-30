@@ -91,22 +91,34 @@ export class AuthService {
   /**
    * Đăng xuất
    */
-  logout(): void {
+  logout(redirect = true): void {
     const token = this.cookieService.getCookie('auth_token');
+    const role = this.jwtUserUtil.getRoleFromToken();
+    const doRedirect = () => {
+      if (redirect) {
+        if (role === 'admin' || role === 'staff') {
+          window.location.href = '/auth/login-admin';
+        } else {
+          window.location.href = '/home';
+        }
+      }
+    };
     if (token) {
       this.http.post(`${this.apiUrl}/auth/logout`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: () => {
           this.cookieService.removeAuthToken();
+          doRedirect();
         },
         error: () => {
-          // Dù lỗi vẫn xóa token phía client
           this.cookieService.removeAuthToken();
+          doRedirect();
         }
       });
     } else {
       this.cookieService.removeAuthToken();
+      doRedirect();
     }
   }
 

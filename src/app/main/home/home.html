@@ -7,7 +7,7 @@
       <span>PlantCare - Nền tảng chăm sóc cây toàn diện</span>
     </h1>
     <p class="home-hero-desc">
-      Khám phá, quản lý, chăm sóc và kết nối cộng đồng yêu cây cảnh. Tất cả trong một ứng dụng!
+      Khám phá, quản lý, chăm sóc và kết nối cộng đồng yêu cây cảnh. Tất cả trên 1 nền tảng!
     </p>
     <div class="home-hero-cta">
       @if (!jwtUserUtil.isLoggedIn()) {
@@ -24,13 +24,24 @@
 </section>
 
 <!-- Promo Banner Section -->
-<section class="home-promo-banner">
-  <div class="promo-banner-content">
-    <img src="assets/image/logo.png" alt="PlantCare Logo" class="promo-logo" />
-    <div class="promo-text">
-      <h2>Ưu đãi đặc biệt mùa hè!</h2>
-      <p>Đăng ký tài khoản mới ngay hôm nay để nhận <b>1 tháng sử dụng PlantCare VIP miễn phí</b> cùng nhiều phần quà hấp dẫn.</p>
-      <button class="cta-btn cta-main" (click)="onConnectExpertClick()">Nhận ưu đãi ngay</button>
+<section class="home-promo-banner" style="width:100%; background:#f5f5f5; display:flex; justify-content:center; align-items:center; padding:28px 0;">
+  <div class="banner-slider">
+    @for (slide of bannerSlides; let i = $index; track i) {
+      <div class="banner-slide" [class.active]="currentBanner === i" [style.zIndex]="currentBanner === i ? 2 : 1">
+        <img src="assets/image/banner3.jpg" alt="PlantCare Banner" />
+        <div class="banner-content">
+          <h2 class="banner-title" [class.animate-in]="currentBanner === i">{{slide.title}}</h2>
+          <p class="banner-desc" [class.animate-in]="currentBanner === i">{{slide.desc}}</p>
+          @if (slide.cta) {
+            <button class="banner-cta" [class.animate-in]="currentBanner === i" (click)="typeof slide.ctaAction === 'function' ? slide.ctaAction() : null">{{slide.cta}}</button>
+          }
+        </div>
+      </div>
+    }
+    <div class="slider-dots">
+      @for (dot of bannerSlides; let d = $index; track d) {
+        <span class="slider-dot" [class.active]="currentBanner === d" (click)="currentBanner = d"></span>
+      }
     </div>
   </div>
 </section>

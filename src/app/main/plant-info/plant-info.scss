@@ -350,6 +350,7 @@ body, .plant-info-layout {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-bottom: 40px; /* Đảm bảo phân trang không bị dính sát hoặc che dưới */
 }
 
 .plant-card {
@@ -508,6 +509,7 @@ body, .plant-info-layout {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  margin-bottom: 32px; /* Đảm bảo không bị che dưới */
   gap: 6px;
 
   button {

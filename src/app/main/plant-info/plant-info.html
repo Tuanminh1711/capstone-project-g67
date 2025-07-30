@@ -132,9 +132,11 @@
                     </div>
                     <div class="plant-info" (click)="viewPlantDetail(plant.id)">
                       <div class="plant-title">
-                        {{ plant.commonName }}
-                        <span class="plant-scientific">
-                          ({{ plant.scientificName }})
+                        <span class="plant-common-name" title="{{ plant.commonName }}">
+                          {{ plant.commonName.length > 32 ? (plant.commonName | slice:0:32) + '…' : plant.commonName }}
+                        </span>
+                        <span class="plant-scientific" title="{{ plant.scientificName }}">
+                          ({{ plant.scientificName.length > 32 ? (plant.scientificName | slice:0:32) + '…' : plant.scientificName }})
                           @if (plant.reportCount && plant.reportCount > 0) {
                             <span class="plant-warning-icon tooltip-container">
                               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
@@ -150,7 +152,9 @@
                       <div class="plant-category">
                         Phân loại: {{ plant.categoryName }}
                       </div>
-                      <div class="plant-desc">{{ plant.description }}</div>
+                      <div class="plant-desc" title="{{ plant.description }}">
+                        {{ plant.description.length > 120 ? (plant.description | slice:0:120) + '…' : plant.description }}
+                      </div>
                       <div class="plant-meta-simple">
                         <span class="meta-item">
                           <span class="meta-label">Ánh sáng:</span>
