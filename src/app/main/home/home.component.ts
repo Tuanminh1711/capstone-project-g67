@@ -54,7 +54,7 @@ export class HomeComponent {
     this.bannerInterval = setInterval(() => {
       this.currentBanner = (this.currentBanner + 1) % 3;
       this.cdr.markForCheck();
-    }, 8000);
+    }, 6000);
   }
 
   ngOnDestroy() {
