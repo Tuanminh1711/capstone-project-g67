@@ -62,6 +62,7 @@ public class PaymentController {
                 responseData.put("userId", order.getUser().getId());
                 responseData.put("newRole", "VIP");
                 responseData.put("username", order.getUser().getUsername());
+                responseData.put("redirectTo", "/home");
 
                 return ResponseEntity.ok(responseData);
             } else {
