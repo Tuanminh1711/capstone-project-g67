@@ -157,6 +157,6 @@ export class AuthService {
   }
 
   loginAdmin(data: { username: string; password: string }) {
-    return this.http.post<any>('http://localhost:8080/api/auth/login-admin', data);
+    return this.http.post<any>(`${this.apiUrl}/api/auth/login-admin`, data);
   }
 }
