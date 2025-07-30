@@ -7,6 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { environment } from '../../../../environments/environment'; 
 
 export interface Report {
   reportId: number;
@@ -77,12 +78,11 @@ export class ReportListComponent implements OnInit, OnDestroy {
     this.sub.unsubscribe();
     clearTimeout(this.searchDebounce);
   }
-
   loadReports() {
     this.loading = true;
     this.errorMsg = '';
     this.currentKeyword = '';
-    this.http.get<any>('http://localhost:8080/api/manager/report-list', {
+    this.http.get<any>(`${environment.apiUrl}/manager/report-list`, {
       params: {
         page: this.pageNo,
         size: this.pageSize,

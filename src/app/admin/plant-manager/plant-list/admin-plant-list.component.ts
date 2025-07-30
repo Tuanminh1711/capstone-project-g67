@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
-
+import { environment } from '../../../../environments/environment'; 
 interface Plant {
   id: number;
   scientificName: string;
@@ -98,7 +98,7 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
   fetchPlants(page: number, keyword: string) {
     this.setLoading(true);
     this.setError('');
-    const url = `http://localhost:8080/api/manager/search-plants`;
+    const url = `${environment.apiUrl}/manager/search-plants`;
     const body: any = { status: 'ACTIVE', page, size: this.pageSize };
     if (keyword && keyword.trim()) {
       body.keyword = keyword.trim();
