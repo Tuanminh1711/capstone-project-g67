@@ -1,3 +1,5 @@
+
+
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -203,6 +205,18 @@ export class PlantDetailComponent implements OnInit {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('vi-VN');
   }
+
+    onReportPlant(): void {
+    if (!this.plant) return;
+    const token = this.cookieService.getAuthToken();
+    if (!token) {
+      this.openLoginDialog();
+      this.toast.error('Vui lòng đăng nhập để báo cáo thông tin cây!');
+      return;
+    }
+    this.router.navigate(['/user/report-plant', this.plant.id]);
+  }
+
 
   // Các hàm dịch enum và UI helper đã chuyển sang PlantUiHelperService
 }

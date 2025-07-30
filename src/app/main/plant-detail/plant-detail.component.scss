@@ -1,4 +1,16 @@
 @use '../../../styles/variables' as *;
+.scroll-card {
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+  padding: 0;
+}
+.scroll-inner {
+  padding: 16px 20px;
+}
 
 // Tooltip hover: đơn giản, nhỏ gọn, dễ nhìn
 .plant-tooltip {
@@ -152,6 +164,9 @@
   align-items: center;
   gap: 8px;
 }
+
+
+
 .plant-info-main.modern .action-buttons.modern .add-to-collection-btn.modern {
   background: linear-gradient(135deg, #059669, #10b981);
   color: white;
@@ -160,11 +175,19 @@
   background: #10b981;
 }
 .plant-info-main.modern .action-buttons.modern .report-btn.modern {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  color: white;
+  background: #f7f7f7;
+  color: #888;
+  border: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 7px 16px;
+  box-shadow: none;
+  border-radius: 14px;
 }
 .plant-info-main.modern .action-buttons.modern .report-btn.modern:hover {
-  background: #ef4444;
+  background: #ededed;
+  color: #b22222;
+  border-color: #d8d8d8;
 }
 
 // Card dưới: 2 card chia đôi

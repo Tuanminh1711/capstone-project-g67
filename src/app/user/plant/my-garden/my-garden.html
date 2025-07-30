@@ -5,7 +5,7 @@
   <section class="garden-hero">
     <div class="hero-content">
       <div class="hero-header">
-        <h1 class="hero-title">🌿 Khu Vườn Của Tôi</h1>
+        <h1 class="hero-title">🌿KHU VƯỜN CỦA TÔI</h1>
         <div class="hero-actions">
           @if (isLoggedIn) {
             <button 
@@ -63,7 +63,6 @@
   @if (error && !loading) {
     <div class="error-garden">
       <div class="error-icon">🥀</div>
-      <h3>{{ error.includes('đăng nhập') ? 'Cần đăng nhập' : 'Oops! Có lỗi xảy ra' }}</h3>
       <p>{{ error }}</p>
       <div class="error-actions">
         @if (error.includes('đăng nhập')) {

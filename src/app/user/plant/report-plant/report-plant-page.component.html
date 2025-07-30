@@ -10,7 +10,7 @@
     </div>
   </div>
 
-  @if (plant) {
+  @if (plant && !errorMsg) {
     <div class="report-content">
       <!-- Plant Information Panel -->
       <div class="plant-info-section">
@@ -54,22 +54,13 @@
                 <span class="category-icon"></span>
                 {{ plant.categoryName }}
               </span>
-              @if (plant.status) {
-                <div class="plant-status">
-                  <span class="status-badge" [class]="plant.status.toLowerCase()">
-                    <span class="status-icon">{{ plant.status === 'ACTIVE' ? '' : '' }}</span>
-                    {{ plant.status === 'ACTIVE' ? 'Đã xác thực' : 'Đang được kiểm tra bởi admin' }}
-                  </span>
-                </div>
-              }
             </div>
           </div>
         </div>
         <div class="plant-details">
           <div class="detail-section description-section">
             <div class="section-header">
-              <h3><span class="section-icon">📝</span>Mô tả chi tiết</h3>
-              <span class="section-badge">Thông tin cơ bản</span>
+              <h3><span class="section-icon">📝</span>Mô tả chi tiết</h3> 
             </div>
             <div class="description-content">
               <p>{{ plant.description || 'Chưa có mô tả chi tiết cho loại cây này.' }}</p>
@@ -122,7 +113,6 @@
                   <div class="care-info">
                     <span class="care-label">Vị trí phù hợp</span>
                     <span class="care-value">{{ plant.suitableLocation }}</span>
-                    <div class="care-tips">Môi trường lý tưởng</div>
                   </div>
                 </div>
               }
@@ -235,9 +225,9 @@
     <p>Đang tải thông tin cây...</p>
   </div>
 
-  <div class="error-state" *ngIf="errorMsg && !plant">
+  <div class="error-state" *ngIf="errorMsg">
     <div class="error-icon">❌</div>
-    <h3>Không thể tải thông tin</h3>
+    <h3>Không thể tiếp tục</h3>
     <p>{{ errorMsg }}</p>
     <button class="btn btn-retry" (click)="goToPlantInfo()">Quay lại danh sách</button>
   </div>

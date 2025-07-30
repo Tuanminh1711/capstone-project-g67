@@ -224,10 +224,11 @@ app-care-reminder-dialog button:last-child {
   }
   
   .hero-title {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 600;
     color: #1a365d;
     margin: 0;
+    margin-bottom: 12px;
     
     @media (max-width: 768px) {
       font-size: 2rem;
@@ -1432,9 +1433,6 @@ app-care-reminder-dialog button:last-child {
     padding: 50px 16px 32px;
   }
   
-  .hero-title {
-    font-size: 3rem;
-  }
   
   .hero-subtitle {
     font-size: 1.1rem;
@@ -1472,11 +1470,6 @@ app-care-reminder-dialog button:last-child {
     margin: 0 12px 24px;
     padding: 40px 12px 24px;
     border-radius: 16px;
-  }
-  
-  .hero-title {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
   }
   
   .hero-subtitle {
@@ -1563,11 +1556,7 @@ app-care-reminder-dialog button:last-child {
     padding: 32px 8px 20px;
     border-radius: 12px;
   }
-  
-  .hero-title {
-    font-size: 2rem;
-    margin-bottom: 10px;
-  }
+
   
   .hero-subtitle {
     font-size: 0.95rem;
@@ -1725,9 +1714,7 @@ app-care-reminder-dialog button:last-child {
     padding: 24px 4px 16px;
   }
   
-  .hero-title {
-    font-size: 1.8rem;
-  }
+
   
   .hero-subtitle {
     font-size: 0.9rem;

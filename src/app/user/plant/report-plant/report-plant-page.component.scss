@@ -443,6 +443,10 @@
       border-radius: 20px;
       border: 1px solid #e2e8f0;
       position: relative;
+    }
+
+    &.instructions-section {
+      margin-top: 32px;
 
       &::before {
         content: '';
@@ -897,7 +901,11 @@
     display: flex;
     gap: 16px;
     justify-content: center;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
+  }
+
+  .form-footer {
+    margin-top: 12px;
   }
 
   .form-footer {

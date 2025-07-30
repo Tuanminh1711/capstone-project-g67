@@ -12,19 +12,15 @@
       <table class="logs-table">
         <thead>
           <tr>
-            <th>Hành động</th>
             <th>Thời gian</th>
-            <th>Mô tả</th>
-            <th>Địa chỉ IP</th>
+            <th>Mô tả chi tiết</th>
           </tr>
         </thead>
         <tbody>
           @for (log of logs; track log) {
             <tr>
-              <td class="log-action">{{ translateAction(log.action) }}</td>
               <td class="log-time">{{ log.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
               <td class="log-detail">{{ translateDescription(log) }}</td>
-              <td class="log-ip">{{ log.ipAddress }}</td>
             </tr>
           }
           @if (logs.length === 0) {

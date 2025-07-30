@@ -1,4 +1,5 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,8 +27,9 @@ export class SendTicketDialogComponent {
     private dialogRef: MatDialogRef<SendTicketDialogComponent>,
     private supportService: SupportService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private router: Router
+  ) { }
 
 
   onImageSelected(event: any) {
@@ -77,8 +79,12 @@ export class SendTicketDialogComponent {
         imageUrl: imageUrl
       };
 
-      await this.supportService.createTicket(ticketData).toPromise();
-      this.toastService.show('Ticket đã được gửi thành công!', 'success');
+      const created = await this.supportService.createTicket(ticketData).toPromise();
+
+      if (created) {
+        this.toastService.show('Ticket đã được gửi thành công!', 'success');
+        this.router.navigate(['user/my-tickets']);
+      }
       this.close();
     } catch (error: any) {
       console.error('Error submitting ticket:', error);

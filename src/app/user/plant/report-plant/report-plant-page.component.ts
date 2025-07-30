@@ -7,6 +7,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
 import { PlantDataService, Plant } from '../../../shared/plant-data.service';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { CookieService } from '../../../auth/cookie.service';
+import { AuthDialogService } from '../../../auth/auth-dialog.service';
 
 @Component({
   selector: 'app-report-plant-page',
@@ -27,8 +28,23 @@ export class ReportPlantPageComponent implements OnInit {
   private plantDataService = inject(PlantDataService);
   private cdr = inject(ChangeDetectorRef);
   private cookieService = inject(CookieService);
+  private authDialogService = inject(AuthDialogService);
 
   ngOnInit() {
+    // Check login/auth
+    const token = this.cookieService.getAuthToken();
+    if (!token) {
+      this.errorMsg = 'Bạn cần đăng nhập để báo cáo thông tin cây.';
+      // Gọi popup đăng nhập
+      setTimeout(() => {
+        this.authDialogService.openLoginDialog();
+        // Sau khi đăng nhập thành công, reload lại trang để lấy token mới
+        this.authDialogService.loginSuccess$.subscribe(() => {
+          window.location.reload();
+        });
+      }, 300);
+      return;
+    }
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadPlantDetailWithCacheLogic(+id);
@@ -209,7 +225,7 @@ export class ReportPlantPageComponent implements OnInit {
       'MODERATE': 'Cần chút kinh nghiệm',
       'DIFFICULT': 'Dành cho người có kinh nghiệm'
     };
-    return tips[value?.toUpperCase()] || 'Tùy theo kinh nghiệm';
+    return tips[value?.toUpperCase()] || 'Hãy chăm sóc theo kinh nghiệm của bạn';
   }
 
   addSuggestion(suggestion: string): void {
