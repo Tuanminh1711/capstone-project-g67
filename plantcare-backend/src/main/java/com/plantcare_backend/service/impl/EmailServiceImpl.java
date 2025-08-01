@@ -1,5 +1,6 @@
 package com.plantcare_backend.service.impl;
 
+import com.plantcare_backend.model.SupportTicket;
 import com.plantcare_backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -65,5 +68,30 @@ public class EmailServiceImpl implements EmailService {
         );
 
         sendEmail(email, subject, content);
+    }
+
+    @Override
+    public void sendTicketNotificationEmail(List<String> adminEmails, SupportTicket ticket, String adminPanelUrl) {
+        String subject = "🔔 Ticket mới: " + ticket.getTitle();
+        String content = String.format(
+                "Chào Admin/Staff,\n\n" +
+                        "Có ticket mới được tạo:\n\n" +
+                        "📋 Tiêu đề: %s\n" +
+                        "👤 Người tạo: %s\n" +
+                        "📅 Thời gian: %s\n" +
+                        "📝 Mô tả: %s\n\n" +
+                        "🔗 Link xử lý: %s/admin/support/tickets/%d\n\n" +
+                        "PlantCare Team",
+                ticket.getTitle(),
+                ticket.getUser().getUsername(),
+                ticket.getCreatedAt(),
+                ticket.getDescription(),
+                adminPanelUrl,
+                ticket.getTicketId()
+        );
+
+        for (String email : adminEmails) {
+            sendEmailAsync(email, subject, content);
+        }
     }
 }

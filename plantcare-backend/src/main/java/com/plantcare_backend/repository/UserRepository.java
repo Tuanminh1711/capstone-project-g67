@@ -43,4 +43,6 @@ public interface UserRepository extends JpaRepository<Users, Integer>, JpaSpecif
 
     @Query("SELECT u FROM Users u JOIN FETCH u.role WHERE u.id = :id")
     Optional<Users> findByIdWithRole(@Param("id") Long id);
+
+    List<Users> findByRole_RoleNameIn(List<String> roleNames);
 }

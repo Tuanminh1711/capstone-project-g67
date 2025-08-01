@@ -32,6 +32,9 @@ public class TicketResponse {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private Timestamp createdAt;
