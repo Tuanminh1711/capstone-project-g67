@@ -29,6 +29,9 @@ public class ChatBoxImpl implements ChatService {
     @Value("${app.base-url:http://40.81.23.51}")
     private String baseUrl;
 
+    @Value("${openrouter.api.max-tokens:1000}")
+    private Integer maxTokens;
+
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
     private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -96,6 +99,7 @@ public class ChatBoxImpl implements ChatService {
 
             JSONObject body = new JSONObject();
             body.put("model", model);
+            body.put("max_tokens", maxTokens);
 
             JSONArray messages = new JSONArray();
             JSONObject userMsg = new JSONObject();
