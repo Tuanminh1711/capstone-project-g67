@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 public class TicketResponseDetailDTO {
     private Long responseId;
     private String content;
+    private String imageUrl;
     private Timestamp createdAt;
     private String responderName; // Tên người trả lời
     private String responderRole; // Role của người trả lời (USER, ADMIN, STAFF)

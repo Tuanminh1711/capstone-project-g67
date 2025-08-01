@@ -90,6 +90,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .ticket(ticket)
                 .responder(user)
                 .content(request.getContent())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         ticketResponseRepository.save(response);
@@ -136,6 +137,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .ticket(ticket)
                 .responder(admin)
                 .content(request.getContent())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         ticketResponseRepository.save(response);
@@ -285,6 +287,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         return TicketResponseDetailDTO.builder()
                 .responseId(response.getResponseId())
                 .content(response.getContent())
+                .imageUrl(response.getImageUrl())
                 .createdAt(response.getCreatedAt())
                 .responderName(response.getResponder().getUsername())
                 .responderRole(response.getResponder().getRole().getRoleName().toString())
