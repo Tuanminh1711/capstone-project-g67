@@ -13,11 +13,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/support")
@@ -48,6 +57,64 @@ public class SupportTicketController {
         } catch (Exception e) {
             log.error("Create ticket failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Create ticket failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Upload ticket image", description = "Upload image for support ticket")
+    @PostMapping("/upload-ticket-image")
+    public ResponseEntity<ResponseData<String>> uploadTicketImage(@RequestParam("image") MultipartFile image) {
+        try {
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File is empty", null));
+            }
+            
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File must be an image", null));
+            }
+            
+            if (image.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 5MB", null));
+            }
+            
+            String uploadDir = "uploads/tickets/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            
+            String originalFilename = image.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + fileExtension;
+            
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(image.getInputStream(), filePath);
+            
+            String imageUrl = "/api/support/ticket-images/" + newFilename;
+            
+            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+        } catch (Exception e) {
+            log.error("Upload ticket image failed", e);
+            return ResponseEntity.internalServerError().body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Get ticket image", description = "Display ticket image")
+    @GetMapping("/ticket-images/{filename}")
+    public ResponseEntity<Resource> getTicketImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get("uploads/tickets/").resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
         }
     }
 

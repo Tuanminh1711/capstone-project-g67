@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,8 +53,18 @@ public class PaymentController {
 
             if ("00".equals(vnp_ResponseCode)) {
                 Integer orderId = Integer.parseInt(vnp_TxnRef);
-                vipOrderService.handlePaymentSuccess(orderId);
-                return ResponseEntity.ok("Thanh toán thành công! Tài khoản đã được nâng cấp VIP.");
+                VipOrder order = vipOrderService.handlePaymentSuccess(orderId);
+
+                // ✅ Trả về thông tin user mới
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("success", true);
+                responseData.put("message", "Thanh toán thành công! Tài khoản đã được nâng cấp VIP.");
+                responseData.put("userId", order.getUser().getId());
+                responseData.put("newRole", "VIP");
+                responseData.put("username", order.getUser().getUsername());
+                responseData.put("redirectTo", "/home");
+
+                return ResponseEntity.ok(responseData);
             } else {
                 return ResponseEntity.badRequest().body("Thanh toán thất bại. Mã lỗi: " + vnp_ResponseCode);
             }

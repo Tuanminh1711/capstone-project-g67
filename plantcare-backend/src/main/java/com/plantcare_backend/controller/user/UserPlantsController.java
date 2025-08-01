@@ -31,10 +31,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user-plants")
@@ -191,14 +193,18 @@ public class UserPlantsController {
         log.info("Creating new plant for user: {}", userId);
 
         try {
+            if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+                validateImageUrls(request.getImageUrls());
+            }
+
             UserPlantResponseDTO result = userPlantsService.createNewPlant(request, userId);
 
-            // Log the activity
             activityLogService.logActivity(userId.intValue(), "CREATE_NEW_PLANT",
                     "Created new plant: " + request.getCommonName(), httpRequest);
 
-            return new ResponseData<>(HttpStatus.CREATED.value(), "Plant created and added to collection successfully",
-                    result);
+            return new ResponseData<>(HttpStatus.CREATED.value(),
+                    "Plant created and added to collection successfully", result);
+
         } catch (ValidationException e) {
             log.error("Validation failed for new plant: {}", e.getMessage());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
@@ -211,6 +217,68 @@ public class UserPlantsController {
         } catch (Exception e) {
             log.error("Failed to create new plant", e);
             return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create new plant");
+        }
+    }
+
+    private void validateImageUrls(List<String> imageUrls) {
+        for (String url : imageUrls) {
+            if (url == null || url.trim().isEmpty()) {
+                throw new ValidationException("Image URL cannot be empty");
+            }
+            if (!url.startsWith("/api/user-plants/user-plants/")) {
+                throw new ValidationException("Invalid image URL format");
+            }
+        }
+    }
+    @Operation(method = "POST", summary = "Upload plant image", description = "Upload image for user plant")
+    @PostMapping("/upload-plant-image")
+    public ResponseEntity<ResponseData<String>> uploadPlantImage(
+            @RequestParam("image") MultipartFile image,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseData<>(400, "User not authenticated", null));
+        }
+        try {
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File is empty", null));
+            }
+
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File must be an image", null));
+            }
+
+            if (image.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File size must be less than 5MB", null));
+            }
+
+            String uploadDir = "uploads/user-plants/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String originalFilename = image.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + fileExtension;
+
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(image.getInputStream(), filePath);
+
+            String imageUrl = "/api/user-plants/user-plants/" + newFilename;
+
+            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+
+        } catch (Exception e) {
+            log.error("Failed to upload plant image for user: {}", userId, e);
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
         }
     }
 }
