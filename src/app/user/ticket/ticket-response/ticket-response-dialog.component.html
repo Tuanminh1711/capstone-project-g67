@@ -1,0 +1,41 @@
+<div class="ticket-response-dialog">
+  <!-- Header -->
+  <header class="dialog-header">
+    <div class="title-section">
+      <h2 class="dialog-title">Gửi phản hồi</h2>
+    </div>
+    <button type="button" class="close-button" (click)="close()" aria-label="Đóng">
+      ×
+    </button>
+  </header>
+
+  <!-- Body -->
+  <main class="dialog-body">
+    <form [formGroup]="responseForm" (ngSubmit)="submit()" class="ticket-response-form">
+      <div class="form-group">
+        <label for="content" class="form-label">Nội dung phản hồi</label>
+        <textarea 
+          id="content"
+          formControlName="content" 
+          rows="4" 
+          placeholder="Nhập phản hồi của bạn..."
+          class="form-textarea">
+        </textarea>
+        <div class="character-count" *ngIf="responseForm.get('content')?.value">
+          {{ responseForm.get('content')?.value?.length || 0 }}/2000
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="submit-button"
+          [disabled]="loading || responseForm.invalid || !ticketId"
+          [class.loading]="loading">
+          <span class="button-text" *ngIf="!loading">Gửi phản hồi</span>
+          <span class="button-text" *ngIf="loading">Đang gửi...</span>
+        </button>
+      </div>
+    </form>
+  </main>
+</div>

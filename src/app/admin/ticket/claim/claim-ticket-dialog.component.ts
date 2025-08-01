@@ -36,7 +36,6 @@ export class ClaimTicketDialogComponent {
     this.ticketsService.claimTicket(this.data.ticketId, this.claimForm.value.note).subscribe({
       next: () => {
         this.loading = false;
-        this.toast.success('Nhận ticket thành công!');
         this.dialogRef.close(true);
       },
       error: (err) => {

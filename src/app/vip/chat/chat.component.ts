@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { ChatStompService, ChatMessage } from './chat-stomp.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-vip-chat',
@@ -19,6 +20,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   newMessage: string = '';
   loading = false;
   error = '';
+  currentUserId: string | null = null;
 
   private wsSub?: Subscription;
   private wsErrSub?: Subscription;
@@ -27,17 +29,28 @@ export class ChatComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private ws: ChatStompService,
-    private zone: NgZone
+    private zone: NgZone,
+    private authService: AuthService
   ) {}
 
-
   ngOnInit(): void {
+    this.currentUserId = this.authService.getCurrentUserId();
+    
+    // Nếu không có currentUserId, log warning
+    if (!this.currentUserId) {
+      console.warn('⚠️ No current user ID found! User might not be logged in properly.');
+    }
+    
+    // Thêm dummy data để test layout
+    this.addDummyMessages();
+    
     this.fetchHistory();
     this.ws.connect();
     this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
       this.zone.run(() => {
         this.messages.push(msg);
         this.cdr.markForCheck();
+        this.scrollToBottom();
       });
     });
     this.wsErrSub = this.ws.onError().subscribe((err: string) => {
@@ -48,16 +61,134 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Utility methods for template
+  trackMessage(index: number, message: ChatMessage): any {
+    return message.timestamp || index;
+  }
+
+  isOwnMessage(message: ChatMessage): boolean {
+    if (!this.currentUserId) {
+      console.log('❌ No current user ID - cannot determine message ownership');
+      return false;
+    }
+    
+    if (!message.senderId) {
+      console.log('❌ Message has no senderId:', message);
+      return false;
+    }
+    
+    // Normalize both IDs to strings for comparison
+    const currentId = this.currentUserId.toString().trim();
+    const senderId = message.senderId.toString().trim();
+
+    return currentId === senderId;
+  }
+
+  getAvatarUrl(message: ChatMessage): string {
+    // You can customize avatar based on role or user
+    return 'assets/image/default-avatar.png';
+  }
+
+  getRoleBadgeClass(role?: string): string {
+    switch (role) {
+      case 'VIP': return 'vip-badge';
+      case 'EXPERT': return 'expert-badge';
+      default: return 'user-badge';
+    }
+  }
+
+  getRoleDisplayName(role?: string): string {
+    switch (role) {
+      case 'VIP': return 'VIP';
+      case 'EXPERT': return 'Chuyên gia';
+      default: return 'Thành viên';
+    }
+  }
+
+  // Thêm dummy messages để test layout
+  addDummyMessages(): void {
+    // Sử dụng ID rõ ràng để test
+    const testUserId = this.currentUserId || '123'; // Fallback nếu không có currentUserId
+    
+    const dummyMessages: ChatMessage[] = [
+      {
+        senderId: 999, // ID khác với current user - sẽ hiện bên trái
+        content: 'Chào mọi người! Tôi có thể hỏi về cách chăm sóc cây lan không?',
+        timestamp: new Date(Date.now() - 300000).toISOString(),
+        senderRole: 'VIP'
+      },
+      {
+        senderId: +testUserId, // Current user ID - sẽ hiện bên phải
+        content: 'Xin chào! Tôi cũng đang tìm hiểu về cây lan đây.',
+        timestamp: new Date(Date.now() - 240000).toISOString(),
+        senderRole: 'VIP'
+      },
+      {
+        senderId: 888, // ID khác - sẽ hiện bên trái
+        content: 'Tôi có thể chia sẻ kinh nghiệm về cây lan. Các bạn có câu hỏi gì cụ thể không?',
+        timestamp: new Date(Date.now() - 180000).toISOString(),
+        senderRole: 'EXPERT'
+      },
+      {
+        senderId: +testUserId, // Current user ID - sẽ hiện bên phải
+        content: 'Cảm ơn anh/chị! Tôi muốn hỏi về tần suất tưới nước cho cây lan.',
+        timestamp: new Date(Date.now() - 120000).toISOString(),
+        senderRole: 'VIP'
+      }
+    ];
+    
+    this.messages = dummyMessages;
+    this.cdr.detectChanges();
+  }
+
+  formatTime(timestamp?: string): string {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return 'Vừa xong';
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      const container = document.querySelector('.chat-messages');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+  }
+
   fetchHistory() {
     this.loading = true;
+    this.error = '';
     // Gọi đúng endpoint không có /api nếu backend không có prefix /api
     this.http.get<ChatMessage[]>('/chat/history').subscribe({
       next: (data: any) => {
-        this.messages = Array.isArray(data) ? data : (data?.data || []);
+        const messages = Array.isArray(data) ? data : (data?.data || []);
+        
+        this.messages = messages;
         this.loading = false;
         this.cdr.markForCheck();
+        this.scrollToBottom();
       },
       error: err => {
+        console.error('Error fetching chat history:', err);
         this.error = 'Không thể tải lịch sử chat';
         this.loading = false;
         this.cdr.markForCheck();
@@ -67,16 +198,33 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   sendMessage() {
     if (!this.newMessage.trim()) return;
-    // Lấy senderId từ localStorage (giả lập, nên lấy từ AuthService thực tế)
-    const senderId = +(localStorage.getItem('userId') || '1');
+    
+    // Lấy userId và role từ AuthService
+    const userId = this.authService.getCurrentUserId();
+    const userRole = this.authService.getCurrentUserRole();
+    
+    if (!userId) {
+      this.error = 'Không thể xác định người dùng. Vui lòng đăng nhập lại.';
+      this.cdr.markForCheck();
+      return;
+    }
+    
+    if (!userRole || (userRole !== 'VIP' && userRole !== 'EXPERT')) {
+      this.error = 'Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.';
+      this.cdr.markForCheck();
+      return;
+    }
+    
     const msg: ChatMessage = {
-      senderId,
+      senderId: +userId, // Convert string to number
       content: this.newMessage.trim(),
-      senderRole: 'VIP',
+      senderRole: userRole,
       timestamp: new Date().toISOString()
     };
+    
     this.ws.sendMessage(msg);
     this.newMessage = '';
+    this.error = ''; // Clear any previous errors
     this.cdr.markForCheck();
   }
 

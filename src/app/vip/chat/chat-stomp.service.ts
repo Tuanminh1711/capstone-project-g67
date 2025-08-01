@@ -23,7 +23,7 @@ export class ChatStompService {
     this.client = new Client({
       webSocketFactory: () => new SockJS('/ws'),
       reconnectDelay: 5000,
-      debug: str => console.log('[STOMP]', str)
+      debug: () => {} // Tắt debug log
     });
 
     this.client.onConnect = () => {

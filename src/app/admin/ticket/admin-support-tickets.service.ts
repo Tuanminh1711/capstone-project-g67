@@ -34,7 +34,9 @@ export class AdminSupportTicketsService {
   }
 
   handleTicket(ticketId: number, note: string) {
-    return this.http.post(`/api/admin/support/tickets/${ticketId}/handle`, { note });
+    console.log('[HANDLE DEBUG] Calling API with:', { ticketId, note });
+    // Try claim endpoint first, might be the correct one
+    return this.http.post(`/api/admin/support/tickets/${ticketId}/claim`, { note });
   }
 
   releaseTicket(ticketId: number) {

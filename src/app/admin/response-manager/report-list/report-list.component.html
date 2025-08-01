@@ -29,7 +29,7 @@
   <table class="report-table">
     <thead>
       <tr>
-        <th (click)="sortBy('id')">ID</th>
+        <th>STT</th>
         <th (click)="sortBy('title')">Tiêu đề</th>
         <th (click)="sortBy('reporterName')">Người báo cáo</th>
         <th (click)="sortBy('createdAt')">Ngày tạo</th>
@@ -38,8 +38,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let report of reports" (click)="viewDetail(report)" class="clickable-row">
-        <td>{{ report.reportId }}</td>
+      <tr *ngFor="let report of reports; let i = index" (click)="viewDetail(report)" class="clickable-row">
+        <td>{{ i + 1 + (pageNo * 10) }}</td>
         <td>
           <span class="report-title">{{ report.reason }}</span>
         </td>

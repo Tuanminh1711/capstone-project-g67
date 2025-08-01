@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectorRef } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -20,9 +20,10 @@ export class HandleTicketDialogComponent {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<HandleTicketDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { ticketId: number },
+    @Inject(MAT_DIALOG_DATA) public data: { ticket: any },
     private ticketsService: AdminSupportTicketsService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) {
     this.handleForm = this.fb.group({
       note: ['', Validators.required]
@@ -31,18 +32,30 @@ export class HandleTicketDialogComponent {
 
   submit() {
     if (this.handleForm.invalid) return;
+    
     this.error = null;
     this.loading = true;
-    this.ticketsService.handleTicket(this.data.ticketId, this.handleForm.value.note).subscribe({
+    this.cdr.detectChanges(); // Force change detection
+    
+    const ticketId = this.data.ticket?.ticketId;
+    if (!ticketId) {
+      this.error = 'Không tìm thấy ID ticket';
+      this.loading = false;
+      return;
+    }
+
+    this.ticketsService.handleTicket(ticketId, this.handleForm.value.note).subscribe({
       next: () => {
-        this.toast.success('Xử lý ticket thành công!');
-        this.dialogRef.close(true);
-        this.error = null;
-      },
-      error: () => {
-        this.toast.error('Xử lý ticket thất bại!');
-        this.error = 'Xử lý ticket thất bại!';
         this.loading = false;
+        this.error = null;
+        // Remove duplicate toast - parent component will show it
+        this.dialogRef.close({ success: true });
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = 'Xử lý ticket thất bại!';
+        this.toast.error('Xử lý ticket thất bại!');
+        console.error('Handle ticket error:', err);
       }
     });
   }

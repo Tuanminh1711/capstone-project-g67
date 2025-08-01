@@ -1,3 +1,30 @@
+.blocked-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255,255,255,0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.blocked-message {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 32px 40px;
+  font-size: 1.2rem;
+  color: #059669;
+  font-weight: 600;
+  text-align: center;
+}
+.care-expert-vip.blocked {
+  pointer-events: none;
+  filter: blur(1.5px) grayscale(0.2);
+}
 .care-expert-vip {
   max-width: 480px;
   margin: 40px auto;

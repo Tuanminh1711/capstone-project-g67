@@ -8,6 +8,7 @@ import { AuthDialogService } from '../../auth/auth-dialog.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
+import { ToastService } from '../toast/toast.service';
 
 @Component({
   selector: 'app-top-navigator',
@@ -37,7 +38,8 @@ export class TopNavigatorComponent implements OnInit {
     public router: Router,
     public authService: AuthService,
     private authDialog: AuthDialogService,
-    private jwtUtil: JwtUserUtilService
+    private jwtUtil: JwtUserUtilService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -87,6 +89,11 @@ export class TopNavigatorComponent implements OnInit {
     return '';
   }
   goToCareExpert(): void {
+    if (!this.isLoggedIn) {
+      this.authDialog.openLoginDialog();
+      this.toast.error('Vui lòng đăng nhập để sử dụng tính năng này!');
+      return;
+    }
     this.authService.getProfile().subscribe({
       next: (user: any) => {
         const role = user?.role || this.jwtUtil.getRoleFromToken();

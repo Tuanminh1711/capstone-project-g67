@@ -56,12 +56,9 @@ export class ReportDetailService {
   constructor(private http: HttpClient) {}
 
   getReportDetail(reportId: number): Observable<ReportDetail> {
-    console.log('Calling API:', `${this.baseUrl}/report-detail/${reportId}`);
-    
     return this.http.get<ReportDetailResponse>(`${this.baseUrl}/report-detail/${reportId}`)
       .pipe(
         map(response => {
-          console.log('API Response:', response);
           if (response && response.data) {
             return response.data;
           }
@@ -90,14 +87,8 @@ export class ReportDetailService {
       userId: userId
     };
     
-    console.log('Approve request - trying approve endpoint:', {
-      url: `${this.baseUrl}/approve-report/${reportId}`,
-      body: body
-    });
-    
     return this.http.post(`${this.baseUrl}/approve-report/${reportId}`, body).pipe(
       catchError(error => {
-        console.log('Approve endpoint failed, trying alternative...');
         // Nếu endpoint approve không tồn tại, thử endpoint handle với action
         const alternativeBody = { ...body, status: 'APPROVED' };
         return this.http.put(`${this.baseUrl}/report/${reportId}/status`, alternativeBody);
@@ -106,18 +97,16 @@ export class ReportDetailService {
   }
 
   rejectReport(reportId: number, userId: number, adminNotes: string = 'Report không hợp lệ.'): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'userId': userId.toString()
+    });
+    
     const body = {
-      action: 'REJECT',
-      adminNotes: adminNotes,
-      userId: userId
+      status: 'REJECTED',
+      adminNotes: adminNotes
     };
     
-    return this.http.post(`${this.baseUrl}/reject-report/${reportId}`, body).pipe(
-      catchError(error => {
-        console.log('Reject endpoint failed, trying alternative...');
-        const alternativeBody = { ...body, status: 'REJECTED' };
-        return this.http.put(`${this.baseUrl}/report/${reportId}/status`, alternativeBody);
-      })
-    );
+    return this.http.put(`${this.baseUrl}/handle-report/${reportId}`, body, { headers });
   }
 }

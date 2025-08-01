@@ -42,7 +42,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   return next(apiReq).pipe(
     catchError((error: HttpErrorResponse) => {
       // Chỉ ghi log lỗi quan trọng, không log lỗi categories, upload và plants
-      const ignoredEndpoints = ['/api/categories', '/api/upload/image', '/api/plants/search'];
+      const ignoredEndpoints = ['/api/categories', '/api/upload/image', '/api/plants/search', '/api/user/profile'];
       const shouldLog = !environment.production && 
         !ignoredEndpoints.some(endpoint => apiReq.url.includes(endpoint));
       

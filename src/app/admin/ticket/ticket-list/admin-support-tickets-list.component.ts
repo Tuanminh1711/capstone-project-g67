@@ -5,10 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { AdminSupportTicketsService, AdminSupportTicket } from '../admin-support-tickets.service';
 import { ClaimTicketDialogComponent } from '../claim/claim-ticket-dialog.component';
-import { HandleTicketDialogComponent } from '../handle/handle-ticket-dialog.component';
 import { ReleaseTicketConfirmDialogComponent } from '../release/release-ticket-confirm-dialog.component';
-import { StatusTicketDialogComponent } from '../status/status-ticket-dialog.component';
-import { ResponseTicketDialogComponent } from '../response/response-ticket-dialog.component';
 import { ToastService } from '../../../shared/toast/toast.service';
 
 
@@ -43,22 +40,12 @@ export class AdminSupportTicketsListComponent implements OnInit {
       width: '400px',
       disableClose: true
     });
+    
     dialogRef.afterClosed().subscribe((claimed) => {
       if (claimed) {
-        this.loadTickets(this.page);
-      }
-    });
-  }
-
-  openHandleDialog(ticket: AdminSupportTicket) {
-    const dialogRef = this.dialog.open(HandleTicketDialogComponent, {
-      data: { ticketId: ticket.ticketId },
-      width: '420px',
-      autoFocus: false
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTickets();
+        this.toast.success('Đã nhận ticket thành công!');
+        // Chuyển đến trang detail để tiếp tục xử lý
+        this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
       }
     });
   }
@@ -69,6 +56,7 @@ export class AdminSupportTicketsListComponent implements OnInit {
       width: '350px',
       autoFocus: false
     });
+    
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.ticketsService.releaseTicket(ticket.ticketId).subscribe({
@@ -78,39 +66,6 @@ export class AdminSupportTicketsListComponent implements OnInit {
           },
           error: () => this.toast.error('Trả lại ticket thất bại!')
         });
-      }
-    });
-  }
-
-  openStatusDialog(ticket: AdminSupportTicket) {
-    const dialogRef = this.dialog.open(StatusTicketDialogComponent, {
-      data: { ticketId: ticket.ticketId, currentStatus: ticket.status },
-      width: '350px',
-      autoFocus: false
-    });
-    dialogRef.afterClosed().subscribe(newStatus => {
-      if (newStatus && newStatus !== ticket.status) {
-        this.ticketsService.changeStatus(ticket.ticketId, newStatus).subscribe({
-          next: () => {
-            this.toast.success('Đổi trạng thái thành công!');
-            this.loadTickets();
-          },
-          error: () => this.toast.error('Đổi trạng thái thất bại!')
-        });
-      }
-    });
-  }
-
-  openResponseDialog(ticket: AdminSupportTicket) {
-    const dialogRef = this.dialog.open(ResponseTicketDialogComponent, {
-      data: { ticketId: ticket.ticketId },
-      width: '400px',
-      autoFocus: false
-    });
-    dialogRef.afterClosed().subscribe(success => {
-      if (success) {
-        this.toast.success('Gửi phản hồi thành công!');
-        this.loadTickets();
       }
     });
   }
@@ -167,17 +122,6 @@ export class AdminSupportTicketsListComponent implements OnInit {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-    });
-  }
-
-  onStatusChange(ticket: AdminSupportTicket, newStatus: string) {
-    if (ticket.status === newStatus) return;
-    this.ticketsService.changeStatus(ticket.ticketId, newStatus).subscribe({
-      next: () => {
-        this.toast.success('Đổi trạng thái thành công!');
-        ticket.status = newStatus;
-      },
-      error: () => this.toast.error('Đổi trạng thái thất bại!')
     });
   }
 }

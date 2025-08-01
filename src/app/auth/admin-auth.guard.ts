@@ -38,6 +38,7 @@ export class AdminAuthGuard implements CanActivate, CanActivateChild {
         '/admin/plants/edit',
         '/admin/plants/update',
         '/admin/reports',
+        '/admin/reports/detail/',
         '/admin/reports/detail',
         '/admin/reports/review',
         '/admin/support/tickets',

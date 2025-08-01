@@ -1,86 +1,186 @@
 @if (ticket) {
-  <div class="ticket-detail-card modern-card">
-    <div class="ticket-header">
-      <button class="back-btn-mini" (click)="onClose()" title="Quay lại"><i class="fas fa-arrow-left"></i></button>
-      <div class="header-title-group">
-        <h2 class="ticket-title">{{ ticket.title }}</h2>
-        <span class="ticket-status status-{{ ticket.status.toLowerCase() }}">
-          {{
-            ticket.status === 'OPEN' ? 'Đang mở' :
-            ticket.status === 'CLOSED' ? 'Đã đóng' :
-            ticket.status === 'CLAIMED' ? 'Đã nhận' :
-            ticket.status === 'IN_PROGRESS' ? 'Đang xử lý' :
-            ticket.status
-          }}
-        </span>
+  <div class="ticket-detail-container">
+    <!-- Header Section -->
+    <div class="detail-header">
+      <button class="back-button" (click)="onClose()" aria-label="Quay lại">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        <span>Quay lại</span>
+      </button>
+      
+      <div class="header-content">
+        <div class="title-status">
+          <h1 class="ticket-title">{{ ticket.title }}</h1>
+          <span class="status-badge status-{{ ticket.status.toLowerCase() }}">
+            <div class="status-dot"></div>
+            {{
+              ticket.status === 'OPEN' ? 'Đang mở' :
+              ticket.status === 'CLOSED' ? 'Đã đóng' :
+              ticket.status === 'CLAIMED' ? 'Đã nhận' :
+              ticket.status === 'IN_PROGRESS' ? 'Đang xử lý' :
+              ticket.status
+            }}
+          </span>
+        </div>
+        
+        <button class="response-button" (click)="openResponseDialog()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+          </svg>
+          Phản hồi ticket
+        </button>
       </div>
     </div>
-    <div class="ticket-section info-section">
-      <div class="info-row">
-        <span class="info-label">Mô tả:</span>
-        <span class="info-value">{{ ticket.description }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Người gửi:</span>
-        <span class="info-value">{{ ticket.userName }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Ngày tạo:</span>
-        <span class="info-value">{{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
-      </div>
-      @if (ticket.claimedByUserName) {
-        <div class="info-row">
-          <span class="info-label">Người nhận:</span>
-          <span class="info-value">{{ ticket.claimedByUserName }}</span>
+
+    <!-- Main Content -->
+    <div class="detail-content">
+      <!-- Ticket Information Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+            </svg>
+            Thông tin ticket
+          </h2>
         </div>
-      }
-      @if (ticket.claimedAt) {
-        <div class="info-row">
-          <span class="info-label">Thời gian nhận:</span>
-          <span class="info-value">{{ ticket.claimedAt | date:'dd/MM/yyyy HH:mm' }}</span>
-        </div>
-      }
-      @if (ticket.imageUrl) {
-        <div class="info-row">
-          <span class="info-label">Ảnh đính kèm:</span>
-          <span class="info-value"><img [src]="ticket.imageUrl" alt="ticket image" class="ticket-image"></span>
-        </div>
-      }
-    </div>
-    <div class="ticket-section response-section">
-      <h3><i class="fas fa-comments"></i> Phản hồi</h3>
-      @if (ticket.responses?.length) {
-        @for (resp of ticket.responses; track resp) {
-          <div class="ticket-response-item">
-            <div class="response-header">
-              <span class="responder-name"><b>{{ resp.responderName }}</b> <span class="role-badge">{{ resp.responderRole }}</span></span>
-              <span class="response-date">{{ resp.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Mô tả</span>
+              <div class="info-value description">{{ ticket.description }}</div>
             </div>
-            <div class="response-content">{{ resp.content }}</div>
+            
+            <div class="info-item">
+              <span class="info-label">Người gửi</span>
+              <div class="info-value user">
+                <div class="user-avatar">{{ ticket.userName?.charAt(0)?.toUpperCase() }}</div>
+                {{ ticket.userName }}
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <span class="info-label">Ngày tạo</span>
+              <div class="info-value date">{{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+            
+            @if (ticket.claimedByUserName) {
+              <div class="info-item">
+                <span class="info-label">Người nhận</span>
+                <div class="info-value user">
+                  <div class="user-avatar">{{ ticket.claimedByUserName?.charAt(0)?.toUpperCase() }}</div>
+                  {{ ticket.claimedByUserName }}
+                </div>
+              </div>
+            }
+            
+            @if (ticket.claimedAt) {
+              <div class="info-item">
+                <span class="info-label">Thời gian nhận</span>
+                <div class="info-value date">{{ ticket.claimedAt | date:'dd/MM/yyyy HH:mm' }}</div>
+              </div>
+            }
           </div>
-        }
-      }
-      @if (!ticket.responses?.length) {
-        <div class="empty">Chưa có phản hồi nào.</div>
-      }
-    </div>
-    <div class="ticket-section log-section">
-      <h3><i class="fas fa-history"></i> Lịch sử thao tác</h3>
-      @if (ticket.logs?.length) {
-        <ul class="log-list">
-          @for (log of ticket.logs; track log) {
-            <li>
-              <b>{{ log.action }}</b> bởi {{ log.userName }} <span class="log-date">({{ log.createdAt | date:'dd/MM/yyyy HH:mm' }})</span>
-              @if (log.note) {
-                <span class="log-note">: {{ log.note }}</span>
-              }
-            </li>
+          
+          @if (ticket.imageUrl) {
+            <div class="image-section">
+              <span class="info-label">Ảnh đính kèm</span>
+              <div class="image-container">
+                <img [src]="ticket.imageUrl" alt="Ticket image" class="ticket-image" />
+              </div>
+            </div>
           }
-        </ul>
-      }
-      @if (!ticket.logs?.length) {
-        <div class="empty">Chưa có lịch sử thao tác.</div>
-      }
+        </div>
+      </div>
+
+      <!-- Responses Card -->
+      <div class="responses-card">
+        <div class="card-header">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+            Phản hồi
+            @if (ticket.responses?.length) {
+              <span class="count-badge">{{ ticket.responses.length }}</span>
+            }
+          </h2>
+        </div>
+        
+        <div class="card-content">
+          @if (ticket.responses?.length) {
+            <div class="responses-list">
+              @for (resp of ticket.responses; track resp) {
+                <div class="response-item">
+                  <div class="response-header">
+                    <div class="responder-info">
+                      <div class="responder-avatar">{{ resp.responderName?.charAt(0)?.toUpperCase() }}</div>
+                      <div class="responder-details">
+                        <span class="responder-name">{{ resp.responderName }}</span>
+                        <span class="role-badge">{{ resp.responderRole }}</span>
+                      </div>
+                    </div>
+                    <span class="response-date">{{ resp.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="response-content">{{ resp.content }}</div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+              </svg>
+              <h3>Chưa có phản hồi</h3>
+              <p>Ticket này chưa có phản hồi nào từ hỗ trợ.</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Activity Log Card -->
+      <div class="activity-card">
+        <div class="card-header">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.95-2.05l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+            </svg>
+            Lịch sử hoạt động
+          </h2>
+        </div>
+        
+        <div class="card-content">
+          @if (ticket.logs?.length) {
+            <div class="activity-timeline">
+              @for (log of ticket.logs; track log) {
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <div class="activity-header">
+                      <span class="activity-action">{{ log.action }}</span>
+                      <span class="activity-user">{{ log.userName }}</span>
+                    </div>
+                    <div class="activity-time">{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                    @if (log.note) {
+                      <div class="activity-note">{{ log.note }}</div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.95-2.05l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+              </svg>
+              <h3>Chưa có hoạt động</h3>
+              <p>Chưa có lịch sử hoạt động nào được ghi lại.</p>
+            </div>
+          }
+        </div>
+      </div>
     </div>
   </div>
 }

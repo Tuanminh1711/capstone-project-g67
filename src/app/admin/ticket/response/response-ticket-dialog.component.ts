@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { AdminSupportTicketsService } from '../admin-support-tickets.service';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -21,7 +21,7 @@ export class ResponseTicketDialogComponent {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ResponseTicketDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { ticketId: number },
-    private http: HttpClient
+    private adminTicketsService: AdminSupportTicketsService
   ) {
     this.form = this.fb.group({
       response: ['', Validators.required]
@@ -31,14 +31,16 @@ export class ResponseTicketDialogComponent {
     if (this.form.invalid || this.loading) return;
     this.loading = true;
     this.error = null;
-    const body = { content: this.form.value.response };
-    this.http.post<any>(`http://localhost:8080/api/admin/support/tickets/${this.data.ticketId}/responses`, body).subscribe({
-      next: (res) => {
+    
+    const content = this.form.value.response;
+    this.adminTicketsService.responseTicket(this.data.ticketId, content).subscribe({
+      next: (res: any) => {
         this.loading = false;
         this.dialogRef.close(true);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
+        console.error('Response error:', err);
         this.error = err?.error?.message || 'Gửi phản hồi thất bại. Vui lòng thử lại.';
       }
     });

@@ -11,6 +11,7 @@ const ADMIN_ROUTES: Routes = [
       { path: 'reports', loadComponent: () => import('./response-manager/report-list/report-list.component').then(m => m.ReportListComponent) },
       { path: 'reports/detail/:id', loadComponent: () => import('./response-manager/report-detail/report-detail.component').then(m => m.ReportDetailComponent) },
       { path: 'reports/review/:id', loadComponent: () => import('./response-manager/report-review/report-review.component').then(m => m.ReportReviewComponent) },
+      { path: 'response-manager/approve-report/:reportId', loadComponent: () => import('./response-manager/approve-report/update-to-approve-report.component').then(m => m.UpdatePlantComponent) },
       { path: 'statistics/overview', loadComponent: () => import('./statistics/admin-statistics.component').then(m => m.AdminStatisticsComponent) },
       { path: 'accounts/create', loadComponent: () => import('./account-manager/create-account/admin-create-account.component').then(m => m.AdminCreateAccountComponent) },
       { path: 'accounts', loadComponent: () => import('./account-manager/account-list/admin-account-list.component').then(m => m.AdminAccountListComponent) },

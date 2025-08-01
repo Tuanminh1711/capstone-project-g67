@@ -11,7 +11,7 @@
     </p>
     <div class="home-hero-cta">
       @if (!jwtUserUtil.isLoggedIn()) {
-        <button (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập ngay</button>
+        <button (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập</button>
       }
       @if (jwtUserUtil.isLoggedIn()) {
         <button (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Chăm sóc cùng chuyên gia</button>

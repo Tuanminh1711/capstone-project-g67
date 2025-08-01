@@ -197,17 +197,18 @@
           <i class="fas fa-arrow-left"></i> Quay lại
         </button>
         
-        <!-- Approve Button - Show if user can handle the report -->
-        <button *ngIf="canHandleReport()" 
-                (click)="approveReport()" 
+        <!-- Approve Edit Button - Show only if user can approve/edit this report -->
+        <button *ngIf="canApproveEdit()" 
+                (click)="goToApproveEdit()" 
                 [disabled]="processing"
-                class="btn btn-success">
-          <i class="fas fa-check"></i> 
-          {{ processing ? 'Đang xử lý...' : 'Phê duyệt' }}
+                class="btn btn-success"
+                title="Chỉnh sửa thông tin cây và chấp nhận report">
+          <i class="fas fa-edit"></i> 
+          {{ processing ? 'Đang xử lý...' : 'Chỉnh sửa để chấp thuận' }}
         </button>
         
-        <!-- Reject Button - Show if user can handle the report -->
-        <button *ngIf="canHandleReport()" 
+        <!-- Reject Button - Show only if user can handle the report AND it's already claimed -->
+        <button *ngIf="canHandleReport() && report.status === 'CLAIMED'" 
                 (click)="rejectReport()" 
                 [disabled]="processing"
                 class="btn btn-danger">
@@ -215,13 +216,25 @@
           {{ processing ? 'Đang xử lý...' : 'Từ chối' }}
         </button>
         
-        <!-- Info message for users who cannot handle -->
-        <div *ngIf="report && !canHandleReport() && (report.status === 'CLAIMED' || report.status === 'PENDING')" 
+        <!-- Info messages for permission restrictions and status -->
+        <div *ngIf="report && (!canHandleReport() || !canApproveEdit())" 
              class="permission-info">
           <i class="fas fa-info-circle"></i>
-          <span *ngIf="isClaimedByOther()">
-            Báo cáo này đã được nhận bởi {{ report.claimedByName }} (ID: {{ report.claimedById }}). 
-            Chỉ người nhận mới có thể xử lý. (Your ID: {{ userId }})
+          
+          <!-- PENDING status -->
+          <span *ngIf="report.status === 'PENDING'">
+            Report đang chờ xử lý. Cần claim report trước khi có thể approve hoặc reject.
+          </span>
+          
+          <!-- CLAIMED by other user -->
+          <span *ngIf="report.status === 'CLAIMED' && isClaimedByOther()">
+            Report này đã được nhận bởi {{ report.claimedByName }} (ID: {{ report.claimedById }}). 
+            Chỉ người đã claim mới có thể xử lý hoặc chỉnh sửa để chấp thuận. (Your ID: {{ userId }})
+          </span>
+          
+          <!-- HANDLED status - when both functions return false -->
+          <span *ngIf="!canHandleReport() && !canApproveEdit() && report.status !== 'PENDING' && report.status !== 'CLAIMED'">
+            Report này đã được xử lý hoàn tất (approved/rejected) và không thể chỉnh sửa hoặc xử lý thêm nữa.
           </span>
         </div>
       </div>

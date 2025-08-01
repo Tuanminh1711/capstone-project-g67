@@ -1,26 +1,41 @@
 <app-top-navigator></app-top-navigator>
-<div class="ticket-list-wrapper" style="margin-top: 64px;">
-  <h2>Danh sách Ticket hỗ trợ</h2>
-  <div *ngIf="loading" class="loading">Đang tải...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-  <table *ngIf="(tickets$ | async)?.length && !selectedTicket" class="ticket-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Tiêu đề</th>
-        <th>Mô tả</th>
-        <th>Trạng thái</th>
-        <th>Ngày tạo</th>
-        <th>Phản hồi</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let ticket of (tickets$ | async)">
-        <td>{{ ticket.ticketId }}</td>
-        <td>{{ ticket.title }}</td>
-        <td>{{ ticket.description }}</td>
-        <td>
+
+<div class="tickets-container" style="margin-top: 64px;">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+        </svg>
+        Ticket hỗ trợ của tôi
+      </h1>
+      <p class="page-subtitle">Quản lý và theo dõi các yêu cầu hỗ trợ</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Đang tải danh sách ticket...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+    </svg>
+    <h3>Có lỗi xảy ra</h3>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Tickets Grid -->
+  <div *ngIf="(tickets$ | async)?.length && !selectedTicket" class="tickets-grid">
+    <div *ngFor="let ticket of (tickets$ | async)" class="ticket-card">
+      <div class="ticket-header">
+        <div class="ticket-id">#{{ ticket.ticketId }}</div>
+        <div class="ticket-status status-{{ ticket.status.toLowerCase() }}">
+          <div class="status-dot"></div>
           {{
             ticket.status === 'OPEN' ? 'Đang mở' :
             ticket.status === 'CLOSED' ? 'Đã đóng' :
@@ -28,15 +43,57 @@
             ticket.status === 'IN_PROGRESS' ? 'Đang xử lý' :
             ticket.status
           }}
-        </td>
-        <td>{{ ticket.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>{{ ticket.responseCount }}</td>
-        <td><button class="btn btn-link" (click)="viewDetail(ticket)">Xem chi tiết</button></td>
-      </tr>
-    </tbody>
-  </table>
+        </div>
+      </div>
+      
+      <div class="ticket-content">
+        <h3 class="ticket-title">{{ ticket.title }}</h3>
+        <p class="ticket-description">{{ ticket.description }}</p>
+        
+        <div class="ticket-meta">
+          <div class="meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span>{{ ticket.createdAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+          
+          <div class="meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+            <span>{{ ticket.responseCount }} phản hồi</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="ticket-actions">
+        <button class="action-btn secondary" (click)="viewDetail(ticket)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+          </svg>
+          Xem chi tiết
+        </button>
+        
+        <button class="action-btn primary" (click)="openResponseDialog(ticket)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+          </svg>
+          Phản hồi
+        </button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Ticket Detail View (tách component) -->
+  <!-- Empty State -->
+  <div *ngIf="!loading && !(tickets$ | async)?.length && !error && !selectedTicket" class="empty-state">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+    </svg>
+    <h3>Chưa có ticket nào</h3>
+    <p>Bạn chưa tạo ticket hỗ trợ nào. Hãy tạo ticket đầu tiên để nhận được hỗ trợ từ đội ngũ của chúng tôi.</p>
+  </div>
+
+  <!-- Ticket Detail View -->
   <app-ticket-detail *ngIf="selectedTicket" [ticket]="selectedTicket" (close)="closeDetail()"></app-ticket-detail>
-  <div *ngIf="!loading && !(tickets$ | async)?.length && !error" class="empty">Không có ticket nào.</div>
 </div>

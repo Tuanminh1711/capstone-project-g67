@@ -8,6 +8,8 @@ import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TicketDetailComponent } from '../ticket-detail/ticket-detail.component';
+import { MatDialog } from '@angular/material/dialog';
+import { TicketResponseDialogComponent } from '../ticket-response/ticket-response-dialog.component';
 
 interface Ticket {
   ticketId: number;
@@ -26,6 +28,18 @@ interface Ticket {
   imports: [CommonModule, DatePipe, TopNavigatorComponent, TicketDetailComponent],
 })
 export class ViewTicketComponent implements OnInit, AfterViewInit {
+  openResponseDialog(ticket: any) {
+    const ticketId = ticket.id || ticket.ticketId;
+    this.dialog.open(TicketResponseDialogComponent, {
+      data: { ticketId },
+      width: '480px',
+      panelClass: 'dialog-panel-bg'
+    }).afterClosed().subscribe(result => {
+      if (result === 'responseAdded') {
+        // TODO: reload responses or ticket list if needed
+      }
+    });
+  }
   private ticketsSubject = new BehaviorSubject<Ticket[]>([]);
   tickets$ = this.ticketsSubject.asObservable().pipe(shareReplay(1));
   loading = false;
@@ -37,7 +51,8 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
