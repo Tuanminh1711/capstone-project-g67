@@ -14,6 +14,7 @@ import com.plantcare_backend.repository.SupportTicketLogRepository;
 import com.plantcare_backend.repository.SupportTicketRepository;
 import com.plantcare_backend.repository.TicketResponseRepository;
 import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.service.AdminNotificationService;
 import com.plantcare_backend.service.SupportTicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     private final TicketResponseRepository ticketResponseRepository;
     private final UserRepository userRepository;
     private final SupportTicketLogRepository supportTicketLogRepository;
+    private final AdminNotificationService adminNotificationService;
 
     @Override
     public Long createTicket(CreateTicketRequestDTO request, int userId) {
@@ -46,6 +48,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .build();
 
         SupportTicket savedTicket = supportTicketRepository.save(ticket);
+        adminNotificationService.notifyNewTicket(savedTicket);
         return savedTicket.getTicketId();
     }
 
@@ -87,6 +90,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .ticket(ticket)
                 .responder(user)
                 .content(request.getContent())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         ticketResponseRepository.save(response);
@@ -133,6 +137,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .ticket(ticket)
                 .responder(admin)
                 .content(request.getContent())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         ticketResponseRepository.save(response);
@@ -282,6 +287,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         return TicketResponseDetailDTO.builder()
                 .responseId(response.getResponseId())
                 .content(response.getContent())
+                .imageUrl(response.getImageUrl())
                 .createdAt(response.getCreatedAt())
                 .responderName(response.getResponder().getUsername())
                 .responderRole(response.getResponder().getRole().getRoleName().toString())

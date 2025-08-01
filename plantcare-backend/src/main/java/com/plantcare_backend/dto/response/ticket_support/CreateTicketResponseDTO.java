@@ -13,4 +13,6 @@ import lombok.NoArgsConstructor;
 public class CreateTicketResponseDTO {
     @NotBlank(message = "Content is required")
     private String content;
+    
+    private String imageUrl;
 }
