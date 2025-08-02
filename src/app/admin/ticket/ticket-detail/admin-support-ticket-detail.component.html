@@ -81,8 +81,8 @@
           <blockquote class="ticket-description-block">
             {{ ticket?.description }}
           </blockquote>
-          <ng-container *ngIf="ticket?.imageUrl">
-            <img [src]="ticket?.imageUrl || ''" alt="Ảnh phiếu hỗ trợ" class="ticket-image" />
+          <ng-container *ngIf="ticket?.imageUrl && imageObjectUrl">
+            <img [src]="imageObjectUrl" alt="Ảnh phiếu hỗ trợ" class="ticket-image" />
           </ng-container>
         </div>
       </div>

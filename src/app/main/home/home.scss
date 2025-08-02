@@ -1117,3 +1117,120 @@
   from { opacity: 0; transform: scale(0.92); }
   to { opacity: 1; transform: scale(1); }
 }
+
+// VIP Features Section
+.home-vip-features {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  text-align: center;
+  
+  .vip-banner {
+    max-width: 1200px;
+    margin: 0 auto;
+    
+    .vip-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      color: #1e3c72;
+      padding: 8px 24px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    h2 {
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    > p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.2rem;
+      margin-bottom: 50px;
+    }
+  }
+  
+  .vip-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+    
+    .vip-feature {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px 30px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+      }
+      
+      .vip-feature-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+      
+      h4 {
+        color: #fff;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+      }
+      
+      p {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.6;
+      }
+    }
+  }
+  
+  .vip-upgrade-btn {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #1e3c72;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
+      background: linear-gradient(135deg, #ffed4e, #fff59d);
+    }
+    
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+    
+    .vip-banner h2 {
+      font-size: 2rem;
+    }
+    
+    .vip-features-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    
+    .vip-feature {
+      padding: 30px 20px;
+    }
+  }
+}

@@ -1,0 +1,35 @@
+// Expert Layout Styles
+.expert-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.expert-main-content {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.expert-content {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .expert-layout {
+    flex-direction: column;
+  }
+  
+  .expert-main-content {
+    margin-left: 0;
+  }
+  
+  .expert-content {
+    padding: 16px;
+  }
+}

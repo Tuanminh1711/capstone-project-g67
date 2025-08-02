@@ -90,7 +90,16 @@ export class LoginAdminPageComponent {
               this.toast.success(this.successMsg);
               this.loading = false;
               this.cdr.detectChanges();
-              this.router.navigate(['/admin']);
+              
+              // Kiểm tra role để chuyển hướng đến trang welcome tương ứng
+              if (role === 'expert' || role === 'staff') {
+                this.router.navigate(['/expert/welcome']);
+              } else if (role === 'admin') {
+                this.router.navigate(['/admin']);
+              } else {
+                // Default fallback cho các role khác
+                this.router.navigate(['/admin']);
+              }
             }, 150);
           });
         } else {
@@ -99,7 +108,22 @@ export class LoginAdminPageComponent {
           this.toast.success(this.successMsg);
           this.loading = false;
           this.cdr.detectChanges();
-          this.router.navigate(['/admin']);
+          
+          // Kiểm tra role từ response để chuyển hướng
+          let role = '';
+          if (res.role) {
+            role = res.role.toLowerCase();
+          } else if (res.user && res.user.role) {
+            role = res.user.role.toLowerCase();
+          }
+          
+          if (role === 'expert' || role === 'staff') {
+            this.router.navigate(['/expert/welcome']);
+          } else if (role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/admin']);
+          }
         }
       },
       error: (err: any) => {

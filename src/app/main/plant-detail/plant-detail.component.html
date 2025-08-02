@@ -72,10 +72,10 @@
                 </button>
               </div>
             </div>
-            <div class="section-header modern">
+            <div class="section-header modern" *ngIf="!isGuest">
               <h3><span class="section-icon">📝</span> Mô tả chi tiết</h3>
             </div>
-            <div class="description-content modern scroll-card">
+            <div class="description-content modern scroll-card" *ngIf="!isGuest">
               <div class="scroll-inner">
                 <p>{{ plant.description || 'Chưa có mô tả chi tiết cho loại cây này.' }}</p>
               </div>
@@ -154,19 +154,40 @@
                 }
               </div>
             </div>
-            <div class="section-header modern" *ngIf="plant.careInstructions">
+            <div class="section-header modern" *ngIf="plant.careInstructions && !isGuest">
               <h3><span class="section-icon">📋</span> Hướng dẫn chăm sóc chi tiết</h3>
             </div>
-            <div class="instructions-content modern scroll-card" *ngIf="plant.careInstructions">
+            <div class="instructions-content modern scroll-card" *ngIf="plant.careInstructions && !isGuest">
               <div class="scroll-inner">
                 <p>{{ plant.careInstructions }}</p>
               </div>
             </div>
-            <div class="section-header modern" *ngIf="plant.commonDiseases">
+            <div class="section-header modern" *ngIf="plant.commonDiseases && !isGuest">
               <h3><span class="section-icon">🩺</span> Bệnh thường gặp</h3>
             </div>
-            <div class="diseases-content modern" *ngIf="plant.commonDiseases">
+            <div class="diseases-content modern" *ngIf="plant.commonDiseases && !isGuest">
               <p>{{ plant.commonDiseases }}</p>
+            </div>
+            <!-- Guest notice for protected content -->
+            <div class="guest-notice-section" *ngIf="isGuest && (plant.description || plant.careInstructions || plant.commonDiseases)">
+              <div class="auth-required-section">
+                <div class="section-header modern">
+                  <h3><span class="section-icon">🔒</span> Nội dung cần đăng nhập</h3>
+                </div>
+                <div class="auth-notice-content">
+                  <p>Để xem thông tin chi tiết về:</p>
+                  <ul>
+                    <li *ngIf="plant.description">📝 Mô tả chi tiết về cây</li>
+                    <li *ngIf="plant.careInstructions">📋 Hướng dẫn chăm sóc chi tiết</li>
+                    <li *ngIf="plant.commonDiseases">🩺 Bệnh thường gặp và cách phòng tránh</li>
+                  </ul>
+                  <p>Vui lòng đăng nhập vào hệ thống.</p>
+                  <button class="login-cta-btn" (click)="openLoginDialog()">
+                    <span class="btn-icon">🔑</span>
+                    <span class="btn-text">Đăng nhập ngay</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

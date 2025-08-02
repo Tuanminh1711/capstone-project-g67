@@ -16,27 +16,29 @@ import { AuthDialogService } from '../../auth/auth-dialog.service';
 })
 export class CareExpertComponent implements OnInit {
   private authDialogService = inject(AuthDialogService);
-  isBlocked = false;
 
   constructor(private router: Router, private jwtUtil: JwtUserUtilService) {}
 
   ngOnInit() {
-    // Nếu chưa đăng nhập thì show popup và chặn thao tác
-    if (!this.jwtUtil.isLoggedIn()) {
-      this.isBlocked = true;
-      setTimeout(() => this.authDialogService.openLoginDialog(), 200);
-      return;
-    }
-    // Nếu là VIP thì chuyển thẳng sang welcome-vip
-    const info = this.jwtUtil.getTokenInfo();
-    if (info && info.role === 'VIP') {
-      this.router.navigate(['/vip/welcome-vip']);
-      return;
+    // Cho phép tất cả users truy cập trang này
+    // Chỉ kiểm tra VIP để chuyển hướng nếu cần
+    if (this.jwtUtil.isLoggedIn()) {
+      const info = this.jwtUtil.getTokenInfo();
+      if (info && info.role === 'VIP') {
+        this.router.navigate(['/vip/welcome-vip']);
+        return;
+      }
     }
   }
 
   goToVipPayment() {
-    if (this.isBlocked) return;
+    // Kiểm tra đăng nhập khi click nút nâng cấp VIP
+    if (!this.jwtUtil.isLoggedIn()) {
+      this.authDialogService.openLoginDialog();
+      return;
+    }
+    
+    // User đã đăng nhập -> chuyển đến trang payment
     this.router.navigate(['/user/exper/vip-payment']);
   }
 }

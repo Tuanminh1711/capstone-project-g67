@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
+import { ConfigService } from '../../../shared/config.service';
 
 // Models cho report-detail theo API thực
 export interface ReportLog {
@@ -51,12 +52,13 @@ export interface ReportDetailResponse {
   providedIn: 'root'
 })
 export class ReportDetailService {
-  private baseUrl = 'http://localhost:8080/api/manager';
-
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {}
 
   getReportDetail(reportId: number): Observable<ReportDetail> {
-    return this.http.get<ReportDetailResponse>(`${this.baseUrl}/report-detail/${reportId}`)
+    return this.http.get<ReportDetailResponse>(`${this.configService.apiUrl}/manager/report-detail/${reportId}`)
       .pipe(
         map(response => {
           if (response && response.data) {
@@ -72,11 +74,11 @@ export class ReportDetailService {
   }
 
   claimReport(reportId: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/claim-report/${reportId}`, {});
+    return this.http.post(`${this.configService.apiUrl}/manager/claim-report/${reportId}`, {});
   }
 
   handleReport(reportId: number, notes?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/handle-report/${reportId}`, { notes });
+    return this.http.post(`${this.configService.apiUrl}/manager/handle-report/${reportId}`, { notes });
   }
 
   approveReport(reportId: number, userId: number, adminNotes: string = 'Đã kiểm tra, report hợp lệ.'): Observable<any> {
@@ -87,11 +89,11 @@ export class ReportDetailService {
       userId: userId
     };
     
-    return this.http.post(`${this.baseUrl}/approve-report/${reportId}`, body).pipe(
+    return this.http.post(`${this.configService.apiUrl}/manager/approve-report/${reportId}`, body).pipe(
       catchError(error => {
         // Nếu endpoint approve không tồn tại, thử endpoint handle với action
         const alternativeBody = { ...body, status: 'APPROVED' };
-        return this.http.put(`${this.baseUrl}/report/${reportId}/status`, alternativeBody);
+        return this.http.put(`${this.configService.apiUrl}/manager/report/${reportId}/status`, alternativeBody);
       })
     );
   }
@@ -107,6 +109,6 @@ export class ReportDetailService {
       adminNotes: adminNotes
     };
     
-    return this.http.put(`${this.baseUrl}/handle-report/${reportId}`, body, { headers });
+    return this.http.put(`${this.configService.apiUrl}/manager/handle-report/${reportId}`, body, { headers });
   }
 }

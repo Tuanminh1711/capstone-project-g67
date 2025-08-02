@@ -1,5 +1,5 @@
 
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogManager } from '../../shared/dialog-manager.service';
 import { LoginDialogComponent } from '../../auth/login/login-dialog';
@@ -13,7 +13,8 @@ import { TopNavigatorComponent } from '../../shared/top-navigator/index';
   standalone: true,
   imports: [TopNavigatorComponent, NgOptimizedImage],
   templateUrl: './home.html',
-  styleUrl: './home.scss'
+  styleUrl: './home.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
   currentBanner = 0;
@@ -76,5 +77,9 @@ export class HomeComponent {
     } else {
       this.router.navigate(['/care-expert']);
     }
+  }
+
+  goToVipUpgrade() {
+    this.router.navigate(['/user/exper/vip-payment']);
   }
 }

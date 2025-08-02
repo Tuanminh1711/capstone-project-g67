@@ -1,7 +1,10 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { TicketResponseDialogComponent } from '../ticket-response/ticket-response-dialog.component';
+import { environment } from '../../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -10,14 +13,59 @@ import { TicketResponseDialogComponent } from '../ticket-response/ticket-respons
   standalone: true,
   imports: [CommonModule]
 })
-export class TicketDetailComponent {
+export class TicketDetailComponent implements OnInit, OnDestroy {
   @Input() ticket: any;
   @Output() close = new EventEmitter<void>();
 
   private dialog = inject(MatDialog);
+  private http = inject(HttpClient);
+  private sanitizer = inject(DomSanitizer);
+  
+  imageObjectUrl: SafeUrl | null = null;
+
+  ngOnInit() {
+    if (this.ticket?.imageUrl) {
+      this.loadImage();
+    }
+  }
+
+  ngOnDestroy() {
+    // Clean up object URL to prevent memory leaks
+    if (this.imageObjectUrl) {
+      URL.revokeObjectURL(this.imageObjectUrl.toString());
+    }
+  }
+
+  private loadImage() {
+    if (!this.ticket?.imageUrl) return;
+
+    const token = localStorage.getItem('token');
+    const imageUrl = `${environment.baseUrl}${this.ticket.imageUrl}`;
+    
+    this.http.get(imageUrl, {
+      responseType: 'blob',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        this.imageObjectUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+      },
+      error: (error) => {
+        console.error('Failed to load image:', error);
+        this.imageObjectUrl = null;
+      }
+    });
+  }
 
   onClose() {
     this.close.emit();
+  }
+
+  getFullImageUrl(imageUrl: string): SafeUrl | string {
+    // Trả về object URL đã được tạo sẵn
+    return this.imageObjectUrl || '';
   }
 
   openResponseDialog() {

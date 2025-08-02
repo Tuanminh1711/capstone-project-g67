@@ -1,5 +1,5 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ChangeDetectionStrategy, TrackByFunction } from '@angular/core';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,13 +7,15 @@ import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { ChatStompService, ChatMessage } from './chat-stomp.service';
 import { AuthService } from '../../auth/auth.service';
+import { trackByMessageId } from '../../shared/performance';
 
 @Component({
   selector: 'app-vip-chat',
   standalone: true,
   imports: [CommonModule, FormsModule, TopNavigatorComponent],
   templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+  styleUrls: ['./chat.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatComponent implements OnInit, OnDestroy {
   messages: ChatMessage[] = [];
@@ -34,6 +36,15 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Kiểm tra quyền truy cập VIP
+    const userRole = this.authService.getCurrentUserRole();
+    if (userRole !== 'VIP' && userRole !== 'EXPERT') {
+      console.error('❌ Unauthorized access to VIP chat. User role:', userRole);
+      this.error = 'Bạn cần có tài khoản VIP để truy cập phòng chat này.';
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.currentUserId = this.authService.getCurrentUserId();
     
     // Nếu không có currentUserId, log warning
@@ -105,6 +116,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
+  getSenderName(msg: ChatMessage): string {
+    // Tạm thời dùng senderId, sau này có thể map với tên thật
+    return `User ${msg.senderId}`;
+  }
+
   // Thêm dummy messages để test layout
   addDummyMessages(): void {
     // Sử dụng ID rõ ràng để test
@@ -146,23 +162,34 @@ export class ChatComponent implements OnInit, OnDestroy {
     
     const date = new Date(timestamp);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 1) return 'Vừa xong';
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 7) return `${diffDays} ngày trước`;
     
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
+    // Kiểm tra xem có phải hôm nay không
+    const isToday = date.toDateString() === now.toDateString();
+    
+    // Kiểm tra xem có phải hôm qua không
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+    
+    // Format giờ:phút
+    const timeString = date.toLocaleTimeString('vi-VN', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
+    
+    if (isToday) {
+      return timeString; // Chỉ hiện giờ:phút nếu là hôm nay
+    } else if (isYesterday) {
+      return `Hôm qua ${timeString}`;
+    } else {
+      // Hiện ngày/tháng và giờ:phút
+      const dateString = date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit'
+      });
+      return `${dateString} ${timeString}`;
+    }
   }
 
   private scrollToBottom(): void {
@@ -226,6 +253,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.newMessage = '';
     this.error = ''; // Clear any previous errors
     this.cdr.markForCheck();
+  }
+
+  onEnterPress(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
+    // Allow Shift+Enter for new line (default behavior)
   }
 
   ngOnDestroy(): void {

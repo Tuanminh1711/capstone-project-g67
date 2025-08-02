@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { HttpClient } from '@angular/common/http';
+import { ConfigService } from '../../shared/config.service';
 
 @Component({
   selector: 'app-activity-logs',
@@ -34,7 +35,11 @@ export class ActivityLogsComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private http: HttpClient, 
+    private cdr: ChangeDetectorRef,
+    private configService: ConfigService
+  ) {}
 
   ngOnInit() {
     this.fetchLogs();
@@ -43,7 +48,7 @@ export class ActivityLogsComponent implements OnInit {
   fetchLogs() {
     this.loading = true;
     this.error = null;
-    this.http.post<any>('http://localhost:8080/api/personal/activity-logs', {}).subscribe({
+    this.http.post<any>(`${this.configService.apiUrl}/personal/activity-logs`, {}).subscribe({
       next: (res) => {
         this.logs = res?.data?.content || res?.data?.logs || res?.data || [];
         this.loading = false;

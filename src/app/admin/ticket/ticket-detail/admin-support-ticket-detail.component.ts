@@ -9,6 +9,9 @@ import { HandleTicketDialogComponent } from '../handle/handle-ticket-dialog.comp
 import { ReleaseTicketConfirmDialogComponent } from '../release/release-ticket-confirm-dialog.component';
 import { ResponseTicketDialogComponent } from '../response/response-ticket-dialog.component';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-support-ticket-detail',
@@ -45,10 +48,14 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   routeSub?: Subscription;
+  imageObjectUrl: SafeUrl | null = null;
+  
   private ticketService = inject(AdminSupportTicketDetailService);
   private adminSupportTicketsService = inject(AdminSupportTicketsService);
   private dialog = inject(MatDialog);
   private toastService = inject(ToastService);
+  private http = inject(HttpClient);
+  private sanitizer = inject(DomSanitizer);
 
   constructor(
     private route: ActivatedRoute,
@@ -74,6 +81,11 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
+    
+    // Clean up object URL to prevent memory leaks
+    if (this.imageObjectUrl) {
+      URL.revokeObjectURL(this.imageObjectUrl.toString());
+    }
   }
 
   loadTicketDetail(): void {
@@ -91,6 +103,12 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
       next: (ticket) => {
         this.ticket = ticket;
         this.loading = false;
+        
+        // Load image if exists
+        if (ticket.imageUrl) {
+          this.loadImage(ticket.imageUrl);
+        }
+        
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -98,6 +116,31 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         this.error = 'Không tìm thấy phiếu hỗ trợ hoặc có lỗi xảy ra.';
         this.loading = false;
         this.ticket = null;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadImage(imageUrl: string) {
+    if (!imageUrl) return;
+
+    const token = localStorage.getItem('token');
+    const fullImageUrl = `${environment.baseUrl}${imageUrl}`;
+    
+    this.http.get(fullImageUrl, {
+      responseType: 'blob',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        this.imageObjectUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('Failed to load image:', error);
+        this.imageObjectUrl = null;
         this.cdr.markForCheck();
       }
     });

@@ -9,7 +9,13 @@ import { ChatAiFabComponent } from './user/chat-ai/chat-ai-fab.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FooterComponent, ToastComponent, ConfirmationDialogComponent, ChatAiFabComponent],
+  imports: [
+    RouterOutlet, 
+    FooterComponent, 
+    ToastComponent, 
+    ConfirmationDialogComponent, 
+    ChatAiFabComponent
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -20,8 +26,8 @@ export class App {
   private authDialog = inject(AuthDialogService);
 
   isAdminPage(): boolean {
-    // Kiểm tra url có chứa '/admin' không
-    return this.router.url.startsWith('/admin');
+    // Kiểm tra url có chứa '/admin' hoặc '/expert' không
+    return this.router.url.startsWith('/admin') || this.router.url.startsWith('/expert');
   }
 
   constructor() {

@@ -1,0 +1,73 @@
+// Layout mixins for preventing horizontal scroll
+
+@mixin prevent-horizontal-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+@mixin full-width-container {
+  @include prevent-horizontal-scroll;
+  margin: 0;
+  padding: 0;
+}
+
+@mixin responsive-container($max-width: 1200px) {
+  @include prevent-horizontal-scroll;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+@mixin fixed-full-width {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+// Chat layout specific mixins
+@mixin chat-container {
+  @include prevent-horizontal-scroll;
+  height: calc(100vh - 70px);
+  margin-top: 70px;
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin vip-layout {
+  @include prevent-horizontal-scroll;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+// User layout specific mixins
+@mixin user-page-layout {
+  @include prevent-horizontal-scroll;
+  min-height: calc(100vh - 120px); // Account for header and footer
+  padding: 20px;
+}
+
+// Footer specific mixins
+@mixin footer-layout {
+  @include prevent-horizontal-scroll;
+  @include fixed-full-width;
+  bottom: 0;
+  z-index: 100;
+}
+
+// Grid system
+@mixin responsive-grid($columns: 12, $gap: 20px) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+  @include prevent-horizontal-scroll;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: $gap / 2;
+  }
+}

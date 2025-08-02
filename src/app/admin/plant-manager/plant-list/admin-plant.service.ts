@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, firstValueFrom } from 'rxjs';
+import { ConfigService } from '../../../shared/config.service';
 
 export interface UpdatePlantRequest {
   scientificName: string;
@@ -45,22 +46,23 @@ export interface ApiResponse<T = any> {
   providedIn: 'root'
 })
 export class AdminPlantService {
-  private readonly baseUrl = 'http://localhost:8080/api/manager';
-
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {}
 
   /**
    * Get plant details by ID
    */
   getPlantById(id: number): Observable<ApiResponse<PlantDetails>> {
-    return this.http.get<ApiResponse<PlantDetails>>(`${this.baseUrl}/plants/${id}`);
+    return this.http.get<ApiResponse<PlantDetails>>(`${this.configService.apiUrl}/manager/plants/${id}`);
   }
 
   /**
    * Update plant information
    */
   updatePlant(id: number, request: UpdatePlantRequest): Observable<ApiResponse<PlantDetails>> {
-    return this.http.put<ApiResponse<PlantDetails>>(`${this.baseUrl}/update-plant/${id}`, request);
+    return this.http.put<ApiResponse<PlantDetails>>(`${this.configService.apiUrl}/manager/update-plant/${id}`, request);
   }
 
   /**
@@ -81,7 +83,7 @@ export class AdminPlantService {
    * Delete plant
    */
   deletePlant(id: number): Observable<ApiResponse<any>> {
-    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/delete-plant/${id}`);
+    return this.http.delete<ApiResponse<any>>(`${this.configService.apiUrl}/manager/delete-plant/${id}`);
   }
 
   /**
@@ -97,7 +99,7 @@ export class AdminPlantService {
       params.keyword = keyword;
     }
 
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/plants`, { params });
+    return this.http.get<ApiResponse<any>>(`${this.configService.apiUrl}/manager/plants`, { params });
   }
 
   /**

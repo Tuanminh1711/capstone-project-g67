@@ -96,7 +96,7 @@ export class AuthService {
     const role = this.jwtUserUtil.getRoleFromToken();
     const doRedirect = () => {
       if (redirect) {
-        if (role === 'admin' || role === 'staff') {
+        if (role === 'admin' || role === 'staff' || role === 'expert') {
           window.location.href = '/auth/login-admin';
         } else {
           window.location.href = '/home';
@@ -157,6 +157,16 @@ export class AuthService {
   }
 
   loginAdmin(data: { username: string; password: string }) {
-    return this.http.post<any>(`${this.apiUrl}/auth/login-admin`, data);
+    return this.http.post<any>(`${this.apiUrl}/auth/login-admin`, data).pipe(
+      tap(response => {
+        // Lưu token vào cookie sau khi đăng nhập admin thành công
+        if (response.token) {
+          this.cookieService.setAuthToken(response.token);
+        }
+        if (response.accessToken) {
+          this.cookieService.setAccessToken(response.accessToken);
+        }
+      })
+    );
   }
 }

@@ -89,30 +89,31 @@ export class TopNavigatorComponent implements OnInit {
     return '';
   }
   goToCareExpert(): void {
-    if (!this.isLoggedIn) {
-      this.authDialog.openLoginDialog();
-      this.toast.error('Vui lòng đăng nhập để sử dụng tính năng này!');
-      return;
+    // Kiểm tra role của user để điều hướng phù hợp
+    if (this.isLoggedIn) {
+      this.authService.getProfile().subscribe({
+        next: (user: any) => {
+          const role = user?.role || this.jwtUtil.getRoleFromToken();
+          if (role && role.toUpperCase() === 'VIP') {
+            this.router.navigate(['/vip/welcome']);
+          } else {
+            this.router.navigate(['/care-expert']);
+          }
+        },
+        error: () => {
+          // fallback nếu lỗi thì dùng token cũ
+          const role = this.jwtUtil.getRoleFromToken();
+          if (role && role.toUpperCase() === 'VIP') {
+            this.router.navigate(['/vip/welcome']);
+          } else {
+            this.router.navigate(['/care-expert']);
+          }
+        }
+      });
+    } else {
+      // User chưa đăng nhập -> chuyển đến care-expert
+      this.router.navigate(['/care-expert']);
     }
-    this.authService.getProfile().subscribe({
-      next: (user: any) => {
-        const role = user?.role || this.jwtUtil.getRoleFromToken();
-        if (role && role.toUpperCase() === 'VIP') {
-          this.router.navigate(['/vip/welcome']);
-        } else {
-          this.router.navigate(['/care-expert']);
-        }
-      },
-      error: () => {
-        // fallback nếu lỗi thì dùng token cũ
-        const role = this.jwtUtil.getRoleFromToken();
-        if (role && role.toUpperCase() === 'VIP') {
-          this.router.navigate(['/vip/welcome']);
-        } else {
-          this.router.navigate(['/care-expert']);
-        }
-      }
-    });
   }
 
   toggleSupportDropdown = (event: MouseEvent): void => {

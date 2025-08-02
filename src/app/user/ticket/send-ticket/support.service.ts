@@ -13,18 +13,16 @@ export class SupportService {
     return this.http.post(`${environment.apiUrl}/support/tickets/${ticketId}/responses`, { content });
   }
 
-  // Upload image - convert to base64 since no upload endpoint
-  uploadImage(file: File): Observable<{ url: string }> {
-    return new Observable(observer => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        observer.next({ url: reader.result as string });
-        observer.complete();
-      };
-      reader.onerror = () => {
-        observer.error('Failed to read file');
-      };
-      reader.readAsDataURL(file);
+  // Upload image to server and get URL
+  uploadImage(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${environment.apiUrl}/support/upload-ticket-image`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
   }
 

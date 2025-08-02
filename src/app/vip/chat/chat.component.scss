@@ -1,65 +1,66 @@
-// Modern Chat UI Styles
+// Clean VIP Chat UI Styles - Professional Layout
 .chat-container {
-  min-height: 100vh;
-  background: #f8fafc;
+  height: calc(100vh - 70px);
+  background: #f5f5f5;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  padding-top: 70px; // Dùng padding thay vì margin để tránh khoảng trắng
   box-sizing: border-box;
 }
 
 .chat-wrapper {
   width: 100%;
-  max-width: 900px;
-  height: 85vh;
+  max-width: 100%;
+  height: 100%;
   background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
+  box-sizing: border-box;
 }
 
-// Chat Header
+// Clean Chat Header
 .chat-header {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  color: white;
-  padding: 20px 24px;
+  background: #ffffff; // Đổi từ #4CAF50 thành trắng
+  color: #4CAF50; // Đổi chữ thành màu xanh lá
+  padding: 10px 16px; 
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  border-bottom: 2px solid #4CAF50; // Thêm border xanh lá để làm đẹp
+  min-height: 120px; // Tăng từ 100px lên 120px
+  position: relative;
+  z-index: 10; 
+  margin-top: -90px; // Tăng từ -70px lên -90px để kéo cao hơn
+  padding-top: 110px; // Tăng từ 95px lên 110px để text hiện đúng chỗ
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1); // Thêm shadow xanh nhẹ
 }
 
 .header-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .chat-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  
-  .title-icon {
-    font-size: 24px;
-  }
   
   h3 {
     margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.025em;
+    font-size: 18px; // Tăng từ 16px lên 18px
+    font-weight: 700; // Tăng từ 500 lên 700 (bold)
+    font-family: inherit;
+    text-transform: uppercase; // In hoa
+    letter-spacing: 1px; // Thêm khoảng cách chữ để đẹp hơn
+    color: #4CAF50; // Đảm bảo màu xanh lá
   }
 }
 
 .online-status {
-  display: flex;
+  display: none; // Ẩn phần "Đang hoạt động"
   align-items: center;
   gap: 8px;
   font-size: 14px;
@@ -87,42 +88,16 @@
   }
 }
 
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.action-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
 // Chat Messages Container
 .chat-messages {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: white;
+  margin: 8px; // Giảm margin từ 16px xuống 8px
+  border-radius: 12px; // Giảm border-radius từ 16px xuống 12px
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); // Giảm shadow
 }
 
 // Loading, Error, Empty States
@@ -173,174 +148,141 @@
 
 // Messages List - Layout từng dòng như WhatsApp
 .messages-list {
-  padding: 20px;
+  padding: 12px; // Giảm padding từ 20px xuống 12px
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px; // Giảm gap từ 8px xuống 6px
   flex: 1;
   overflow-y: auto;
 }
 
 .message-wrapper {
-  display: flex;
   width: 100%;
   margin-bottom: 8px;
-  clear: both;
   
   &.own-message {
-    justify-content: flex-end !important;
-    
-    .message-bubble {
-      margin-left: auto !important;
-      margin-right: 0 !important;
-    }
+    display: flex;
+    justify-content: flex-end;
   }
   
   &.other-message {
-    justify-content: flex-start !important;
-    
-    .message-bubble {
-      margin-left: 0 !important;
-      margin-right: auto !important;
-    }
+    display: flex;
+    justify-content: flex-start;
   }
 }
 
-.message-bubble {
-  max-width: 70%;
-  background: white;
-  border-radius: 16px;
-  padding: 12px 16px;
-  box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.04);
-  position: relative;
-  display: block;
+// Layout hàng ngang cho tin nhắn
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 90%;
   
-  // Tin nhắn của người khác (bên trái) - mặc định
-  background: white !important;
-  color: #1f2937 !important;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 16px;
-}
-
-// Tin nhắn của mình (bên phải) - override với class riêng
-.message-wrapper.own-message .message-bubble,
-.message-bubble.own-bubble {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
-  color: white !important;
-  border-bottom-right-radius: 4px !important;
-  border-bottom-left-radius: 16px !important;
-  
-  .message-content {
-    color: white !important;
-  }
-  
-  .message-time {
-    color: rgba(255, 255, 255, 0.8) !important;
-  }
-  
-  .message-status svg {
-    fill: rgba(255, 255, 255, 0.8) !important;
-  }
-  
-  .own-sender-name {
-    color: rgba(255, 255, 255, 0.9) !important;
+  &.own-row {
+    flex-direction: row-reverse;
   }
 }
 
-.message-header {
+// Thông tin người gửi (tên + badge)
+.sender-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.sender-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a5568;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap;
+}
+
+// Thời gian inline trong hàng ngang
+.message-time-inline {
+  font-size: 10px;
+  color: #9ca3af;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 4px;
+  min-width: 50px;
+  flex-shrink: 0;
+  white-space: nowrap;
   
-  &.own-header {
+  &.own-time {
     justify-content: flex-end;
   }
 }
 
-.sender-avatar {
-  width: 28px;
-  height: 28px;
+.message-bubble {
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
   
-  img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #e2e8f0;
-  }
-}
-
-.sender-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sender-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.own-sender-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.own-sender-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.role-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  
-  &.vip-badge {
-    background: rgba(255, 215, 0, 0.9);
-    color: #92400e;
-  }
-  
-  &.expert-badge {
-    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  &.own-bubble {
+    background: #4CAF50;
     color: white;
-  }
-  
-  &.user-badge {
-    background: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: none;
   }
 }
 
 .message-content {
   font-size: 14px;
-  line-height: 1.4;
-  color: #1f2937;
-  margin-bottom: 4px;
+  line-height: 1.5;
   word-wrap: break-word;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.message-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
+.role-badge {
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  &.vip-badge {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+  }
+  
+  &.expert-badge {
+    background: #d1fae5;
+    color: #047857;
+    border: 1px solid #10b981;
+  }
+  
+  &.user-badge {
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #6366f1;
+  }
+}
+
+.message-content {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #2d3748;
+  word-wrap: break-word;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .message-time {
   font-size: 11px;
-  color: #9ca3af;
-  font-weight: 500;
+  color: #718096;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .message-status {
@@ -348,11 +290,14 @@
   align-items: center;
 }
 
-// Chat Input
+// Chat Input - VIP Style
 .chat-input-container {
   background: white;
   border-top: 1px solid #e5e7eb;
-  padding: 20px 24px;
+  padding: 12px 16px; // Giảm padding từ 16px 20px xuống 12px 16px
+  margin: 0 8px 8px 8px; // Giảm margin từ 16px xuống 8px
+  border-radius: 0 0 12px 12px; // Giảm border-radius từ 16px xuống 12px
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.03); // Giảm shadow
 }
 
 .chat-input-form {
@@ -452,16 +397,39 @@
   }
 }
 
+// Input Footer
+.input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.char-counter {
+  color: #9ca3af;
+  
+  &.warning {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+}
+
 // Mobile Responsive
 @media (max-width: 768px) {
   .chat-container {
-    padding: 10px;
+    height: calc(100vh - 70px);
+    margin-top: 70px;
   }
   
   .chat-wrapper {
-    height: 90vh;
-    max-width: 100%;
-    border-radius: 16px;
+    height: 100%;
+    border-radius: 0;
+  }
+  
+  .chat-messages {
+    margin: 12px;
+    border-radius: 12px;
   }
   
   .chat-header {
@@ -496,6 +464,7 @@
   
   .chat-input-container {
     padding: 16px 20px;
+    margin: 0 12px 12px 12px;
   }
   
   .message-input {

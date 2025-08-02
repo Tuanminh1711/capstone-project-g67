@@ -4,9 +4,10 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   background: #fff;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* RESET CONTENT WRAPPERS */
@@ -24,12 +25,14 @@ body > main {
   background: #f7faf9;
   box-shadow: 0 0 32px #b2dfdb33, 0 -1.5px 0 #178a4c22 inset;
   padding: 0;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   border-top: 3.5px solid #b2dfdb88;
   position: relative;
   z-index: 10;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* SOCIAL ROW FIXED TO CENTER HORIZONTALLY */

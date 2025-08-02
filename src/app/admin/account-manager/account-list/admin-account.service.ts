@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ConfigService } from '../../../shared/config.service';
 
 export interface Account {
   id: number;
@@ -26,7 +27,10 @@ export interface AccountListResponse {
 export class AdminAccountService {
   private apiUrl = '/api/admin';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {}
 
   getAccounts(pageNo: number, pageSize: number, keyword: string = ''): Observable<AccountListResponse> {
     let params = new HttpParams()
@@ -56,6 +60,6 @@ export class AdminAccountService {
   }
 
   resetPassword(userId: number) {
-    return this.http.put<any>(`http://localhost:8080/api/admin/reset-password/${userId}`, {});
+    return this.http.put<any>(`${this.configService.apiUrl}/admin/reset-password/${userId}`, {});
   }
 }

@@ -147,6 +147,46 @@
 </section>
 
 <!-- Call to Action Section -->
+<!-- VIP Features Section -->
+<section class="home-vip-features">
+  <div class="vip-banner">
+    <div class="vip-badge">🌟 VIP</div>
+    <h2>Tính năng độc quyền cho thành viên VIP</h2>
+    <p>Nâng cấp tài khoản để trải nghiệm các tính năng cao cấp</p>
+    
+    <div class="vip-features-grid">
+      <div class="vip-feature">
+        <div class="vip-feature-icon">💬</div>
+        <h4>Chat VIP riêng tư</h4>
+        <p>Trò chuyện trực tiếp với chuyên gia trong phòng chat riêng biệt</p>
+      </div>
+      
+      <div class="vip-feature">
+        <div class="vip-feature-icon">🤖</div>
+        <h4>AI Nhận diện cây</h4>
+        <p>Sử dụng AI để nhận diện loại cây từ hình ảnh một cách chính xác</p>
+      </div>
+      
+      <div class="vip-feature">
+        <div class="vip-feature-icon">⚡</div>
+        <h4>Hỗ trợ ưu tiên</h4>
+        <p>Được ưu tiên hỗ trợ và phản hồi nhanh chóng từ đội ngũ chuyên gia</p>
+      </div>
+    </div>
+    
+    @if (jwtUserUtil.isLoggedIn()) {
+      <button class="vip-upgrade-btn" (click)="goToVipUpgrade()">
+        Nâng cấp VIP ngay
+      </button>
+    }
+    @if (!jwtUserUtil.isLoggedIn()) {
+      <button class="vip-upgrade-btn" (click)="onConnectExpertClick()">
+        Đăng nhập để nâng cấp VIP
+      </button>
+    }
+  </div>
+</section>
+
 <section class="home-cta-final">
   <div class="cta-final-callout">
     <i class="fas fa-leaf"></i>

@@ -84,11 +84,11 @@
             }
           </div>
           
-          @if (ticket.imageUrl) {
+          @if (ticket.imageUrl && imageObjectUrl) {
             <div class="image-section">
               <span class="info-label">Ảnh đính kèm</span>
               <div class="image-container">
-                <img [src]="ticket.imageUrl" alt="Ticket image" class="ticket-image" />
+                <img [src]="imageObjectUrl" alt="Ticket image" class="ticket-image" />
               </div>
             </div>
           }

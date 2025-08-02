@@ -1,70 +1,66 @@
-// MAIN FEATURE
-import { HomeComponent } from './main/home/home.component';
-import { PlantInfoComponent } from './main/plant-info/plant-info';
-import { PlantDetailComponent } from './main/plant-detail/plant-detail.component';
-import { AboutUsComponent } from './main/about-us/about-us';
-import { CareExpertComponent } from './main/care-expert/care-expert.component';
-
-// USER FEATURE
-import { VipPaymentComponent } from './user/expert/vip-payment.component';
-import { MyGardenComponent } from './user/plant/my-garden/my-garden.component';
-import { AddPlantComponent } from './user/plant/add-plant/add-plant.component';
-import { CreateNewPlantComponent } from './user/plant/create-plants/create-new-plant.component';
-import { ViewUserPlantDetailComponent } from './user/plant/view-user-plant-detail/view-user-plant-detail.component';
-import { PlantCareReminderSetupComponent } from './user/plant/plant-care-reminder-setup/plant-care-reminder-setup.component';
-import { ReportPlantPageComponent } from './user/plant/report-plant/report-plant-page.component';
-import { UpdatePlantComponent as UserUpdatePlantComponent } from './user/plant/update-plant/update-plant.component';
-
-// PROFILE & AUTH
-import { ViewUserProfileComponent } from './user/profile/view-user-profile/view-user-profile.component';
-import { EditUserProfileComponent } from './user/profile/edit-user-profile/edit-user-profile.component';
-import { ChangePasswordComponent } from './user/profile/change-password/change-password.component';
-import { LoginAdminPageComponent } from './auth/login-admin/login-admin-page.component';
-
-// ADMIN FEATURE
-
-// SHARED/UTILS
+// LAZY LOADING IMPORTS
 import { Routes } from '@angular/router';
-import { PrivacyPolicyComponent } from './main/privacy-policy/privacy-policy.component';
-import { TermsOfUseComponent } from './main/terms-of-use/terms-of-use.component';
+import { VipAuthGuard } from './auth/vip-auth.guard';
+
+// Keep only essential components that are needed immediately
+import { HomeComponent } from './main/home/home.component';
 
 // ROUTES
 export const routes: Routes = [
-  // MAIN
+  // MAIN - Convert to lazy loading
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
-  { path: 'about-us', component: AboutUsComponent },
-  { path: 'plant-info', component: PlantInfoComponent },
-  { path: 'plant-detail/:id', component: PlantDetailComponent },
-  { path: 'plant-info/detail/:id', component: PlantDetailComponent },
-  { path: 'privacy-policy', component: PrivacyPolicyComponent },
-  { path: 'terms-of-use', component: TermsOfUseComponent },
-  { path: 'care-expert', component: CareExpertComponent },
+  { path: 'about-us', loadComponent: () => import('./main/about-us/about-us').then(m => m.AboutUsComponent) },
+  { path: 'plant-info', loadComponent: () => import('./main/plant-info/plant-info').then(m => m.PlantInfoComponent) },
+  { path: 'plant-detail/:id', loadComponent: () => import('./main/plant-detail/plant-detail.component').then(m => m.PlantDetailComponent) },
+  { path: 'plant-info/detail/:id', loadComponent: () => import('./main/plant-detail/plant-detail.component').then(m => m.PlantDetailComponent) },
+  { path: 'privacy-policy', loadComponent: () => import('./main/privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
+  { path: 'terms-of-use', loadComponent: () => import('./main/terms-of-use/terms-of-use.component').then(m => m.TermsOfUseComponent) },
+  { path: 'care-expert', loadComponent: () => import('./main/care-expert/care-expert.component').then(m => m.CareExpertComponent) },
 
-  // USER
-  { path: 'vip/welcome', loadComponent: () => import('./vip/welcome/welcome-vip.component').then(m => m.WelcomeVipComponent) },
-  { path: 'vip/chat', loadComponent: () => import('./vip/chat/chat.component').then(m => m.ChatComponent) },
-  // { path: 'vip/chat-ai', loadComponent: () => import('./vip/chat-ai/chat-ai.component').then(m => m.ChatAiComponent) },
+  // USER - Convert to lazy loading
+  { 
+    path: 'vip/welcome', 
+    loadComponent: () => import('./vip/welcome/welcome-vip.component').then(m => m.WelcomeVipComponent),
+    canActivate: [VipAuthGuard]
+  },
+  { 
+    path: 'vip/chat', 
+    loadComponent: () => import('./vip/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [VipAuthGuard]
+  },
+  { 
+    path: 'vip/ai-plant', 
+    loadComponent: () => import('./vip/ai-plant/ai-plant.component').then(m => m.AiPlantComponent),
+    canActivate: [VipAuthGuard]
+  },
   { path: 'user/chat-ai', loadComponent: () => import('./user/chat-ai/chat-ai.component').then(m => m.ChatAiComponent) },
   { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },
-  { path: 'user/my-garden', component: MyGardenComponent },
-  { path: 'user/exper/vip-payment', component: VipPaymentComponent },
-  { path: 'user/create-new-plant', component: CreateNewPlantComponent },
-  { path: 'user/user-plant-detail/:id', component: ViewUserPlantDetailComponent },
-  { path: 'user/plant-care-reminder/:userPlantId', component: PlantCareReminderSetupComponent },
-  { path: 'user/add-plant/:plantId', component: AddPlantComponent },
+  { path: 'user/my-garden', loadComponent: () => import('./user/plant/my-garden/my-garden.component').then(m => m.MyGardenComponent) },
+  { path: 'user/exper/vip-payment', loadComponent: () => import('./user/expert/vip-payment.component').then(m => m.VipPaymentComponent) },
+  { path: 'user/create-new-plant', loadComponent: () => import('./user/plant/create-plants/create-new-plant.component').then(m => m.CreateNewPlantComponent) },
+  { path: 'user/user-plant-detail/:id', loadComponent: () => import('./user/plant/view-user-plant-detail/view-user-plant-detail.component').then(m => m.ViewUserPlantDetailComponent) },
+  { path: 'user/plant-care-reminder/:userPlantId', loadComponent: () => import('./user/plant/plant-care-reminder-setup/plant-care-reminder-setup.component').then(m => m.PlantCareReminderSetupComponent) },
+  { path: 'user/add-plant/:plantId', loadComponent: () => import('./user/plant/add-plant/add-plant.component').then(m => m.AddPlantComponent) },
+  { path: 'user/report-plant/:id', loadComponent: () => import('./user/plant/report-plant/report-plant-page.component').then(m => m.ReportPlantPageComponent) },
+
+  // EXPERT
+  { 
+    path: 'expert', 
+    loadChildren: () => import('./expert/expert.routes').then(m => m.expertRoutes) 
+  },
+  
   { path: 'user/collection', redirectTo: 'user/my-garden', pathMatch: 'full' },
   { path: 'user/collection/add-plant/:plantId', redirectTo: 'user/add-plant/:plantId', pathMatch: 'full' },
   { path: 'user/my-tickets', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
   { path: 'user/activity-logs', loadComponent: () => import('./user/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
-  { path: 'user/report-plant/:id', component: ReportPlantPageComponent },
 
-  // PROFILE & AUTH
-  { path: 'view-user-profile', component: ViewUserProfileComponent },
-  { path: 'edit-profile', component: EditUserProfileComponent },
-  { path: 'profile/edit', component: EditUserProfileComponent },
-  { path: 'profile/change-password', component: ChangePasswordComponent },
-  { path: 'login-admin', component: LoginAdminPageComponent },
+  // PROFILE & AUTH - Convert to lazy loading
+  { path: 'view-user-profile', loadComponent: () => import('./user/profile/view-user-profile/view-user-profile.component').then(m => m.ViewUserProfileComponent) },
+  { path: 'edit-profile', loadComponent: () => import('./user/profile/edit-user-profile/edit-user-profile.component').then(m => m.EditUserProfileComponent) },
+  { path: 'profile/edit', loadComponent: () => import('./user/profile/edit-user-profile/edit-user-profile.component').then(m => m.EditUserProfileComponent) },
+  { path: 'profile/change-password', loadComponent: () => import('./user/profile/change-password/change-password.component').then(m => m.ChangePasswordComponent) },
+  { path: 'login-admin', loadComponent: () => import('./auth/login-admin/login-admin-page.component').then(m => m.LoginAdminPageComponent) },
 
   // ADMIN
   { 
@@ -75,6 +71,6 @@ export const routes: Routes = [
   // SHARED/UTILS
   { path: 'my-green-space', redirectTo: 'user/my-garden', pathMatch: 'full' }, // Redirect old path
   { path: 'my-green-space/my-garden', redirectTo: 'user/my-garden', pathMatch: 'full' }, // Redirect old path
-  { path: 'update-plant/:id', component: UserUpdatePlantComponent },
+  { path: 'update-plant/:id', loadComponent: () => import('./user/plant/update-plant/update-plant.component').then(m => m.UpdatePlantComponent) },
   { path: '**', redirectTo: 'home' } // Wildcard route for any unknown routes
 ];

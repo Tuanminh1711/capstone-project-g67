@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { AuthService } from '../../../auth/auth.service';

@@ -1,0 +1,169 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="ai-plant-container">
+  <div class="header">
+    <h1>🤖 AI Nhận Diện Cây</h1>
+    <p>Sử dụng AI để nhận diện loại cây từ hình ảnh hoặc tìm kiếm trong cơ sở dữ liệu</p>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'upload'"
+      (click)="setActiveTab('upload')">
+      📷 Tải ảnh lên
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'search'"
+      (click)="setActiveTab('search')">
+      🔍 Tìm kiếm
+    </button>
+  </div>
+
+  <!-- Upload Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'upload'">
+    <div class="upload-section">
+      <div class="file-upload" *ngIf="!selectedFile">
+        <input 
+          type="file" 
+          id="file-input" 
+          accept="image/*" 
+          (change)="onFileSelected($event)"
+          style="display: none;">
+        <label for="file-input" class="upload-area">
+          <div class="upload-icon">📸</div>
+          <div class="upload-text">
+            <strong>Chọn hình ảnh cây</strong>
+            <span>Kéo thả hoặc click để chọn file</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="image-preview" *ngIf="selectedFile">
+        <div class="preview-container">
+          <img [src]="previewUrl" alt="Preview" class="preview-image">
+          <button class="remove-btn" (click)="removeFile()">✕</button>
+          <div class="validating-overlay" *ngIf="isValidating">
+            <div class="spinner"></div>
+            <span>Đang kiểm tra hình ảnh...</span>
+          </div>
+        </div>
+        
+        <div class="file-info">
+          <p><strong>Tệp:</strong> {{selectedFile.name}}</p>
+          <p><strong>Kích thước:</strong> {{(selectedFile.size / 1024 / 1024).toFixed(2)}} MB</p>
+        </div>
+
+        <div class="identification-options">
+          <div class="option-group">
+            <label>Số kết quả tối đa:</label>
+            <select [(ngModel)]="maxResults">
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          
+          <div class="option-group">
+            <label>Ngôn ngữ:</label>
+            <select [(ngModel)]="language">
+              <option value="vi">Tiếng Việt</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+
+        <button 
+          class="identify-btn" 
+          (click)="identifyPlant()" 
+          [disabled]="isLoading">
+          <span *ngIf="!isLoading">🔍 Nhận diện cây</span>
+          <span *ngIf="isLoading">
+            <div class="spinner-small"></div>
+            Đang nhận diện...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'search'">
+    <div class="search-section">
+      <div class="search-input-group">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Nhập tên cây cần tìm..."
+          class="search-input"
+          (keyup.enter)="searchPlantsInDatabase()">
+        <button 
+          class="search-btn" 
+          (click)="searchPlantsInDatabase()" 
+          [disabled]="isLoading">
+          <span *ngIf="!isLoading">🔍</span>
+          <div *ngIf="isLoading" class="spinner-small"></div>
+        </button>
+      </div>
+      <p class="search-hint">Ví dụ: "Hoa hồng", "Cây xanh", "Succulent"...</p>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section" *ngIf="results.length > 0">
+    <h3>Kết quả ({{results.length}})</h3>
+    
+    <div class="results-grid">
+      <div class="result-card" *ngFor="let result of results">
+        <div class="result-header">
+          <h4>{{result.vietnameseName || result.commonName || result.scientificName}}</h4>
+          <div class="confidence-badge" [style.background-color]="getConfidenceColor(result.confidence)">
+            {{(result.confidence * 100).toFixed(0)}}% - {{getConfidenceText(result.confidence)}}
+          </div>
+        </div>
+        
+        <div class="result-content">
+          <p class="scientific-name">
+            <strong>Tên khoa học:</strong> 
+            <em>{{result.scientificName}}</em>
+          </p>
+          
+          <div class="name-info">
+            <p *ngIf="result.commonName"><strong>Tên thông thường:</strong> {{result.commonName}}</p>
+            <p *ngIf="result.vietnameseName"><strong>Tên Việt Nam:</strong> {{result.vietnameseName}}</p>
+          </div>
+          
+          <div class="description" *ngIf="result.description">
+            <h5>Mô tả:</h5>
+            <p>{{result.description}}</p>
+          </div>
+          
+          <div class="care-instructions" *ngIf="result.careInstructions">
+            <h5>Hướng dẫn chăm sóc:</h5>
+            <p>{{result.careInstructions}}</p>
+          </div>
+          
+          <div class="result-images" *ngIf="result.imageUrl">
+            <h5>Hình ảnh tham khảo:</h5>
+            <div class="image-gallery">
+              <img 
+                [src]="result.imageUrl" 
+                [alt]="result.scientificName"
+                class="reference-image">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && results.length === 0 && shouldShowEmptyState()">
+    <div class="empty-icon">🌱</div>
+    <h3>Không tìm thấy kết quả</h3>
+    <p *ngIf="activeTab === 'upload'">Thử với hình ảnh khác hoặc đảm bảo hình ảnh chứa cây rõ ràng</p>
+    <p *ngIf="activeTab === 'search'">Thử với từ khóa khác hoặc kiểm tra chính tả</p>
+  </div>
+</div>

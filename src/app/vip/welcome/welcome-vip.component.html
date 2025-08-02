@@ -2,6 +2,14 @@
   <h1>Chào mừng bạn đến với VIP!</h1>
   <p>Bạn đã nâng cấp thành công tài khoản VIP. Hãy tận hưởng các đặc quyền dành riêng cho thành viên VIP.</p>
   <app-top-navigator></app-top-navigator>
-  <!-- Đã xóa nút về trang chủ theo yêu cầu -->
-  <button class="btn-chat-vip" (click)="goToChat()">Vào phòng chat VIP</button>
+  
+  <div class="vip-features">
+    <button class="btn-feature btn-chat-vip" (click)="goToChat()">
+      💬 Vào phòng chat VIP
+    </button>
+    
+    <button class="btn-feature btn-ai-plant" (click)="goToAiPlant()">
+      🤖 AI Nhận diện cây
+    </button>
+  </div>
 </div>

@@ -51,13 +51,13 @@ export class SendTicketDialogComponent {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imagePreview = e.target.result;
-        setTimeout(() => this.cdr.detectChanges());
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     } else {
       this.selectedFileName = '';
       this.imagePreview = '';
-      setTimeout(() => this.cdr.detectChanges());
+      this.cdr.detectChanges();
     }
   }
 
@@ -65,28 +65,33 @@ export class SendTicketDialogComponent {
     this.selectedImage = null;
     this.selectedFileName = '';
     this.imagePreview = '';
-    setTimeout(() => this.cdr.detectChanges());
+    this.cdr.detectChanges();
   }
 
   public async onSubmit() {
     if (!this.title.trim() || !this.description.trim()) {
       this.errorMessage = 'Vui lòng nhập đầy đủ tiêu đề và mô tả';
-      setTimeout(() => this.cdr.detectChanges());
+      this.cdr.detectChanges();
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = '';
-    setTimeout(() => this.cdr.detectChanges());
+    this.cdr.detectChanges();
 
     try {
       let imageUrl = '';
-      // Upload image if selected (convert to base64)
+      // Upload image if selected
       if (this.selectedImage) {
-        console.log('Converting image to base64:', this.selectedImage.name);
+        console.log('Uploading image:', this.selectedImage.name);
         const uploadResponse = await this.supportService.uploadImage(this.selectedImage).toPromise();
-        imageUrl = uploadResponse?.url || '';
-        console.log('Image converted, base64 length:', imageUrl.length);
+        
+        if (uploadResponse && uploadResponse.status === 200) {
+          imageUrl = uploadResponse.data; // Backend trả về URL trong field 'data'
+          console.log('Image uploaded successfully, URL:', imageUrl);
+        } else {
+          throw new Error('Upload ảnh thất bại');
+        }
       }
 
       // Create ticket
@@ -100,18 +105,25 @@ export class SendTicketDialogComponent {
       const created = await this.supportService.createTicket(ticketData).toPromise();
 
       if (created) {
+        // Hiện toast ngay lập tức
         this.toastService.show('Ticket đã được gửi thành công!', 'success');
-        this.router.navigate(['user/my-tickets']);
+        
+        // Đóng dialog trước
+        this.close();
+        
+        // Navigation sau một chút để toast hiện được
+        setTimeout(() => {
+          this.router.navigate(['user/my-tickets']);
+        }, 100);
       }
-      this.close();
     } catch (error: any) {
       console.error('Error submitting ticket:', error);
       this.errorMessage = error.message || 'Có lỗi xảy ra khi gửi ticket. Vui lòng thử lại.';
       this.toastService.show('Không thể gửi ticket. Vui lòng thử lại.', 'error');
-      setTimeout(() => this.cdr.detectChanges());
+      this.cdr.detectChanges();
     } finally {
       this.isSubmitting = false;
-      setTimeout(() => this.cdr.detectChanges());
+      this.cdr.detectChanges();
     }
   }
 

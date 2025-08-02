@@ -15,4 +15,8 @@ export class WelcomeVipComponent {
   goToChat() {
     this.router.navigate(['/vip/chat']);
   }
+
+  goToAiPlant() {
+    this.router.navigate(['/vip/ai-plant']);
+  }
 }

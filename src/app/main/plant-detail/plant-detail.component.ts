@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CookieService } from '../../auth/cookie.service';
+import { AuthService } from '../../auth/auth.service';
 import { PlantDataService, Plant } from '../../shared/plant-data.service';
 import { PlantDetailLoaderService } from '../../shared/plant-detail-loader.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
@@ -46,6 +47,7 @@ export class PlantDetailComponent implements OnInit {
   requiresAuth = false;
   isLimitedInfo = false;
   loading = false;
+  isGuest = false; // Thêm flag để check guest
   private plantId: string | null = null;
   private toast = inject(ToastService);
   private confirmationDialog = inject(ConfirmationDialogService);
@@ -57,6 +59,7 @@ export class PlantDetailComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private cookieService: CookieService,
+    private authService: AuthService, // Thêm AuthService
     private plantDataService: PlantDataService,
     private authDialogService: AuthDialogService,
     private cdr: ChangeDetectorRef,
@@ -64,6 +67,9 @@ export class PlantDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Kiểm tra auth status ngay từ đầu
+    this.checkAuthStatus();
+    
     // Extract id only once
     this.plantId = this.route.snapshot.paramMap.get('id');
     // Ưu tiên lấy từ service nếu đã có (giữ state khi reload/quay lại)
@@ -86,6 +92,14 @@ export class PlantDetailComponent implements OnInit {
       }
     }
     this.loadPlantDetail();
+  }
+
+  /**
+   * Kiểm tra trạng thái đăng nhập
+   */
+  private checkAuthStatus(): void {
+    this.isGuest = !this.authService.isLoggedIn();
+    console.log('[PLANT DETAIL] User auth status - isGuest:', this.isGuest);
   }
 
   /**
@@ -186,6 +200,7 @@ export class PlantDetailComponent implements OnInit {
     // Check if user is authenticated
     const token = this.cookieService.getAuthToken();
     if (!token) {
+      this.toast.error('Vui lòng đăng nhập để thêm cây vào bộ sưu tập!');
       this.openLoginDialog();
       return;
     }
