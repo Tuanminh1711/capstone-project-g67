@@ -4,8 +4,8 @@ import com.plantcare_backend.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
  */
 
 @Component
+@Slf4j
 public class JwtUtilImpl implements JwtUtil {
     private static final Logger log = LoggerFactory.getLogger(JwtUtilImpl.class);
     private final Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();

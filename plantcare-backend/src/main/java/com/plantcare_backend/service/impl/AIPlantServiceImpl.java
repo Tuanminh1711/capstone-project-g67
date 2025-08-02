@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plantcare_backend.dto.response.ai.PlantIdentificationResponseDTO;
 import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.PlantRepository;
+import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.AIPlantService;
+import com.plantcare_backend.service.VIPUsageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -27,8 +31,10 @@ import java.util.HashMap;
 public class AIPlantServiceImpl implements AIPlantService {
 
     private final PlantRepository plantRepository;
+    private final UserRepository userRepository; // Thêm dependency này
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final VIPUsageService vipUsageService;
 
     @Value("${plantcare.ai.plant-id.api-key}")
     private String plantIdApiKey;
@@ -38,11 +44,17 @@ public class AIPlantServiceImpl implements AIPlantService {
 
     @Override
     public PlantIdentificationResponseDTO identifyPlant(MultipartFile image, String language, Integer maxResults) {
+        Long userId = getCurrentUserId();
+        Users user = userRepository.findById(Math.toIntExact(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean success = false;
         try {
-            log.info("Starting plant identification for image: {}", image.getOriginalFilename());
+            log.info("Starting plant identification for user: {} (ID: {})", user.getUsername(), userId);
 
             // 1. Validate image
             if (!validatePlantImage(image)) {
+                vipUsageService.trackUsage(user, "AI_PLANT_IDENTIFICATION", false);
                 return PlantIdentificationResponseDTO.builder()
                         .status("ERROR")
                         .message("Image does not contain a plant")
@@ -56,15 +68,20 @@ public class AIPlantServiceImpl implements AIPlantService {
             // 3. Match with database
             List<PlantIdentificationResponseDTO.PlantResult> matchedResults = matchWithDatabase(aiResults);
 
-            return PlantIdentificationResponseDTO.builder()
+            PlantIdentificationResponseDTO result = PlantIdentificationResponseDTO.builder()
                     .requestId(UUID.randomUUID().toString())
                     .status("SUCCESS")
                     .message("Plant identification completed")
                     .results(matchedResults)
                     .build();
 
+            success = true;
+            vipUsageService.trackUsage(user, "AI_PLANT_IDENTIFICATION", true);
+            return result;
+
         } catch (Exception e) {
-            log.error("Error during plant identification", e);
+            log.error("Error during plant identification for user: {}", user.getUsername(), e);
+            vipUsageService.trackUsage(user, "AI_PLANT_IDENTIFICATION", false);
             return PlantIdentificationResponseDTO.builder()
                     .status("ERROR")
                     .message("Plant identification failed: " + e.getMessage())
@@ -117,8 +134,14 @@ public class AIPlantServiceImpl implements AIPlantService {
 
     @Override
     public PlantIdentificationResponseDTO searchPlantsInDatabase(String plantName) {
+        Long userId = getCurrentUserId();
+        Users user = userRepository.findById(Math.toIntExact(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean success = false;
         try {
-            log.info("Searching plants in database for: {}", plantName);
+            log.info("Searching plants in database for user: {} (ID: {}), plantName: {}",
+                    user.getUsername(), userId, plantName);
 
             List<Plants> plants = plantRepository
                     .findByScientificNameContainingIgnoreCaseOrCommonNameContainingIgnoreCase(
@@ -128,15 +151,20 @@ public class AIPlantServiceImpl implements AIPlantService {
                     .map(this::convertToPlantResult)
                     .collect(Collectors.toList());
 
-            return PlantIdentificationResponseDTO.builder()
+            PlantIdentificationResponseDTO result = PlantIdentificationResponseDTO.builder()
                     .requestId(UUID.randomUUID().toString())
                     .status("SUCCESS")
                     .message("Found " + results.size() + " plants in database")
                     .results(results)
                     .build();
 
+            success = true;
+            vipUsageService.trackUsage(user, "AI_PLANT_SEARCH", true);
+            return result;
+
         } catch (Exception e) {
-            log.error("Error searching plants in database", e);
+            log.error("Error searching plants in database for user: {}", user.getUsername(), e);
+            vipUsageService.trackUsage(user, "AI_PLANT_SEARCH", false);
             return PlantIdentificationResponseDTO.builder()
                     .status("ERROR")
                     .message("Database search failed: " + e.getMessage())
@@ -225,7 +253,7 @@ public class AIPlantServiceImpl implements AIPlantService {
 
         for (PlantIdentificationResponseDTO.PlantResult aiResult : aiResults) {
             // Thêm logging này
-            log.info(" Trying to match AI result: {}", aiResult.getScientificName());
+            log.info("Trying to match AI result: {}", aiResult.getScientificName());
 
             // Tìm kiếm trong database theo tên khoa học
             Optional<Plants> exactMatch = plantRepository.findByScientificNameIgnoreCase(aiResult.getScientificName());
@@ -278,5 +306,16 @@ public class AIPlantServiceImpl implements AIPlantService {
                 .plantId(plant.getId())
                 .isExactMatch(true)
                 .build();
+    }
+
+    /**
+     * Lấy user ID từ SecurityContext
+     */
+    private Long getCurrentUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+        return (Long) principal;
     }
 }
