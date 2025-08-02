@@ -1,5 +1,6 @@
 package com.plantcare_backend.controller.ai;
 
+import com.plantcare_backend.annotation.VIPOnly;
 import com.plantcare_backend.dto.request.ai.PlantIdentificationRequestDTO;
 import com.plantcare_backend.dto.response.ai.PlantIdentificationResponseDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
@@ -27,6 +28,7 @@ public class AIPlantController {
     /**
      * Nhận diện cây từ ảnh
      */
+    @VIPOnly(message = "Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP. Vui lòng nâng cấp tài khoản để sử dụng.")
     @Operation(summary = "Identify plant from image", description = "Use AI to identify plant species from uploaded image")
     @PostMapping("/identify-plant")
     public ResponseData<PlantIdentificationResponseDTO> identifyPlant(
