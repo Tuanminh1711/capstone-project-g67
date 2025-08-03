@@ -122,7 +122,7 @@ public class UserPlantsController {
 
     @PostMapping("/add")
     public ResponseData<?> addUserPlant(
-            @ModelAttribute AddUserPlantRequestDTO requestDTO,
+            @Valid @ModelAttribute AddUserPlantRequestDTO requestDTO,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
@@ -131,6 +131,9 @@ public class UserPlantsController {
 
         // Debug logging
         log.info("=== DEBUG ADD USER PLANT (FORM DATA) ===");
+        log.info("Request content type: {}", request.getContentType());
+        log.info("Request method: {}", request.getMethod());
+        log.info("All request parameters: {}", request.getParameterMap());
         log.info("User ID: {}", userId);
         log.info("Request DTO: {}", requestDTO);
         log.info("Plant ID: {}", requestDTO.getPlantId());

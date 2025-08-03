@@ -26,7 +26,7 @@ public interface UserRepository extends JpaRepository<Users, Integer>, JpaSpecif
 
     boolean existsByEmail(String email);
 
-    Optional<Users> findUserById(Integer userId);
+    Optional<Users> findUserById(Long userId);
 
     @Query("SELECT u FROM Users u WHERE u.role.roleName IN :roles AND u.status = 'ACTIVE'")
     List<Users> findByRoleIn(@Param("roles") List<String> roles);
