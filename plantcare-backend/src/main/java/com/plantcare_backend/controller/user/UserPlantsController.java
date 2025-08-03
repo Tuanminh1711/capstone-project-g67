@@ -129,6 +129,18 @@ public class UserPlantsController {
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
+        
+        // Debug logging
+        log.info("=== DEBUG ADD USER PLANT ===");
+        log.info("User ID: {}", userId);
+        log.info("Request DTO: {}", requestDTO);
+        log.info("Plant ID: {}", requestDTO.getPlantId());
+        log.info("Nickname: {}", requestDTO.getNickname());
+        log.info("Planting Date: {}", requestDTO.getPlantingDate());
+        log.info("Location: {}", requestDTO.getLocationInHouse());
+        log.info("Images count: {}", images != null ? images.size() : 0);
+        log.info("==========================");
+        
         try {
             userPlantsService.addUserPlant(requestDTO, images, userId);
             activityLogService.logActivity(userId.intValue(), "ADD_USER_PLANT",
@@ -136,6 +148,7 @@ public class UserPlantsController {
 
             return new ResponseData<>(HttpStatus.OK.value(), "Plant added to user collection successfully");
         } catch (Exception e) {
+            log.error("Error adding user plant: {}", e.getMessage(), e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(),
                     "Failed to add plant to user collection: " + e.getMessage());
         }

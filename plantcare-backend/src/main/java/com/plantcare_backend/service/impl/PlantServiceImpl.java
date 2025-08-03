@@ -2,9 +2,7 @@ package com.plantcare_backend.service.impl;
 
 
 import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
-import com.plantcare_backend.dto.response.Plants.PlantResponseDTO;
-import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
-import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.Plants.*;
 import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
@@ -194,9 +192,12 @@ public class PlantServiceImpl implements PlantService {
     private String getStatusDisplay(Plants.PlantStatus status) {
         if (status == null) return "";
         switch (status) {
-            case ACTIVE: return "Đang hoạt động";
-            case INACTIVE: return "Không hoạt động";
-            default: return status.name();
+            case ACTIVE:
+                return "Đang hoạt động";
+            case INACTIVE:
+                return "Không hoạt động";
+            default:
+                return status.name();
         }
     }
 
@@ -204,7 +205,7 @@ public class PlantServiceImpl implements PlantService {
     /**
      * Process a plant report from a user.
      *
-     * @param request The DTO contains report information, including plant ID and reason.
+     * @param request    The DTO contains report information, including plant ID and reason.
      * @param reporterId User ID of the report.
      */
     @Override
@@ -261,6 +262,73 @@ public class PlantServiceImpl implements PlantService {
 //                            "Hệ thống PlantCare"
 //            );
     }
+
+    @Override
+    public UserReportListResponseDTO getUserReports(Long userId, int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        PlantReport.ReportStatus reportStatus = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                reportStatus = PlantReport.ReportStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Handle invalid status
+            }
+        }
+
+        Page<PlantReport> reportPage;
+        if (reportStatus != null) {
+            reportPage = plantReportRepository.findReportsByUserIdAndStatus(
+                    Math.toIntExact(userId), reportStatus, pageable);
+        } else {
+            reportPage = plantReportRepository.findReportsByUserId(
+                    Math.toIntExact(userId), pageable);
+        }
+
+        UserReportListResponseDTO response = new UserReportListResponseDTO();
+        response.setReports(reportPage.getContent().stream()
+                .map(this::convertToUserReportDTO)
+                .collect(Collectors.toList()));
+        response.setTotalElements((int) reportPage.getTotalElements());
+        response.setTotalPages(reportPage.getTotalPages());
+        response.setCurrentPage(page);
+        response.setPageSize(size);
+
+        return response;
+    }
+
+    @Override
+    public UserReportResponseDTO getUserReportDetail(Long reportId, Long userId) {
+        PlantReport report = plantReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+
+        // Kiểm tra user có quyền xem report này không
+        if (report.getReporter().getId() != Math.toIntExact(userId)) {
+            throw new IllegalArgumentException("You don't have permission to view this report");
+        }
+
+        return convertToUserReportDTO(report);
+    }
+
+    private UserReportResponseDTO convertToUserReportDTO(PlantReport report) {
+        UserReportResponseDTO dto = new UserReportResponseDTO();
+        dto.setReportId(report.getReportId());
+        dto.setPlantId(report.getPlant().getId());
+        dto.setPlantName(report.getPlant().getCommonName());
+        dto.setScientificName(report.getPlant().getScientificName());
+        dto.setReason(report.getReason());
+        dto.setStatus(report.getStatus().name());
+        dto.setAdminNotes(report.getAdminNotes());
+        dto.setCreatedAt(report.getCreatedAt());
+        dto.setHandledAt(report.getHandledAt());
+
+        if (report.getHandledBy() != null) {
+            dto.setHandledBy(report.getHandledBy().getUsername());
+        }
+
+        return dto;
+    }
+
     /**
      * Chuyển đổi Plants entity sang PlantResponseDTO
      */
