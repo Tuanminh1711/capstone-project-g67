@@ -4,6 +4,7 @@ import com.plantcare_backend.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,16 +41,17 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/verify-reset-code",
                                 "/api/auth/reset-password",
+                                "/api/auth/change-password",
                                 "/api/auth/resend-verification",
                                 "/api/auth/verify-email",
-                                "/api/auth/login-expert",
-                                "/api/auth/login-admin")
+                                "/api/auth/login-admin",
+                                "/api/auth/login-expert")
                         .permitAll()
-                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/plants/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/manager/**").permitAll()
+                        .requestMatchers("/api/user-plants/**").permitAll()
                         .requestMatchers("/api/support/**").authenticated()
                         .requestMatchers("/api/admin/support/**").authenticated()
                         .requestMatchers("/api/user-plants/**").permitAll()
@@ -59,12 +61,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/personal/**").authenticated()
                         .requestMatchers("/api/avatars/**").permitAll()
                         .requestMatchers("/api/ai/**").authenticated()
-                        // VNPAY
+                        // VNPAY Payment endpoints
                         .requestMatchers("/api/payment/vnpay-return").permitAll()
                         .requestMatchers("/api/payment/vnpay-ipn").permitAll()
                         .requestMatchers("/api/payment/vnpay/create").permitAll()
-                        .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket")
-                        .permitAll()
+                        // WebSocket endpoints
+                        .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket").permitAll()
                         .requestMatchers("/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
@@ -81,11 +83,11 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "http://40.81.23.51"
-                // Thêm domain nếu có, ví dụ: "https://yourdomain.com"
-        ));
+                "http://40.81.23.51",
+                "https://plantcare.id.vn",
+                "https://www.plantcare.id.vn"));
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -93,5 +95,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/chat/**", config);
         return source;
     }
-
 }

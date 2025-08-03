@@ -26,7 +26,7 @@ public class ChatBoxImpl implements ChatService {
     @Value("${openrouter.api.model:openai/gpt-3.5-turbo}")
     private String openRouterModel;
 
-    @Value("${app.base-url:http://40.81.23.51}")
+    @Value("${app.base-url:https://plantcare.id.vn}")
     private String baseUrl;
 
     @Value("${openrouter.api.max-tokens:1000}")
@@ -39,7 +39,7 @@ public class ChatBoxImpl implements ChatService {
     public String askOpenAI(String message) {
         try {
             log.info("Calling OpenAI API with message length: {}", message.length());
-            
+
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + openaiApiKey);
@@ -64,7 +64,7 @@ public class ChatBoxImpl implements ChatService {
             String reply = obj.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
             log.info("OpenAI response received successfully");
             return reply.trim();
-            
+
         } catch (HttpClientErrorException e) {
             log.error("OpenAI API client error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new RuntimeException("OpenAI API error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
@@ -81,12 +81,12 @@ public class ChatBoxImpl implements ChatService {
     public String askOpenRouter(String message) {
         try {
             log.info("Calling OpenRouter API with message length: {}", message.length());
-            
+
             if (openRouterApiKey == null || openRouterApiKey.trim().isEmpty()) {
                 log.error("OpenRouter API key is not configured");
                 throw new RuntimeException("OpenRouter API key not configured");
             }
-            
+
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + openRouterApiKey);
@@ -110,8 +110,8 @@ public class ChatBoxImpl implements ChatService {
 
             HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
             log.debug("OpenRouter request body: {}", body.toString());
-            log.debug("OpenRouter headers: Authorization=Bearer ***, HTTP-Referer={}, X-Title={}", 
-                     baseUrl, "PlantCare AI Chat");
+            log.debug("OpenRouter headers: Authorization=Bearer ***, HTTP-Referer={}, X-Title={}",
+                    baseUrl, "PlantCare AI Chat");
 
             ResponseEntity<String> response = restTemplate.postForEntity(OPENROUTER_API_URL, entity, String.class);
             log.info("OpenRouter response status: {}", response.getStatusCode());
@@ -125,16 +125,17 @@ public class ChatBoxImpl implements ChatService {
                 log.info("OpenRouter response received successfully");
                 return reply;
             }
-            
+
             log.warn("OpenRouter response has no choices");
             return "Không nhận được phản hồi từ OpenRouter.";
-            
+
         } catch (HttpClientErrorException e) {
             log.error("OpenRouter API client error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
             if (e.getStatusCode().value() == 403) {
                 throw new RuntimeException("OpenRouter access forbidden. Please check API key and permissions.");
             }
-            throw new RuntimeException("OpenRouter API error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            throw new RuntimeException(
+                    "OpenRouter API error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
         } catch (HttpServerErrorException e) {
             log.error("OpenRouter API server error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new RuntimeException("OpenRouter server error: " + e.getStatusCode());
