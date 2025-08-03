@@ -1,6 +1,6 @@
 package com.plantcare_backend.config;
 
-// import com.plantcare_backend.filter.JwtAuthenticationFilter;
+import com.plantcare_backend.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-// import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,35 +36,37 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
-                                                                "/api/auth/login",
-                                                                "/api/auth/register",
-                                                                "/api/auth/forgot-password",
-                                                                "/api/auth/verify-reset-code",
-                                                                "/api/auth/reset-password",
-                                                                "/api/auth/change-password",
-                                                                "/api/auth/resend-verification",
-                                                                "/api/auth/verify-email",
-                                                                "/api/auth/login-admin",
-                                                                "/api/auth/login-expert")
+                                                                "/auth/login",
+                                                                "/auth/register",
+                                                                "/auth/forgot-password",
+                                                                "/auth/verify-reset-code",
+                                                                "/auth/reset-password",
+                                                                "/auth/change-password",
+                                                                "/auth/resend-verification",
+                                                                "/auth/verify-email",
+                                                                "/auth/login-admin",
+                                                                "/auth/login-expert")
                                                 .permitAll()
-                                                .requestMatchers("/api/admin/**").permitAll()
-                                                .requestMatchers("/api/plants/**").permitAll()
-                                                .requestMatchers("/api/users/**").permitAll()
-                                                .requestMatchers("/api/manager/**").permitAll()
-                                                .requestMatchers("/api/user-plants/**").permitAll()
-                                                .requestMatchers("/api/support/**").authenticated()
-                                                .requestMatchers("/api/admin/support/**").authenticated()
-                                                .requestMatchers("/api/user-plants/**").permitAll()
-                                                .requestMatchers("/api/chat/**").authenticated()
+                                                .requestMatchers("/admin/**").permitAll()
+                                                .requestMatchers("/plants/**", "/plants/categories",
+                                                                "/plants/search")
+                                                .permitAll()
+                                                .requestMatchers("/users/**").permitAll()
+                                                .requestMatchers("/manager/**").permitAll()
+                                                .requestMatchers("/user-plants/**").permitAll()
+                                                .requestMatchers("/support/**").authenticated()
+                                                .requestMatchers("/admin/support/**").authenticated()
+                                                .requestMatchers("/user-plants/**").permitAll()
+                                                .requestMatchers("/chat/**").authenticated()
                                                 .requestMatchers("/chat/**").permitAll()
-                                                .requestMatchers("/api/plant-care/").authenticated()
-                                                .requestMatchers("/api/personal/**").authenticated()
-                                                .requestMatchers("/api/avatars/**").permitAll()
-                                                .requestMatchers("/api/ai/**").authenticated()
+                                                .requestMatchers("/plant-care/").authenticated()
+                                                .requestMatchers("/personal/**").authenticated()
+                                                .requestMatchers("/avatars/**").permitAll()
+                                                .requestMatchers("/ai/**").authenticated()
                                                 // VNPAY Payment endpoints
-                                                .requestMatchers("/api/payment/vnpay-return").permitAll()
-                                                .requestMatchers("/api/payment/vnpay-ipn").permitAll()
-                                                .requestMatchers("/api/payment/vnpay/create").permitAll()
+                                                .requestMatchers("/payment/vnpay-return").permitAll()
+                                                .requestMatchers("/payment/vnpay-ipn").permitAll()
+                                                .requestMatchers("/payment/vnpay/create").permitAll()
                                                 // WebSocket endpoints
                                                 .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket")
                                                 .permitAll()
@@ -73,7 +75,7 @@ public class SecurityConfig {
                                                                 "/swagger-resources/**",
                                                                 "/webjars/**")
                                                 .permitAll()
-                                                .anyRequest().authenticated());
+                                                .anyRequest().permitAll());
                 // .addFilterBefore(jwtAuthenticationFilter,
                 // UsernamePasswordAuthenticationFilter.class);
 
@@ -95,8 +97,7 @@ public class SecurityConfig {
                 config.setAllowCredentials(true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/api/**", config);
-                source.registerCorsConfiguration("/chat/**", config);
+                source.registerCorsConfiguration("/**", config);
                 return source;
         }
 }

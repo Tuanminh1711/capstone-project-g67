@@ -30,60 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("JWT Filter is running for: " + request.getRequestURI());
-
-        // Skip JWT check for public endpoints
-        String requestURI = request.getRequestURI();
-        if (requestURI.startsWith("/api/plants/") ||
-                requestURI.startsWith("/api/auth/") ||
-                requestURI.startsWith("/api/users/") ||
-                requestURI.startsWith("/api/manager/") ||
-                requestURI.startsWith("/api/user-plants/") ||
-                requestURI.startsWith("/api/avatars/") ||
-                requestURI.startsWith("/api/payment/") ||
-                requestURI.startsWith("/swagger-ui/") ||
-                requestURI.startsWith("/v3/api-docs/") ||
-                requestURI.startsWith("/ws-chat/")) {
-            System.out.println("Skipping JWT check for public endpoint: " + requestURI);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String jwtToken = authorizationHeader.substring(7);
-            System.out.println("jwtToken: " + jwtToken);
-            try {
-                System.out.println("Is token blacklisted? " + jwtUtil.isTokenBlacklisted(jwtToken));
-                System.out.println("Is token valid? " + jwtUtil.validateToken(jwtToken));
-                // Kiểm tra token có bị thu hồi không
-                if (jwtUtil.isTokenBlacklisted(jwtToken)) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token revoked");
-                    return;
-                }
-                // Kiểm tra token hợp lệ
-                if (jwtUtil.validateToken(jwtToken)) {
-                    Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-                    System.out.println("userId from token: " + userId);
-                    List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(jwtToken);
-                    // Đặt authentication vào context
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userId, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    // Đặt thông tin user vào request attribute
-                    request.setAttribute("userId", userId);
-                } else {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
-                    return;
-                }
-            } catch (Exception e) {
-                System.out.println("Exception in filter: " + e.getMessage());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token verification failed");
-                return;
-            }
-        }
-        // Tiếp tục filter chain
+        // Temporarily disable JWT Filter completely
+        System.out.println("JWT Filter is DISABLED - allowing all requests");
         filterChain.doFilter(request, response);
     }
 }

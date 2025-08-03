@@ -10,56 +10,64 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        
-    - name: Cache Maven packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Build with Maven
-      run: |
-        cd plantcare-backend
-        mvn clean package -DskipTests
-        
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: plantcare-app
-        path: plantcare-backend/target/*.jar
-        
-    - name: Deploy to Azure VM
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.AZURE_HOST }}
-        username: ${{ secrets.AZURE_USERNAME }}
-        key: ${{ secrets.AZURE_PRIVATE_KEY }}
-        port: 22
-        script: |
-          # Stop existing application
-          sudo systemctl stop plantcare-app || true
-          
-          # Create app directory if not exists
-          sudo mkdir -p /opt/plantcare-app
-          
-          # Download artifact
-          cd /opt/plantcare-app
-          rm -f plantcare-app.jar
-          
-          # Wait for artifact to be available
-          sleep 10
-          
-          # Start application
-          sudo systemctl start plantcare-app
-          
-          # Check status
-          sudo systemctl status plantcare-app 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: |
+          cd plantcare-backend
+          mvn clean package -DskipTests
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plantcare-app
+          path: plantcare-backend/target/*.jar
+
+      - name: Deploy to Azure VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Stop existing application
+            sudo systemctl stop plantcare-backend || true
+            
+            # Create app directory if not exists
+            sudo mkdir -p /opt/plantcare-app
+            
+            # Download artifact from GitHub Actions
+            cd /tmp
+            wget -O plantcare-backend.jar "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
+            
+            # Copy to app directory
+            sudo cp /tmp/plantcare-backend.jar /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
+            
+            # Set proper permissions
+            sudo chown azureuser:azureuser /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
+            sudo chmod 755 /opt/plantcare-app/plantcare-backend-0.0.1-SNAPSHOT.jar
+            
+            # Start application
+            sudo systemctl start plantcare-backend
+            
+            # Check status
+            sudo systemctl status plantcare-backend
+            
+            # Wait a moment and check if it's running
+            sleep 5
+            sudo systemctl is-active plantcare-backend
