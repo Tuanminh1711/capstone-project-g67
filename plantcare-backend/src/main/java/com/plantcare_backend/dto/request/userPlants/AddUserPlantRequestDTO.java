@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
-
 @Data
 public class AddUserPlantRequestDTO {
     @NotNull(message = "Plant ID is required")

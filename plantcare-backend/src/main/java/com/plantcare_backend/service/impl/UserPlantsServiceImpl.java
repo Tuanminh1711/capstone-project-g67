@@ -184,7 +184,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
         userPlant.setPlantDate(plantingTimestamp);
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
-        userPlant.setCreated_at(plantingTimestamp);
+        userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
 
         log.info("=== DEBUG BEFORE SAVE ===");
         log.info("UserPlant object: {}", userPlant);
@@ -205,7 +205,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         if (images != null && !images.isEmpty()) {
             saveUserPlantImages(savedUserPlant, images);
         }
-        userPlantRepository.save(userPlant);
     }
 
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
