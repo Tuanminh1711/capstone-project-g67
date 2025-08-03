@@ -19,7 +19,7 @@ import java.util.List;
  * create by Tahoang
  */
 
-@Component
+// @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
