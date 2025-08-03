@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
@@ -160,15 +161,30 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setUserId(userId);
         userPlant.setPlantId(requestDTO.getPlantId());
         userPlant.setPlantName(requestDTO.getNickname());
-        userPlant.setPlantDate(requestDTO.getPlantingDate());
-        userPlant.setPlantLocation(requestDTO.getLocationInHouse());
 
-        // Sử dụng timestamp từ request nếu có, nếu không thì tạo mới
-        if (requestDTO.getPlantingDate() != null) {
-            userPlant.setCreated_at(requestDTO.getPlantingDate());
+        // Convert String to Timestamp for planting date
+        Timestamp plantingTimestamp = null;
+        if (requestDTO.getPlantingDate() != null && !requestDTO.getPlantingDate().trim().isEmpty()) {
+            try {
+                // Parse ISO 8601 format: 2025-08-03T00:00:00.000Z
+                String dateStr = requestDTO.getPlantingDate();
+                if (dateStr.endsWith("Z")) {
+                    dateStr = dateStr.substring(0, dateStr.length() - 1); // Remove Z
+                }
+                plantingTimestamp = Timestamp.valueOf(dateStr.replace("T", " "));
+                log.info("Successfully converted planting date: {} -> {}", requestDTO.getPlantingDate(),
+                        plantingTimestamp);
+            } catch (Exception e) {
+                log.error("Failed to parse planting date: {}", requestDTO.getPlantingDate(), e);
+                plantingTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
+            }
         } else {
-            userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
+            plantingTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
         }
+
+        userPlant.setPlantDate(plantingTimestamp);
+        userPlant.setPlantLocation(requestDTO.getLocationInHouse());
+        userPlant.setCreated_at(plantingTimestamp);
 
         log.info("=== DEBUG BEFORE SAVE ===");
         log.info("UserPlant object: {}", userPlant);
@@ -195,7 +211,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
         log.info("Saving {} images for user plant ID: {}", images.size(), userPlant.getUserPlantId());
 
-        String uploadDir = "uploads/user-plants/";
+        // Use environment-specific upload directory
+        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
         Path uploadPath = Paths.get(uploadDir);
 
         try {

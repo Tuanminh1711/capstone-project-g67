@@ -5,8 +5,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
-import java.sql.Timestamp;
+
 import java.util.List;
+
 
 @Data
 public class AddUserPlantRequestDTO {
@@ -17,7 +18,7 @@ public class AddUserPlantRequestDTO {
     private String nickname;
 
     @NotNull(message = "Planting date is required")
-    private Timestamp plantingDate;
+    private String plantingDate;
 
     private String locationInHouse;
     private boolean reminderEnabled;
