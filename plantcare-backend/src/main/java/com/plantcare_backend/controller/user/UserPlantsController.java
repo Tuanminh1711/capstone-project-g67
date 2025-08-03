@@ -122,16 +122,16 @@ public class UserPlantsController {
 
     @PostMapping("/add")
     public ResponseData<?> addUserPlant(
-            @ModelAttribute AddUserPlantRequestDTO requestDTO,
+            @RequestBody AddUserPlantRequestDTO requestDTO,
             HttpServletRequest request,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
-        
+
         // Debug logging
-        log.info("=== DEBUG ADD USER PLANT ===");
+        log.info("=== DEBUG ADD USER PLANT (FORM DATA) ===");
         log.info("User ID: {}", userId);
         log.info("Request DTO: {}", requestDTO);
         log.info("Plant ID: {}", requestDTO.getPlantId());
@@ -140,7 +140,7 @@ public class UserPlantsController {
         log.info("Location: {}", requestDTO.getLocationInHouse());
         log.info("Images count: {}", images != null ? images.size() : 0);
         log.info("==========================");
-        
+
         try {
             userPlantsService.addUserPlant(requestDTO, images, userId);
             activityLogService.logActivity(userId.intValue(), "ADD_USER_PLANT",
@@ -244,6 +244,7 @@ public class UserPlantsController {
             }
         }
     }
+
     @Operation(method = "POST", summary = "Upload plant image", description = "Upload image for user plant")
     @PostMapping("/upload-plant-image")
     public ResponseEntity<ResponseData<String>> uploadPlantImage(
