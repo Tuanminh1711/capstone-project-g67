@@ -1,7 +1,7 @@
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
@@ -154,6 +154,7 @@ export class AddPlantComponent implements OnInit {
     }
 
     const token = this.cookieService.getAuthToken();
+    console.log('Add plant - Token from cookie:', token ? 'Found' : 'Not found');
     if (!token) {
       this.toastService.error('Bạn cần đăng nhập để thêm cây vào bộ sưu tập');
       this.router.navigate(['/login']);
@@ -162,7 +163,7 @@ export class AddPlantComponent implements OnInit {
 
     this.loading = true;
 
-    // Format the request data
+    // Format the request data với validation chi tiết
     const requestData = {
       plantId: this.formData.plantId,
       nickname: this.formData.nickname.trim(),
@@ -170,6 +171,21 @@ export class AddPlantComponent implements OnInit {
       locationInHouse: this.formData.locationInHouse,
       reminderEnabled: this.formData.reminderEnabled
     };
+
+    // Validate request data trước khi gửi
+    console.log('Request data validation:', {
+      plantId: requestData.plantId,
+      plantIdType: typeof requestData.plantId,
+      nickname: requestData.nickname,
+      plantingDate: requestData.plantingDate,
+      locationInHouse: requestData.locationInHouse,
+      reminderEnabled: requestData.reminderEnabled
+    });
+
+    if (!requestData.plantId || requestData.plantId <= 0) {
+      this.toastService.error('Plant ID không hợp lệ');
+      return;
+    }
 
     // Tạo FormData đúng chuẩn backend @RequestPart("requestDTO") và @RequestPart("images")
     const formData = new FormData();
@@ -182,19 +198,29 @@ export class AddPlantComponent implements OnInit {
       }
     }
 
+    // Interceptor sẽ tự động thêm Authorization header, không cần manual headers
+    console.log('Sending add plant request with data:', {
+      plantId: requestData.plantId,
+      nickname: requestData.nickname,
+      hasImages: this.selectedImages && this.selectedImages.length > 0
+    });
+    
     this.http.post<any>(`${environment.apiUrl}/user-plants/add`, formData).subscribe({
       next: (response) => {
+        console.log('Add plant response:', response);
         this.loading = false;
         this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
         this.router.navigate(['/my-green-space']);
       },
       error: (err) => {
+        console.error('Add plant error details:', err);
         this.loading = false;
-        console.error('Error adding plant to collection:', err);
         if (err.status === 401 || err.status === 403) {
-          this.toastService.error('Bạn không có quyền thực hiện hành động này');
+          this.toastService.error('Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập lại.');
         } else if (err.status === 409) {
           this.toastService.error('Cây này đã có trong bộ sưu tập của bạn');
+        } else if (err.error?.message) {
+          this.toastService.error(`Lỗi: ${err.error.message}`);
         } else {
           this.toastService.error('Không thể thêm cây vào bộ sưu tập. Vui lòng thử lại.');
         }

@@ -25,6 +25,12 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const isAuthApi = ['/api/auth/login', '/api/auth/register'].some(url => request.url.includes(url));
   if (token && !isAuthApi) {
     headers = headers.set('Authorization', `Bearer ${token}`);
+    // Debug log for add plant endpoint
+    if (request.url.includes('/user-plants/add')) {
+      console.log('Interceptor - Adding Authorization header for add plant:', `Bearer ${token.substring(0, 20)}...`);
+    }
+  } else if (request.url.includes('/user-plants/add')) {
+    console.log('Interceptor - No token found for add plant request');
   }
 
   // Chuẩn bị URL cho môi trường production
