@@ -227,22 +227,36 @@ export class MyGardenComponent implements OnInit, OnDestroy {
               const plants = response.data.content;
               
               if (plants.length > 0) {
-                // Map API response to userPlants array
-                this.userPlants = plants.map((p: any) => ({
-                  userPlantId: p.userPlantId,
-                  plantId: p.plantId,
-                  imageUrl: p.imageUrl,
-                  nickname: p.nickname,
-                  plantLocation: p.plantLocation,
-                  // Add default values for fields not present in API
-                  reminderEnabled: false
-                }));
-                this.errorMessage = '';
-                // Show success message if this is a refresh after adding a plant
-                if (this.successMessage) {
-                  this.toastService.success(`🌱 Tìm thấy ${plants.length} cây trong vườn của bạn!`);
+                // Filter out plants with null plantId và log để debug
+                const validPlants = plants.filter((p: any) => {
+                  if (!p.plantId) {
+                    console.warn('Plant with null plantId found:', p);
+                    return false;
+                  }
+                  return true;
+                });
+
+                if (validPlants.length > 0) {
+                  // Map API response to userPlants array
+                  this.userPlants = validPlants.map((p: any) => ({
+                    userPlantId: p.userPlantId,
+                    plantId: p.plantId,
+                    imageUrl: p.imageUrl,
+                    nickname: p.nickname,
+                    plantLocation: p.plantLocation,
+                    // Add default values for fields not present in API
+                    reminderEnabled: false
+                  }));
+                  this.errorMessage = '';
+                  // Show success message if this is a refresh after adding a plant
+                  if (this.successMessage) {
+                    this.toastService.success(`🌱 Tìm thấy ${validPlants.length} cây trong vườn của bạn!`);
+                  }
+                  this.onUserPlantsLoaded();
+                } else {
+                  this.userPlants = [];
+                  this.errorMessage = 'Có vấn đề với dữ liệu cây trong vườn. Vui lòng liên hệ hỗ trợ.';
                 }
-                this.onUserPlantsLoaded();
               } else {
                 this.userPlants = [];
                 this.errorMessage = 'Bạn chưa có cây nào trong vườn. 🌱\nHãy bắt đầu bằng cách thêm cây đầu tiên của bạn!';
@@ -260,20 +274,34 @@ export class MyGardenComponent implements OnInit, OnDestroy {
               }
               
               if (plants.length > 0) {
-                this.userPlants = plants.map((p: any) => ({
-                  userPlantId: p.userPlantId || p.id,
-                  plantId: p.plantId,
-                  imageUrl: p.imageUrl,
-                  nickname: p.nickname || p.name,
-                  plantLocation: p.plantLocation || p.location || 'Vị trí không xác định',
-                  reminderEnabled: false
-                }));
-                this.errorMessage = '';
-                // Show success message for fallback format too
-                if (this.successMessage) {
-                  this.toastService.success(`🌱 Tìm thấy ${plants.length} cây trong vườn của bạn!`);
+                // Filter out plants with null plantId cho fallback case
+                const validPlants = plants.filter((p: any) => {
+                  if (!p.plantId && !p.id) {
+                    console.warn('Plant with null ID found in fallback:', p);
+                    return false;
+                  }
+                  return true;
+                });
+
+                if (validPlants.length > 0) {
+                  this.userPlants = validPlants.map((p: any) => ({
+                    userPlantId: p.userPlantId || p.id,
+                    plantId: p.plantId || p.id,
+                    imageUrl: p.imageUrl,
+                    nickname: p.nickname || p.name,
+                    plantLocation: p.plantLocation || p.location || 'Vị trí không xác định',
+                    reminderEnabled: false
+                  }));
+                  this.errorMessage = '';
+                  // Show success message for fallback format too
+                  if (this.successMessage) {
+                    this.toastService.success(`🌱 Tìm thấy ${validPlants.length} cây trong vườn của bạn!`);
+                  }
+                  this.onUserPlantsLoaded();
+                } else {
+                  this.userPlants = [];
+                  this.errorMessage = 'Có vấn đề với dữ liệu cây trong vườn. Vui lòng liên hệ hỗ trợ.';
                 }
-                this.onUserPlantsLoaded();
               } else {
                 this.userPlants = [];
                 this.errorMessage = 'Bạn chưa có cây nào trong vườn. 🌱\nHãy bắt đầu bằng cách thêm cây đầu tiên của bạn!';
@@ -304,6 +332,13 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
   private handleApiError(err: any): void {
+    // Xử lý lỗi đặc biệt về null plantId
+    if (err.error?.message?.includes('Cannot invoke "java.lang.Long.longValue()"')) {
+      this.errorMessage = 'Có vấn đề với dữ liệu cây trong hệ thống. 🔧\nVui lòng liên hệ hỗ trợ để khắc phục.';
+      this.toastService.error('Dữ liệu không hợp lệ. Vui lòng liên hệ hỗ trợ.');
+      return;
+    }
+
     switch(err.status) {
       case 404:
         this.errorMessage = 'Bạn chưa có cây nào trong vườn. 🌱\nHãy bắt đầu bằng cách thêm cây đầu tiên của bạn!';
@@ -321,6 +356,14 @@ export class MyGardenComponent implements OnInit, OnDestroy {
       case 500:
         this.errorMessage = 'Lỗi server nội bộ. Vui lòng thử lại sau.';
         break;
+      case 400:
+        // Handle 400 errors with more specific messages
+        if (err.error?.message) {
+          this.errorMessage = 'Có lỗi xảy ra: ' + err.error.message;
+        } else {
+          this.errorMessage = 'Yêu cầu không hợp lệ. Vui lòng thử lại.';
+        }
+        break;
       default:
         // Nếu response có dữ liệu rỗng nhưng status thành công thì không phải lỗi
         if (err.status === 200) {
@@ -337,6 +380,12 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
   viewPlantDetail(userPlantId: number): void {
+    // Validate userPlantId
+    if (!userPlantId || userPlantId <= 0) {
+      this.toastService.error('Dữ liệu cây không hợp lệ. Vui lòng refresh trang.');
+      return;
+    }
+
     if (userPlantId) {
       this.router.navigate(['/user/user-plant-detail', userPlantId]);
     } else {
@@ -454,6 +503,12 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
   carePlant(plantId: number): void {
+    // Validate plantId trước khi xử lý
+    if (!plantId || plantId <= 0) {
+      this.toastService.error('Dữ liệu cây không hợp lệ. Vui lòng refresh trang.');
+      return;
+    }
+
     // Tìm userPlantId theo plantId
     const targetPlant = this.userPlants.find(p => p.plantId === plantId);
     const userPlantId = targetPlant?.userPlantId;

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { TicketResponseDialogComponent } from '../ticket-response/ticket-response-dialog.component';
@@ -13,19 +13,38 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
   standalone: true,
   imports: [CommonModule]
 })
-export class TicketDetailComponent implements OnInit, OnDestroy {
+export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
   @Input() ticket: any;
   @Output() close = new EventEmitter<void>();
 
   private dialog = inject(MatDialog);
   private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
+  private cdr = inject(ChangeDetectorRef);
   
   imageObjectUrl: SafeUrl | null = null;
 
   ngOnInit() {
+    // Trigger change detection để đảm bảo UI update
+    this.cdr.detectChanges();
+    
     if (this.ticket?.imageUrl) {
       this.loadImage();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['ticket'] && changes['ticket'].currentValue) {
+      // Reset image URL khi ticket thay đổi
+      if (this.imageObjectUrl) {
+        URL.revokeObjectURL(this.imageObjectUrl.toString());
+        this.imageObjectUrl = null;
+      }
+      
+      // Load ảnh mới nếu có
+      if (this.ticket?.imageUrl) {
+        this.loadImage();
+      }
     }
   }
 
@@ -55,10 +74,12 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
       next: (blob) => {
         const objectUrl = URL.createObjectURL(blob);
         this.imageObjectUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+        this.cdr.detectChanges(); // Force change detection
       },
       error: (error) => {
         console.error('Failed to load image:', error);
         this.imageObjectUrl = null;
+        this.cdr.detectChanges(); // Force change detection
       }
     });
   }
@@ -68,8 +89,12 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
   }
 
   getFullImageUrl(imageUrl: string): SafeUrl | string {
-    // Trả về object URL đã được tạo sẵn
-    return this.imageObjectUrl || '';
+    // Trả về object URL đã được tạo sẵn hoặc fallback URL
+    if (this.imageObjectUrl) {
+      return this.imageObjectUrl;
+    }
+    // Fallback: trả về URL gốc nếu object URL chưa sẵn sàng
+    return imageUrl || '';
   }
 
   openResponseDialog() {

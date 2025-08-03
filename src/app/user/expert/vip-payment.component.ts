@@ -54,6 +54,8 @@ export class VipPaymentComponent {
     ).subscribe({
       next: (res) => {
         if (res && res.paymentUrl) {
+          // Thêm thông báo cho user về việc chuyển hướng
+          console.log('Redirecting to VNPay payment gateway...');
           // Chuyển hướng sang trang thanh toán, sau khi thanh toán thành công sẽ về /vip/welcome
           window.location.href = res.paymentUrl;
         } else {
@@ -61,8 +63,9 @@ export class VipPaymentComponent {
         }
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Lỗi khi tạo thanh toán.';
+      error: (err) => {
+        console.error('Payment creation error:', err);
+        this.error = 'Lỗi khi tạo thanh toán. Vui lòng thử lại.';
         this.loading = false;
       }
     });

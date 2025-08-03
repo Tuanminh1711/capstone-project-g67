@@ -66,6 +66,9 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
         this.fetchTicketDetail(+ticketId);
       } else if (ticketId) {
         this.error = 'ID ticket không hợp lệ.';
+      } else {
+        // Không có ticketId trong URL, clear selected ticket để hiển thị list
+        this.selectedTicket = null;
       }
     });
   }
@@ -123,13 +126,15 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
   }
 
   viewDetail(ticket: any) {
-    // Gọi API lấy chi tiết ticket (nếu cần), hoặc truyền luôn nếu đã có đủ dữ liệu
+    // Navigate đến URL có ticketId để có thể reload và vẫn giữ được detail view
     if (ticket && ticket.ticketId) {
-      this.fetchTicketDetail(ticket.ticketId);
+      this.router.navigate(['/user/my-tickets', ticket.ticketId]);
     }
   }
 
   closeDetail() {
     this.selectedTicket = null;
+    // Navigate về list view (không có ticketId)
+    this.router.navigate(['/user/my-tickets']);
   }
 }

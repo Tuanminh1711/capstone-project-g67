@@ -3,7 +3,7 @@ export const CARE_TYPES = [
   { careTypeId: 1, careTypeName: 'Tưới nước' },
   { careTypeId: 2, careTypeName: 'Bón phân' },
   { careTypeId: 3, careTypeName: 'Cắt tỉa' },
-  { careTypeId: 4, careTypeName: 'Bón phân' }
+  { careTypeId: 4, careTypeName: 'Phun thuốc trừ sâu' }
 ];
 
 /**
@@ -43,8 +43,13 @@ export class CareReminderService {
 
   constructor(private http: HttpClient) {}
 
-  updateCareReminders(UserPlant: number, schedules: CareReminderSchedule[]): Observable<any> {
-    const url = `${this.baseUrl}/plant-care/${UserPlant}/care-reminders`;
+  updateCareReminders(userPlantId: number, schedules: CareReminderSchedule[]): Observable<any> {
+    // Validate userPlantId
+    if (!userPlantId || userPlantId <= 0) {
+      throw new Error('Invalid userPlantId');
+    }
+    
+    const url = `${this.baseUrl}/plant-care/${userPlantId}/care-reminders`;
     // Không gửi customMessage vì backend không hỗ trợ
     const body: any = { schedules };
     return this.http.post(url, body, { responseType: 'text' as 'json' });
@@ -52,10 +57,15 @@ export class CareReminderService {
 
   /**
    * Lấy danh sách trạng thái nhắc nhở từng loại cho một cây
-   * @param plantId id của cây
+   * @param userPlantId id của user plant
    */
-  getCareReminders(plantId: number): Observable<CareReminderRequest> {
-    const url = `${this.baseUrl}/plant-care/${plantId}/care-reminders`;
+  getCareReminders(userPlantId: number): Observable<CareReminderRequest> {
+    // Validate userPlantId
+    if (!userPlantId || userPlantId <= 0) {
+      throw new Error('Invalid userPlantId');
+    }
+    
+    const url = `${this.baseUrl}/plant-care/${userPlantId}/care-reminders`;
     return this.http.get<CareReminderRequest>(url);
   }
 }

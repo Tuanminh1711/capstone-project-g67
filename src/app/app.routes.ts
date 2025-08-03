@@ -53,6 +53,7 @@ export const routes: Routes = [
   { path: 'user/collection', redirectTo: 'user/my-garden', pathMatch: 'full' },
   { path: 'user/collection/add-plant/:plantId', redirectTo: 'user/add-plant/:plantId', pathMatch: 'full' },
   { path: 'user/my-tickets', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
+  { path: 'user/my-tickets/:ticketId', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
   { path: 'user/activity-logs', loadComponent: () => import('./user/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
 
   // PROFILE & AUTH - Convert to lazy loading

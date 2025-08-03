@@ -59,32 +59,6 @@
     </div>
   }
 
-  <!-- Error State -->
-  @if (error && !loading) {
-    <div class="error-garden">
-      <div class="error-icon">🥀</div>
-      <p>{{ error }}</p>
-      <div class="error-actions">
-        @if (error.includes('đăng nhập')) {
-          <button 
-            class="auth-btn"
-            (click)="handleAuthRequired()"
-          >
-            <span>🔑</span> Đăng nhập
-          </button>
-        } @else {
-          <button 
-            class="retry-btn" 
-            (click)="refreshGarden()"
-            [disabled]="loading"
-          >
-            <span>🔄</span> {{ loading ? 'Đang thử lại...' : 'Thử lại' }}
-          </button>
-        }
-      </div>
-    </div>
-  }
-
   <!-- Empty State -->
   @if (!loading && (userPlants.length === 0 || error)) {
     <div class="empty-garden">

@@ -84,11 +84,18 @@
             }
           </div>
           
-          @if (ticket.imageUrl && imageObjectUrl) {
+          @if (ticket.imageUrl) {
             <div class="image-section">
               <span class="info-label">Ảnh đính kèm</span>
               <div class="image-container">
-                <img [src]="imageObjectUrl" alt="Ticket image" class="ticket-image" />
+                @if (imageObjectUrl) {
+                  <img [src]="imageObjectUrl" alt="Ticket image" class="ticket-image" />
+                } @else {
+                  <div class="image-loading">
+                    <div class="loading-spinner"></div>
+                    <span>Đang tải ảnh...</span>
+                  </div>
+                }
               </div>
             </div>
           }
