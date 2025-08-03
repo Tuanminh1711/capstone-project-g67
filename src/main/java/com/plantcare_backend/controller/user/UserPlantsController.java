@@ -122,7 +122,7 @@ public class UserPlantsController {
 
     @PostMapping("/add")
     public ResponseData<?> addUserPlant(
-            @ModelAttribute AddUserPlantRequestDTO requestDTO,
+            @RequestBody AddUserPlantRequestDTO requestDTO,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
@@ -130,7 +130,7 @@ public class UserPlantsController {
         }
 
         // Debug logging
-        log.info("=== DEBUG ADD USER PLANT (FORM DATA) ===");
+        log.info("=== DEBUG ADD USER PLANT ===");
         log.info("User ID: {}", userId);
         log.info("Request DTO: {}", requestDTO);
         log.info("Plant ID: {}", requestDTO.getPlantId());
