@@ -28,11 +28,30 @@ public interface PlantReportRepository extends JpaRepository<PlantReport, Long> 
             @Param("reporterName") String reporterName,
             Pageable pageable
     );
+
     int countByPlantId(Long plantId);
+
     // Kiểm tra user đã report plant chưa
     boolean existsByPlantAndReporterAndStatus(Plants plant, Users reporter, PlantReport.ReportStatus status);
+
     // Đếm số report theo status
     int countByPlantIdAndStatusIn(Long plantId, List<PlantReport.ReportStatus> statuses);
 
     List<PlantReport> findByPlant_Id(Long plantId);
+
+    @Query("SELECT pr FROM PlantReport pr " +
+            "JOIN pr.plant p " +
+            "WHERE pr.reporter.id = :userId " +
+            "ORDER BY pr.createdAt DESC")
+    Page<PlantReport> findReportsByUserId(@Param("userId") Integer userId, Pageable pageable);
+
+    @Query("SELECT pr FROM PlantReport pr " +
+            "JOIN pr.plant p " +
+            "WHERE pr.reporter.id = :userId " +
+            "AND (:status IS NULL OR pr.status = :status) " +
+            "ORDER BY pr.createdAt DESC")
+    Page<PlantReport> findReportsByUserIdAndStatus(
+            @Param("userId") Integer userId,
+            @Param("status") PlantReport.ReportStatus status,
+            Pageable pageable);
 }
