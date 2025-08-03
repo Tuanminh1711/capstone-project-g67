@@ -20,8 +20,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-        // @Autowired
-        // private JwtAuthenticationFilter jwtAuthenticationFilter;
+        @Autowired
+        private JwtAuthenticationFilter jwtAuthenticationFilter;
 
         @Bean
         public PasswordEncoder passwordEncoder() {
@@ -75,9 +75,9 @@ public class SecurityConfig {
                                                                 "/swagger-resources/**",
                                                                 "/webjars/**")
                                                 .permitAll()
-                                                .anyRequest().permitAll());
-                // .addFilterBefore(jwtAuthenticationFilter,
-                // UsernamePasswordAuthenticationFilter.class);
+                                                .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }
