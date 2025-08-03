@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://40.81.23.51:8080/api',  // Đúng IP và port backend
-  baseUrl: 'http://40.81.23.51:8080',
+  apiUrl: 'https://plantcare.id.vn/api',  // URL backend production thật
+  baseUrl: 'https://plantcare.id.vn',  // Base URL production
   endpoints: {
     auth: '/api/auth',
     user: {

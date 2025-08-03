@@ -86,7 +86,7 @@
   }
 
   <!-- Empty State -->
-  @if (!loading && !error && userPlants.length === 0) {
+  @if (!loading && (userPlants.length === 0 || error)) {
     <div class="empty-garden">
       <div class="empty-illustration">
         <div class="empty-pot">
@@ -97,7 +97,7 @@
       </div>
       <div class="empty-content">
         <h3>{{ isLoggedIn ? 'Khu vườn của bạn đang trống' : 'Chào mừng đến với My Garden!' }}</h3>
-        <p>{{ isLoggedIn ? 'Hãy bắt đầu trồng những cây cảnh yêu thích để tạo nên khu vườn xanh tươi!' : 'Đăng nhập để bắt đầu tạo khu vườn xanh của riêng bạn!' }}</p>
+        <p>{{ error ? error : (isLoggedIn ? 'Hãy bắt đầu trồng những cây cảnh yêu thích để tạo nên khu vườn xanh tươi!' : 'Đăng nhập để bắt đầu tạo khu vườn xanh của riêng bạn!') }}</p>
         @if (isLoggedIn) {
           <div class="empty-actions">
             <button 

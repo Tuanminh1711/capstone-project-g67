@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: '/api',  // Sử dụng proxy trong development
-  baseUrl: 'http://localhost:8080',
+  baseUrl: '',  // Sử dụng URL tương đối trong development
   endpoints: {
     auth: '/api/auth',
     user: {

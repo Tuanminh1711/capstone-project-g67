@@ -125,7 +125,11 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
     if (!imageUrl) return;
 
     const token = localStorage.getItem('token');
-    const fullImageUrl = `${environment.baseUrl}${imageUrl}`;
+    // Trong development: sử dụng URL tương đối (qua proxy)
+    // Trong production: sử dụng baseUrl + imageUrl
+    const fullImageUrl = environment.production 
+      ? `${environment.baseUrl}${imageUrl}`
+      : (imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`);
     
     this.http.get(fullImageUrl, {
       responseType: 'blob',

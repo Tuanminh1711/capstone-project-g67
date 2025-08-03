@@ -37,6 +37,64 @@
           }
         }
       }
+    },
+    {
+      "type": "shell",
+      "label": "Start Angular with Max Memory",
+      "command": "npm",
+      "args": ["run", "start:max"],
+      "group": "build",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Clean Angular Cache",
+      "command": "ng",
+      "args": ["cache", "clean"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell", 
+      "label": "Clean All Cache",
+      "command": "powershell",
+      "args": [
+        "-Command",
+        "Remove-Item -Recurse -Force .angular/cache -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force node_modules/.cache -ErrorAction SilentlyContinue; ng cache clean; Write-Host 'Cache cleaned successfully'"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always", 
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ]
 }

@@ -37,20 +37,13 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     return map[msgNorm] || msg;
   }
   showPassword = false;
-  showConfirmPassword = false;
   username = '';
   password = '';
-  confirmPassword = '';
-  passwordsMatch = true;
-
-  checkPasswordsMatch() {
-    this.passwordsMatch = this.password === this.confirmPassword;
-  }
   fullName = '';
   email = '';
   phoneNumber = '';
   gender: 'male' | 'female' | 'other' = 'male';
-  roleId: number = 3; // USER mặc định, cho phép chọn
+  roleId: number = 2; // Staff mặc định (vì dropdown chỉ có Staff và Expert)
   roles = [
     { id: 1, name: 'ADMIN' },
     { id: 2, name: 'STAFF' },
@@ -70,7 +63,7 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
   }
 
   validateForm(): string | null {
-    if (!this.username || !this.password || !this.confirmPassword || !this.fullName || !this.email || !this.phoneNumber || !this.gender || !this.roleId) {
+    if (!this.username || !this.password || !this.fullName || !this.email || !this.phoneNumber || !this.gender || !this.roleId) {
       return 'Vui lòng nhập đầy đủ thông tin.';
     }
     if (!/^[a-zA-Z0-9_]{4,32}$/.test(this.username)) {
@@ -106,7 +99,6 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     const body = {
       username: this.username,
       password: this.password,
-      confirmPassword: this.confirmPassword,
       fullName: this.fullName,
       email: this.email,
       phoneNumber: this.phoneNumber,
@@ -125,12 +117,11 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
           this.setError('');
           this.username = '';
           this.password = '';
-          this.confirmPassword = '';
           this.fullName = '';
           this.email = '';
           this.phoneNumber = '';
           this.gender = 'male';
-          this.roleId = 3;
+          this.roleId = 2; // Reset về Staff
           this.cdr.detectChanges();
           setTimeout(() => {
             this.router.navigate(['/admin/accounts'], { queryParams: { successMsg: this.successMsg } });

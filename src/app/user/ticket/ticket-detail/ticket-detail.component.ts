@@ -40,7 +40,11 @@ export class TicketDetailComponent implements OnInit, OnDestroy {
     if (!this.ticket?.imageUrl) return;
 
     const token = localStorage.getItem('token');
-    const imageUrl = `${environment.baseUrl}${this.ticket.imageUrl}`;
+    // Trong development: sử dụng URL tương đối (qua proxy)
+    // Trong production: sử dụng baseUrl + imageUrl
+    const imageUrl = environment.production 
+      ? `${environment.baseUrl}${this.ticket.imageUrl}`
+      : (this.ticket.imageUrl.startsWith('/') ? this.ticket.imageUrl : `/${this.ticket.imageUrl}`);
     
     this.http.get(imageUrl, {
       responseType: 'blob',

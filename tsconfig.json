@@ -14,8 +14,10 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve",
-    "baseUrl": "./src"
-    ,"paths": {
+    "baseUrl": "./src",
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
       "environments/*": ["environments/*"]
     }
   },
