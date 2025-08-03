@@ -147,6 +147,15 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
     @Override
     public void addUserPlant(AddUserPlantRequestDTO requestDTO, List<MultipartFile> images, Long userId) {
+        log.info("=== DEBUG SERVICE ADD USER PLANT ===");
+        log.info("Request DTO: {}", requestDTO);
+        log.info("Plant ID from request: {}", requestDTO.getPlantId());
+        log.info("Nickname from request: {}", requestDTO.getNickname());
+        log.info("Planting Date from request: {}", requestDTO.getPlantingDate());
+        log.info("Location from request: {}", requestDTO.getLocationInHouse());
+        log.info("User ID: {}", userId);
+        log.info("================================");
+        
         UserPlants userPlant = new UserPlants();
         userPlant.setUserId(userId);
         userPlant.setPlantId(requestDTO.getPlantId());
@@ -154,12 +163,27 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
+        
+        log.info("=== DEBUG BEFORE SAVE ===");
+        log.info("UserPlant object: {}", userPlant);
+        log.info("Plant ID set: {}", userPlant.getPlantId());
+        log.info("Plant Name set: {}", userPlant.getPlantName());
+        log.info("Plant Date set: {}", userPlant.getPlantDate());
+        log.info("Plant Location set: {}", userPlant.getPlantLocation());
+        log.info("=========================");
+        
         UserPlants savedUserPlant = userPlantRepository.save(userPlant);
+        
+        log.info("=== DEBUG AFTER SAVE ===");
+        log.info("Saved UserPlant ID: {}", savedUserPlant.getUserPlantId());
+        log.info("Saved Plant ID: {}", savedUserPlant.getPlantId());
+        log.info("Saved Plant Name: {}", savedUserPlant.getPlantName());
+        log.info("=========================");
+        
         if (images != null && !images.isEmpty()) {
             saveUserPlantImages(savedUserPlant, images);
         }
         userPlantRepository.save(userPlant);
-
     }
 
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
