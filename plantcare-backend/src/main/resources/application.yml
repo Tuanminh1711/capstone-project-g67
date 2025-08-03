@@ -16,6 +16,18 @@ spring:
       file-size-threshold: 2KB
       location: ${java.io.tmpdir}
 
+  # Cấu hình Jackson timezone
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+    date-format: yyyy-MM-dd HH:mm:ss
+
+  # Cấu hình JPA timezone
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+
 # PlantCare Configuration
 plantcare:
   base-url: ${PLANTCARE_BASE_URL:http://localhost:4200}
