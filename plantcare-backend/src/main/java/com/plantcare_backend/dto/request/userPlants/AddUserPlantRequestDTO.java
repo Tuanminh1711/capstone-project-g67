@@ -13,4 +13,5 @@ public class AddUserPlantRequestDTO {
     private Timestamp plantingDate;
     private String locationInHouse;
     private boolean reminderEnabled;
+    private List<MultipartFile> images; // Thêm field images
 }
