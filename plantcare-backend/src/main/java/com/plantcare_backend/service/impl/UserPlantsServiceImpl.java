@@ -1,6 +1,5 @@
 package com.plantcare_backend.service.impl;
 
-
 import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
 import com.plantcare_backend.dto.response.userPlants.*;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
@@ -67,7 +66,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize(), sort);
 
         Page<UserPlants> userPlantsPage;
-        if (request.getUserId() != null && request.getKeywordOfCommonName() != null && !request.getKeywordOfCommonName().isEmpty()) {
+        if (request.getUserId() != null && request.getKeywordOfCommonName() != null
+                && !request.getKeywordOfCommonName().isEmpty()) {
             userPlantsPage = userPlantRepository.findByUserIdAndPlantNameContainingIgnoreCase(
                     request.getUserId(), request.getKeywordOfCommonName(), pageable);
         } else if (request.getUserId() != null) {
@@ -89,8 +89,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 userPlantsPage.getTotalElements(),
                 userPlantsPage.getTotalPages(),
                 request.getPageNo(),
-                request.getPageSize()
-        );
+                request.getPageSize());
     }
 
     @Override
@@ -136,8 +135,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         log.info("Attempting to delete user plant with ID: {} for user ID: {}", userPlantId, userId);
 
         // Find the user plant
-//        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
-//                .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
+        // UserPlants userPlant =
+        // userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
+        // .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         // Delete the user plant
@@ -155,15 +155,21 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         log.info("Location from request: {}", requestDTO.getLocationInHouse());
         log.info("User ID: {}", userId);
         log.info("================================");
-        
+
         UserPlants userPlant = new UserPlants();
         userPlant.setUserId(userId);
         userPlant.setPlantId(requestDTO.getPlantId());
         userPlant.setPlantName(requestDTO.getNickname());
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
-        userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
-        
+
+        // Sử dụng timestamp từ request nếu có, nếu không thì tạo mới
+        if (requestDTO.getPlantingDate() != null) {
+            userPlant.setCreated_at(requestDTO.getPlantingDate());
+        } else {
+            userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
+        }
+
         log.info("=== DEBUG BEFORE SAVE ===");
         log.info("UserPlant object: {}", userPlant);
         log.info("Plant ID set: {}", userPlant.getPlantId());
@@ -171,15 +177,15 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         log.info("Plant Date set: {}", userPlant.getPlantDate());
         log.info("Plant Location set: {}", userPlant.getPlantLocation());
         log.info("=========================");
-        
+
         UserPlants savedUserPlant = userPlantRepository.save(userPlant);
-        
+
         log.info("=== DEBUG AFTER SAVE ===");
         log.info("Saved UserPlant ID: {}", savedUserPlant.getUserPlantId());
         log.info("Saved Plant ID: {}", savedUserPlant.getPlantId());
         log.info("Saved Plant Name: {}", savedUserPlant.getPlantName());
         log.info("=========================");
-        
+
         if (images != null && !images.isEmpty()) {
             saveUserPlantImages(savedUserPlant, images);
         }
@@ -370,8 +376,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 userPlant.getPlantName(),
                 userPlant.getPlantDate(),
                 userPlant.getPlantLocation(),
-                userPlant.getCreated_at()
-        );
+                userPlant.getCreated_at());
     }
 
     private UserPlantListResponseDTO convertToUserPlantListResponseDTO(UserPlants userPlant) {
@@ -386,4 +391,4 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
         return dto;
     }
-} 
+}
