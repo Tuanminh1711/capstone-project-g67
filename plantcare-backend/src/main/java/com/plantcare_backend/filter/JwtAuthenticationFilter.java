@@ -32,6 +32,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         System.out.println("JWT Filter is running for: " + request.getRequestURI());
 
+        // Skip JWT check for public endpoints
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/api/plants/") ||
+                requestURI.startsWith("/api/auth/") ||
+                requestURI.startsWith("/api/users/") ||
+                requestURI.startsWith("/api/manager/") ||
+                requestURI.startsWith("/api/user-plants/") ||
+                requestURI.startsWith("/api/avatars/") ||
+                requestURI.startsWith("/api/payment/") ||
+                requestURI.startsWith("/swagger-ui/") ||
+                requestURI.startsWith("/v3/api-docs/") ||
+                requestURI.startsWith("/ws-chat/")) {
+            System.out.println("Skipping JWT check for public endpoint: " + requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
