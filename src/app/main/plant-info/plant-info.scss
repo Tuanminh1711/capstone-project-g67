@@ -470,6 +470,8 @@ body, .plant-info-layout {
 
     .plant-actions {
       margin-top: 8px;
+      display: flex;
+      gap: 8px;
       
       .detail-btn {
         background: #4caf50;
@@ -484,6 +486,26 @@ body, .plant-info-layout {
 
         &:hover {
           background: #45a049;
+        }
+
+        &:active {
+          transform: translateY(1px);
+        }
+      }
+
+      .report-btn {
+        background: #ff5722;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background: #e64a19;
         }
 
         &:active {
@@ -722,8 +744,14 @@ body, .plant-info-layout {
       
       .plant-actions {
         margin-top: 12px;
+        gap: 6px;
         
         .detail-btn {
+          padding: 10px 20px;
+          font-size: 0.95rem;
+        }
+
+        .report-btn {
           padding: 10px 20px;
           font-size: 0.95rem;
         }
@@ -808,7 +836,14 @@ body, .plant-info-layout {
       }
       
       .plant-actions {
+        gap: 6px;
+        
         .detail-btn {
+          padding: 8px 16px;
+          font-size: 0.9rem;
+        }
+
+        .report-btn {
           padding: 8px 16px;
           font-size: 0.9rem;
         }
@@ -865,7 +900,15 @@ body, .plant-info-layout {
       }
       
       .plant-actions {
+        gap: 4px;
+        flex-direction: column;
+        
         .detail-btn {
+          padding: 6px 12px;
+          font-size: 0.85rem;
+        }
+
+        .report-btn {
           padding: 6px 12px;
           font-size: 0.85rem;
         }

@@ -1,0 +1,133 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="notification-page">
+  <div class="notification-container">
+    <div class="notification-header">
+      <h2>
+        <i class="fas fa-bell"></i>
+        Thông báo của tôi
+      </h2>
+      <div class="header-actions">
+        <button 
+          class="btn-mark-all-read" 
+          (click)="markAllAsRead()"
+          [disabled]="notifications.length === 0 || isLoading"
+          title="Đánh dấu tất cả đã đọc">
+          <i class="fas fa-check-double"></i>
+          Đánh dấu tất cả đã đọc
+        </button>
+        <button 
+          class="btn-refresh" 
+          (click)="refresh()"
+          [disabled]="isLoading"
+          title="Làm mới">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          Làm mới
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <h3>Đang tải thông báo...</h3>
+      <p>Vui lòng chờ trong giây lát</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Có lỗi xảy ra</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="refresh()">
+        <i class="fas fa-redo"></i>
+        Thử lại
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && !error && notifications.length === 0" class="empty-state">
+      <i class="fas fa-bell-slash"></i>
+      <h3>Chưa có thông báo</h3>
+      <p>Bạn chưa có thông báo nào. Chúng tôi sẽ thông báo khi có cập nhật mới.</p>
+    </div>
+
+    <!-- Notification list -->
+    <div *ngIf="!isLoading && !error && notifications.length > 0" class="notification-list">
+      <div 
+        *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
+        class="notification-item"
+        [class.unread]="!notification.isRead"
+        [class]="getNotificationClass(notification.type)"
+        (click)="markAsRead(notification)">
+        
+        <div class="notification-icon">
+          <i [class]="getNotificationIcon(notification.type)"></i>
+        </div>
+        
+        <div class="notification-content">
+          <div class="notification-header-item">
+            <h4 class="notification-title">{{ notification.title }}</h4>
+            <div class="notification-meta">
+              <span class="notification-time">{{ formatTime(notification.createdAt) }}</span>
+              <button 
+                class="btn-delete" 
+                (click)="deleteNotification(notification, $event)"
+                title="Xóa thông báo">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <p class="notification-message">{{ notification.message }}</p>
+          
+          <div class="notification-footer" *ngIf="!notification.isRead">
+            <span class="unread-indicator">
+              <i class="fas fa-circle"></i>
+              Chưa đọc
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!isLoading && !error && notifications.length > 0" class="pagination-container">
+      <div class="pagination-info">
+        Hiển thị {{ (currentPage * pageSize) + 1 }} - {{ MathUtil.min((currentPage + 1) * pageSize, totalElements) }} 
+        trong tổng số {{ totalElements }} thông báo
+      </div>
+      
+      <div class="pagination">
+        <button 
+          class="btn-page"
+          [disabled]="currentPage === 0"
+          (click)="previousPage()">
+          <i class="fas fa-chevron-left"></i>
+          Trước
+        </button>
+        
+        <div class="page-numbers">
+          <button 
+            *ngFor="let page of getVisiblePages()" 
+            class="btn-page-number"
+            [class.active]="page === currentPage"
+            [disabled]="page === -1"
+            (click)="page !== -1 && goToPage(page)">
+            {{ page === -1 ? '...' : page + 1 }}
+          </button>
+        </div>
+        
+        <button 
+          class="btn-page"
+          [disabled]="currentPage === totalPages - 1"
+          (click)="nextPage()">
+          Sau
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

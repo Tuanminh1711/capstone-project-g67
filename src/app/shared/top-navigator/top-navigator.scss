@@ -133,7 +133,7 @@ app-top-navigator + * {
   justify-content: space-between;
   font-family: 'Roboto', Arial, sans-serif;
   box-shadow: 0 2px 16px rgba(16, 108, 60, 0.18);
-  overflow: hidden; /* Ngăn overflow */
+  overflow: visible; /* Cho phép notification dropdown hiển thị */
   box-sizing: border-box;
 }
 
@@ -227,6 +227,8 @@ app-top-navigator + * {
   align-items: center;
   gap: 8px;
   margin-left: 10px;
+  position: relative;
+  z-index: 1000;
 }
 
 .nav-icon {
@@ -275,6 +277,18 @@ app-top-navigator + * {
 
 .nav-icon.notification {
   margin-right: 12px; /* Cách icon user 1 đoạn */
+}
+
+// Notification dropdown specific styles
+app-notification-dropdown {
+  display: inline-block;
+  position: relative;
+  z-index: 9999;
+  
+  .notification-dropdown-container {
+    position: relative;
+    z-index: 9999;
+  }
 }
 
 .nav-icon.support {

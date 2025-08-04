@@ -34,6 +34,11 @@ export const routes: Routes = [
     loadComponent: () => import('./vip/ai-plant/ai-plant.component').then(m => m.AiPlantComponent),
     canActivate: [VipAuthGuard]
   },
+  { 
+    path: 'vip/disease-detection', 
+    loadComponent: () => import('./vip/disease-detection/disease-detection.component').then(m => m.DiseaseDetectionComponent),
+    canActivate: [VipAuthGuard]
+  },
   { path: 'user/chat-ai', loadComponent: () => import('./user/chat-ai/chat-ai.component').then(m => m.ChatAiComponent) },
   { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },
   { path: 'user/my-garden', loadComponent: () => import('./user/plant/my-garden/my-garden.component').then(m => m.MyGardenComponent) },
@@ -55,6 +60,10 @@ export const routes: Routes = [
   { path: 'user/my-tickets', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
   { path: 'user/my-tickets/:ticketId', loadComponent: () => import('./user/ticket/view-ticket/view-ticket.component').then(m => m.ViewTicketComponent) },
   { path: 'user/activity-logs', loadComponent: () => import('./user/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent) },
+  { path: 'user/notification', loadComponent: () => import('./user/notification/list/notification-list.component').then(m => m.NotificationListComponent) },
+  { path: 'user/report', loadComponent: () => import('./user/report/list/report-list.component').then(m => m.ReportListComponent) },
+  { path: 'user/report/:id', loadComponent: () => import('./user/report/detail/report-detail.component').then(m => m.ReportDetailComponent) },
+
 
   // PROFILE & AUTH - Convert to lazy loading
   { path: 'view-user-profile', loadComponent: () => import('./user/profile/view-user-profile/view-user-profile.component').then(m => m.ViewUserProfileComponent) },

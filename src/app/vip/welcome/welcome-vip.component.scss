@@ -1,87 +1,227 @@
 .welcome-vip-page {
-  max-width: 600px;
-  margin: 60px auto;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(62, 122, 47, 0.18);
-  padding: 40px 32px;
-  text-align: center;
+  background: linear-gradient(135deg, #f6f9fc 0%, #ecf4f3 100%);
+  min-height: 100vh;
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
 }
 
-.welcome-vip-page h1 {
-  color: #e67e22;
-  font-size: 2rem;
+.welcome-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.welcome-header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg, #ffa41b, #ff5722);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(255, 87, 34, 0.25);
+}
+
+.welcome-badge i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+h1 {
+  font-size: 3rem;
   font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 20px;
+}
+
+.highlight {
+  color: #10b981;
+}
+
+.welcome-subtitle {
+  font-size: 1.3rem;
+  color: #4b5563;
+  max-width: 700px;
+  margin: 0 auto 40px;
+}
+
+/* Feature Cards */
+.vip-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 24px;
 }
 
-.welcome-vip-page p {
-  font-size: 1.2rem;
-  color: #4a7c35;
-  margin-bottom: 32px;
+.feature-icon i {
+  font-size: 2.2rem;
 }
 
-.vip-features {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 32px;
+.chat-icon {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+}
+
+.plant-icon {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+}
+
+.disease-icon {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.25);
+}
+
+.feature-card h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.feature-card p {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
 
 .btn-feature {
-  display: inline-block;
-  padding: 16px 32px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  border-radius: 12px;
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  color: white;
   border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  background: linear-gradient(135deg, #10b981, #059669);
+  margin-top: auto;
 }
 
-.btn-chat-vip {
-  background: linear-gradient(135deg, #4a7c35, #a8e063);
-  color: #fff;
-
-  &:hover {
-    background: linear-gradient(135deg, #3e6b2c, #92cc4a);
-  }
+.btn-feature:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
 }
 
-.btn-ai-plant {
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
-  color: #fff;
-
-  &:hover {
-    background: linear-gradient(135deg, #1b5e20, #388e3c);
-  }
+/* VIP Benefits */
+.vip-benefits {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  text-align: center;
 }
 
-// Responsive Design
-@media (max-width: 768px) {
-  .welcome-vip-page {
-    margin: 20px;
-    padding: 30px 20px;
-  }
+.vip-benefits h2 {
+  color: #1f2937;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
 
-  .vip-features {
-    gap: 15px;
-  }
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  text-align: left;
+}
 
-  .btn-feature {
-    padding: 14px 24px;
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.benefit-item:hover {
+  background: #f3f4f6;
+  transform: translateY(-2px);
+}
+
+.benefit-item i {
+  color: #10b981;
+  font-size: 1.2rem;
+}
+
+.benefit-item span {
+  color: #4b5563;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  .welcome-subtitle {
     font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .vip-features {
+    grid-template-columns: 1fr;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .welcome-badge {
+    font-size: 1rem;
   }
 }

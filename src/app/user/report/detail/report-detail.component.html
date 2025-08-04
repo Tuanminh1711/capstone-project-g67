@@ -1,0 +1,176 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="report-detail-page">
+  <div class="report-detail-container">
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="header-navigation">
+        <button class="btn-back" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+          Quay lại danh sách
+        </button>
+        <h2>Chi tiết báo cáo</h2>
+      </div>
+      <div class="header-actions">
+        <button 
+          class="btn-refresh" 
+          (click)="refresh()"
+          [disabled]="isLoading"
+          title="Làm mới">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          Làm mới
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <h3>Đang tải chi tiết báo cáo...</h3>
+      <p>Vui lòng chờ trong giây lát</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Có lỗi xảy ra</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="refresh()">
+        <i class="fas fa-redo"></i>
+        Thử lại
+      </button>
+    </div>
+
+    <!-- Report detail -->
+    <div *ngIf="report && !isLoading && !error" class="report-detail">
+      <!-- Report Info Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3>
+            <i class="fas fa-info-circle"></i>
+            Thông tin báo cáo
+          </h3>
+          <div class="report-id">
+            <span class="id-label">#{{ report.reportId }}</span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Trạng thái:</label>
+              <span class="status-badge" [class]="getStatusClass(report.status)">
+                {{ translateStatus(report.status) }}
+              </span>
+            </div>
+            
+            <div class="info-item">
+              <label>Ngày tạo:</label>
+              <span class="date-value">{{ formatDate(report.createdAt) }}</span>
+            </div>
+            
+            <div class="info-item" *ngIf="report.handledAt">
+              <label>Ngày xử lý:</label>
+              <span class="date-value">{{ formatDate(report.handledAt) }}</span>
+            </div>
+            
+            <div class="info-item" *ngIf="report.handledBy">
+              <label>Người xử lý:</label>
+              <span class="handler-value">{{ report.handledBy }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plant Info Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3>
+            <i class="fas fa-leaf"></i>
+            Thông tin cây cảnh
+          </h3>
+          <button 
+            class="btn-view-plant" 
+            (click)="viewPlantDetail()"
+            title="Xem chi tiết cây cảnh">
+            <i class="fas fa-external-link-alt"></i>
+            Xem chi tiết
+          </button>
+        </div>
+        
+        <div class="card-content">
+          <div class="plant-info">
+            <div class="plant-names">
+              <h4 class="plant-name">{{ report.plantName }}</h4>
+              <p class="scientific-name">{{ report.scientificName }}</p>
+            </div>
+            <div class="plant-id">
+              <span class="id-label">ID: {{ report.plantId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Content Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3>
+            <i class="fas fa-comment-alt"></i>
+            Nội dung báo cáo
+          </h3>
+        </div>
+        
+        <div class="card-content">
+          <div class="report-reason">
+            <label>Lý do báo cáo:</label>
+            <div class="reason-content">
+              {{ report.reason }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Response Card -->
+      <div class="info-card" *ngIf="report.adminNotes">
+        <div class="card-header">
+          <h3>
+            <i class="fas fa-reply"></i>
+            Phản hồi từ quản trị viên
+          </h3>
+        </div>
+        
+        <div class="card-content">
+          <div class="admin-response">
+            <div class="response-content">
+              {{ report.adminNotes }}
+            </div>
+            <div class="response-meta" *ngIf="report.handledBy && report.handledAt">
+              <span class="responder">{{ report.handledBy }}</span>
+              <span class="response-date">{{ formatDate(report.handledAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Response Card -->
+      <div class="info-card no-response" *ngIf="!report.adminNotes && report.status === 'PENDING'">
+        <div class="card-header">
+          <h3>
+            <i class="fas fa-clock"></i>
+            Trạng thái xử lý
+          </h3>
+        </div>
+        
+        <div class="card-content">
+          <div class="pending-message">
+            <p>Báo cáo của bạn đang được xem xét. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.</p>
+            <div class="estimated-time">
+              <i class="fas fa-info-circle"></i>
+              Thời gian xử lý ước tính: 1-3 ngày làm việc
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

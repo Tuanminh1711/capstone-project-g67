@@ -19,9 +19,7 @@
     </div>
     <div class="nav-actions">
       @if (isLoggedIn) {
-        <span class="nav-icon notification">
-          <span class="material-icons">notifications</span>
-        </span>
+        <app-notification-dropdown></app-notification-dropdown>
         <span class="nav-icon support-dropdown" tabindex="0" [class.show-dropdown]="isSupportDropdownOpen">
           <span class="fa fa-headset" (click)="toggleSupportDropdown($event)"></span>
           <div class="support-dropdown-menu" (click)="$event.stopPropagation()">
@@ -47,6 +45,7 @@
             @if (isLoggedIn) {
               <a class="dropdown-item" routerLink="/view-user-profile" (click)="closeUserMenu()">Hồ sơ của tôi</a>
               <a class="dropdown-item" (click)="viewActivityLogs()">Nhật ký hoạt động</a>
+              <a class="dropdown-item" routerLink="/user/report" (click)="closeUserMenu()">Báo cáo của tôi</a>
               <div class="dropdown-item" (click)="logout(); closeUserMenu()">Đăng xuất</div>
             } @else {
               <div class="dropdown-item" (click)="openLogin(); closeUserMenu()">Đăng nhập</div>

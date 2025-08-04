@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, filter } from 'rxjs';
 import { PlantDataService } from '../../shared/plant-data.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { CookieService } from '../../auth/cookie.service';
+import { AuthDialogService } from '../../auth/auth-dialog.service';
 
 interface Plant {
   id: number;
@@ -88,7 +90,9 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private plantDataService: PlantDataService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cookieService: CookieService,
+    private authDialogService: AuthDialogService
   ) {
     this.navigationSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -288,6 +292,30 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     } catch {}
     this.plantDataService.setSelectedPlant(selectedPlant);
     this.router.navigate(['/plant-info/detail', plantId]);
+  }
+
+  onReportPlant(plantId: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    const selectedPlant = this.plantsSubject.value.find(p => p.id === plantId);
+    if (!selectedPlant) {
+      this.toast.error('Không tìm thấy thông tin cây');
+      return;
+    }
+
+    // Check authentication
+    const token = this.cookieService.getAuthToken();
+    if (!token) {
+      this.authDialogService.openLoginDialog();
+      this.toast.error('Vui lòng đăng nhập để báo cáo thông tin cây!');
+      return;
+    }
+
+    // Set selected plant in service for the report component
+    this.plantDataService.setSelectedPlant(selectedPlant);
+    this.router.navigate(['/user/report-plant', plantId]);
   }
 
   forceRefresh(): void {

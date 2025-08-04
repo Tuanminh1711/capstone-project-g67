@@ -64,4 +64,40 @@ export class PlantUiHelperService {
     };
     return tips[value?.toUpperCase()] || 'Tùy theo kinh nghiệm';
   }
+
+  /**
+   * Report Status Translation
+   */
+  translateReportStatus(status: string): string {
+    const translations: { [key: string]: string } = {
+      'PENDING': 'Đang chờ xử lý',
+      'CLAIMED': 'Đã tiếp nhận',
+      'APPROVED': 'Đã phê duyệt',
+      'REJECTED': 'Đã từ chối',
+      'IN_PROGRESS': 'Đang xử lý'
+    };
+    return translations[status?.toUpperCase()] || status || 'Không rõ';
+  }
+
+  getReportStatusClass(status: string): string {
+    const classes: { [key: string]: string } = {
+      'PENDING': 'status-pending',
+      'CLAIMED': 'status-claimed',
+      'APPROVED': 'status-approved',
+      'REJECTED': 'status-rejected',
+      'IN_PROGRESS': 'status-in-progress'
+    };
+    return classes[status?.toUpperCase()] || 'status-default';
+  }
+
+  getReportStatusIcon(status: string): string {
+    const icons: { [key: string]: string } = {
+      'PENDING': 'fas fa-clock',
+      'CLAIMED': 'fas fa-hand-paper',
+      'APPROVED': 'fas fa-check-circle',
+      'REJECTED': 'fas fa-times-circle',
+      'IN_PROGRESS': 'fas fa-spinner'
+    };
+    return icons[status?.toUpperCase()] || 'fas fa-question-circle';
+  }
 }

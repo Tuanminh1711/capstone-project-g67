@@ -173,6 +173,9 @@
                         <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">
                           Xem chi tiết
                         </button>
+                        <button class="report-btn" (click)="onReportPlant(plant.id, $event)" title="Báo cáo thông tin sai">
+                          Báo cáo
+                        </button>
                       </div>
                     </div>
                   </div>

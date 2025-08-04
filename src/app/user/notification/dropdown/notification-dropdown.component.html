@@ -1,0 +1,70 @@
+<div class="notification-dropdown-container">
+  <!-- Notification Badge Trigger -->
+  <div class="notification-trigger" (click)="toggleDropdown()">
+    <app-notification-badge></app-notification-badge>
+  </div>
+
+  <!-- Dropdown Menu -->
+  <div class="notification-dropdown" [class.open]="isOpen">
+    <div class="dropdown-header">
+      <h4>
+        <i class="fas fa-bell"></i>
+        Thông báo
+      </h4>
+      <button 
+        *ngIf="notifications.length > 0"
+        class="btn-mark-all-read"
+        (click)="markAllAsRead()"
+        title="Đánh dấu tất cả đã đọc">
+        <i class="fas fa-check-double"></i>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="dropdown-loading">
+      <div class="spinner-small"></div>
+      <span>Đang tải...</span>
+    </div>
+
+    <!-- No notifications -->
+    <div *ngIf="!isLoading && notifications.length === 0" class="dropdown-empty">
+      <i class="fas fa-bell-slash"></i>
+      <p>Không có thông báo mới</p>
+    </div>
+
+    <!-- Notification List -->
+    <div *ngIf="!isLoading && notifications.length > 0" class="dropdown-list">
+      <div 
+        *ngFor="let notification of notifications; trackBy: trackByNotificationId"
+        class="dropdown-item"
+        [ngClass]="getNotificationClass(notification.type)"
+        (click)="markAsRead(notification, $event)">
+        
+        <div class="item-icon">
+          <i [class]="getNotificationIcon(notification.type)"></i>
+        </div>
+
+        <div class="item-content">
+          <div class="item-title">{{ truncateText(notification.title, 40) }}</div>
+          <div class="item-message">{{ truncateText(notification.message, 50) }}</div>
+          <div class="item-time">{{ formatTime(notification.createdAt) }}</div>
+        </div>
+
+        <div class="item-indicator" *ngIf="!notification.isRead">
+          <i class="fas fa-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="dropdown-footer">
+      <a routerLink="/user/notification" class="btn-view-all" (click)="isOpen = false">
+        <i class="fas fa-eye"></i>
+        Xem tất cả thông báo
+      </a>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div *ngIf="isOpen" class="dropdown-overlay" (click)="isOpen = false"></div>
+</div>

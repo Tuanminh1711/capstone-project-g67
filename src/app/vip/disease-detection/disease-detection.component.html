@@ -1,0 +1,419 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="disease-detection-page">
+  <div class="container">
+    <div class="page-header">
+      <h1>
+        <i class="fas fa-microscope"></i>
+        AI Phát hiện bệnh cây
+      </h1>
+      <p class="description">
+        Công nghệ AI tiên tiến giúp phát hiện và chẩn đoán bệnh cây cảnh chính xác, đưa ra hướng dẫn điều trị phù hợp.
+      </p>
+    </div>
+
+    <div class="tab-navigation">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'upload'"
+        (click)="setActiveTab('upload')">
+        <i class="fas fa-cloud-upload-alt"></i>
+        Tải ảnh lên
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'symptoms'"
+        (click)="setActiveTab('symptoms')">
+        <i class="fas fa-clipboard-list"></i>
+        Nhập triệu chứng
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'history'"
+        (click)="setActiveTab('history')">
+        <i class="fas fa-history"></i>
+        Lịch sử phát hiện
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'diseases'"
+        (click)="setActiveTab('diseases')">
+        <i class="fas fa-book-medical"></i>
+        Thư viện bệnh
+      </button>
+    </div>
+
+    <!-- Upload Image Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'upload'">
+      <div class="panel">
+        <h2>Phát hiện bệnh qua hình ảnh</h2>
+        <p>Tải lên hình ảnh cây của bạn để AI phân tích và phát hiện bệnh</p>
+
+        <form [formGroup]="imageForm" (ngSubmit)="uploadImage()" class="upload-form">
+          <div class="form-group">
+            <label for="plantId">Mã cây (<a routerLink="/user/plant/my-garden">Chọn từ vườn của bạn</a>):</label>
+            <input 
+              type="number" 
+              id="plantId" 
+              formControlName="plantId" 
+              placeholder="Nhập mã cây..."
+              class="form-control">
+            <div class="form-error" *ngIf="imageForm.get('plantId')?.invalid && imageForm.get('plantId')?.touched">
+              Vui lòng nhập mã cây
+            </div>
+          </div>
+
+          <div class="image-upload-container">
+            <div class="image-preview" *ngIf="imagePreviewUrl">
+              <img [src]="imagePreviewUrl" alt="Image Preview">
+            </div>
+            <div class="image-upload-box" *ngIf="!imagePreviewUrl">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Kéo ảnh vào đây hoặc nhấn để chọn file</p>
+              <small>JPG, PNG, WebP (tối đa 10MB)</small>
+            </div>
+            <input 
+              type="file" 
+              id="fileUpload" 
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              class="file-input">
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="button" 
+              class="btn-secondary" 
+              *ngIf="imagePreviewUrl"
+              (click)="imagePreviewUrl = null; selectedFile = null">
+              <i class="fas fa-times"></i>
+              Xóa ảnh
+            </button>
+            <button 
+              type="submit" 
+              class="btn-primary" 
+              [disabled]="imageForm.invalid || !selectedFile || isLoading">
+              <i class="fas fa-search" *ngIf="!isLoading"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+              Phân tích ảnh
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Symptoms Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'symptoms'">
+      <div class="panel">
+        <h2>Phát hiện bệnh qua triệu chứng</h2>
+        <p>Mô tả các triệu chứng của cây để AI phân tích và chẩn đoán</p>
+
+        <form [formGroup]="symptomForm" (ngSubmit)="submitSymptoms()" class="symptom-form">
+          <div class="form-group">
+            <label for="symptomPlantId">Mã cây (<a routerLink="/user/plant/my-garden">Chọn từ vườn của bạn</a>):</label>
+            <input 
+              type="number" 
+              id="symptomPlantId" 
+              formControlName="plantId" 
+              placeholder="Nhập mã cây..."
+              class="form-control">
+            <div class="form-error" *ngIf="symptomForm.get('plantId')?.invalid && symptomForm.get('plantId')?.touched">
+              Vui lòng nhập mã cây
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Triệu chứng (chọn ít nhất một):</label>
+            <div class="symptoms-checkbox">
+              <div class="checkbox-item">
+                <input type="checkbox" id="symptom1" value="yellow_leaves" (change)="onSymptomChange($event)">
+                <label for="symptom1">Lá vàng</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="symptom2" value="brown_spots" (change)="onSymptomChange($event)">
+                <label for="symptom2">Đốm nâu</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="symptom3" value="wilting" (change)="onSymptomChange($event)">
+                <label for="symptom3">Héo úa</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="symptom4" value="mold" (change)="onSymptomChange($event)">
+                <label for="symptom4">Nấm mốc</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="symptom5" value="deformed_leaves" (change)="onSymptomChange($event)">
+                <label for="symptom5">Lá biến dạng</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="symptom6" value="insects" (change)="onSymptomChange($event)">
+                <label for="symptom6">Côn trùng</label>
+              </div>
+            </div>
+            <div class="form-error" *ngIf="symptomForm.get('symptoms')?.invalid && symptomForm.get('symptoms')?.touched">
+              Vui lòng chọn ít nhất một triệu chứng
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="symptomDescription">Mô tả chi tiết:</label>
+            <textarea 
+              id="symptomDescription" 
+              formControlName="description"
+              placeholder="Mô tả chi tiết về tình trạng của cây..."
+              rows="5" 
+              class="form-control"></textarea>
+            <div class="form-error" *ngIf="symptomForm.get('description')?.invalid && symptomForm.get('description')?.touched">
+              Vui lòng nhập mô tả ít nhất 10 ký tự
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn-primary" 
+              [disabled]="!canSubmitSymptoms()">
+              <i class="fas fa-search" *ngIf="!isLoading"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+              Phân tích triệu chứng
+            </button>
+            <div class="form-help" *ngIf="!canSubmitSymptoms() && !isLoading">
+              <small>
+                <span *ngIf="symptomForm.get('plantId')?.invalid">• Vui lòng nhập mã cây<br></span>
+                <span *ngIf="symptomForm.get('symptoms')?.invalid">• Vui lòng chọn ít nhất một triệu chứng<br></span>
+                <span *ngIf="symptomForm.get('description')?.invalid">• Vui lòng nhập mô tả ít nhất 10 ký tự<br></span>
+              </small>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Detection Result -->
+    <div class="result-container" *ngIf="detectionResult && (activeTab === 'upload' || activeTab === 'symptoms')">
+      <div class="result-panel">
+        <div class="result-header">
+          <h2>Kết quả phân tích</h2>
+          <span class="confidence-badge">
+            Độ tin cậy: {{ detectionResult.confidenceScore }}%
+          </span>
+        </div>
+
+        <div class="result-content">
+          <div class="result-main">
+            <h3>{{ detectionResult.detectedDisease }}</h3>
+            <div class="severity-badge" [ngClass]="getSeverityClass(detectionResult.severity)">
+              Mức độ nghiêm trọng: {{ formatSeverity(detectionResult.severity) }}
+            </div>
+            
+            <p class="disease-description">
+              {{ detectionResult.description }}
+            </p>
+
+            <div class="recommendations">
+              <h4>Khuyến nghị điều trị:</h4>
+              <ul>
+                <li *ngFor="let rec of detectionResult.recommendations">
+                  {{ rec }}
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <button class="btn-action" [routerLink]="['/vip/disease-treatment', detectionResult.detectionId]">
+              <i class="fas fa-clipboard-check"></i>
+              Theo dõi điều trị
+            </button>
+            <button class="btn-action btn-secondary">
+              <i class="fas fa-share-alt"></i>
+              Chia sẻ kết quả
+            </button>
+            <button class="btn-action btn-outline">
+              <i class="fas fa-print"></i>
+              In kết quả
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'history'">
+      <div class="panel">
+        <h2>Lịch sử phát hiện bệnh</h2>
+
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="spinner"></div>
+          <p>Đang tải lịch sử...</p>
+        </div>
+
+        <div class="error-state" *ngIf="error && !isLoading">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>{{ error }}</p>
+          <button class="btn-retry" (click)="loadDetectionHistory()">
+            <i class="fas fa-redo"></i>
+            Thử lại
+          </button>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoading && !error && detectionHistory.length === 0">
+          <i class="fas fa-search"></i>
+          <p>Bạn chưa có lịch sử phát hiện bệnh nào.</p>
+          <button class="btn-primary" (click)="setActiveTab('upload')">
+            Bắt đầu phát hiện
+          </button>
+        </div>
+
+        <div class="history-list" *ngIf="!isLoading && !error && detectionHistory.length > 0">
+          <div 
+            class="history-item" 
+            *ngFor="let item of detectionHistory; trackBy: trackById"
+            [routerLink]="['/vip/disease-treatment', item.detectionId]">
+            
+            <div class="history-info">
+              <div class="history-plant">
+                <strong>{{ item.plantName }}</strong>
+                <span class="history-date">{{ formatDate(item.createdAt) }}</span>
+              </div>
+              <div class="history-disease">
+                <span class="disease-name">{{ item.detectedDisease }}</span>
+                <span 
+                  class="severity-badge small" 
+                  [ngClass]="getSeverityClass(item.severity)">
+                  {{ formatSeverity(item.severity) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="history-actions">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+
+          <div class="pagination" *ngIf="historyTotalPages > 1">
+            <button 
+              class="btn-page" 
+              [disabled]="historyPage === 0"
+              (click)="loadDetectionHistory(historyPage - 1)">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <span class="page-info">
+              {{ historyPage + 1 }} / {{ historyTotalPages }}
+            </span>
+            
+            <button 
+              class="btn-page" 
+              [disabled]="historyPage === historyTotalPages - 1"
+              (click)="loadDetectionHistory(historyPage + 1)">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diseases Library Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'diseases'">
+      <div class="panel">
+        <h2>Thư viện bệnh thường gặp</h2>
+
+        <div class="plant-type-filter">
+          <label>Loại cây:</label>
+          <div class="plant-type-options">
+            <button 
+              *ngFor="let type of plantTypes" 
+              class="type-btn" 
+              [class.active]="selectedPlantType === type.value"
+              (click)="onPlantTypeChange(type.value)">
+              {{ type.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+
+        <div class="error-state" *ngIf="error && !isLoading">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>{{ error }}</p>
+          <button class="btn-retry" (click)="onPlantTypeChange(selectedPlantType)">
+            <i class="fas fa-redo"></i>
+            Thử lại
+          </button>
+        </div>
+
+        <div class="disease-library" *ngIf="!isLoading && !error && commonDiseases.length > 0">
+          <div 
+            class="disease-card" 
+            *ngFor="let disease of commonDiseases; trackBy: trackById">
+            
+            <div class="disease-image" *ngIf="disease.imageUrl">
+              <img [src]="disease.imageUrl" [alt]="disease.name">
+            </div>
+            <div class="disease-image placeholder" *ngIf="!disease.imageUrl">
+              <i class="fas fa-leaf"></i>
+            </div>
+            
+            <div class="disease-info">
+              <h3>{{ disease.name }}</h3>
+              <div class="disease-meta">
+                <span class="scientific-name">{{ disease.scientificName }}</span>
+                <span 
+                  class="severity-badge" 
+                  [ngClass]="getSeverityClass(disease.severity)">
+                  {{ formatSeverity(disease.severity) }}
+                </span>
+              </div>
+              
+              <p class="disease-description">{{ disease.description }}</p>
+              
+              <div class="disease-symptoms">
+                <strong>Triệu chứng:</strong>
+                <ul>
+                  <li *ngFor="let symptom of disease.symptoms.slice(0, 3)">
+                    {{ symptom }}
+                  </li>
+                  <li *ngIf="disease.symptoms.length > 3">
+                    <em>...và {{ disease.symptoms.length - 3 }} triệu chứng khác</em>
+                  </li>
+                </ul>
+              </div>
+              
+              <button class="btn-detail" [routerLink]="['/vip/disease-library', disease.id]">
+                Chi tiết
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state for all tabs -->
+    <div class="error-container" *ngIf="error && !isLoading && activeTab !== 'history' && activeTab !== 'diseases'">
+      <div class="error-panel">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Đã xảy ra lỗi</h3>
+        <p>{{ error }}</p>
+        <button class="btn-retry" (click)="error = null">
+          <i class="fas fa-redo"></i>
+          Thử lại
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state for upload and symptoms tabs -->
+    <div class="loading-container" *ngIf="isLoading && (activeTab === 'upload' || activeTab === 'symptoms') && !detectionResult">
+      <div class="loading-panel">
+        <div class="spinner"></div>
+        <h3>Đang phân tích</h3>
+        <p>Vui lòng chờ trong giây lát...</p>
+      </div>
+    </div>
+  </div>
+</div>
+

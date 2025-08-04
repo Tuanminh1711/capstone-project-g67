@@ -1,0 +1,152 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="report-page">
+  <div class="report-container">
+    <div class="report-header">
+      <h2>
+        <i class="fas fa-flag"></i>
+        Báo cáo của tôi
+      </h2>
+      <div class="header-actions">
+        <button 
+          class="btn-refresh" 
+          (click)="refresh()"
+          [disabled]="isLoading"
+          title="Làm mới">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          Làm mới
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <label for="statusFilter">Lọc theo trạng thái:</label>
+        <select 
+          id="statusFilter"
+          [(ngModel)]="selectedStatus" 
+          (change)="onStatusFilterChange()"
+          class="status-filter">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+        <button 
+          class="btn-reset" 
+          (click)="resetFilter()"
+          [disabled]="isLoading"
+          title="Đặt lại bộ lọc">
+          <i class="fas fa-times"></i>
+          Đặt lại
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <h3>Đang tải báo cáo...</h3>
+      <p>Vui lòng chờ trong giây lát</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Có lỗi xảy ra</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="refresh()">
+        <i class="fas fa-redo"></i>
+        Thử lại
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && !error && reports.length === 0" class="empty-state">
+      <i class="fas fa-file-alt"></i>
+      <h3>Chưa có báo cáo</h3>
+      <p>Bạn chưa gửi báo cáo nào. Hãy báo cáo các vấn đề về cây cảnh để chúng tôi cải thiện thông tin.</p>
+    </div>
+
+    <!-- Report list -->
+    <div *ngIf="!isLoading && !error && reports.length > 0" class="report-list">
+      <div 
+        *ngFor="let report of reports; trackBy: trackByReportId" 
+        class="report-item"
+        [routerLink]="['/user/report', report.reportId]">
+        
+        <div class="report-header-item">
+          <div class="report-info">
+            <h4 class="plant-name">{{ report.plantName }}</h4>
+            <p class="scientific-name">{{ report.scientificName }}</p>
+          </div>
+          <div class="report-status">
+            <span class="status-badge" [class]="getStatusClass(report.status)">
+              {{ translateStatus(report.status) }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="report-content">
+          <div class="report-reason">
+            <strong>Lý do báo cáo:</strong>
+            <p>{{ report.reason }}</p>
+          </div>
+        </div>
+        
+        <div class="report-footer">
+          <div class="report-dates">
+            <span class="created-date">
+              <i class="fas fa-calendar-plus"></i>
+              Tạo: {{ formatDate(report.createdAt) }}
+            </span>
+            <span *ngIf="report.handledAt" class="handled-date">
+              <i class="fas fa-calendar-check"></i>
+              Xử lý: {{ formatDate(report.handledAt) }}
+            </span>
+          </div>
+          <div class="report-id">
+            <span class="id-label">ID: #{{ report.reportId }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!isLoading && !error && reports.length > 0" class="pagination-container">
+      <div class="pagination-info">
+        Hiển thị {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalElements) }} 
+        trong tổng số {{ totalElements }} báo cáo
+      </div>
+      
+      <div class="pagination">
+        <button 
+          class="btn-page"
+          [disabled]="currentPage === 0"
+          (click)="previousPage()">
+          <i class="fas fa-chevron-left"></i>
+          Trước
+        </button>
+        
+        <div class="page-numbers">
+          <button 
+            *ngFor="let page of getVisiblePages()" 
+            class="btn-page-number"
+            [class.active]="page === currentPage"
+            [disabled]="page === -1"
+            (click)="page !== -1 && goToPage(page)">
+            {{ page === -1 ? '...' : page + 1 }}
+          </button>
+        </div>
+        
+        <button 
+          class="btn-page"
+          [disabled]="currentPage === totalPages - 1"
+          (click)="nextPage()">
+          Sau
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

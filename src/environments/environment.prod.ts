@@ -12,6 +12,8 @@ export const environment = {
     admin: {
       accounts: '/api/admin/accounts',
       plants: '/api/admin/plants'
-    }
+    },
+    notifications: '/api/notifications',
+    reports: '/api/plants-report'
   }
 };

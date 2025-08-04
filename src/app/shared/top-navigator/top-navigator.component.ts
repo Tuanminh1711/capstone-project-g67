@@ -9,11 +9,12 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { ToastService } from '../toast/toast.service';
+import { NotificationDropdownComponent } from '../../user/notification/dropdown/notification-dropdown.component';
 
 @Component({
   selector: 'app-top-navigator',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, NotificationDropdownComponent],
   templateUrl: './top-navigator.html',
   styleUrl: './top-navigator.scss'
 })

@@ -1,15 +1,80 @@
+<app-top-navigator></app-top-navigator>
+
 <div class="welcome-vip-page">
-  <h1>Chào mừng bạn đến với VIP!</h1>
-  <p>Bạn đã nâng cấp thành công tài khoản VIP. Hãy tận hưởng các đặc quyền dành riêng cho thành viên VIP.</p>
-  <app-top-navigator></app-top-navigator>
-  
-  <div class="vip-features">
-    <button class="btn-feature btn-chat-vip" (click)="goToChat()">
-      💬 Vào phòng chat VIP
-    </button>
+  <div class="welcome-container">
+    <div class="welcome-header">
+      <div class="welcome-badge">
+        <i class="fas fa-crown"></i> VIP
+      </div>
+      <h1>Chào mừng đến với <span class="highlight">Dịch vụ VIP</span></h1>
+      <p class="welcome-subtitle">Cảm ơn bạn đã nâng cấp tài khoản. Hãy khám phá các tính năng độc quyền dành riêng cho thành viên cao cấp.</p>
+    </div>
     
-    <button class="btn-feature btn-ai-plant" (click)="goToAiPlant()">
-      🤖 AI Nhận diện cây
-    </button>
+    <div class="vip-features">
+      <div class="feature-card">
+        <div class="feature-icon chat-icon">
+          <i class="fas fa-comments"></i>
+        </div>
+        <h3>Chat VIP</h3>
+        <p>Kết nối với cộng đồng VIP và chuyên gia hàng đầu về cây cảnh</p>
+        <button class="btn-feature" (click)="goToChat()">
+          Vào phòng chat <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon plant-icon">
+          <i class="fas fa-seedling"></i>
+        </div>
+        <h3>Nhận diện cây</h3>
+        <p>Công nghệ AI giúp nhận diện các loại cây cảnh chỉ từ một hình ảnh</p>
+        <button class="btn-feature" (click)="goToAiPlant()">
+          Nhận diện cây <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon disease-icon">
+          <i class="fas fa-microscope"></i>
+        </div>
+        <h3>Phát hiện bệnh</h3>
+        <p>Phân tích và chẩn đoán bệnh cây với độ chính xác cao từ AI</p>
+        <button class="btn-feature" (click)="goToDiseaseDetection()">
+          Kiểm tra bệnh <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="vip-benefits">
+      <h2>Đặc quyền thành viên VIP</h2>
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Tư vấn ưu tiên từ chuyên gia</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Công cụ AI độc quyền</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Báo cáo chi tiết về cây trồng</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Hỗ trợ 24/7</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Theo dõi tiến trình điều trị bệnh</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Nhận thông báo ưu tiên</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<app-footer></app-footer>
