@@ -1,5 +1,7 @@
 package com.plantcare_backend.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
 import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
 import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionResultDTO;
@@ -7,11 +9,7 @@ import com.plantcare_backend.dto.response.ai_disease.DiseaseStatsDTO;
 import com.plantcare_backend.dto.response.ai_disease.TreatmentGuideDTO;
 import com.plantcare_backend.dto.response.ai_disease.TreatmentStepDTO;
 import com.plantcare_backend.enums.PlantDiseaseType;
-import com.plantcare_backend.model.DiseaseDetection;
-import com.plantcare_backend.model.PlantDisease;
-import com.plantcare_backend.model.TreatmentProgress;
-import com.plantcare_backend.model.UserPlants;
-import com.plantcare_backend.model.Users;
+import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.AIDiseaseDetectionService;
 import com.plantcare_backend.service.NotificationService;
@@ -36,6 +34,7 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     private final UserRepository userRepository;
     private final UserPlantRepository userPlantsRepository;
     private final NotificationService notificationService;
+    private final TreatmentGuideRepository treatmentGuideRepository;
 
     @Override
     public DiseaseDetectionResultDTO detectDiseaseFromImage(MultipartFile image, Long userId, Long plantId) {
@@ -123,7 +122,6 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         progress.setCompletionDate(new Timestamp(System.currentTimeMillis()));
         progress.setSuccessRate(successRate);
 
-        // Update detection status
         DiseaseDetection detection = progress.getDiseaseDetection();
         detection.setStatus("COMPLETED");
         detection.setTreatmentResult(result);
@@ -236,7 +234,7 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         PlantDiseaseType[] diseases = PlantDiseaseType.values();
         PlantDiseaseType randomDisease = diseases[new Random().nextInt(diseases.length)];
 
-        double confidence = 0.7 + (new Random().nextDouble() * 0.3); // 70-100%
+        double confidence = 0.7 + (new Random().nextDouble() * 0.3);
 
         return DiseaseDetectionResultDTO.builder()
                 .detectedDisease(randomDisease.getVietnameseName())
@@ -251,11 +249,9 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     private DiseaseDetectionResultDTO analyzeSymptoms(DiseaseDetectionRequestDTO request, Long userId) {
         String symptoms = request.getSymptoms().toLowerCase();
 
-        // Tìm bệnh từ database trước
         List<PlantDisease> diseases = plantDiseaseRepository.findByIsActiveTrue();
         PlantDisease matchedDisease = null;
 
-        // Tìm kiếm theo triệu chứng
         for (PlantDisease disease : diseases) {
             if (disease.getSymptoms() != null &&
                     disease.getSymptoms().toLowerCase().contains(symptoms)) {
@@ -264,7 +260,6 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
             }
         }
 
-        // Nếu không tìm thấy, dùng enum làm fallback
         if (matchedDisease == null) {
             PlantDiseaseType enumDisease = PlantDiseaseType.NUTRIENT_DEFICIENCY;
             return DiseaseDetectionResultDTO.builder()
@@ -283,7 +278,6 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
                     .build();
         }
 
-        // Sử dụng dữ liệu từ database
         return DiseaseDetectionResultDTO.builder()
                 .detectedDisease(matchedDisease.getDiseaseName())
                 .confidenceScore(0.85)
@@ -328,44 +322,58 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     }
 
     private TreatmentGuideDTO createTreatmentGuide(PlantDisease disease) {
-        List<TreatmentStepDTO> steps = Arrays.asList(
-                TreatmentStepDTO.builder()
-                        .stepNumber(1)
-                        .title("Chuẩn bị")
-                        .description("Chuẩn bị dụng cụ và thuốc cần thiết")
-                        .duration("30 phút")
-                        .frequency("Một lần")
-                        .materials(Arrays.asList("Găng tay", "Kéo cắt", "Thuốc trừ bệnh"))
-                        .build(),
-                TreatmentStepDTO.builder()
-                        .stepNumber(2)
-                        .title("Cắt tỉa")
-                        .description("Cắt bỏ các phần bị bệnh")
-                        .duration("1 giờ")
-                        .frequency("Mỗi tuần")
-                        .materials(Arrays.asList("Kéo cắt", "Túi đựng rác"))
-                        .build(),
-                TreatmentStepDTO.builder()
-                        .stepNumber(3)
-                        .title("Phun thuốc")
-                        .description("Phun thuốc trừ bệnh theo hướng dẫn")
-                        .duration("2 giờ")
-                        .frequency("Mỗi 3-5 ngày")
-                        .materials(Arrays.asList("Bình phun", "Thuốc trừ bệnh"))
-                        .build()
-        );
+        List<TreatmentGuide> guides = treatmentGuideRepository.findByDiseaseIdOrderByStepNumber(disease.getId());
+
+        List<TreatmentStepDTO> steps = guides.stream()
+                .map(this::mapToTreatmentStep)
+                .collect(Collectors.toList());
 
         return TreatmentGuideDTO.builder()
                 .diseaseName(disease.getDiseaseName())
                 .severity(disease.getSeverity())
                 .steps(steps)
-                .requiredProducts(Arrays.asList("Thuốc trừ bệnh", "Bình phun", "Găng tay"))
-                .estimatedDuration("2-3 tuần")
+                .requiredProducts(extractRequiredProducts(guides))
+                .estimatedDuration(calculateEstimatedDuration(guides))
                 .successRate("80-90%")
                 .precautions(Arrays.asList("Đeo găng tay khi xử lý", "Tránh phun thuốc khi trời mưa"))
                 .followUpSchedule("Kiểm tra sau 1 tuần")
                 .expertNotes("Theo dõi chặt chẽ trong 2 tuần đầu")
                 .build();
+    }
+
+    private TreatmentStepDTO mapToTreatmentStep(TreatmentGuide guide) {
+        return TreatmentStepDTO.builder()
+                .stepNumber(guide.getStepNumber())
+                .title(guide.getTitle())
+                .description(guide.getDescription())
+                .duration(guide.getDuration())
+                .frequency(guide.getFrequency())
+                .materials(parseMaterials(guide.getMaterials()))
+                .notes(guide.getNotes())
+                .isCompleted(false)
+                .build();
+    }
+
+    private List<String> parseMaterials(String materialsJson) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(materialsJson, new TypeReference<List<String>>() {
+            });
+        } catch (Exception e) {
+            return Arrays.asList("Dụng cụ cần thiết");
+        }
+    }
+
+    private List<String> extractRequiredProducts(List<TreatmentGuide> guides) {
+        Set<String> products = new HashSet<>();
+        for (TreatmentGuide guide : guides) {
+            products.addAll(parseMaterials(guide.getMaterials()));
+        }
+        return new ArrayList<>(products);
+    }
+
+    private String calculateEstimatedDuration(List<TreatmentGuide> guides) {
+        return "2-3 tuần";
     }
 
     private void sendUrgentDiseaseAlert(Long userId, String diseaseName, String severity) {
