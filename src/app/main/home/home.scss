@@ -18,18 +18,18 @@
 }
 .banner-slide img {
   width: 100%; height: 100%; object-fit: cover;
-  border-radius: 16px;
+  border-radius: 0; // Bỏ border-radius để full width
   filter: brightness(0.72) saturate(1.1);
 }
 .banner-content {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  padding: 38px 48px 38px 48px;
+  padding: 48px 8vw 48px 8vw; // Responsive padding với viewport width
   color: #fff;
   z-index: 3;
-  max-width: 600px;
-  background: linear-gradient(90deg, rgba(30,174,96,0.72) 0%, rgba(30,174,96,0.18) 100%);
-  border-radius: 0 0 16px 16px;
+  max-width: none; // Bỏ giới hạn width để full width
+  background: linear-gradient(90deg, rgba(30,174,96,0.85) 0%, rgba(30,174,96,0.25) 100%);
+  border-radius: 0; // Bỏ border-radius để full width
   box-shadow: 0 8px 32px rgba(30,174,96,0.13);
   animation: fadeInUp 0.7s;
 }
@@ -77,12 +77,13 @@
 .banner-slider {
   position: relative;
   width: 100%;
-  max-width: 1200px;
-  aspect-ratio: 750/281;
+  max-width: 100vw; // Chiều rộng toàn bộ viewport
+  aspect-ratio: 16/6; // Tỷ lệ như hình mẫu - rộng hơn
   overflow: hidden;
-  border-radius: 16px;
-  box-shadow: 0 4px 32px rgba(30,174,96,0.13);
+  border-radius: 0; // Bỏ border-radius để full width
+  box-shadow: none; // Bỏ shadow để clean hơn
   background: #f5f5f5;
+  margin: 0; // Bỏ margin để full width
 }
 .banner-slider img {
   width: 100%;
@@ -92,7 +93,7 @@
   top: 0;
   left: 0;
   transition: opacity 0.6s;
-  border-radius: 16px;
+  border-radius: 0; // Bỏ border-radius để full width
 }
 .banner-slider .slider-dots {
   position: absolute;
@@ -264,10 +265,27 @@
     gap: 20px;
   }
   .home-promo-banner, .home-partners {
-    padding: 24px 2vw 24px 2vw;
+    padding: 0; // Bỏ padding để full width trên mobile
   }
   .home-testimonials {
     padding: 32px 2vw 24px 2vw;
+  }
+  
+  // Banner responsive
+  .banner-slider {
+    aspect-ratio: 16/8; // Tỷ lệ cao hơn cho mobile
+  }
+  
+  .banner-content {
+    padding: 32px 5vw 32px 5vw; // Padding nhỏ hơn cho mobile
+  }
+  
+  .banner-title {
+    font-size: 1.6rem; // Font size nhỏ hơn cho mobile
+  }
+  
+  .banner-desc {
+    font-size: 1rem; // Font size nhỏ hơn cho mobile
   }
 }
 @media (max-width: 600px) {
@@ -277,16 +295,38 @@
   }
   .testimonial-item {
     width: 98vw;
-    min-width: unset;
-    max-width: unset;
-    padding: 14px 4px 10px 4px;
   }
+  
+  // Banner mobile styles
+  .banner-slider {
+    aspect-ratio: 16/10; // Tỷ lệ cao hơn nữa cho mobile nhỏ
+  }
+  
+  .banner-content {
+    padding: 24px 4vw 24px 4vw; // Padding tối thiểu cho mobile nhỏ
+  }
+  
+  .banner-title {
+    font-size: 1.4rem; // Font size nhỏ nhất cho mobile
+    line-height: 1.3;
+  }
+  
+  .banner-desc {
+    font-size: 0.9rem; // Font size nhỏ nhất cho mobile
+    line-height: 1.4;
+  }
+  
+  .banner-cta {
+    font-size: 0.95rem; // Button font size nhỏ hơn
+    padding: 8px 20px; // Padding nhỏ hơn
+  }
+}
+
   .partners-list img {
     width: 80px;
     height: 38px;
     padding: 4px 6px;
   }
-}
 // --- Home Page Styles ---
 
 .home-hero {

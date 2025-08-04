@@ -19,7 +19,9 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "environments/*": ["environments/*"]
-    }
+    },
+    "preserveWatchOutput": true,
+    "pretty": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

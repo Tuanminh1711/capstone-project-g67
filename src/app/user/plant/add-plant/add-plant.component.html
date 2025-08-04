@@ -117,6 +117,45 @@
               <small class="help-text">Cây được đặt ở đâu trong nhà?</small>
             </div>
 
+            <!-- Image Upload -->
+            <div class="form-group">
+              <label for="images">Ảnh cây của bạn</label>
+              <input 
+                type="file" 
+                id="images"
+                name="images"
+                accept="image/*"
+                multiple
+                (change)="onImageSelected($event)"
+                class="file-input"
+              >
+              <div class="file-upload-area" (click)="triggerFileInput()">
+                <div class="upload-content">
+                  <i class="upload-icon">📸</i>
+                  <p class="upload-text">Nhấn để chọn ảnh</p>
+                  <small class="upload-hint">Hỗ trợ nhiều ảnh, định dạng JPG, PNG</small>
+                </div>
+              </div>
+              
+              <!-- Preview selected images -->
+              <div class="image-preview-container" *ngIf="selectedImages && selectedImages.length > 0">
+                <h5>Ảnh đã chọn ({{ selectedImages.length }}):</h5>
+                <div class="image-preview-grid">
+                  <div class="image-preview-item" *ngFor="let image of selectedImages; let i = index">
+                    <img [src]="getImagePreview(image)" [alt]="'Preview ' + (i + 1)" class="preview-img">
+                    <button type="button" class="remove-image-btn" (click)="removeImage(i)" title="Xóa ảnh">
+                      ✕
+                    </button>
+                    <div class="image-info">
+                      <small>{{ image.name }}</small>
+                      <small>{{ formatFileSize(image.size) }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <small class="help-text">Thêm ảnh thực tế cây của bạn để dễ theo dõi</small>
+            </div>
+
             <!-- Reminder -->
             <div class="form-group checkbox-group">
               <label class="checkbox-label">

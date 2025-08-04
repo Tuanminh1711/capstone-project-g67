@@ -1,5 +1,5 @@
 import { environment } from '../../../../environments/environment';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -27,7 +27,7 @@ interface AddPlantRequest {
   styleUrl: './add-plant.component.scss'
   // ...existing code...
 })
-export class AddPlantComponent implements OnInit {
+export class AddPlantComponent implements OnInit, OnDestroy {
   plant: Plant | null = null;
   loading = false;
   error = '';
@@ -65,6 +65,7 @@ export class AddPlantComponent implements OnInit {
     private cookieService: CookieService,
     private toastService: ToastService,
     private plantDetailLoader: PlantDetailLoaderService,
+    private cdr: ChangeDetectorRef
   ) {}
 
 
@@ -87,6 +88,14 @@ export class AddPlantComponent implements OnInit {
     }
     // Luôn gọi lại API để đảm bảo dữ liệu mới nhất (giống plant-detail)
     this.loadPlantInfo();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up object URLs to prevent memory leaks
+    this.selectedImages.forEach(file => {
+      const url = URL.createObjectURL(file);
+      URL.revokeObjectURL(url);
+    });
   }
 
 
@@ -172,20 +181,46 @@ export class AddPlantComponent implements OnInit {
       reminderEnabled: this.formData.reminderEnabled
     };
 
-    // Validate request data trước khi gửi
+    // Validate request data trước khi gửi - đảm bảo tất cả field có giá trị
     console.log('Request data validation:', {
       plantId: requestData.plantId,
       plantIdType: typeof requestData.plantId,
       nickname: requestData.nickname,
+      nicknameLength: requestData.nickname.length,
       plantingDate: requestData.plantingDate,
+      plantingDateValid: !isNaN(Date.parse(this.formData.plantingDate)),
       locationInHouse: requestData.locationInHouse,
-      reminderEnabled: requestData.reminderEnabled
+      locationInHouseLength: requestData.locationInHouse.length,
+      reminderEnabled: requestData.reminderEnabled,
+      reminderEnabledType: typeof requestData.reminderEnabled
     });
 
     if (!requestData.plantId || requestData.plantId <= 0) {
       this.toastService.error('Plant ID không hợp lệ');
+      this.loading = false;
       return;
     }
+
+    if (!requestData.nickname || requestData.nickname.length === 0) {
+      this.toastService.error('Tên cây không được để trống');
+      this.loading = false;
+      return;
+    }
+
+    if (!requestData.plantingDate) {
+      this.toastService.error('Ngày trồng không hợp lệ');
+      this.loading = false;
+      return;
+    }
+
+    if (!requestData.locationInHouse || requestData.locationInHouse.length === 0) {
+      this.toastService.error('Vị trí trồng cây không được để trống');
+      this.loading = false;
+      return;
+    }
+
+    // Log toàn bộ requestData trước khi gửi để debug
+    console.log('Full requestData before sending:', requestData);
 
     // Tạo FormData đúng chuẩn backend @RequestPart("requestDTO") và @RequestPart("images")
     const formData = new FormData();
@@ -198,32 +233,51 @@ export class AddPlantComponent implements OnInit {
       }
     }
 
+    // Debug: Log FormData content
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof Blob) {
+        console.log(key, 'Blob size:', value.size, 'type:', value.type);
+      } else {
+        console.log(key, value);
+      }
+    }
+
     // Interceptor sẽ tự động thêm Authorization header, không cần manual headers
     console.log('Sending add plant request with data:', {
       plantId: requestData.plantId,
       nickname: requestData.nickname,
+      plantingDate: requestData.plantingDate,
+      locationInHouse: requestData.locationInHouse,
+      reminderEnabled: requestData.reminderEnabled,
       hasImages: this.selectedImages && this.selectedImages.length > 0
     });
     
     this.http.post<any>(`${environment.apiUrl}/user-plants/add`, formData).subscribe({
       next: (response) => {
         console.log('Add plant response:', response);
-        this.loading = false;
-        this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
-        this.router.navigate(['/my-green-space']);
+        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+        setTimeout(() => {
+          this.loading = false;
+          this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
+          this.router.navigate(['/my-green-space']);
+        }, 0);
       },
       error: (err) => {
         console.error('Add plant error details:', err);
-        this.loading = false;
-        if (err.status === 401 || err.status === 403) {
-          this.toastService.error('Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập lại.');
-        } else if (err.status === 409) {
-          this.toastService.error('Cây này đã có trong bộ sưu tập của bạn');
-        } else if (err.error?.message) {
-          this.toastService.error(`Lỗi: ${err.error.message}`);
-        } else {
-          this.toastService.error('Không thể thêm cây vào bộ sưu tập. Vui lòng thử lại.');
-        }
+        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+        setTimeout(() => {
+          this.loading = false;
+          if (err.status === 401 || err.status === 403) {
+            this.toastService.error('Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập lại.');
+          } else if (err.status === 409) {
+            this.toastService.error('Cây này đã có trong bộ sưu tập của bạn');
+          } else if (err.error?.message) {
+            this.toastService.error(`Lỗi: ${err.error.message}`);
+          } else {
+            this.toastService.error('Không thể thêm cây vào bộ sưu tập. Vui lòng thử lại.');
+          }
+        }, 0);
       }
     });
   }
@@ -236,8 +290,60 @@ export class AddPlantComponent implements OnInit {
     const files: FileList = event.target.files;
     this.selectedImages = [];
     for (let i = 0; i < files.length; i++) {
-      this.selectedImages.push(files[i]);
+      const file = files[i];
+      // Validate file type
+      if (file.type.startsWith('image/')) {
+        // Validate file size (max 5MB per image)
+        if (file.size <= 5 * 1024 * 1024) {
+          this.selectedImages.push(file);
+        } else {
+          this.toastService.error(`Ảnh "${file.name}" quá lớn. Kích thước tối đa là 5MB.`);
+        }
+      } else {
+        this.toastService.error(`File "${file.name}" không phải là ảnh hợp lệ.`);
+      }
     }
+    
+    // Limit maximum 5 images
+    if (this.selectedImages.length > 5) {
+      this.selectedImages = this.selectedImages.slice(0, 5);
+      this.toastService.warning('Chỉ được chọn tối đa 5 ảnh.');
+    }
+    
+    console.log('Selected images:', this.selectedImages.length);
+  }
+
+  // Trigger file input click
+  triggerFileInput(): void {
+    const fileInput = document.getElementById('images') as HTMLInputElement;
+    fileInput?.click();
+  }
+
+  // Get image preview URL
+  getImagePreview(file: File): string {
+    return URL.createObjectURL(file);
+  }
+
+  // Remove image from selection
+  removeImage(index: number): void {
+    if (index >= 0 && index < this.selectedImages.length) {
+      // Revoke object URL to prevent memory leaks
+      const file = this.selectedImages[index];
+      const previewUrl = URL.createObjectURL(file);
+      URL.revokeObjectURL(previewUrl);
+      
+      this.selectedImages.splice(index, 1);
+      console.log('Removed image, remaining:', this.selectedImages.length);
+    }
+  }
+
+  // Format file size for display
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   private isFormValid(): boolean {

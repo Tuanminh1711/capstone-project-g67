@@ -121,102 +121,77 @@
   width: 100%;
 }
 
-/* Modern Action Buttons */
-.btn-action {
+/* Simple Action Buttons - giống style trang báo cáo */
+.claim-btn, .release-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-transform: none;
-  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
   white-space: nowrap;
-  min-width: 180px;
-  justify-content: center;
   
   i {
-    font-size: 1.1rem;
-  }
-  
-  span {
-    font-weight: 700;
+    font-size: 0.9rem;
   }
 }
 
-.btn-action:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+/* Claim Button - Blue theme */
+.claim-btn {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: #ffffff;
+  border-color: #007bff;
 }
 
-.btn-action:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.claim-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  border-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
 }
 
-/* Claim Button */
-.btn-claim {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  color: white;
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
-    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
-  }
+/* Release Button - Orange theme */
+.release-btn {
+  background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+  color: #ffffff;
+  border-color: #fd7e14;
 }
 
-/* Release Button */
-.btn-release {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-  color: white;
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%);
-    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
-  }
+.release-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e55a00 0%, #cc4d00 100%);
+  border-color: #e55a00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(253, 126, 20, 0.25);
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .btn-action {
-    min-width: 150px;
-    padding: 8px 16px;
-    font-size: 0.85rem;
-  }
-}
-
+/* Responsive styles for simple buttons */
 @media (max-width: 768px) {
-  .btn-action {
+  .claim-btn, .release-btn {
     padding: 6px 12px;
     font-size: 0.8rem;
-    min-width: 120px;
-    
-    span {
-      font-size: 0.75rem;
-    }
     
     i {
-      font-size: 1rem;
+      font-size: 0.8rem;
     }
   }
 }
 
 @media (max-width: 480px) {
-  .btn-action {
-    padding: 8px;
-    min-width: 80px;
+  .claim-btn, .release-btn {
+    padding: 6px 8px;
+    font-size: 0.75rem;
     
+    /* Hide text on very small screens, keep only icon */
     span {
       display: none;
     }
     
     i {
-      font-size: 1.2rem;
+      font-size: 0.9rem;
     }
   }
 }

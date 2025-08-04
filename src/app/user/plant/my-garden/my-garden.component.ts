@@ -365,18 +365,39 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
   private handleApiError(err: any): void {
-    // Xử lý lỗi đặc biệt về null plantId
+    console.error('My Garden API Error:', err);
+    console.error('Error details:', {
+      status: err.status,
+      message: err.error?.message,
+      url: err.url,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Xử lý lỗi đặc biệt về null plantId - lỗi backend data integrity
     if (err.error?.message?.includes('Cannot invoke "java.lang.Long.longValue()"') || 
         err.error?.message?.includes('getPlantId()') || 
-        err.error?.message?.includes('getUserPlantId()')) {
-      this.errorMessage = 'Có vấn đề với dữ liệu cây trong hệ thống. 🔧\nHệ thống đang được khắc phục, vui lòng thử lại sau ít phút.';
-      this.toastService.error('Dữ liệu không hợp lệ. Đang khắc phục...');
+        err.error?.message?.includes('getUserPlantId()') ||
+        err.error?.message?.includes('Get user plants failed')) {
       
-      // Thử gọi lại API sau 3 giây (có thể là lỗi tạm thời)
+      console.warn('Backend null pointer detected - Database has records with null plantId');
+      
+      // Thông báo rõ ràng về vấn đề database và hướng dẫn giải quyết
+      this.errorMessage = '⚠️ Database có dữ liệu không hợp lệ (null plantId)\n\n' +
+                          'Nguyên nhân: Có records trong UserPlants table với plantId = null\n' +
+                          'Giải pháp: Admin cần:\n' +
+                          '• Kiểm tra database: SELECT * FROM user_plants WHERE plant_id IS NULL;\n' +
+                          '• Xóa hoặc update các records có plant_id = null\n' +
+                          '• Hoặc thêm validation ở backend để filter null records';
+      
+      this.toastService.error('Database integrity issue. Liên hệ admin để clean up data.');
+      
+      // Retry với một request khác để test
+      console.log('Attempting fallback request...');
       setTimeout(() => {
-        console.log('Retrying API call after plantId error...');
-        this.loadPlantDataImmediate();
-      }, 3000);
+        // Có thể thử call với page size nhỏ hơn hoặc offset khác
+        this.attemptFallbackRequest();
+      }, 2000);
+      
       return;
     }
 
@@ -418,6 +439,83 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     if (err.status !== 200 && err.status !== 404) {
       this.toastService.error(this.errorMessage);
     }
+  }
+
+  // Fallback request method để test với parameters khác
+  private attemptFallbackRequest(): void {
+    console.log('Attempting fallback request with different parameters...');
+    
+    // Thử request với page size nhỏ hơn
+    this.http.get<any>(`${environment.apiUrl}/user-plants?page=0&size=5`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Fallback request successful:', response);
+          this.toastService.success('Đã khôi phục kết nối. Đang load dữ liệu...');
+          // Process the response như bình thường
+          this.processUserPlantsResponse(response);
+        },
+        error: (err) => {
+          console.error('Fallback request also failed:', err);
+          this.toastService.error('Vẫn gặp lỗi database. Cần admin khắc phục.');
+        }
+      });
+  }
+
+  // Helper method để xử lý response 
+  private processUserPlantsResponse(response: any): void {
+    this.isLoading = false;
+    
+    // Kiểm tra response success
+    if (response?.status === 200 && response?.data?.content && Array.isArray(response.data.content)) {
+      const plants = response.data.content;
+      
+      if (plants.length > 0) {
+        // Filter out plants with null plantId và log để debug
+        const validPlants = plants.filter((p: any) => {
+          // Kiểm tra cả plantId và userPlantId
+          if (!p.plantId || !p.userPlantId) {
+            console.warn('Plant with null ID found:', {
+              userPlantId: p.userPlantId,
+              plantId: p.plantId,
+              nickname: p.nickname
+            });
+            return false;
+          }
+          // Đảm bảo plantId và userPlantId là số dương
+          if (isNaN(p.plantId) || isNaN(p.userPlantId) || p.plantId <= 0 || p.userPlantId <= 0) {
+            console.warn('Plant with invalid ID found:', {
+              userPlantId: p.userPlantId,
+              plantId: p.plantId,
+              nickname: p.nickname
+            });
+            return false;
+          }
+          return true;
+        });
+
+        if (validPlants.length > 0) {
+          // Map API response to userPlants array với validation
+          this.userPlants = validPlants.map((p: any) => ({
+            userPlantId: Number(p.userPlantId),
+            plantId: Number(p.plantId),
+            imageUrl: p.imageUrl,
+            nickname: p.nickname || 'Cây chưa có tên',
+            plantLocation: p.plantLocation || 'Vị trí không xác định',
+            reminderEnabled: false
+          }));
+          this.errorMessage = '';
+          this.onUserPlantsLoaded();
+        } else {
+          this.userPlants = [];
+          this.errorMessage = 'Có vấn đề với dữ liệu cây trong vườn. Vui lòng liên hệ hỗ trợ.';
+        }
+      } else {
+        this.userPlants = [];
+        this.errorMessage = 'Bạn chưa có cây nào trong vườn. 🌱\nHãy bắt đầu bằng cách thêm cây đầu tiên của bạn!';
+      }
+    }
+    this.cdr.markForCheck();
   }
 
   viewPlantDetail(userPlantId: number): void {

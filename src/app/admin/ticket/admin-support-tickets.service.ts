@@ -27,16 +27,21 @@ export interface AdminSupportTicketsResponse {
   empty: boolean;
 }
 
+export interface HandleTicketRequestDTO {
+  note: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminSupportTicketsService {
   claimTicket(ticketId: number, note: string) {
     return this.http.post(`/api/admin/support/tickets/${ticketId}/claim`, { note });
   }
 
-  handleTicket(ticketId: number, note: string) {
-    console.log('[HANDLE DEBUG] Calling API with:', { ticketId, note });
-    // Try claim endpoint first, might be the correct one
-    return this.http.post(`/api/admin/support/tickets/${ticketId}/claim`, { note });
+  handleTicket(ticketId: number, note: string): Observable<any> {
+    console.log('[HANDLE DEBUG] Calling handle API with:', { ticketId, note });
+    // Use correct handle endpoint as per backend API
+    const requestBody: HandleTicketRequestDTO = { note: note };
+    return this.http.post(`/api/admin/support/tickets/${ticketId}/handle`, requestBody);
   }
 
   releaseTicket(ticketId: number) {

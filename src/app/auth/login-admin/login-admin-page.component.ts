@@ -92,9 +92,9 @@ export class LoginAdminPageComponent {
               this.cdr.detectChanges();
               
               // Kiểm tra role để chuyển hướng đến trang welcome tương ứng
-              if (role === 'expert' || role === 'staff') {
+              if (role === 'expert' ) {
                 this.router.navigate(['/expert/welcome']);
-              } else if (role === 'admin') {
+              } else if (role === 'admin'|| role === 'staff') {
                 this.router.navigate(['/admin']);
               } else {
                 // Default fallback cho các role khác

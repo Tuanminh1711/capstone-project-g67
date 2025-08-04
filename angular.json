@@ -64,6 +64,12 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "hmr": false,
+            "liveReload": false,
+            "watch": true,
+            "poll": 2000
+          },
           "configurations": {
             "production": {
               "buildTarget": "fe_code:build:production"
