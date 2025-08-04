@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class CreateCategoryRequestDTO {
+public class UpdateCategoryRequestDTO {
     @NotBlank(message = "categoryName must not blank")
     private String name;
     @NotBlank(message = "description must not blank")
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
-}
+} 
