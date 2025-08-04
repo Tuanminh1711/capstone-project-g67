@@ -23,7 +23,7 @@ public class ArticleImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
     @JsonBackReference
-    private Article article;
+    private UserPlants userPlants;
 
     @Column(name = "image_url", nullable = false, length = 255)
     private String imageUrl;
