@@ -9,6 +9,9 @@ import com.plantcare_backend.dto.validator.UserPlantValidator;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.ValidationException;
 import com.plantcare_backend.model.*;
+import com.plantcare_backend.model.CareSchedule;
+import com.plantcare_backend.model.CareLog;
+import com.plantcare_backend.model.UserPlantImage;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantImageRepository;
 import com.plantcare_backend.repository.PlantRepository;
@@ -25,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.plantcare_backend.repository.CareScheduleRepository;
 import com.plantcare_backend.repository.CareTypeRepository;
+import com.plantcare_backend.repository.CareLogRepository;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -56,6 +60,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private final CareScheduleRepository careScheduleRepository;
     @Autowired
     private final CareTypeRepository careTypeRepository;
+    @Autowired
+    private final CareLogRepository careLogRepository;
 
     @Override
     public UserPlantsSearchResponseDTO searchUserPlants(UserPlantsSearchRequestDTO request) {
@@ -132,16 +138,30 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     @Override
+    @Transactional
     public void deleteUserPlant(Long userPlantId, Long userId) {
         log.info("Attempting to delete user plant with ID: {} for user ID: {}", userPlantId, userId);
 
-        // Find the user plant
-        // UserPlants userPlant =
-        // userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
-        // .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
-        // Delete the user plant
+
+        List<CareLog> careLogs = careLogRepository.findByUserPlant_UserPlantIdOrderByCreatedAtDesc(userPlantId);
+        if (!careLogs.isEmpty()) {
+            log.info("Deleting {} care logs for user plant ID: {}", careLogs.size(), userPlantId);
+            careLogRepository.deleteAll(careLogs);
+        }
+
+        List<CareSchedule> careSchedules = careScheduleRepository.findByUserPlant_UserPlantId(userPlantId);
+        if (!careSchedules.isEmpty()) {
+            log.info("Deleting {} care schedules for user plant ID: {}", careSchedules.size(), userPlantId);
+            careScheduleRepository.deleteAll(careSchedules);
+        }
+
+        if (userPlant.getImages() != null && !userPlant.getImages().isEmpty()) {
+            log.info("Deleting {} user plant images for user plant ID: {}", userPlant.getImages().size(), userPlantId);
+            deleteUserPlantImages(userPlant.getImages());
+        }
+        
         userPlantRepository.delete(userPlant);
         log.info("Successfully deleted user plant with ID: {} for user ID: {}", userPlantId, userId);
     }
@@ -271,6 +291,29 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         } catch (IOException e) {
             log.error("Error saving user plant images: {}", e.getMessage());
             throw new RuntimeException("Failed to save user plant images", e);
+        }
+    }
+    
+    private void deleteUserPlantImages(List<UserPlantImage> images) {
+        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
+        
+        for (UserPlantImage image : images) {
+            try {
+                String imageUrl = image.getImageUrl();
+                if (imageUrl != null && imageUrl.startsWith("/api/user-plants/")) {
+                    String filename = imageUrl.substring("/api/user-plants/".length());
+                    Path filePath = Paths.get(uploadDir, filename);
+                    
+                    if (Files.exists(filePath)) {
+                        Files.delete(filePath);
+                        log.info("Deleted image file: {}", filename);
+                    } else {
+                        log.warn("Image file not found: {}", filename);
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Error deleting image file: {}", image.getImageUrl(), e);
+            }
         }
     }
 
