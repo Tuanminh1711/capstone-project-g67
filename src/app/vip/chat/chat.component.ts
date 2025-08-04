@@ -36,6 +36,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Runtime environment check
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    console.log('Chat component environment check:', { 
+      configProduction: environment.production, 
+      hostname: window.location.hostname,
+      isProduction 
+    });
+
     // Kiểm tra quyền truy cập VIP
     const userRole = this.authService.getCurrentUserRole();
     if (userRole !== 'VIP' && userRole !== 'EXPERT') {
@@ -53,7 +61,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
     
     // Check if production and show warning
-    if (environment.production) {
+    if (isProduction) {
       this.error = '⚠️ Chat hiện tại chỉ khả dụng ở môi trường development. Tính năng này sẽ được kích hoạt sau khi server production được cấu hình WebSocket.';
       this.cdr.markForCheck();
     }
@@ -62,7 +70,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.addDummyMessages();
     
     // Only try to connect in development
-    if (!environment.production) {
+    if (!isProduction) {
       this.fetchHistory();
       this.ws.connect().catch(err => {
         this.error = 'Không thể kết nối WebSocket: ' + err;
@@ -216,6 +224,13 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   fetchHistory() {
+    // Don't fetch on production
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    if (isProduction) {
+      console.log('Skipping fetchHistory on production');
+      return;
+    }
+
     this.loading = true;
     this.error = '';
     // Gọi đúng endpoint không có /api nếu backend không có prefix /api
@@ -240,8 +255,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   sendMessage() {
     if (!this.newMessage.trim()) return;
     
-    // Check if production
-    if (environment.production) {
+    // Check if production (runtime)
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    if (isProduction) {
       this.error = 'Tính năng chat chưa khả dụng trên production server.';
       this.cdr.markForCheck();
       return;

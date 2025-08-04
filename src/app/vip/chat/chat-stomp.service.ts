@@ -24,15 +24,23 @@ export class ChatStompService {
   }
 
   private initializeConnection(): void {
-    // Check environment and initialize accordingly
-    if (environment.production) {
+    // Double check environment - both config and runtime
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    
+    if (isProduction) {
       // Production: WebSocket not configured yet, show warning
       console.warn('🚫 WebSocket chat không khả dụng trên production server. Đang sử dụng chế độ offline.');
+      console.log('Environment check:', { 
+        configProduction: environment.production, 
+        hostname: window.location.hostname,
+        isProduction 
+      });
       this.errorSubject.next('Chat tạm thời không khả dụng trên server production.');
       return; // Don't initialize WebSocket
     }
 
     // Development only: Initialize WebSocket
+    console.log('Initializing WebSocket for development environment');
     this.client = new Client({
       webSocketFactory: () => new SockJS('/ws'),
       reconnectDelay: 5000,
@@ -61,7 +69,9 @@ export class ChatStompService {
   }
 
   connect() {
-    if (environment.production) {
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    
+    if (isProduction) {
       console.warn('WebSocket không khả dụng trên production');
       return Promise.reject('WebSocket not available in production');
     }
@@ -80,7 +90,9 @@ export class ChatStompService {
   }
 
   sendMessage(message: ChatMessage) {
-    if (environment.production) {
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    
+    if (isProduction) {
       console.warn('Không thể gửi tin nhắn trên production');
       this.errorSubject.next('Chat không khả dụng trên production server');
       return Promise.reject('Chat not available');
@@ -98,7 +110,8 @@ export class ChatStompService {
   }
 
   isConnected(): boolean {
-    return this.connected && !environment.production;
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    return this.connected && !isProduction;
   }
 
   onMessage(): Observable<ChatMessage> {
