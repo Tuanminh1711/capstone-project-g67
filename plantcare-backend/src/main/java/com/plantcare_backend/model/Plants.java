@@ -22,6 +22,7 @@ import java.util.List;
 @Builder
 @Table(name = "plants")
 public class Plants {
+    public static Object Status;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "plant_id")
@@ -65,6 +66,7 @@ public class Plants {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private PlantStatus status = PlantStatus.ACTIVE;
+
 
     @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

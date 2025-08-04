@@ -38,4 +38,9 @@ public class PlantImage {
     @Column(name = "created_at", updatable = false, nullable = false,
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
+
+    public PlantImage(long l, String url1, Plants plant) {
+
+
+    }
 }

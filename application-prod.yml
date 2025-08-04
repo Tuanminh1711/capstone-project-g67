@@ -1,0 +1,74 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/plantcare_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: plantcare_user
+    password: PlantCare@2024
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+  
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    com.plantcare_backend: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /opt/plantcare/logs/plantcare.log
+    max-size: 10MB
+    max-history: 30
+
+# JWT Configuration
+jwt:
+  secret: your_jwt_secret_key_here_make_it_long_and_secure_for_production
+  expiration: 86400000 # 24 hours
+
+# Email Configuration (if using)
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your_email@gmail.com
+    password: your_app_password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# File Upload Configuration
+file:
+  upload:
+    path: /opt/plantcare/uploads/
+    max-size: 10485760 # 10MB
+
+# Rate Limiting
+rate-limit:
+  requests-per-minute: 100 
