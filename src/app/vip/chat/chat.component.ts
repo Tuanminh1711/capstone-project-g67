@@ -93,6 +93,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
       });
       
+      
       this.wsErrSub = this.ws.onError().subscribe((err: string) => {
         this.zone.run(() => {
           this.error = err;
