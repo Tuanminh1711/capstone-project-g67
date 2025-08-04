@@ -1,8 +1,11 @@
 package com.plantcare_backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,8 +35,9 @@ public class Article {
     @JoinColumn(name = "author_id")
     private Users author;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+    @OneToMany(mappedBy = "", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ArticleImage> images;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -42,6 +46,9 @@ public class Article {
     public enum ArticleStatus {
         PUBLISHED, DRAFT, DELETED;
     }
+
+    @Column(name = "created_by")
+    private String createdBy;
 
     @Column(name = "created_at")
     private String createdAt;
