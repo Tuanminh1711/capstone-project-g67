@@ -42,6 +42,7 @@ import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class UserPlantsServiceImpl implements UserPlantsService {
     @Autowired
