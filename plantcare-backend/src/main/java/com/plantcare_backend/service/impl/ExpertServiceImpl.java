@@ -1,14 +1,10 @@
 package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
-import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.repository.ArticleCategoryRepository;
-import com.plantcare_backend.repository.ArticleRepository;
-import com.plantcare_backend.repository.ArticleImageRepository;
-import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.ExpertService;
 
 import com.plantcare_backend.model.*;
@@ -20,8 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +25,6 @@ import java.util.stream.Collectors;
 public class ExpertServiceImpl implements ExpertService {
     @Autowired
     private final ArticleCategoryRepository articleCategoryRepository;
-    @Autowired
-    private final ArticleRepository articleRepository;
-    @Autowired
-    private final ArticleImageRepository articleImageRepository;
-    @Autowired
-    private final UserRepository userRepository;
 
     @Override
     public Long createCategoryByExpert(CreateCategoryRequestDTO createCategoryRequestDTO) {
@@ -110,52 +98,5 @@ public class ExpertServiceImpl implements ExpertService {
         articleCategoryRepository.save(category);
 
         log.info("Category status changed to {}", status);
-    }
-
-    @Override
-    public Long createArticleByExpert(CreateArticleRequestDTO createArticleRequestDTO, Long expertId) {
-        log.info("Creating article by expert with ID: {}", expertId);
-
-        ArticleCategory category = articleCategoryRepository.findById(Long.valueOf(createArticleRequestDTO.getCategoryId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-        if (category.getStatus() != ArticleCategory.CategoryStatus.ACTIVE) {
-            throw new InvalidDataException("Category is not active: " + category.getName());
-        }
-
-        if (articleRepository.existsByTitleIgnoreCase(createArticleRequestDTO.getTitle())) {
-            throw new InvalidDataException("Article with title already exists: " + createArticleRequestDTO.getTitle());
-        }
-
-        Users expert = userRepository.findById(expertId.intValue())
-                .orElseThrow(() -> new ResourceNotFoundException("Expert not found"));
-
-        Article article = new Article();
-        article.setTitle(createArticleRequestDTO.getTitle());
-        article.setContent(createArticleRequestDTO.getContent());
-        article.setCategory(category);
-        article.setAuthor(expert);
-        article.setStatus(Article.ArticleStatus.PUBLISHED);
-        article.setCreatedAt(new Timestamp(System.currentTimeMillis()).toString());
-        article.setUpdatedAt(new Timestamp(System.currentTimeMillis()).toString());
-        
-        Article savedArticle = articleRepository.save(article);
-
-        if (createArticleRequestDTO.getImageUrls() != null && !createArticleRequestDTO.getImageUrls().isEmpty()) {
-            List<ArticleImage> images = new ArrayList<>();
-            for (int i = 0; i < createArticleRequestDTO.getImageUrls().size(); i++) {
-                String url = createArticleRequestDTO.getImageUrls().get(i);
-                ArticleImage image = ArticleImage.builder()
-                        .article(savedArticle)
-                        .imageUrl(url)
-                        .build();
-                images.add(image);
-            }
-            savedArticle.setImages(images);
-            articleRepository.save(savedArticle);
-        }
-        
-        log.info("Successfully created article with ID: {} by expert: {}", savedArticle.getId(), expertId);
-        return savedArticle.getId();
     }
 }

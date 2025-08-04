@@ -3,7 +3,6 @@ package com.plantcare_backend.controller.expert;
 import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeCategoryStatusRequestDTO;
-import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
@@ -17,18 +16,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/expert")
@@ -132,74 +122,6 @@ public class ExpertController {
         } catch (Exception e) {
             log.error("Change category status failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change category status failed: " + e.getMessage());
-        }
-    }
-
-    @Operation(method = "POST", summary = "Create article", description = "Create a new article by expert")
-    @PostMapping("/create-article")
-    public ResponseData<Long> createArticle(
-            @Valid @RequestBody CreateArticleRequestDTO createArticleRequestDTO,
-            @RequestAttribute("userId") Integer expertId) {
-        try {
-            Long articleId = expertService.createArticleByExpert(createArticleRequestDTO, expertId.longValue());
-            activityLogService.logActivity(expertId, "Create_Article",
-                    "Expert create article: " + createArticleRequestDTO.getTitle());
-            return new ResponseData<>(HttpStatus.CREATED.value(), "Article created successfully", articleId);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-        } catch (InvalidDataException e) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
-        } catch (Exception e) {
-            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
-        }
-    }
-
-    @Operation(method = "POST", summary = "Upload article image", description = "Upload image for article")
-    @PostMapping("/upload-article-image")
-    public ResponseEntity<ResponseData<String>> uploadArticleImage(@RequestParam("image") MultipartFile image) {
-        try {
-            if (image == null || image.isEmpty()) {
-                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File is empty", null));
-            }
-            String contentType = image.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File must be an image", null));
-            }
-            if (image.getSize() > 5 * 1024 * 1024) {
-                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 5MB", null));
-            }
-            String uploadDir = "uploads/articles/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            String originalFilename = image.getOriginalFilename();
-            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String newFilename = UUID.randomUUID().toString() + fileExtension;
-            Path filePath = uploadPath.resolve(newFilename);
-            Files.copy(image.getInputStream(), filePath);
-            String imageUrl = "/api/expert/articles/" + newFilename;
-            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
-        }
-    }
-
-    @Operation(method = "GET", summary = "Get article image", description = "Get article image by filename")
-    @GetMapping("/articles/{filename}")
-    public ResponseEntity<Resource> getArticleImage(@PathVariable String filename) {
-        try {
-            Path filePath = Paths.get("uploads/articles/").resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
         }
     }
 
