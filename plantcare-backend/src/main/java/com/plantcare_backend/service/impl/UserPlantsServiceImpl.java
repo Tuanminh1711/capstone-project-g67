@@ -1,6 +1,5 @@
 package com.plantcare_backend.service.impl;
 
-
 import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
 import com.plantcare_backend.dto.response.userPlants.*;
 import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
@@ -37,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
@@ -67,7 +67,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize(), sort);
 
         Page<UserPlants> userPlantsPage;
-        if (request.getUserId() != null && request.getKeywordOfCommonName() != null && !request.getKeywordOfCommonName().isEmpty()) {
+        if (request.getUserId() != null && request.getKeywordOfCommonName() != null
+                && !request.getKeywordOfCommonName().isEmpty()) {
             userPlantsPage = userPlantRepository.findByUserIdAndPlantNameContainingIgnoreCase(
                     request.getUserId(), request.getKeywordOfCommonName(), pageable);
         } else if (request.getUserId() != null) {
@@ -89,8 +90,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 userPlantsPage.getTotalElements(),
                 userPlantsPage.getTotalPages(),
                 request.getPageNo(),
-                request.getPageSize()
-        );
+                request.getPageSize());
     }
 
     @Override
@@ -136,8 +136,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         log.info("Attempting to delete user plant with ID: {} for user ID: {}", userPlantId, userId);
 
         // Find the user plant
-//        UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
-//                .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
+        // UserPlants userPlant =
+        // userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
+        // .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(userPlantId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
         // Delete the user plant
@@ -147,25 +148,70 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
     @Override
     public void addUserPlant(AddUserPlantRequestDTO requestDTO, List<MultipartFile> images, Long userId) {
+        log.info("=== DEBUG SERVICE ADD USER PLANT ===");
+        log.info("Request DTO: {}", requestDTO);
+        log.info("Plant ID from request: {}", requestDTO.getPlantId());
+        log.info("Nickname from request: {}", requestDTO.getNickname());
+        log.info("Planting Date from request: {}", requestDTO.getPlantingDate());
+        log.info("Location from request: {}", requestDTO.getLocationInHouse());
+        log.info("User ID: {}", userId);
+        log.info("================================");
+
         UserPlants userPlant = new UserPlants();
         userPlant.setUserId(userId);
         userPlant.setPlantId(requestDTO.getPlantId());
         userPlant.setPlantName(requestDTO.getNickname());
-        userPlant.setPlantDate(requestDTO.getPlantingDate());
+
+        // Convert String to Timestamp for planting date
+        Timestamp plantingTimestamp = null;
+        if (requestDTO.getPlantingDate() != null && !requestDTO.getPlantingDate().trim().isEmpty()) {
+            try {
+                // Parse ISO 8601 format: 2025-08-03T00:00:00.000Z
+                String dateStr = requestDTO.getPlantingDate();
+                if (dateStr.endsWith("Z")) {
+                    dateStr = dateStr.substring(0, dateStr.length() - 1); // Remove Z
+                }
+                plantingTimestamp = Timestamp.valueOf(dateStr.replace("T", " "));
+                log.info("Successfully converted planting date: {} -> {}", requestDTO.getPlantingDate(),
+                        plantingTimestamp);
+            } catch (Exception e) {
+                log.error("Failed to parse planting date: {}", requestDTO.getPlantingDate(), e);
+                plantingTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
+            }
+        } else {
+            plantingTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
+        }
+
+        userPlant.setPlantDate(plantingTimestamp);
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
+
+        log.info("=== DEBUG BEFORE SAVE ===");
+        log.info("UserPlant object: {}", userPlant);
+        log.info("Plant ID set: {}", userPlant.getPlantId());
+        log.info("Plant Name set: {}", userPlant.getPlantName());
+        log.info("Plant Date set: {}", userPlant.getPlantDate());
+        log.info("Plant Location set: {}", userPlant.getPlantLocation());
+        log.info("=========================");
+
         UserPlants savedUserPlant = userPlantRepository.save(userPlant);
+
+        log.info("=== DEBUG AFTER SAVE ===");
+        log.info("Saved UserPlant ID: {}", savedUserPlant.getUserPlantId());
+        log.info("Saved Plant ID: {}", savedUserPlant.getPlantId());
+        log.info("Saved Plant Name: {}", savedUserPlant.getPlantName());
+        log.info("=========================");
+
         if (images != null && !images.isEmpty()) {
             saveUserPlantImages(savedUserPlant, images);
         }
-        userPlantRepository.save(userPlant);
-
     }
 
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
         log.info("Saving {} images for user plant ID: {}", images.size(), userPlant.getUserPlantId());
 
-        String uploadDir = "uploads/user-plants/";
+        // Use environment-specific upload directory
+        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
         Path uploadPath = Paths.get(uploadDir);
 
         try {
@@ -346,8 +392,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 userPlant.getPlantName(),
                 userPlant.getPlantDate(),
                 userPlant.getPlantLocation(),
-                userPlant.getCreated_at()
-        );
+                userPlant.getCreated_at());
     }
 
     private UserPlantListResponseDTO convertToUserPlantListResponseDTO(UserPlants userPlant) {
@@ -362,4 +407,4 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
         return dto;
     }
-} 
+}

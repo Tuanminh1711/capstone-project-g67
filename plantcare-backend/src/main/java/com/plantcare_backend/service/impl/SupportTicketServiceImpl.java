@@ -6,17 +6,17 @@ import com.plantcare_backend.dto.request.ticket_support.HandleTicketRequestDTO;
 import com.plantcare_backend.dto.request.ticket_support.UpdateTicketStatusRequestDTO;
 import com.plantcare_backend.dto.response.ticket_support.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
-import com.plantcare_backend.model.SupportTicket;
-import com.plantcare_backend.model.SupportTicketLog;
-import com.plantcare_backend.model.TicketResponse;
-import com.plantcare_backend.model.Users;
+import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.SupportTicketLogRepository;
 import com.plantcare_backend.repository.SupportTicketRepository;
 import com.plantcare_backend.repository.TicketResponseRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.AdminNotificationService;
+import com.plantcare_backend.service.NotificationService;
 import com.plantcare_backend.service.SupportTicketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,12 +27,15 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SupportTicketServiceImpl implements SupportTicketService {
     private final SupportTicketRepository supportTicketRepository;
     private final TicketResponseRepository ticketResponseRepository;
     private final UserRepository userRepository;
     private final SupportTicketLogRepository supportTicketLogRepository;
     private final AdminNotificationService adminNotificationService;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public Long createTicket(CreateTicketRequestDTO request, int userId) {
@@ -94,6 +97,17 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .build();
 
         ticketResponseRepository.save(response);
+        try {
+            notificationService.createNotification(
+                    1L, // admin ID - có thể thay đổi theo logic của bạn
+                    "User phản hồi ticket",
+                    "User đã phản hồi ticket #" + ticket.getTicketId(),
+                    Notification.NotificationType.INFO,
+                    "/admin/ticket/" + ticket.getTicketId()
+            );
+        } catch (Exception e) {
+            log.warn("Failed to create notification for user response: {}", e.getMessage());
+        }
     }
 
     @Override
@@ -104,7 +118,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
 
     @Override
     public Page<TicketListResponseDTO> getTicketsByStatus(SupportTicket.TicketStatus status, Pageable pageable) {
-        Page<SupportTicket> tickets = supportTicketRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+        Page<SupportTicket> tickets = supportTicketRepository.findByStatusOrderByCreatedAtDesc(status,
+                pageable);
         return tickets.map(this::convertToTicketListDTO);
     }
 
@@ -141,6 +156,17 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .build();
 
         ticketResponseRepository.save(response);
+        try {
+            notificationService.createNotification(
+                    (long) ticket.getUser().getId(),
+                    "Phản hồi ticket hỗ trợ",
+                    "Ticket #" + ticket.getTicketId() + " đã được trả lời. Vui lòng kiểm tra.",
+                    Notification.NotificationType.INFO,
+                    "/ticket/" + ticket.getTicketId() // link đến chi tiết ticket
+            );
+        } catch (Exception e) {
+            log.warn("Failed to create notification for ticket response: {}", e.getMessage());
+        }
     }
 
     @Override
@@ -238,10 +264,10 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         supportTicketLogRepository.save(log);
     }
 
-
     // Helper methods để convert entity sang DTO
     private TicketListResponseDTO convertToTicketListDTO(SupportTicket ticket) {
-        List<TicketResponse> responses = ticketResponseRepository.findByTicket_TicketIdOrderByCreatedAtAsc(ticket.getTicketId());
+        List<TicketResponse> responses = ticketResponseRepository
+                .findByTicket_TicketIdOrderByCreatedAtAsc(ticket.getTicketId());
 
         return TicketListResponseDTO.builder()
                 .ticketId(ticket.getTicketId())
@@ -255,8 +281,10 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     private TicketResponseDTO convertToTicketResponseDTO(SupportTicket ticket) {
-        List<TicketResponse> responses = ticketResponseRepository.findByTicket_TicketIdOrderByCreatedAtAsc(ticket.getTicketId());
-        List<SupportTicketLog> logs = supportTicketLogRepository.findByTicket_TicketIdOrderByCreatedAtAsc(ticket.getTicketId());
+        List<TicketResponse> responses = ticketResponseRepository
+                .findByTicket_TicketIdOrderByCreatedAtAsc(ticket.getTicketId());
+        List<SupportTicketLog> logs = supportTicketLogRepository
+                .findByTicket_TicketIdOrderByCreatedAtAsc(ticket.getTicketId());
 
         List<TicketResponseDetailDTO> responseDTOs = responses.stream()
                 .map(this::convertToResponseDetailDTO)
@@ -275,9 +303,11 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .createdAt(ticket.getCreatedAt())
                 .userName(ticket.getUser().getUsername())
                 .responses(responseDTOs)
-                .claimedByUserName(ticket.getClaimedBy() != null ? ticket.getClaimedBy().getUsername() : null)
+                .claimedByUserName(ticket.getClaimedBy() != null ? ticket.getClaimedBy().getUsername()
+                        : null)
                 .claimedAt(ticket.getClaimedAt())
-                .handledByUserName(ticket.getHandledBy() != null ? ticket.getHandledBy().getUsername() : null)
+                .handledByUserName(ticket.getHandledBy() != null ? ticket.getHandledBy().getUsername()
+                        : null)
                 .handledAt(ticket.getHandledAt())
                 .logs(logDTOs)
                 .build();
@@ -293,6 +323,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .responderRole(response.getResponder().getRole().getRoleName().toString())
                 .build();
     }
+
     private TicketLogDTO convertToLogDTO(SupportTicketLog log) {
         return TicketLogDTO.builder()
                 .logId(log.getLogId())

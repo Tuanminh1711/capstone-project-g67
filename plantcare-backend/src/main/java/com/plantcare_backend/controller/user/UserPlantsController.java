@@ -123,19 +123,50 @@ public class UserPlantsController {
     @PostMapping("/add")
     public ResponseData<?> addUserPlant(
             @ModelAttribute AddUserPlantRequestDTO requestDTO,
-            HttpServletRequest request,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
+
+        // Debug logging
+        log.info("=== DEBUG ADD USER PLANT (FORM DATA) ===");
+        log.info("Environment: {}", System.getProperty("spring.profiles.active", "default"));
+        log.info("Timezone: {}", java.util.TimeZone.getDefault().getID());
+        log.info("Current time: {}", new java.util.Date());
+        log.info("Request content type: {}", request.getContentType());
+        log.info("Request method: {}", request.getMethod());
+        log.info("All request parameters: {}", request.getParameterMap());
+        log.info("User ID: {}", userId);
+        log.info("Request DTO: {}", requestDTO);
+        log.info("Plant ID: {}", requestDTO.getPlantId());
+        log.info("Nickname: {}", requestDTO.getNickname());
+        log.info("Planting Date: {}", requestDTO.getPlantingDate());
+        log.info("Location: {}", requestDTO.getLocationInHouse());
+        log.info("Images count: {}", requestDTO.getImages() != null ? requestDTO.getImages().size() : 0);
+
+        // Thêm logging chi tiết cho từng field
+        log.info("=== DETAILED FIELD CHECK ===");
+        log.info("plantId type: {}",
+                requestDTO.getPlantId() != null ? requestDTO.getPlantId().getClass().getSimpleName() : "NULL");
+        log.info("nickname type: {}",
+                requestDTO.getNickname() != null ? requestDTO.getNickname().getClass().getSimpleName() : "NULL");
+        log.info("plantingDate type: {}",
+                requestDTO.getPlantingDate() != null ? requestDTO.getPlantingDate().getClass().getSimpleName()
+                        : "NULL");
+        log.info("locationInHouse type: {}",
+                requestDTO.getLocationInHouse() != null ? requestDTO.getLocationInHouse().getClass().getSimpleName()
+                        : "NULL");
+        log.info("==========================");
+
         try {
-            userPlantsService.addUserPlant(requestDTO, images, userId);
+            userPlantsService.addUserPlant(requestDTO, requestDTO.getImages(), userId);
             activityLogService.logActivity(userId.intValue(), "ADD_USER_PLANT",
                     "Added plant to user collection: " + requestDTO.getPlantId(), request);
 
             return new ResponseData<>(HttpStatus.OK.value(), "Plant added to user collection successfully");
         } catch (Exception e) {
+            log.error("Error adding user plant: {}", e.getMessage(), e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(),
                     "Failed to add plant to user collection: " + e.getMessage());
         }
@@ -144,7 +175,8 @@ public class UserPlantsController {
     @GetMapping("/user-plants/{filename}")
     public ResponseEntity<Resource> getUserPlantImage(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get("uploads/user-plants/").resolve(filename);
+            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
+            Path filePath = Paths.get(uploadDir).resolve(filename);
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
@@ -231,6 +263,7 @@ public class UserPlantsController {
             }
         }
     }
+
     @Operation(method = "POST", summary = "Upload plant image", description = "Upload image for user plant")
     @PostMapping("/upload-plant-image")
     public ResponseEntity<ResponseData<String>> uploadPlantImage(
@@ -259,7 +292,7 @@ public class UserPlantsController {
                         .body(new ResponseData<>(400, "File size must be less than 5MB", null));
             }
 
-            String uploadDir = "uploads/user-plants/";
+            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);

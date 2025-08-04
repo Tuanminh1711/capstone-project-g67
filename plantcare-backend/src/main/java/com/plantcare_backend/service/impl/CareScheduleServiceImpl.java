@@ -5,14 +5,17 @@ import com.plantcare_backend.dto.response.plantcare.CareScheduleResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.CareSchedule;
 import com.plantcare_backend.model.CareType;
+import com.plantcare_backend.model.Notification;
 import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.repository.CareScheduleRepository;
 import com.plantcare_backend.repository.CareTypeRepository;
 import com.plantcare_backend.repository.UserPlantRepository;
 import com.plantcare_backend.service.CareScheduleService;
+import com.plantcare_backend.service.NotificationService;
 import com.plantcare_backend.service.PlantCareNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,13 +29,15 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CareScheduleServiceImpl implements CareScheduleService {
     private final CareScheduleRepository careScheduleRepository;
     private final CareTypeRepository careTypeRepository;
     private final UserPlantRepository userPlantRepository;
-
     @Autowired
-    private PlantCareNotificationService notificationService;
+    private NotificationService notificationService;
+    @Autowired
+    private PlantCareNotificationService plantCareNotificationService;
 
     @Override
     @Transactional
@@ -58,6 +63,18 @@ public class CareScheduleServiceImpl implements CareScheduleService {
                 }
 
                 careScheduleRepository.save(schedule);
+
+                try {
+                    notificationService.createNotification(
+                            userPlant.getUserId(),
+                            "Lịch chăm sóc cây đã được cập nhật",
+                            "Lịch " + careType.getCareTypeName() + " cho cây " + userPlant.getPlantName() + " đã được thiết lập.",
+                            Notification.NotificationType.INFO,
+                            "/user-plants/" + userPlantId
+                    );
+                } catch (Exception e) {
+                    log.warn("Failed to create notification for care schedule setup: {}", e.getMessage());
+                }
 
                 // Kiểm tra và gửi reminder ngay nếu schedule đã đến hạn
                 checkAndSendImmediateReminder(schedule);
@@ -103,7 +120,17 @@ public class CareScheduleServiceImpl implements CareScheduleService {
 
                 if (currentTime.isAfter(timeWindowStart) && currentTime.isBefore(timeWindowEnd)) {
                     try {
-                        notificationService.sendReminder(schedule);
+                        plantCareNotificationService.sendReminder(schedule); // Sử dụng tên đã đổi
+
+                        // Thêm notification cho user
+                        notificationService.createNotification(
+                                schedule.getUserPlant().getUserId(),
+                                "Nhắc nhở chăm sóc cây",
+                                "Cây " + schedule.getUserPlant().getPlantName() + " cần được " +
+                                        schedule.getCareType().getCareTypeName() + " hôm nay.",
+                                Notification.NotificationType.WARNING,
+                                "/user-plants/" + schedule.getUserPlant().getUserPlantId()
+                        );
                     } catch (Exception e) {
                         // Log lỗi nhưng không throw exception để không ảnh hưởng đến việc tạo schedule
                         System.err.println("Failed to send immediate reminder for schedule: " + schedule.getScheduleId()

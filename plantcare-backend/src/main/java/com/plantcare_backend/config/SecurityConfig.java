@@ -4,6 +4,7 @@ import com.plantcare_backend.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,79 +20,84 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+        @Autowired
+        private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> {
-                })
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/auth/forgot-password",
-                                "/api/auth/verify-reset-code",
-                                "/api/auth/reset-password",
-                                "/api/auth/resend-verification",
-                                "/api/auth/verify-email",
-                                "/api/auth/login-expert",
-                                "/api/auth/login-admin")
-                        .permitAll()
-                        .requestMatchers("/api/auth/change-password").authenticated()
-                        .requestMatchers("/api/admin/**").permitAll()
-                        .requestMatchers("/api/plants/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/manager/**").permitAll()
-                        .requestMatchers("/api/support/**").authenticated()
-                        .requestMatchers("/api/admin/support/**").authenticated()
-                        .requestMatchers("/api/user-plants/**").permitAll()
-                        .requestMatchers("/api/chat/**").authenticated()
-                        .requestMatchers("/chat/**").permitAll()
-                        .requestMatchers("/api/plant-care/").authenticated()
-                        .requestMatchers("/api/personal/**").authenticated()
-                        .requestMatchers("/api/avatars/**").permitAll()
-                        .requestMatchers("/api/ai/**").authenticated()
-                        // VNPAY
-                        .requestMatchers("/api/payment/vnpay-return").permitAll()
-                        .requestMatchers("/api/payment/vnpay-ipn").permitAll()
-                        .requestMatchers("/api/payment/vnpay/create").permitAll()
-                        .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket")
-                        .permitAll()
-                        .requestMatchers("/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .cors(cors -> {
+                                })
+                                .csrf(csrf -> csrf.disable())
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/auth/login",
+                                                                "/auth/register",
+                                                                "/auth/forgot-password",
+                                                                "/auth/verify-reset-code",
+                                                                "/auth/reset-password",
+                                                                "/auth/change-password",
+                                                                "/auth/resend-verification",
+                                                                "/auth/verify-email",
+                                                                "/auth/login-admin",
+                                                                "/auth/login-expert")
+                                                .permitAll()
+                                                .requestMatchers("/admin/**").permitAll()
+                                                .requestMatchers("/plants/**", "/plants/categories",
+                                                                "/plants/search")
+                                                .permitAll()
+                                                .requestMatchers("/users/**").permitAll()
+                                                .requestMatchers("/manager/**").permitAll()
+                                                .requestMatchers("/user-plants/**").permitAll()
+                                                .requestMatchers("/support/**").authenticated()
+                                                .requestMatchers("/admin/support/**").authenticated()
+                                                .requestMatchers("/user-plants/**").permitAll()
+                                                .requestMatchers("/chat/**").authenticated()
+                                                .requestMatchers("/chat/**").permitAll()
+                                                .requestMatchers("/plant-care/").authenticated()
+                                                .requestMatchers("/personal/**").authenticated()
+                                                .requestMatchers("/avatars/**").permitAll()
+                                                .requestMatchers("/ai/**").authenticated()
+                                                // VNPAY Payment endpoints
+                                                .requestMatchers("/payment/vnpay-return").permitAll()
+                                                .requestMatchers("/payment/vnpay-ipn").permitAll()
+                                                .requestMatchers("/payment/vnpay/create").permitAll()
+                                                // WebSocket endpoints
+                                                .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket")
+                                                .permitAll()
+                                                .requestMatchers("/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-resources/**",
+                                                                "/webjars/**")
+                                                .permitAll()
+                                                .anyRequest().permitAll())
+                                .addFilterBefore(jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "http://40.81.23.51"
-                // Thêm domain nếu có, ví dụ: "https://yourdomain.com"
-        ));
-        config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of(
+                                "http://localhost:4200",
+                                "http://40.81.23.51",
+                                "https://plantcare.id.vn",
+                                "https://www.plantcare.id.vn",
+                                "http://plantcare.id.vn",
+                                "http://www.plantcare.id.vn"));
+                config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"));
+                config.setAllowedHeaders(List.of("Authorization", "Content-Type", "*"));
+                config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
-        source.registerCorsConfiguration("/chat/**", config);
-        return source;
-    }
-
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
+        }
 }

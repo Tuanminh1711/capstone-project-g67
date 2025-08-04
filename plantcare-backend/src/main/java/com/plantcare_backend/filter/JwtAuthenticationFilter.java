@@ -30,44 +30,67 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("JWT Filter is running for: " + request.getRequestURI());
 
+        String requestURI = request.getRequestURI();
 
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String jwtToken = authorizationHeader.substring(7);
-            System.out.println("jwtToken: " + jwtToken);
-            try {
-                System.out.println("Is token blacklisted? " + jwtUtil.isTokenBlacklisted(jwtToken));
-                System.out.println("Is token valid? " + jwtUtil.validateToken(jwtToken));
-                // Kiểm tra token có bị thu hồi không
-                if (jwtUtil.isTokenBlacklisted(jwtToken)) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token revoked");
-                    return;
-                }
-                // Kiểm tra token hợp lệ
-                if (jwtUtil.validateToken(jwtToken)) {
-                    Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-                    System.out.println("userId from token: " + userId);
-                    List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(jwtToken);
-                    // Đặt authentication vào context
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userId, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    // Đặt thông tin user vào request attribute
-                    request.setAttribute("userId", userId);
-                } else {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
-                    return;
-                }
-            } catch (Exception e) {
-                System.out.println("Exception in filter: " + e.getMessage());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token verification failed");
-                return;
-            }
+        // Skip JWT validation for public endpoints
+        if (isPublicEndpoint(requestURI)) {
+            System.out.println("JWT Filter: Skipping public endpoint: " + requestURI);
+            filterChain.doFilter(request, response);
+            return;
         }
-        // Tiếp tục filter chain
+
+        // Get JWT token from Authorization header
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("JWT Filter: No valid Authorization header for: " + requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = authHeader.substring(7); // Remove "Bearer " prefix
+
+        try {
+            // Validate JWT token
+            if (jwtUtil.validateToken(token)) {
+                // Extract user information
+                Long userId = jwtUtil.getUserIdFromToken(token);
+                String username = jwtUtil.getUsernameFromToken(token);
+                String role = jwtUtil.getRoleFromToken(token);
+
+                // Set user information in request attributes
+                request.setAttribute("userId", userId);
+                request.setAttribute("username", username);
+                request.setAttribute("role", role);
+
+                // Set authentication context
+                List<GrantedAuthority> authorities = List.of(() -> "ROLE_" + role);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username,
+                        null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                System.out.println("JWT Filter: Valid token for user: " + username + " (ID: " + userId + ")");
+            } else {
+                System.out.println("JWT Filter: Invalid token for: " + requestURI);
+            }
+        } catch (Exception e) {
+            System.out.println("JWT Filter: Error processing token: " + e.getMessage());
+        }
+
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isPublicEndpoint(String requestURI) {
+        // Define public endpoints that don't need JWT validation
+        return requestURI.startsWith("/api/auth/") ||
+                requestURI.startsWith("/api/plants/") ||
+                requestURI.startsWith("/api/swagger-ui/") ||
+                requestURI.startsWith("/api/v3/api-docs") ||
+                requestURI.startsWith("/api/swagger-resources/") ||
+                requestURI.startsWith("/api/webjars/") ||
+                requestURI.startsWith("/api/ws-chat/") ||
+                requestURI.startsWith("/api/payment/vnpay-return") ||
+                requestURI.startsWith("/api/payment/vnpay-ipn") ||
+                requestURI.startsWith("/api/payment/vnpay/create");
     }
 }

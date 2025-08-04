@@ -6,20 +6,19 @@ import com.plantcare_backend.dto.request.auth.LoginRequestDTO;
 import com.plantcare_backend.dto.request.auth.RegisterRequestDTO;
 import com.plantcare_backend.dto.request.auth.ChangePasswordRequestDTO;
 import com.plantcare_backend.dto.validator.PasswordStrengthValidator;
-import com.plantcare_backend.model.Role;
-import com.plantcare_backend.model.UserActivityLog;
-import com.plantcare_backend.model.UserProfile;
-import com.plantcare_backend.model.Users;
+import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.RoleRepository;
 import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.repository.UserProfileRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.AuthService;
 import com.plantcare_backend.service.IpLocationService;
+import com.plantcare_backend.service.NotificationService;
 import com.plantcare_backend.service.OtpService;
 import com.plantcare_backend.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +33,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -45,6 +45,8 @@ public class AuthServiceImpl implements AuthService {
     private final OtpService otpService;
     @Autowired
     private PasswordStrengthValidator passwordStrengthValidator;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
@@ -294,6 +296,19 @@ public class AuthServiceImpl implements AuthService {
                     .description("User changed password successfully")
                     .build();
             userActivityLogRepository.save(activityLog);
+
+            try {
+                notificationService.createNotification(
+                        Long.valueOf(userId),
+                        "Đổi mật khẩu thành công",
+                        "Mật khẩu của bạn đã được thay đổi thành công.",
+                        Notification.NotificationType.SUCCESS,
+                        null
+                );
+            } catch (Exception e) {
+                log.warn("Failed to create notification for password change: {}", e.getMessage());
+                // Không fail request nếu tạo notification thất bại
+            }
 
             return new ResponseData<>(HttpStatus.OK.value(),
                     "Password changed successfully. Please log in again with your new password.");

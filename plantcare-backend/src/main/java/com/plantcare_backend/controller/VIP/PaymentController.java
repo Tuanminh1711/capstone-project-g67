@@ -94,6 +94,26 @@ public class PaymentController {
         }
     }
 
+    @GetMapping("/test-timezone")
+    public ResponseEntity<?> testTimezone() {
+        Map<String, Object> response = new HashMap<>();
+        
+        // Test current time in different formats
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.ZonedDateTime zonedNow = java.time.ZonedDateTime.now();
+        java.util.Date utilDate = new java.util.Date();
+        java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
+        
+        response.put("localDateTime", now.toString());
+        response.put("zonedDateTime", zonedNow.toString());
+        response.put("utilDate", utilDate.toString());
+        response.put("sqlTimestamp", sqlTimestamp.toString());
+        response.put("currentTimeMillis", System.currentTimeMillis());
+        response.put("defaultTimezone", java.util.TimeZone.getDefault().getID());
+        
+        return ResponseEntity.ok(response);
+    }
+
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
