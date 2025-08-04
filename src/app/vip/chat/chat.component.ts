@@ -36,12 +36,17 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Runtime environment check
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    // Enhanced runtime environment check
+    const isProductionDomain = window.location.hostname.includes('plantcare.id.vn');
+    const isProduction = environment.production || isProductionDomain;
+    
     console.log('Chat component environment check:', { 
       configProduction: environment.production, 
       hostname: window.location.hostname,
-      isProduction 
+      isProductionDomain,
+      isProduction,
+      buildMode: environment.production ? 'production' : 'development',
+      deploymentMode: isProductionDomain ? 'production-domain' : 'development-domain'
     });
 
     // Kiểm tra quyền truy cập VIP
@@ -62,7 +67,9 @@ export class ChatComponent implements OnInit, OnDestroy {
     
     // Check if production and show warning
     if (isProduction) {
-      this.error = '⚠️ Chat hiện tại chỉ khả dụng ở môi trường development. Tính năng này sẽ được kích hoạt sau khi server production được cấu hình WebSocket.';
+      const reason = environment.production ? 'Build configuration' : 'Production domain detected';
+      this.error = `⚠️ Chat hiện tại chỉ khả dụng ở môi trường development. (${reason})`;
+      console.warn('🚫 Chat disabled:', reason);
       this.cdr.markForCheck();
     }
     
@@ -71,6 +78,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     
     // Only try to connect in development
     if (!isProduction) {
+      console.log('✅ Initializing chat in development mode');
       this.fetchHistory();
       this.ws.connect().catch(err => {
         this.error = 'Không thể kết nối WebSocket: ' + err;
@@ -91,6 +99,8 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         });
       });
+    } else {
+      console.log('🚫 Chat disabled on production environment');
     }
   }
 
