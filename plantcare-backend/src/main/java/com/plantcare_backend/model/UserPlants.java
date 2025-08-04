@@ -39,6 +39,10 @@ public class UserPlants {
     @JsonManagedReference
     private List<UserPlantImage> images;
 
+    @OneToMany(mappedBy = "userPlant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CareSchedule> careSchedules;
+
+
     @Column(name = "created_at")
     private Timestamp created_at;
 }

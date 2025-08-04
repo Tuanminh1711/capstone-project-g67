@@ -18,7 +18,7 @@ public class Article {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "article_id ")
+    @Column(name = "article_id")
     private Long id;
 
     @Column(name = "title", nullable = false)
@@ -35,20 +35,17 @@ public class Article {
     @JoinColumn(name = "author_id")
     private Users author;
 
-    @OneToMany(mappedBy = "", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ArticleImage> images;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private ArticleStatus status = ArticleStatus.DRAFT;
+    private ArticleStatus status = ArticleStatus.PUBLISHED;
 
     public enum ArticleStatus {
-        PUBLISHED, DRAFT, DELETED;
+        PUBLISHED, DELETED;
     }
-
-    @Column(name = "created_by")
-    private String createdBy;
 
     @Column(name = "created_at")
     private String createdAt;
