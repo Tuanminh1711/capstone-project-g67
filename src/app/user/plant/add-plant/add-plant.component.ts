@@ -225,7 +225,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
     
     // Navigate to my garden
-    this.router.navigate(['/user/plant/my-garden']);
+    this.router.navigate(['/user/my-garden']);
   }
 
   private handleAddPlantError(error: any): void {

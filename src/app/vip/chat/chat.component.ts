@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ChangeDetectionStrategy, TrackByFunction } from '@angular/core';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { CommonModule } from '@angular/common';
@@ -8,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { ChatStompService, ChatMessage } from './chat-stomp.service';
 import { AuthService } from '../../auth/auth.service';
 import { trackByMessageId } from '../../shared/performance';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-vip-chat',
@@ -52,24 +52,38 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.warn('⚠️ No current user ID found! User might not be logged in properly.');
     }
     
+    // Check if production and show warning
+    if (environment.production) {
+      this.error = '⚠️ Chat hiện tại chỉ khả dụng ở môi trường development. Tính năng này sẽ được kích hoạt sau khi server production được cấu hình WebSocket.';
+      this.cdr.markForCheck();
+    }
+    
     // Thêm dummy data để test layout
     this.addDummyMessages();
     
-    this.fetchHistory();
-    this.ws.connect();
-    this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
-      this.zone.run(() => {
-        this.messages.push(msg);
-        this.cdr.markForCheck();
-        this.scrollToBottom();
-      });
-    });
-    this.wsErrSub = this.ws.onError().subscribe((err: string) => {
-      this.zone.run(() => {
-        this.error = err;
+    // Only try to connect in development
+    if (!environment.production) {
+      this.fetchHistory();
+      this.ws.connect().catch(err => {
+        this.error = 'Không thể kết nối WebSocket: ' + err;
         this.cdr.markForCheck();
       });
-    });
+      
+      this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
+        this.zone.run(() => {
+          this.messages.push(msg);
+          this.cdr.markForCheck();
+          this.scrollToBottom();
+        });
+      });
+      
+      this.wsErrSub = this.ws.onError().subscribe((err: string) => {
+        this.zone.run(() => {
+          this.error = err;
+          this.cdr.markForCheck();
+        });
+      });
+    }
   }
 
   // Utility methods for template
@@ -226,6 +240,13 @@ export class ChatComponent implements OnInit, OnDestroy {
   sendMessage() {
     if (!this.newMessage.trim()) return;
     
+    // Check if production
+    if (environment.production) {
+      this.error = 'Tính năng chat chưa khả dụng trên production server.';
+      this.cdr.markForCheck();
+      return;
+    }
+    
     // Lấy userId và role từ AuthService
     const userId = this.authService.getCurrentUserId();
     const userRole = this.authService.getCurrentUserRole();
@@ -249,7 +270,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       timestamp: new Date().toISOString()
     };
     
-    this.ws.sendMessage(msg);
+    this.ws.sendMessage(msg).catch(err => {
+      this.error = 'Không thể gửi tin nhắn: ' + err;
+      this.cdr.markForCheck();
+    });
+    
     this.newMessage = '';
     this.error = ''; // Clear any previous errors
     this.cdr.markForCheck();
