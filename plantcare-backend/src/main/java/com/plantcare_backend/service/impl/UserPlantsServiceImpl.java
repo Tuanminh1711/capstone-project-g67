@@ -1,12 +1,10 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
+import com.plantcare_backend.dto.request.userPlants.*;
 import com.plantcare_backend.dto.response.userPlants.*;
-import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
-import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
-import com.plantcare_backend.dto.request.userPlants.UpdateUserPlantRequestDTO;
 import com.plantcare_backend.dto.validator.UserPlantValidator;
 import com.plantcare_backend.exception.ResourceNotFoundException;
+import com.plantcare_backend.exception.ValidationException;
 import com.plantcare_backend.model.*;
 import com.plantcare_backend.model.CareSchedule;
 import com.plantcare_backend.model.CareLog;
@@ -160,7 +158,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
             log.info("Deleting {} user plant images for user plant ID: {}", userPlant.getImages().size(), userPlantId);
             deleteUserPlantImages(userPlant.getImages());
         }
-        
+
         userPlantRepository.delete(userPlant);
         log.info("Successfully deleted user plant with ID: {} for user ID: {}", userPlantId, userId);
     }
@@ -292,17 +290,17 @@ public class UserPlantsServiceImpl implements UserPlantsService {
             throw new RuntimeException("Failed to save user plant images", e);
         }
     }
-    
+
     private void deleteUserPlantImages(List<UserPlantImage> images) {
         String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-        
+
         for (UserPlantImage image : images) {
             try {
                 String imageUrl = image.getImageUrl();
                 if (imageUrl != null && imageUrl.startsWith("/api/user-plants/")) {
                     String filename = imageUrl.substring("/api/user-plants/".length());
                     Path filePath = Paths.get(uploadDir, filename);
-                    
+
                     if (Files.exists(filePath)) {
                         Files.delete(filePath);
                         log.info("Deleted image file: {}", filename);
@@ -317,13 +315,217 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     @Override
+    @Transactional
     public void updateUserPlant(UpdateUserPlantRequestDTO requestDTO, Long userId) {
+        log.info("Updating user plant: {} for user: {}", requestDTO.getUserPlantId(), userId);
+
+        // Validate input
+        validateUpdateUserPlantRequest(requestDTO);
+
+        // Find and validate user plant ownership
         UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(requestDTO.getUserPlantId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
+
+        // Store old values for audit
+        String oldNickname = userPlant.getPlantName();
+        Timestamp oldPlantDate = userPlant.getPlantDate();
+        String oldLocation = userPlant.getPlantLocation();
+
+        // Update user plant fields
         userPlant.setPlantName(requestDTO.getNickname());
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
+
+        // Handle image updates
+        handleUserPlantImageUpdates(userPlant, requestDTO);
+
+        // Save user plant
         userPlantRepository.save(userPlant);
+
+        // Update care schedules reminder settings if needed
+        updateCareScheduleReminders(userPlant.getUserPlantId(), requestDTO.isReminderEnabled());
+
+        log.info(
+                "Successfully updated user plant: {} for user: {}. Changes: nickname='{}'->'{}', date='{}'->'{}', location='{}'->'{}'",
+                requestDTO.getUserPlantId(), userId, oldNickname, requestDTO.getNickname(),
+                oldPlantDate, requestDTO.getPlantingDate(), oldLocation, requestDTO.getLocationInHouse());
+    }
+
+    private void validateUpdateUserPlantRequest(UpdateUserPlantRequestDTO requestDTO) {
+        if (requestDTO.getUserPlantId() == null) {
+            throw new ValidationException("User plant ID is required");
+        }
+
+        if (requestDTO.getNickname() == null || requestDTO.getNickname().trim().isEmpty()) {
+            throw new ValidationException("Nickname cannot be empty");
+        }
+
+        if (requestDTO.getPlantingDate() == null) {
+            throw new ValidationException("Planting date is required");
+        }
+
+        if (requestDTO.getLocationInHouse() == null || requestDTO.getLocationInHouse().trim().isEmpty()) {
+            throw new ValidationException("Location cannot be empty");
+        }
+
+        // Validate planting date is not in the future
+        if (requestDTO.getPlantingDate().after(new Timestamp(System.currentTimeMillis()))) {
+            throw new ValidationException("Planting date cannot be in the future");
+        }
+
+        // Validate image updates if provided
+        if (requestDTO.getImageUpdates() != null && !requestDTO.getImageUpdates().isEmpty()) {
+            validateImageUpdates(requestDTO.getImageUpdates());
+        }
+
+        // Validate image URLs if provided
+        if (requestDTO.getImageUrls() != null && !requestDTO.getImageUrls().isEmpty()) {
+            validateImageUrls(requestDTO.getImageUrls());
+        }
+    }
+
+    private void validateImageUpdates(List<UserPlantImageUpdateDTO> imageUpdates) {
+        for (UserPlantImageUpdateDTO update : imageUpdates) {
+            if (update.getAction() == null || update.getAction().trim().isEmpty()) {
+                throw new ValidationException("Image action is required");
+            }
+
+            if (!update.getAction().toUpperCase().matches("UPDATE|DELETE|ADD")) {
+                throw new ValidationException("Invalid image action. Must be UPDATE, DELETE, or ADD");
+            }
+
+            if ("UPDATE".equals(update.getAction().toUpperCase())
+                    || "DELETE".equals(update.getAction().toUpperCase())) {
+                if (update.getImageId() == null) {
+                    throw new ValidationException("Image ID is required for UPDATE and DELETE actions");
+                }
+            }
+
+            if ("UPDATE".equals(update.getAction().toUpperCase()) || "ADD".equals(update.getAction().toUpperCase())) {
+                if (update.getImageUrl() == null || update.getImageUrl().trim().isEmpty()) {
+                    throw new ValidationException("Image URL is required for UPDATE and ADD actions");
+                }
+            }
+        }
+    }
+
+    private void validateImageUrls(List<String> imageUrls) {
+        for (String url : imageUrls) {
+            if (url == null || url.trim().isEmpty()) {
+                throw new ValidationException("Image URL cannot be empty");
+            }
+            if (!url.startsWith("/api/user-plants/")) {
+                throw new ValidationException("Invalid image URL format. Must start with /api/user-plants/");
+            }
+        }
+    }
+
+    private void updateCareScheduleReminders(Long userPlantId, boolean reminderEnabled) {
+        List<CareSchedule> careSchedules = careScheduleRepository.findByUserPlant_UserPlantId(userPlantId);
+
+        for (CareSchedule schedule : careSchedules) {
+            schedule.setReminderEnabled(reminderEnabled);
+        }
+
+        if (!careSchedules.isEmpty()) {
+            careScheduleRepository.saveAll(careSchedules);
+            log.info("Updated reminder settings for {} care schedules of user plant: {}",
+                    careSchedules.size(), userPlantId);
+        }
+    }
+
+    private void handleUserPlantImageUpdates(UserPlants userPlant, UpdateUserPlantRequestDTO requestDTO) {
+        // 1. Xử lý flexible image updates (ưu tiên)
+        if (requestDTO.getImageUpdates() != null && !requestDTO.getImageUpdates().isEmpty()) {
+            log.info("Processing flexible image updates for user plant: {}", userPlant.getUserPlantId());
+            handleFlexibleUserPlantImageUpdates(userPlant, requestDTO.getImageUpdates());
+        }
+        // 2. Xử lý legacy image replacement
+        else if (requestDTO.getImageUrls() != null) {
+            log.info("Processing legacy image replacement for user plant: {}", userPlant.getUserPlantId());
+            handleLegacyImageReplacement(userPlant, requestDTO.getImageUrls());
+        }
+        // 3. Nếu không có update ảnh, giữ nguyên ảnh cũ
+        else {
+            log.info("No image updates provided, keeping existing images for user plant: {}",
+                    userPlant.getUserPlantId());
+        }
+    }
+
+    private void handleFlexibleUserPlantImageUpdates(UserPlants userPlant, List<UserPlantImageUpdateDTO> imageUpdates) {
+        for (UserPlantImageUpdateDTO update : imageUpdates) {
+            switch (update.getAction().toUpperCase()) {
+                case "UPDATE":
+                    // Update ảnh đã tồn tại
+                    if (update.getImageId() != null) {
+                        userPlant.getImages().stream()
+                                .filter(img -> img.getId().equals(update.getImageId()))
+                                .findFirst()
+                                .ifPresent(img -> {
+                                    img.setImageUrl(update.getImageUrl());
+                                    if (update.getDescription() != null) {
+                                        img.setDescription(update.getDescription());
+                                    }
+                                    log.info("Updated image ID: {} for user plant: {}", update.getImageId(),
+                                            userPlant.getUserPlantId());
+                                });
+                    }
+                    break;
+
+                case "DELETE":
+                    // Xóa ảnh cụ thể
+                    if (update.getImageId() != null) {
+                        boolean removed = userPlant.getImages()
+                                .removeIf(img -> img.getId().equals(update.getImageId()));
+                        if (removed) {
+                            log.info("Deleted image ID: {} for user plant: {}", update.getImageId(),
+                                    userPlant.getUserPlantId());
+                        }
+                    }
+                    break;
+
+                case "ADD":
+                    // Thêm ảnh mới
+                    UserPlantImage newImage = UserPlantImage.builder()
+                            .userPlants(userPlant)
+                            .imageUrl(update.getImageUrl())
+                            .description(
+                                    update.getDescription() != null ? update.getDescription() : "User uploaded image")
+                            .build();
+                    userPlant.getImages().add(newImage);
+                    log.info("Added new image for user plant: {}", userPlant.getUserPlantId());
+                    break;
+
+                default:
+                    log.warn("Unknown image action: {} for user plant: {}", update.getAction(),
+                            userPlant.getUserPlantId());
+                    break;
+            }
+        }
+    }
+
+    private void handleLegacyImageReplacement(UserPlants userPlant, List<String> imageUrls) {
+        // Xóa tất cả ảnh cũ
+        if (userPlant.getImages() != null && !userPlant.getImages().isEmpty()) {
+            log.info("Removing {} existing images for user plant: {}", userPlant.getImages().size(),
+                    userPlant.getUserPlantId());
+            userPlant.getImages().clear();
+        }
+
+        // Thêm ảnh mới
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            List<UserPlantImage> newImages = new ArrayList<>();
+            for (String imageUrl : imageUrls) {
+                UserPlantImage newImage = UserPlantImage.builder()
+                        .userPlants(userPlant)
+                        .imageUrl(imageUrl)
+                        .description("User uploaded image")
+                        .build();
+                newImages.add(newImage);
+            }
+            userPlant.getImages().addAll(newImages);
+            log.info("Added {} new images for user plant: {}", newImages.size(), userPlant.getUserPlantId());
+        }
     }
 
     @Override
