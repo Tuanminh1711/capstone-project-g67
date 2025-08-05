@@ -3,7 +3,7 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
 import com.plantcare_backend.dto.response.Plants.*;
-import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.exception.InvalidDataException;
@@ -154,7 +154,9 @@ public class PlantServiceImpl implements PlantService {
         dto.setStatus(plant.getStatus() != null ? plant.getStatus().name() : null);
         dto.setLightRequirement(plant.getLightRequirement());
         dto.setWaterRequirement(plant.getWaterRequirement());
+        dto.setCareDifficulty(plant.getCareDifficulty());
         dto.setStatusDisplay(getStatusDisplay(plant.getStatus()));
+
         dto.setCreatedAt(plant.getCreatedAt());
         dto.setUpdatedAt(plant.getUpdatedAt());
         dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
@@ -185,6 +187,7 @@ public class PlantServiceImpl implements PlantService {
         userDto.setLightRequirement(dto.getLightRequirement());
         userDto.setWaterRequirement(dto.getWaterRequirement());
         userDto.setCategoryName(dto.getCategoryName());
+        userDto.setCareDifficulty(dto.getCareDifficulty());
         userDto.setImageUrls(dto.getImageUrls());
         return userDto;
     }
@@ -345,6 +348,7 @@ public class PlantServiceImpl implements PlantService {
         dto.setCareDifficulty(plant.getCareDifficulty());
         dto.setSuitableLocation(plant.getSuitableLocation());
         dto.setCommonDiseases(plant.getCommonDiseases());
+
         dto.setStatus(plant.getStatus());
         dto.setCreatedAt(plant.getCreatedAt());
         int reportCount = plantReportRepository.countByPlantId(plant.getId());

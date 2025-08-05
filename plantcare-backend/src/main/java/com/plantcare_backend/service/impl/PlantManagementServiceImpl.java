@@ -1,5 +1,6 @@
 package com.plantcare_backend.service.impl;
 
+import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.*;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.InvalidDataException;

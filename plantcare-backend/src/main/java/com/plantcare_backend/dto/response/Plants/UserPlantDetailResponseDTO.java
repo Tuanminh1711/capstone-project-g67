@@ -16,6 +16,7 @@ public class UserPlantDetailResponseDTO {
     private String status;
     private Plants.WaterRequirement waterRequirement;
     private Plants.LightRequirement lightRequirement;
+    private Plants.CareDifficulty careDifficulty;
     private String categoryName;
     private List<String> imageUrls;
 }

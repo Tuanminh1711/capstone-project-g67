@@ -4,7 +4,7 @@ import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
 import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
-import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.PlantCategory;

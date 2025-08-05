@@ -6,7 +6,7 @@ import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
 import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.Plants.UserReportListResponseDTO;
 import com.plantcare_backend.dto.response.Plants.UserReportResponseDTO;
-import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.request.plants.CreatePlantRequestDTO;
 import com.plantcare_backend.dto.request.plants.PlantSearchRequestDTO;
 import com.plantcare_backend.model.PlantCategory;
