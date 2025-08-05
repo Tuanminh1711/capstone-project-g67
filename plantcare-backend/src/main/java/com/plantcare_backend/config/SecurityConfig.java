@@ -56,8 +56,6 @@ public class SecurityConfig {
                         .requestMatchers("/support/**").authenticated()
                         .requestMatchers("/admin/support/**").authenticated()
                         .requestMatchers("/user-plants/**").permitAll()
-                        .requestMatchers("/chat/**").authenticated()
-                        .requestMatchers("/chat/**").permitAll()
                         .requestMatchers("/plant-care/").authenticated()
                         .requestMatchers("/personal/**").authenticated()
                         .requestMatchers("/avatars/**").permitAll()
@@ -67,8 +65,10 @@ public class SecurityConfig {
                         .requestMatchers("/payment/vnpay-ipn").permitAll()
                         .requestMatchers("/payment/vnpay/create").permitAll()
                         .requestMatchers("/api/vip/disease-detection/**").authenticated()
-                        // WebSocket endpoints
-                        .requestMatchers("/ws-chat/**", "/ws-chat", "/ws-chat/websocket")
+                        // Chat endpoints - authenticated for VIP/Expert access
+                        .requestMatchers("/chat/**").authenticated()
+                        // WebSocket endpoints - permit all for WebSocket handshake
+                        .requestMatchers("/ws/**", "/ws", "/ws/websocket")
                         .permitAll()
                         .requestMatchers("/swagger-ui/**",
                                 "/v3/api-docs/**",
