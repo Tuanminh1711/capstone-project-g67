@@ -3,6 +3,7 @@ package com.plantcare_backend.controller.expert;
 import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeCategoryStatusRequestDTO;
+import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
@@ -43,6 +44,30 @@ public class ExpertController {
         } catch (ResourceNotFoundException e) {
             return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
         } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
+        }
+    }
+
+    @Operation(method = "POST", summary = "Create article", description = "Create a new article by expert")
+    @PostMapping("/create-article")
+    public ResponseData<Long> createArticle(
+            @Valid @RequestBody CreateArticleRequestDTO createArticleRequestDTO,
+            @RequestAttribute("userId") Integer expertId) {
+        log.info("Request create article, expertId: {}", expertId);
+        
+        try {
+            Long articleId = expertService.createArticleByExpert(createArticleRequestDTO, expertId.longValue());
+            activityLogService.logActivity(expertId, "Create_Article",
+                    "Expert create article " + createArticleRequestDTO.getTitle());
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Create article successfully", articleId);
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found for article creation, expertId: {}", expertId, e);
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (InvalidDataException e) {
+            log.error("Invalid data for article creation, expertId: {}", expertId, e);
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("Create article failed, expertId: {}", expertId, e);
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
         }
     }
