@@ -1,6 +1,6 @@
 package com.plantcare_backend.controller.user;
 
-import com.plantcare_backend.dto.request.userPlants.CreateUserPlantRequestDTO;
+import com.plantcare_backend.dto.request.userPlants.*;
 import com.plantcare_backend.dto.response.userPlants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantResponseDTO;
 import com.plantcare_backend.dto.response.userPlants.UserPlantsSearchResponseDTO;
@@ -8,9 +8,6 @@ import com.plantcare_backend.dto.response.userPlants.UserPlantListResponseDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.base.ResponseSuccess;
-import com.plantcare_backend.dto.request.userPlants.UserPlantsSearchRequestDTO;
-import com.plantcare_backend.dto.request.userPlants.AddUserPlantRequestDTO;
-import com.plantcare_backend.dto.request.userPlants.UpdateUserPlantRequestDTO;
 import com.plantcare_backend.exception.RateLimitExceededException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.ValidationException;
@@ -31,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -193,12 +191,15 @@ public class UserPlantsController {
 
     @PutMapping("/update")
     public ResponseData<?> updateUserPlant(
-            @RequestBody UpdateUserPlantRequestDTO requestDTO,
+            @Valid @RequestBody UpdateUserPlantRequestDTO requestDTO,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
+
+        log.info("Updating user plant for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+
         try {
             userPlantsService.updateUserPlant(requestDTO, userId);
 
@@ -206,10 +207,101 @@ public class UserPlantsController {
             activityLogService.logActivity(userId.intValue(), "UPDATE_USER_PLANT",
                     "Updated user plant with ID: " + requestDTO.getUserPlantId(), request);
 
+            log.info("Successfully updated user plant for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
             return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully");
+        } catch (ResourceNotFoundException e) {
+            log.warn("User plant not found for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+            return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        } catch (ValidationException e) {
+            log.warn("Validation failed for user plant update: {}", e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         } catch (Exception e) {
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Failed to update user plant: " + e.getMessage());
+            log.error("Failed to update user plant for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId(), e);
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to update user plant: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/update-with-images")
+    public ResponseData<?> updateUserPlantWithImages(
+            @ModelAttribute UpdateUserPlantRequestDTO requestDTO,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
+        }
+
+        log.info("Updating user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+
+        try {
+            // Convert uploaded images to image updates
+            if (images != null && !images.isEmpty()) {
+                List<UserPlantImageUpdateDTO> imageUpdates = new ArrayList<>();
+                for (MultipartFile image : images) {
+                    if (image != null && !image.isEmpty()) {
+                        // Save image and get URL
+                        String imageUrl = saveUploadedImage(image, request);
+
+                        UserPlantImageUpdateDTO imageUpdate = new UserPlantImageUpdateDTO();
+                        imageUpdate.setAction("ADD");
+                        imageUpdate.setImageUrl(imageUrl);
+                        imageUpdate.setDescription("User uploaded image");
+                        imageUpdates.add(imageUpdate);
+                    }
+                }
+                requestDTO.setImageUpdates(imageUpdates);
+            }
+
+            userPlantsService.updateUserPlant(requestDTO, userId);
+
+            // Log the activity
+            activityLogService.logActivity(userId.intValue(), "UPDATE_USER_PLANT_WITH_IMAGES",
+                    "Updated user plant with images, ID: " + requestDTO.getUserPlantId(), request);
+
+            log.info("Successfully updated user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+            return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully with images");
+        } catch (ResourceNotFoundException e) {
+            log.warn("User plant not found for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+            return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        } catch (ValidationException e) {
+            log.warn("Validation failed for user plant update: {}", e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to update user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId(), e);
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to update user plant: " + e.getMessage());
+        }
+    }
+
+    private String saveUploadedImage(MultipartFile image, HttpServletRequest request) throws IOException {
+        if (image == null || image.isEmpty()) {
+            throw new ValidationException("Image file is empty");
+        }
+
+        String contentType = image.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new ValidationException("File must be an image");
+        }
+
+        if (image.getSize() > 5 * 1024 * 1024) {
+            throw new ValidationException("File size must be less than 5MB");
+        }
+
+        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        String originalFilename = image.getOriginalFilename();
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String newFilename = UUID.randomUUID().toString() + fileExtension;
+
+        Path filePath = uploadPath.resolve(newFilename);
+        Files.copy(image.getInputStream(), filePath);
+
+        return "/api/user-plants/user-plants/" + newFilename;
     }
 
     @Operation(method = "POST", summary = "Create new plant", description = "Create a new plant and add to user collection")
