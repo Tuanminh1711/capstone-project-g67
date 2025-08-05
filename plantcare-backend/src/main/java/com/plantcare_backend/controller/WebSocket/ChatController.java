@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/chat")
 @Slf4j
 public class ChatController {
     private final UserRepository userRepository;
@@ -37,20 +39,38 @@ public class ChatController {
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/vip-community")
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) throws AccessDeniedException {
-        log.info("Received chat message: {}", chatMessage);
+        log.info("Received chat message from sender: {}", chatMessage.getSenderId());
 
         // Validate senderId
         if (chatMessage.getSenderId() == null) {
+            log.error("Sender ID is null");
             throw new IllegalArgumentException("Sender ID cannot be null");
         }
 
         // Validate content
         if (chatMessage.getContent() == null || chatMessage.getContent().trim().isEmpty()) {
+            log.error("Message content is empty");
             throw new IllegalArgumentException("Message content cannot be empty");
         }
 
-        Users sender = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getSenderId())).orElseThrow();
+        // Validate content length
+        if (chatMessage.getContent().trim().length() > 1000) {
+            log.error("Message content too long: {} characters", chatMessage.getContent().length());
+            throw new IllegalArgumentException("Message content cannot exceed 1000 characters");
+        }
+
+        // Find sender and validate role
+        Users sender = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getSenderId()))
+                .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
+        
         log.info("Sender found: {} with role: {}", sender.getUsername(), sender.getRole().getRoleName());
+
+        // Check if user has VIP or EXPERT role
+        if (!sender.getRole().getRoleName().equals(Role.RoleName.VIP) &&
+                !sender.getRole().getRoleName().equals(Role.RoleName.EXPERT)) {
+            log.warn("User {} attempted to send message without proper role", sender.getUsername());
+            throw new AccessDeniedException("Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.");
+        }
 
         // Handle receiverId - can be null for broadcast messages
         Users receiver = null;
@@ -59,11 +79,7 @@ public class ChatController {
             log.info("Receiver found: {}", receiver != null ? receiver.getUsername() : "null");
         }
 
-        if (!sender.getRole().getRoleName().equals(Role.RoleName.VIP) &&
-                !sender.getRole().getRoleName().equals(Role.RoleName.EXPERT)) {
-            throw new AccessDeniedException("Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.");
-        }
-
+        // Create and save chat message entity
         com.plantcare_backend.model.ChatMessage entity = com.plantcare_backend.model.ChatMessage.builder()
                 .sender(sender)
                 .receiver(receiver)
@@ -75,14 +91,21 @@ public class ChatController {
         chatMessageRepository.save(entity);
         log.info("Chat message saved with ID: {}", entity.getMessageId());
 
-        chatMessage.setTimestamp(entity.getSentAt().toInstant().toString());
-        chatMessage.setSenderRole(sender.getRole().getRoleName().name());
+        // Prepare response DTO
+        ChatMessage responseMessage = ChatMessage.builder()
+                .senderId(chatMessage.getSenderId())
+                .receiverId(chatMessage.getReceiverId())
+                .content(chatMessage.getContent().trim())
+                .timestamp(entity.getSentAt().toInstant().toString())
+                .senderRole(sender.getRole().getRoleName().name())
+                .build();
 
-        log.info("Broadcasting message to /topic/vip-community: {}", chatMessage);
-        return chatMessage;
+        log.info("Broadcasting message to /topic/vip-community from {}: {}", 
+                sender.getUsername(), responseMessage.getContent());
+        return responseMessage;
     }
 
-    @GetMapping("/chat/history")
+    @GetMapping("/history")
     public List<ChatMessage> getChatHistory() {
         log.info("Fetching chat history...");
         try {
