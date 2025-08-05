@@ -1,5 +1,6 @@
-package com.plantcare_backend.dto.response.plantsManager;
+package com.plantcare_backend.dto.response.Plants;
 
+import com.plantcare_backend.dto.response.plantsManager.PlantImageDetailDTO;
 import com.plantcare_backend.model.Plants;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ public class PlantDetailResponseDTO {
     private String status;
     private Plants.WaterRequirement waterRequirement;
     private Plants.LightRequirement lightRequirement;
+    private Plants.CareDifficulty careDifficulty;
     private String statusDisplay;
     private Timestamp createdAt;
     private Timestamp updatedAt;

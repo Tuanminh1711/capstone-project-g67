@@ -3,7 +3,7 @@ package com.plantcare_backend.controller.plant;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.base.ResponseSuccess;
-import com.plantcare_backend.dto.response.plantsManager.PlantDetailResponseDTO;
+import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.PlantListResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.PlantReportListResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.PlantReportDetailResponseDTO;
