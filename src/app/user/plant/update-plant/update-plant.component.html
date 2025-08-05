@@ -124,6 +124,52 @@
               }
             </div>
 
+            <!-- Image Upload Section -->
+            <div class="form-group">
+              <label for="update-images" class="form-label">
+                Cập nhật ảnh cây <span class="optional">(Tùy chọn)</span>
+              </label>
+              <input 
+                type="file" 
+                id="update-images"
+                name="update-images"
+                accept="image/*"
+                multiple
+                (change)="onImageSelected($event)"
+                class="file-input"
+                style="display: none;"
+              />
+              <div class="file-upload-area" (click)="triggerFileInput()">
+                <div class="upload-content">
+                  <i class="upload-icon">📸</i>
+                  <p class="upload-text">Nhấn để chọn ảnh mới</p>
+                  <small class="upload-hint">Hỗ trợ nhiều ảnh, định dạng JPG, PNG (tối đa 5MB mỗi ảnh)</small>
+                </div>
+              </div>
+              
+              <!-- Preview selected images -->
+              @if (selectedImages && selectedImages.length > 0) {
+                <div class="image-preview-container">
+                  <h5>Ảnh mới đã chọn ({{ selectedImages.length }}):</h5>
+                  <div class="image-preview-grid">
+                    @for (image of selectedImages; track image; let i = $index) {
+                      <div class="image-preview-item">
+                        <img [src]="getImagePreview(image)" [alt]="'Preview ' + (i + 1)" class="preview-img">
+                        <button type="button" class="remove-image-btn" (click)="removeSelectedImage(i)" title="Xóa ảnh">
+                          ✕
+                        </button>
+                        <div class="image-info">
+                          <small>{{ image.name }}</small>
+                          <small>{{ formatFileSize(image.size) }}</small>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+              <small class="help-text">Chọn ảnh mới để thay thế toàn bộ ảnh hiện tại của cây. Ảnh sẽ được tải lên server và lưu vào database.</small>
+            </div>
+
           </div>
 
           <!-- Form Actions -->

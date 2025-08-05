@@ -93,4 +93,15 @@ export class MyGardenService {
     console.log('PUT URL:', endpoint);
     return this.http.put<ApiResponse>(endpoint, updateData);
   }
+
+  // Method để upload ảnh plant
+  uploadPlantImage(file: File): Observable<any> {
+    console.log('Service POST call for uploading plant image:', file.name);
+    const formData = new FormData();
+    formData.append('image', file, file.name);
+    
+    const endpoint = `${this.baseUrl}/user-plants/upload-plant-image`;
+    console.log('POST URL for image upload:', endpoint);
+    return this.http.post<any>(endpoint, formData);
+  }
 }

@@ -45,10 +45,10 @@ export class UrlService {
     
     if (hostname.includes('plantcare.id.vn')) {
       // Production domain
-      return 'https://plantcare.id.vn/ws';
+      return 'https://plantcare.id.vn/ws-chat';
     } else {
       // Local development
-      return '/ws';
+      return '/ws-chat';
     }
   }
 

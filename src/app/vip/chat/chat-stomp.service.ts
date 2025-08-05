@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UrlService } from '../../shared/url.service';
+import { CookieService } from '../../auth/cookie.service';
 
 export interface ChatMessage {
   senderId: number;
@@ -20,7 +21,7 @@ export class ChatStompService {
   private errorSubject = new Subject<string>();
   private connected = false;
 
-  constructor(private zone: NgZone, private urlService: UrlService) {
+  constructor(private zone: NgZone, private urlService: UrlService, private cookieService: CookieService) {
     this.initializeConnection();
   }
 
@@ -38,8 +39,18 @@ export class ChatStompService {
       websocketUrl
     });
 
+    // Get authentication token
+    const token = this.cookieService.getAuthToken();
+    console.log('WebSocket with auth token:', token ? 'Token found' : 'No token');
+
     this.client = new Client({
-      webSocketFactory: () => new SockJS(websocketUrl),
+      webSocketFactory: () => {
+        // For SockJS, create connection normally and use connectHeaders for auth
+        return new SockJS(websocketUrl);
+      },
+      connectHeaders: token ? {
+        'Authorization': `Bearer ${token}`
+      } : {},
       reconnectDelay: 5000,
       debug: (str) => console.log('STOMP:', str)
     });
@@ -66,21 +77,42 @@ export class ChatStompService {
   }
 
   connect(): Promise<void> {
-  const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-  console.log('[ChatStompService] WebSocket connect - isProduction:', isProduction);
+    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+    console.log('[ChatStompService] WebSocket connect - isProduction:', isProduction);
 
-  if (!this.connected && this.client) {
-    this.client.activate();
+    // Check authentication before connecting
+    const token = this.cookieService.getAuthToken();
+    if (!token) {
+      console.warn('[ChatStompService] No auth token found for WebSocket connection');
+      this.errorSubject.next('Cần đăng nhập để sử dụng chat');
+      return Promise.reject('No authentication token');
+    }
+
+    if (!this.connected && this.client) {
+      console.log('[ChatStompService] Activating WebSocket client...');
+      this.client.activate();
+    }
+    return Promise.resolve();
   }
-  return Promise.resolve();
-}
 
 
   disconnect() {
     if (this.client && this.connected) {
+      console.log('[ChatStompService] Disconnecting WebSocket...');
       this.client.deactivate();
     }
     this.connected = false;
+  }
+
+  // Method to refresh connection with new auth token
+  refreshConnection(): Promise<void> {
+    console.log('[ChatStompService] Refreshing WebSocket connection...');
+    this.disconnect();
+    
+    // Reinitialize with new token
+    this.initializeConnection();
+    
+    return this.connect();
   }
 
   sendMessage(message: ChatMessage) {

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, ViewEnca
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Subject, takeUntil, filter } from 'rxjs';
+import { Subject, takeUntil, filter, firstValueFrom } from 'rxjs';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { MyGardenService, UserPlant, UpdatePlantRequest, ApiResponse } from '../my-garden/my-garden.service';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -29,6 +29,10 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   // Thêm các biến quản lý ảnh
   currentImageIndex = 0;
   placeholderImage = '';
+
+  // Biến quản lý upload ảnh mới
+  selectedImages: File[] = [];
+  private imagePreviewUrls: Map<File, string> = new Map();
 
   private destroy$ = new Subject<void>();
 
@@ -104,6 +108,91 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     }
   }
 
+  // === IMAGE UPLOAD METHODS ===
+  
+  // Hàm xử lý khi chọn file ảnh mới
+  onImageSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (!files || files.length === 0) return;
+
+    // Clear previous selections and URLs
+    this.clearImagePreviews();
+    this.selectedImages = [];
+    
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const maxImages = 5;
+    
+    for (let i = 0; i < Math.min(files.length, maxImages); i++) {
+      const file = files[i];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error(`File "${file.name}" không phải là ảnh hợp lệ.`);
+        continue;
+      }
+      
+      // Validate file size
+      if (file.size > maxFileSize) {
+        this.toastService.error(`Ảnh "${file.name}" quá lớn. Kích thước tối đa là 5MB.`);
+        continue;
+      }
+      
+      this.selectedImages.push(file);
+      // Create and cache blob URL
+      const previewUrl = URL.createObjectURL(file);
+      this.imagePreviewUrls.set(file, previewUrl);
+    }
+    
+    if (files.length > maxImages) {
+      this.toastService.warning(`Chỉ được chọn tối đa ${maxImages} ảnh.`);
+    }
+    
+    console.log(`Selected ${this.selectedImages.length} valid images for update`);
+  }
+
+  // Trigger file input click
+  triggerFileInput(): void {
+    const fileInput = document.getElementById('update-images') as HTMLInputElement;
+    fileInput?.click();
+  }
+
+  // Get image preview URL
+  getImagePreview(file: File): string {
+    return this.imagePreviewUrls.get(file) || '';
+  }
+
+  // Clear all image preview URLs
+  private clearImagePreviews(): void {
+    this.imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    this.imagePreviewUrls.clear();
+  }
+
+  // Remove image from selection
+  removeSelectedImage(index: number): void {
+    if (index >= 0 && index < this.selectedImages.length) {
+      const file = this.selectedImages[index];
+      
+      // Revoke object URL to prevent memory leaks
+      const previewUrl = this.imagePreviewUrls.get(file);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        this.imagePreviewUrls.delete(file);
+      }
+      
+      this.selectedImages.splice(index, 1);
+      console.log('Removed image from update selection, remaining:', this.selectedImages.length);
+    }
+  }
+
+  // Format file size for display
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
   // Phần còn lại giữ nguyên...
   ngOnInit(): void {
     if (!this.checkAuthenticationSafely()) {
@@ -147,6 +236,9 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clear image preview URLs to prevent memory leaks
+    this.clearImagePreviews();
+    
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -360,29 +452,109 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
     console.log('Updating plant with data:', updateData);
 
+    // Check if there are new images to upload
+    if (this.selectedImages && this.selectedImages.length > 0) {
+      console.log('Uploading new images and updating plant info...');
+      this.uploadImagesAndUpdatePlant(updateData);
+    } else {
+      console.log('Updating plant info only (no new images)...');
+      this.updatePlantInfo(updateData);
+    }
+  }
+
+  private async uploadImagesAndUpdatePlant(updateData: UpdatePlantRequest): Promise<void> {
+    try {
+      // First update plant info
+      console.log('Step 1: Updating plant info...');
+      const updateResponse = await firstValueFrom(this.myGardenService.updateUserPlant(updateData));
+      
+      if (!updateResponse || !(updateResponse.status === 200 || updateResponse.message?.includes('success') || updateResponse.message?.includes('thành công'))) {
+        throw new Error('Failed to update plant info');
+      }
+      
+      console.log('Step 2: Plant info updated successfully, now uploading images...');
+      console.log(`Starting upload of ${this.selectedImages.length} images...`);
+      
+      // Upload all images sequentially
+      const uploadedImageUrls: string[] = [];
+      
+      for (let i = 0; i < this.selectedImages.length; i++) {
+        const file = this.selectedImages[i];
+        console.log(`Uploading image ${i + 1}/${this.selectedImages.length}: ${file.name}`);
+        
+        try {
+          const uploadResponse = await firstValueFrom(this.myGardenService.uploadPlantImage(file));
+          
+          if (uploadResponse && uploadResponse.data) {
+            uploadedImageUrls.push(uploadResponse.data);
+            console.log(`Image ${i + 1} uploaded successfully:`, uploadResponse.data);
+          } else {
+            throw new Error('Upload response invalid');
+          }
+        } catch (error) {
+          console.error(`Failed to upload image ${i + 1}:`, error);
+          this.toastService.error(`Không thể tải ảnh "${file.name}". Tiếp tục với các ảnh khác.`);
+        }
+      }
+      
+      console.log(`Successfully uploaded ${uploadedImageUrls.length}/${this.selectedImages.length} images`);
+      
+      if (uploadedImageUrls.length > 0) {
+        console.log('Images uploaded successfully. Plant update completed with new images.');
+        this.toastService.success(`Cập nhật cây thành công! Đã tải lên ${uploadedImageUrls.length} ảnh mới.`);
+      } else {
+        console.log('Plant updated successfully but no images were uploaded.');
+        this.toastService.success('Cập nhật thông tin cây thành công!');
+      }
+      
+      // Handle success (clear form and navigate)
+      this.handleUpdateSuccess(updateResponse);
+      
+    } catch (error) {
+      console.error('Error in upload process:', error);
+      this.isSubmitting = false;
+      this.handleUpdateError(error);
+    }
+  }
+
+  private updatePlantInfo(updateData: UpdatePlantRequest): void {
     this.myGardenService.updateUserPlant(updateData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.isSubmitting = false;
-          
-          if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
-            this.toastService.success('Cập nhật thông tin cây thành công!');
-            
-            // Navigate back to my garden after successful update
-            setTimeout(() => {
-              this.router.navigate(['/user/my-garden']);
-            }, 1000);
-          } else {
-            this.errorMessage = 'Không thể cập nhật thông tin cây';
-            this.toastService.error('Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.');
-          }
+          this.handleUpdateSuccess(response);
         },
         error: (error) => {
           this.isSubmitting = false;
           this.handleUpdateError(error);
         }
       });
+  }
+
+  private handleUpdateSuccess(response: any): void {
+    this.isSubmitting = false;
+    
+    if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
+      // Clear selected images after successful upload
+      this.clearImagePreviews();
+      this.selectedImages = [];
+      
+      // Reset file input
+      const fileInput = document.getElementById('update-images') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+      this.toastService.success('Cập nhật thông tin cây thành công!');
+      
+      // Navigate back to my garden after successful update
+      setTimeout(() => {
+        this.router.navigate(['/user/my-garden']);
+      }, 1000);
+    } else {
+      this.errorMessage = 'Không thể cập nhật thông tin cây';
+      this.toastService.error('Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.');
+    }
   }
 
   private handleUpdateError(error: any): void {

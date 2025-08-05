@@ -3,7 +3,8 @@ import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ChatStompService, ChatMessage } from './chat-stomp.service';
 import { AuthService } from '../../auth/auth.service';
 import { trackByMessageId } from '../../shared/performance';
@@ -27,6 +28,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private wsSub?: Subscription;
   private wsErrSub?: Subscription;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private http: HttpClient,
@@ -68,8 +70,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     // Initialize chat on both environments
     console.log('✅ Initializing chat service');
     this.fetchHistory();
+    
+    // Connect with authentication check
     this.ws.connect().catch(err => {
-      this.error = 'Không thể kết nối WebSocket: ' + err;
+      console.error('WebSocket connection failed:', err);
+      this.error = 'Không thể kết nối chat: ' + (err.message || err);
       this.cdr.markForCheck();
     });
     
@@ -291,5 +296,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.wsSub?.unsubscribe();
     this.wsErrSub?.unsubscribe();
     this.ws.disconnect();
+    
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
