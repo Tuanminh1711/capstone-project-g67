@@ -3,6 +3,7 @@ import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { UrlService } from '../../shared/url.service';
 
 export interface ChatMessage {
   senderId: number;
@@ -19,30 +20,26 @@ export class ChatStompService {
   private errorSubject = new Subject<string>();
   private connected = false;
 
-  constructor(private zone: NgZone) {
+  constructor(private zone: NgZone, private urlService: UrlService) {
     this.initializeConnection();
   }
 
-  private initializeConnection(): void {
-    // Double check environment - both config and runtime
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-    
-    if (isProduction) {
-      // Production: WebSocket not configured yet, show warning
-      console.warn('🚫 WebSocket chat không khả dụng trên production server. Đang sử dụng chế độ offline.');
-      console.log('Environment check:', { 
-        configProduction: environment.production, 
-        hostname: window.location.hostname,
-        isProduction 
-      });
-      this.errorSubject.next('Chat tạm thời không khả dụng trên server production.');
-      return; // Don't initialize WebSocket
-    }
+  private getWebSocketUrl(): string {
+    return this.urlService.getWebSocketUrl();
+  }
 
-    // Development only: Initialize WebSocket
-    console.log('Initializing WebSocket for development environment');
+  private initializeConnection(): void {
+    // Get WebSocket URL based on environment
+    const websocketUrl = this.getWebSocketUrl();
+    
+    console.log('Initializing WebSocket connection:', { 
+      configProduction: environment.production, 
+      hostname: window.location.hostname,
+      websocketUrl
+    });
+
     this.client = new Client({
-      webSocketFactory: () => new SockJS('/ws'),
+      webSocketFactory: () => new SockJS(websocketUrl),
       reconnectDelay: 5000,
       debug: (str) => console.log('STOMP:', str)
     });
@@ -90,14 +87,6 @@ export class ChatStompService {
   }
 
   sendMessage(message: ChatMessage) {
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-    
-    if (isProduction) {
-      console.warn('Không thể gửi tin nhắn trên production');
-      this.errorSubject.next('Chat không khả dụng trên production server');
-      return Promise.reject('Chat not available');
-    }
-    
     if (this.connected && this.client) {
       this.client.publish({
         destination: '/app/chat.sendMessage',
@@ -106,12 +95,12 @@ export class ChatStompService {
       return Promise.resolve();
     }
     
+    this.errorSubject.next('WebSocket chưa kết nối');
     return Promise.reject('WebSocket not connected');
   }
 
   isConnected(): boolean {
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-    return this.connected && !isProduction;
+    return this.connected;
   }
 
   onMessage(): Observable<ChatMessage> {

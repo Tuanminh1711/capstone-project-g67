@@ -8,6 +8,7 @@ import { ChatStompService, ChatMessage } from './chat-stomp.service';
 import { AuthService } from '../../auth/auth.service';
 import { trackByMessageId } from '../../shared/performance';
 import { environment } from '../../../environments/environment';
+import { UrlService } from '../../shared/url.service';
 
 @Component({
   selector: 'app-vip-chat',
@@ -32,19 +33,18 @@ export class ChatComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ws: ChatStompService,
     private zone: NgZone,
-    private authService: AuthService
+    private authService: AuthService,
+    private urlService: UrlService
   ) {}
 
   ngOnInit(): void {
-    // Enhanced runtime environment check
+    // Environment check for debugging only
     const isProductionDomain = window.location.hostname.includes('plantcare.id.vn');
-    const isProduction = environment.production || isProductionDomain;
     
     console.log('Chat component environment check:', { 
       configProduction: environment.production, 
       hostname: window.location.hostname,
       isProductionDomain,
-      isProduction,
       buildMode: environment.production ? 'production' : 'development',
       deploymentMode: isProductionDomain ? 'production-domain' : 'development-domain'
     });
@@ -65,44 +65,28 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.warn('⚠️ No current user ID found! User might not be logged in properly.');
     }
     
-    // Check if production and show warning
-    if (isProduction) {
-      const reason = environment.production ? 'Build configuration' : 'Production domain detected';
-      this.error = `⚠️ Chat hiện tại chỉ khả dụng ở môi trường development. (${reason})`;
-      console.warn('🚫 Chat disabled:', reason);
+    // Initialize chat on both environments
+    console.log('✅ Initializing chat service');
+    this.fetchHistory();
+    this.ws.connect().catch(err => {
+      this.error = 'Không thể kết nối WebSocket: ' + err;
       this.cdr.markForCheck();
-    }
+    });
     
-    // Thêm dummy data để test layout
-    this.addDummyMessages();
+    this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
+      this.zone.run(() => {
+        this.messages.push(msg);
+        this.cdr.markForCheck();
+        this.scrollToBottom();
+      });
+    });
     
-    // Only try to connect in development
-    if (!isProduction) {
-      console.log('✅ Initializing chat in development mode');
-      this.fetchHistory();
-      this.ws.connect().catch(err => {
-        this.error = 'Không thể kết nối WebSocket: ' + err;
+    this.wsErrSub = this.ws.onError().subscribe((err: string) => {
+      this.zone.run(() => {
+        this.error = err;
         this.cdr.markForCheck();
       });
-      
-      this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
-        this.zone.run(() => {
-          this.messages.push(msg);
-          this.cdr.markForCheck();
-          this.scrollToBottom();
-        });
-      });
-      
-      
-      this.wsErrSub = this.ws.onError().subscribe((err: string) => {
-        this.zone.run(() => {
-          this.error = err;
-          this.cdr.markForCheck();
-        });
-      });
-    } else {
-      console.log('🚫 Chat disabled on production environment');
-    }
+    });
   }
 
   // Utility methods for template
@@ -235,17 +219,13 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   fetchHistory() {
-    // Don't fetch on production
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-    if (isProduction) {
-      console.log('Skipping fetchHistory on production');
-      return;
-    }
-
     this.loading = true;
     this.error = '';
-    // Gọi đúng endpoint không có /api nếu backend không có prefix /api
-    this.http.get<ChatMessage[]>('/chat/history').subscribe({
+    
+    // Use UrlService to get correct endpoint
+    const chatHistoryUrl = this.urlService.getApiUrl('chat/history');
+    
+    this.http.get<ChatMessage[]>(chatHistoryUrl).subscribe({
       next: (data: any) => {
         const messages = Array.isArray(data) ? data : (data?.data || []);
         
@@ -265,14 +245,6 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   sendMessage() {
     if (!this.newMessage.trim()) return;
-    
-    // Check if production (runtime)
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-    if (isProduction) {
-      this.error = 'Tính năng chat chưa khả dụng trên production server.';
-      this.cdr.markForCheck();
-      return;
-    }
     
     // Lấy userId và role từ AuthService
     const userId = this.authService.getCurrentUserId();
