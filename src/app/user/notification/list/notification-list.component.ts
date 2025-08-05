@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -34,13 +34,22 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     console.log('NotificationListComponent initialized, loading notifications...');
     // Load notifications ngay khi component khởi tạo
     this.loadNotifications();
+    
+    // Nếu sau 1 giây vẫn chưa có dữ liệu và không loading, thử lại
+    setTimeout(() => {
+      if (!this.isLoading && this.notifications.length === 0 && !this.error) {
+        console.log('Retrying to load notifications...');
+        this.loadNotifications();
+      }
+    }, 1000);
   }
 
   ngOnDestroy(): void {
@@ -52,6 +61,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    * Load danh sách notification
    */
   loadNotifications(page: number = 0): void {
+    console.log('Loading notifications for page:', page);
     this.isLoading = true;
     this.error = null;
     
@@ -70,7 +80,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
           // Tắt loading state
           this.isLoading = false;
           
-          console.log(`Loaded ${this.notifications.length} notifications`);
+          console.log(`Successfully loaded ${this.notifications.length} notifications`);
+          
+          // Trigger change detection để đảm bảo UI cập nhật
+          this.cdr.detectChanges();
         },
         error: (error) => {
           console.error('Error loading notifications:', error);
@@ -83,6 +96,8 @@ export class NotificationListComponent implements OnInit, OnDestroy {
           
           if (error.message?.includes('not authenticated')) {
             this.error = 'Bạn cần đăng nhập để xem thông báo.';
+          } else if (error.status === 401) {
+            this.error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
           } else {
             this.error = 'Không thể tải danh sách thông báo. Vui lòng thử lại.';
           }
@@ -95,18 +110,28 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    * Đánh dấu notification đã đọc
    */
   markAsRead(notification: Notification): void {
-    if (notification.isRead) return;
+    if (notification.isRead) {
+      console.log('Notification already read:', notification.id);
+      return;
+    }
 
+    console.log('Marking notification as read:', notification.id);
+    
+    // Cập nhật UI ngay lập tức để tránh lag
+    const originalState = notification.isRead;
+    notification.isRead = true;
+    
     this.notificationService.markAsRead(notification.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Cập nhật local state ngay lập tức
-          notification.isRead = true;
-          console.log('Marked notification as read:', notification.id);
+          console.log('Successfully marked notification as read:', notification.id);
+          // Đã cập nhật UI rồi, không cần làm gì thêm
         },
         error: (error) => {
           console.error('Error marking notification as read:', error);
+          // Revert lại trạng thái nếu có lỗi
+          notification.isRead = originalState;
         }
       });
   }
@@ -115,16 +140,35 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    * Đánh dấu tất cả đã đọc
    */
   markAllAsRead(): void {
+    const unreadNotifications = this.notifications.filter(n => !n.isRead);
+    
+    if (unreadNotifications.length === 0) {
+      console.log('No unread notifications to mark');
+      return;
+    }
+    
+    console.log('Marking all notifications as read:', unreadNotifications.length);
+    
+    // Cập nhật UI ngay lập tức
+    const originalStates = unreadNotifications.map(n => ({ id: n.id, isRead: n.isRead }));
+    unreadNotifications.forEach(notification => notification.isRead = true);
+    
     this.notificationService.markAllAsRead()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Cập nhật local state ngay lập tức
-          this.notifications.forEach(notification => notification.isRead = true);
-          console.log('Marked all notifications as read');
+          console.log('Successfully marked all notifications as read');
+          // UI đã được cập nhật rồi
         },
         error: (error) => {
           console.error('Error marking all notifications as read:', error);
+          // Revert lại trạng thái nếu có lỗi
+          originalStates.forEach(state => {
+            const notification = this.notifications.find(n => n.id === state.id);
+            if (notification) {
+              notification.isRead = state.isRead;
+            }
+          });
         }
       });
   }

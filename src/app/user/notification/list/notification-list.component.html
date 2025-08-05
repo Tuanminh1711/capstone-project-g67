@@ -58,14 +58,13 @@
         *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
         class="notification-item"
         [class.unread]="!notification.isRead"
-        [class]="getNotificationClass(notification.type)"
-        (click)="markAsRead(notification)">
+        [class]="getNotificationClass(notification.type)">
         
         <div class="notification-icon">
           <i [class]="getNotificationIcon(notification.type)"></i>
         </div>
         
-        <div class="notification-content">
+        <div class="notification-content" (click)="markAsRead(notification)">
           <div class="notification-header-item">
             <h4 class="notification-title">{{ notification.title }}</h4>
             <div class="notification-meta">

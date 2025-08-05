@@ -200,6 +200,12 @@
         border-radius: 8px;
         color: #4e7a3a;
         line-height: 1.5;
+        
+        &.error {
+          background: #ffe6e6;
+          border-left: 4px solid #d32f2f;
+          color: #c62828;
+        }
       }
     }
   }
@@ -442,5 +448,151 @@
       width: 120px;
       height: 120px;
     }
+  }
+}
+
+/* Beautiful login prompt styling */
+.login-prompt-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 20px;
+}
+
+.login-prompt-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 480px;
+  width: 100%;
+  padding: 40px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.login-prompt-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  border-radius: 50%;
+  color: white;
+  margin: 0 auto 24px;
+}
+
+.login-prompt-content {
+  margin-bottom: 32px;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 12px;
+  }
+
+  p {
+    font-size: 16px;
+    color: #718096;
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+}
+
+.login-prompt-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  &:hover {
+    background: linear-gradient(135deg, #3182ce, #2c5aa0);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(65, 153, 225, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.login-prompt-features {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+  text-align: left;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #4a5568;
+  font-size: 14px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  svg {
+    color: #38a169;
+    flex-shrink: 0;
+  }
+
+  span {
+    line-height: 1.4;
+  }
+}
+
+/* Responsive design for login prompt */
+@media (max-width: 768px) {
+  .login-prompt-container {
+    min-height: 50vh;
+    padding: 16px;
+  }
+
+  .login-prompt-card {
+    padding: 24px;
+  }
+
+  .login-prompt-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+
+    svg {
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  .login-prompt-content {
+    h2 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .login-prompt-button {
+    padding: 12px 24px;
+    font-size: 14px;
   }
 }

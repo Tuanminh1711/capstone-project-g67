@@ -52,6 +52,10 @@ export class AdminSupportTicketsService {
     return this.http.put(`/api/admin/support/tickets/${ticketId}/status`, { status });
   }
 
+  reopenTicket(ticketId: number) {
+    return this.changeStatus(ticketId, 'OPEN');
+  }
+
   responseTicket(ticketId: number, content: string) {
     return this.http.post(`/api/admin/support/tickets/${ticketId}/responses`, { content });
   }

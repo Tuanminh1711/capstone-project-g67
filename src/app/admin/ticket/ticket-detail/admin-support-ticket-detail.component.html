@@ -20,7 +20,12 @@
       <div class="ticket-header-row-2">
         <div class="ticket-person-section">
           <span class="info-label">Người phụ trách:</span>
-          <span class="info-value">{{ ticket?.status === 'OPEN' ? '--' : (ticket?.userName || '--') }}</span>
+          <span class="info-value">{{ getPersonInCharge() }}</span>
+        </div>
+        
+        <div class="ticket-person-section">
+          <span class="info-label">Người báo cáo:</span>
+          <span class="info-value">{{ ticket?.userName || '--' }}</span>
         </div>
         
         <div class="ticket-time-section">
@@ -69,6 +74,26 @@
           title="Gửi phản hồi">
           <i class="fas fa-reply"></i>
           <span>Phản hồi</span>
+        </button>
+        
+        <!-- Nút "Đóng ticket" -->
+        <button 
+          class="header-action-btn close-btn"
+          *ngIf="canCloseTicket()"
+          (click)="onCloseTicket()"
+          title="Đóng phiếu hỗ trợ">
+          <i class="fas fa-times-circle"></i>
+          <span>Đóng ticket</span>
+        </button>
+        
+        <!-- Nút "Mở lại ticket" -->
+        <button 
+          class="header-action-btn reopen-btn"
+          *ngIf="canReopenTicket()"
+          (click)="onReopenTicket()"
+          title="Mở lại phiếu hỗ trợ">
+          <i class="fas fa-redo"></i>
+          <span>Mở lại</span>
         </button>
       </div>
     </div>

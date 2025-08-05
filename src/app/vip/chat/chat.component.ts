@@ -228,7 +228,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.error = '';
     
     // Use UrlService to get correct endpoint
-    const chatHistoryUrl = this.urlService.getApiUrl('chat/history');
+    const chatHistoryUrl = this.urlService.getApiUrl('api/chat/history');
     
     this.http.get<ChatMessage[]>(chatHistoryUrl).subscribe({
       next: (data: any) => {

@@ -91,26 +91,26 @@
   border-radius: 18px;
   font-size: 1.05rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #e8f5e9 0%, #c8e6c9 100%);
-  color: #43a047;
   text-transform: uppercase;
-  box-shadow: 0 1px 4px rgba(67, 160, 71, 0.08);
-  border: 1px solid #c8e6c9;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
-.status-label.open {
-  background: linear-gradient(90deg, #e8f5e9 0%, #c8e6c9 100%);
+
+.status-open {
   color: #43a047;
-  border: 1px solid #c8e6c9;
 }
-.status-label.resolved {
-  background: linear-gradient(90deg, #f6fcf7 0%, #c8e6c9 100%);
-  color: #388e3c;
-  border: 1px solid #81c784;
+
+.status-claimed {
+  color: #1976d2;
 }
-.status-label.closed {
-  background: linear-gradient(90deg, #fffde7 0%, #ffe0b2 100%);
+
+.status-in-progress {
+  color: #f57c00;
+}
+
+.status-closed {
   color: #d32f2f;
-  border: 1px solid #ffe0b2;
 }
 
 /* Action Buttons Container */
@@ -122,11 +122,15 @@
 }
 
 /* Simple Action Buttons - giống style trang báo cáo */
-.claim-btn, .release-btn {
+.claim-btn, .release-btn, .reopen-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 8px 16px;
+  min-width: 110px; /* Đặt chiều rộng tối thiểu cố định */
+  width: 110px; /* Đặt chiều rộng cố định */
+  height: 36px; /* Đặt chiều cao cố định */
   border: 1px solid;
   border-radius: 6px;
   font-size: 0.875rem;
@@ -134,9 +138,17 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  text-align: center;
   
   i {
     font-size: 0.9rem;
+    flex-shrink: 0; /* Icon không bị co lại */
+  }
+  
+  span {
+    flex-shrink: 0; /* Text không bị co lại */
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -168,14 +180,35 @@
   box-shadow: 0 2px 6px rgba(253, 126, 20, 0.25);
 }
 
+/* Reopen Button - Green theme */
+.reopen-btn {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  color: #ffffff;
+  border-color: #28a745;
+}
+
+.reopen-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+}
+
 /* Responsive styles for simple buttons */
 @media (max-width: 768px) {
-  .claim-btn, .release-btn {
+  .claim-btn, .release-btn, .reopen-btn {
     padding: 6px 12px;
     font-size: 0.8rem;
+    min-width: 90px; /* Giảm kích thước trên mobile nhưng vẫn đồng đều */
+    width: 90px;
+    height: 32px;
     
     i {
       font-size: 0.8rem;
+    }
+    
+    span {
+      font-size: 0.75rem;
     }
   }
 }

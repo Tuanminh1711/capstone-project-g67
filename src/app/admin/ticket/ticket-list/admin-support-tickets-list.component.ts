@@ -124,4 +124,54 @@ export class AdminSupportTicketsListComponent implements OnInit {
       minute: '2-digit',
     });
   }
+
+  // Check if ticket can be reopened (only when CLOSED)
+  canReopenTicket(ticket: AdminSupportTicket): boolean {
+    return ticket.status === 'CLOSED';
+  }
+
+  // Check if ticket can be claimed (only when OPEN)
+  canClaimTicket(ticket: AdminSupportTicket): boolean {
+    return ticket.status === 'OPEN';
+  }
+
+  // Get status text with proper Vietnamese translation
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'OPEN': return 'Mở';
+      case 'CLAIMED': return 'Đã nhận';
+      case 'IN_PROGRESS': return 'Đang xử lý';
+      case 'CLOSED': return 'Đã đóng';
+      default: return status;
+    }
+  }
+
+  // Get status CSS class
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'OPEN': return 'status-open';
+      case 'CLAIMED': return 'status-claimed';
+      case 'IN_PROGRESS': return 'status-in-progress';
+      case 'CLOSED': return 'status-closed';
+      default: return '';
+    }
+  }
+
+  // Reopen ticket action
+  onReopenTicket(ticket: AdminSupportTicket): void {
+    if (!confirm(`Bạn có chắc chắn muốn mở lại ticket #${ticket.ticketId} không?`)) {
+      return;
+    }
+
+    this.ticketsService.reopenTicket(ticket.ticketId).subscribe({
+      next: () => {
+        this.toast.success('Đã mở lại ticket thành công!');
+        this.loadTickets(this.page); // Reload current page
+      },
+      error: (error) => {
+        console.error('Error reopening ticket:', error);
+        this.toast.error('Có lỗi xảy ra khi mở lại ticket');
+      }
+    });
+  }
 }

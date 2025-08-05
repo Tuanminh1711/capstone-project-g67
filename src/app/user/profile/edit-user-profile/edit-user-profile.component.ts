@@ -32,6 +32,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
   showCropper = false;
   imageChangedEvent: any = '';
   croppedImage: string | null = null;
+  showAvatarFormatError = false; // Biến để hiển thị lỗi format
   @ViewChild('imageCropper') imageCropper: any;
 
   constructor(
@@ -107,26 +108,34 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
 
   onAvatarChange(event: Event) {
     const input = event.target as HTMLInputElement;
+    this.showAvatarFormatError = false; // Reset lỗi format
+    
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      
+      // Kiểm tra kích thước
       if (file.size > 5 * 1024 * 1024) {
         this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
         this.selectedAvatarFile = null;
+        this.showAvatarFormatError = true;
         this.cdr.detectChanges();
         return;
       }
+      
+      // Kiểm tra định dạng
       if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
         this.toastService.error('Định dạng file không hỗ trợ. Vui lòng chọn file JPG, PNG hoặc GIF.');
         this.selectedAvatarFile = null;
+        this.showAvatarFormatError = true;
         this.cdr.detectChanges();
         return;
       }
-      // Truyền lại event gốc cho imageChangedEvent (chuẩn ngx-image-cropper)
+      
+      // File hợp lệ - hiển thị cropper
       this.imageChangedEvent = event;
       this.showCropper = true;
       this.croppedImage = null;
       this.selectedAvatarFile = null;
-      // Không reset avatarPreview ở đây, để giữ preview cho cropper
       this.cdr.detectChanges();
     }
   }
@@ -183,6 +192,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
     this.croppedImage = null;
     this.avatarPreview = this.user.avatar || null;
     this.selectedAvatarFile = null;
+    this.showAvatarFormatError = false; // Reset lỗi format khi hủy
     this.cdr.detectChanges();
   }
 

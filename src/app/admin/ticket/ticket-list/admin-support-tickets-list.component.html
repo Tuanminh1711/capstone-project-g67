@@ -26,16 +26,16 @@
           <td>{{ ticket.description }}</td>
           <td>{{ ticket.userName }}</td>
           <td>
-            <span class="status-label status-{{ ticket.status | lowercase }}">
-              {{ ticket.status }}
+            <span class="status-label" [class]="getStatusClass(ticket.status)">
+              {{ getStatusText(ticket.status) }}
             </span>
           </td>
           <td>{{ formatDate(ticket.createdAt) }}</td>
           <td>{{ ticket.responseCount }}</td>
           <td>
             <div class="action-buttons" (click)="$event.stopPropagation()">
-              <!-- Nút Nhận phiếu hỗ trợ - style đơn giản -->
-              <button *ngIf="ticket.status !== 'CLAIMED'" 
+              <!-- Nút Nhận phiếu hỗ trợ - chỉ hiện khi OPEN -->
+              <button *ngIf="canClaimTicket(ticket)" 
                       class="claim-btn"
                       (click)="openClaimDialog(ticket); $event.stopPropagation()"
                       title="Nhận phiếu hỗ trợ để xử lý">
@@ -43,13 +43,22 @@
                 <span>Nhận xử lý</span>
               </button>
               
-              <!-- Nút Trả lại phiếu hỗ trợ - style đơn giản -->
-              <button *ngIf="ticket.status === 'CLAIMED'" 
+              <!-- Nút Trả lại phiếu hỗ trợ - hiện khi CLAIMED hoặc IN_PROGRESS -->
+              <button *ngIf="ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'" 
                       class="release-btn"
                       (click)="openReleaseDialog(ticket); $event.stopPropagation()"
                       title="Trả lại phiếu hỗ trợ cho admin khác xử lý">
                 <i class="fas fa-undo-alt"></i>
                 <span>Trả lại</span>
+              </button>
+              
+              <!-- Nút Mở lại phiếu hỗ trợ - chỉ hiện khi CLOSED -->
+              <button *ngIf="canReopenTicket(ticket)" 
+                      class="reopen-btn"
+                      (click)="onReopenTicket(ticket); $event.stopPropagation()"
+                      title="Mở lại phiếu hỗ trợ">
+                <i class="fas fa-redo"></i>
+                <span>Mở lại</span>
               </button>
             </div>
           </td>

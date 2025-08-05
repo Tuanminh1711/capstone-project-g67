@@ -168,6 +168,18 @@ export class AiPlantComponent implements OnInit {
     formData.append('image', this.selectedFile);
     formData.append('language', this.language);
     formData.append('maxResults', this.maxResults.toString());
+    
+    // Add userId from auth service - convert to string for FormData
+    const userId = this.authService.getCurrentUserId();
+    if (userId) {
+      formData.append('userId', userId.toString());
+      console.log('Adding userId to FormData:', userId);
+    } else {
+      console.warn('No userId found for AI plant identification');
+      this.toastService.show('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+      this.isLoading = false;
+      return;
+    }
 
     this.http.post<any>(`${this.configService.apiUrl}/ai/identify-plant`, formData, { 
       headers: this.getAuthHeadersForFormData() 

@@ -12,6 +12,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
+import { CookieService } from '../../../auth/cookie.service';
 
 @Component({
   selector: 'app-admin-support-ticket-detail',
@@ -30,6 +31,7 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
       case 'CREATE': return 'Tạo phiếu';
       case 'RESPONSE': return 'Phản hồi';
       case 'CLOSE': return 'Đóng phiếu';
+      case 'REOPEN': return 'Mở lại';
       default: return action;
     }
   }
@@ -56,6 +58,7 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
+  private cookieService = inject(CookieService);
 
   constructor(
     private route: ActivatedRoute,
@@ -152,9 +155,8 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
 
   // Check if user can claim a ticket (for unclaimed tickets)
   canClaimTicket(): boolean {
-    // Can claim when ticket is PENDING, OPEN, NEW, or REOPEN (chưa được ai nhận)
-    const unclaimedStatuses = ['PENDING', 'OPEN', 'NEW', 'REOPEN', 'CREATED'];
-    return unclaimedStatuses.includes(this.ticket?.status || '');
+    // Can only claim when ticket is OPEN
+    return this.ticket?.status === 'OPEN';
   }
 
   // Check if user can handle a ticket (for claimed tickets)
@@ -165,15 +167,40 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
 
   // Check if user can release a ticket
   canReleaseTicket(): boolean {
-    // Can release when ticket is CLAIMED (đã nhận nhưng chưa xử lý)
-    return this.ticket?.status === 'CLAIMED';
+    // Can release when ticket is CLAIMED or IN_PROGRESS
+    return this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS';
   }
 
   // Check if user can respond to a ticket
   canRespondToTicket(): boolean {
-    // Can respond when ticket is CLAIMED or HANDLED (not for OPEN status)
-    return this.ticket?.status === 'CLAIMED' || 
-           this.ticket?.status === 'HANDLED';
+    // Can respond when ticket is CLAIMED or IN_PROGRESS
+    return this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS';
+  }
+
+  // Check if user can close a ticket
+  canCloseTicket(): boolean {
+    // Can close when ticket is IN_PROGRESS
+    return this.ticket?.status === 'IN_PROGRESS';
+  }
+
+  // Check if user can reopen a ticket
+  canReopenTicket(): boolean {
+    // Can reopen when ticket is CLOSED
+    return this.ticket?.status === 'CLOSED';
+  }
+
+  // Get person in charge based on ticket status
+  getPersonInCharge(): string {
+    if (!this.ticket) return '--';
+    
+    // Priority: handledByUserName > claimedByUserName > no one
+    if (this.ticket.handledByUserName) {
+      return this.ticket.handledByUserName;
+    } else if (this.ticket.claimedByUserName) {
+      return this.ticket.claimedByUserName;
+    } else {
+      return '--';
+    }
   }
 
   // Claim ticket action (for unclaimed tickets)
@@ -264,5 +291,71 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         }, 0);
       }
     });
+  }
+
+  // Close ticket action
+  onCloseTicket(): void {
+    if (!this.ticket) return;
+
+    if (!confirm('Bạn có chắc chắn muốn đóng phiếu hỗ trợ này không?')) {
+      return;
+    }
+
+    this.loading = true;
+    this.http.put(`${environment.apiUrl}/admin/support/tickets/${this.ticket.ticketId}/status`, 
+      { status: 'CLOSED' },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      })
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.toastService.success('Đã đóng phiếu hỗ trợ thành công!');
+          this.loadTicketDetail(); // Reload to get updated status
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Error closing ticket:', error);
+          this.toastService.error('Có lỗi xảy ra khi đóng phiếu hỗ trợ');
+        }
+      });
+  }
+
+  // Reopen ticket action
+  onReopenTicket(): void {
+    if (!this.ticket) return;
+
+    if (!confirm('Bạn có chắc chắn muốn mở lại phiếu hỗ trợ này không?')) {
+      return;
+    }
+
+    this.loading = true;
+    this.http.put(`${environment.apiUrl}/admin/support/tickets/${this.ticket.ticketId}/status`, 
+      { status: 'OPEN' },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      })
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.toastService.success('Đã mở lại phiếu hỗ trợ thành công!');
+          this.loadTicketDetail(); // Reload to get updated status
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Error reopening ticket:', error);
+          this.toastService.error('Có lỗi xảy ra khi mở lại phiếu hỗ trợ');
+        }
+      });
+  }
+
+  private getAuthToken(): string {
+    return this.cookieService.getCookie('auth_token') || '';
   }
 }

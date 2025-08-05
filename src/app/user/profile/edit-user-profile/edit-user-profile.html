@@ -9,21 +9,47 @@
     </div>
 
     <div *ngIf="!loading; else loadingTpl">
-      <!-- Show error message if load failed -->
-      <div *ngIf="saveError && !user.id" class="error-message" style="margin: 20px 0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M13,13H11V7H13M11,15H13V17H11M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
-        </svg>
-        {{ saveError }}
-        
-        <!-- Thêm button đăng nhập nếu chưa đăng nhập -->
-        <div style="margin-top: 15px;" *ngIf="saveError.includes('đăng nhập')">
-          <button type="button" class="login-button" (click)="showLoginDialog()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10,17V14H3V10H10V7L15,12L10,17M10,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H10A2,2 0 0,1 8,20V18H10V20H19V4H10V6H8V4A2,2 0 0,1 10,2Z"/>
+      <!-- Show beautiful login prompt if not authenticated -->
+      <div *ngIf="saveError && !user.id" class="login-prompt-container">
+        <div class="login-prompt-card">
+          <div class="login-prompt-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
             </svg>
-            Đăng nhập ngay
-          </button>
+          </div>
+          
+          <div class="login-prompt-content">
+            <h2>Đăng nhập để tiếp tục</h2>
+            <p>Bạn cần đăng nhập để có thể chỉnh sửa thông tin hồ sơ cá nhân</p>
+            
+            <button type="button" class="login-prompt-button" (click)="showLoginDialog()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10,17V14H3V10H10V7L15,12L10,17M10,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H10A2,2 0 0,1 8,20V18H10V20H19V4H10V6H8V4A2,2 0 0,1 10,2Z"/>
+              </svg>
+              Đăng nhập ngay
+            </button>
+          </div>
+          
+          <div class="login-prompt-features">
+            <div class="feature-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+              </svg>
+              <span>Cập nhật thông tin cá nhân</span>
+            </div>
+            <div class="feature-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+              </svg>
+              <span>Thay đổi ảnh đại diện</span>
+            </div>
+            <div class="feature-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+              </svg>
+              <span>Quản lý bảo mật tài khoản</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -91,7 +117,7 @@
               </div>
             </div>
             <div style="text-align:center; margin-top: 12px;">
-              @if (avatarPreview && !avatarUploading && !showCropper) {
+              @if (selectedAvatarFile && !avatarUploading && !showCropper) {
                 <button type="button" class="update-avatar-btn highlight" (click)="uploadAvatar()">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px;vertical-align:middle;">
                     <path d="M5,20H19A2,2 0 0,0 21,18V8A2,2 0 0,0 19,6H15.82C15.4,4.84 14.3,4 13,4H11C9.7,4 8.6,4.84 8.18,6H5A2,2 0 0,0 3,8V18A2,2 0 0,0 5,20M12,7A2,2 0 1,1 10,9A2,2 0 0,1 12,7M5,8H19V18H5Z" />
@@ -105,14 +131,16 @@
                 </button>
               }
             </div>
-            <div class="avatar-info">
-              <p class="avatar-guidelines">
-                <strong>Hướng dẫn:</strong><br>
-                • Kích thước tối đa: 5MB<br>
-                • Định dạng: JPG, PNG, GIF<br>
-                • Tỷ lệ khuyến nghị: 1:1 (vuông)<br>
-              </p>
-            </div>
+            @if (showAvatarFormatError) {
+              <div class="avatar-info">
+                <p class="avatar-guidelines error">
+                  <strong>❌ Lỗi định dạng:</strong><br>
+                  • Kích thước tối đa: 5MB<br>
+                  • Định dạng hỗ trợ: JPG, PNG, GIF<br>
+                  • Vui lòng chọn lại file phù hợp
+                </p>
+              </div>
+            }
           </div>
         </div>
 
