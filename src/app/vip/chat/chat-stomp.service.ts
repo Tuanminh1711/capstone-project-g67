@@ -65,19 +65,16 @@ export class ChatStompService {
     };
   }
 
-  connect() {
-    const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
-    
-    if (isProduction) {
-      console.warn('WebSocket không khả dụng trên production');
-      return Promise.reject('WebSocket not available in production');
-    }
-    
-    if (!this.connected && this.client) {
-      this.client.activate();
-    }
-    return Promise.resolve();
+  connect(): Promise<void> {
+  const isProduction = environment.production || window.location.hostname.includes('plantcare.id.vn');
+  console.log('[ChatStompService] WebSocket connect - isProduction:', isProduction);
+
+  if (!this.connected && this.client) {
+    this.client.activate();
   }
+  return Promise.resolve();
+}
+
 
   disconnect() {
     if (this.client && this.connected) {
