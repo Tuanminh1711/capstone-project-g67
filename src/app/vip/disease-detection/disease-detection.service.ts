@@ -267,4 +267,16 @@ export class DiseaseDetectionService {
     const date = new Date(timestamp);
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
   }
+
+  /**
+   * Search diseases by description (GET)
+   * @param keyword Description or keyword to search
+   */
+  searchDiseasesByDescription(keyword: string): Observable<PlantDisease[]> {
+    return this.http.get<PlantDisease[]>(`${this.apiUrl}/search`, { params: { keyword } })
+      .pipe(
+        timeout(10000),
+        catchError(this.handleError<PlantDisease[]>('searchDiseasesByDescription'))
+      );
+  }
 }

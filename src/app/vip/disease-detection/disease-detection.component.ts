@@ -1,3 +1,4 @@
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
@@ -12,6 +13,7 @@ import {
 } from './disease-detection.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-disease-detection',
@@ -19,6 +21,7 @@ import { takeUntil } from 'rxjs/operators';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     RouterModule,
     TopNavigatorComponent
   ],
@@ -42,8 +45,11 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   historyTotalElements = 0;
   detectionHistory: DiseaseDetectionResult[] = [];
   
-  // Common diseases
+  // Common diseases & library
   commonDiseases: PlantDisease[] = [];
+  diseaseLibrary: PlantDisease[] = [];
+  symptomSearchDiseases: PlantDisease[] = [];
+  symptomDescription: string = '';
   selectedPlantType = '';
   plantTypes = [
     { value: 'indoor', label: 'Cây trồng trong nhà' },
@@ -54,6 +60,8 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     { value: 'ornamental', label: 'Cây cảnh' }
   ];
   
+  public diseaseSearchText: string = '';
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -90,12 +98,32 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     this.imageForm = this.fb.group({
       plantId: [null, [Validators.required]]
     });
-
+    // Only one field for symptom detection
     this.symptomForm = this.fb.group({
-      plantId: [null, [Validators.required]],
-      symptoms: [[], [this.atLeastOneSymptomValidator]],
       description: ['', [Validators.required, Validators.minLength(10)]]
     });
+  }
+
+    showGuideModal = false;
+  treatmentGuide: any = null;
+  openTreatmentGuide(diseaseName: string) {
+    this.isLoading = true;
+    this.diseaseService.getTreatmentGuide(diseaseName).subscribe({
+      next: (guide) => {
+        this.treatmentGuide = guide;
+        this.showGuideModal = true;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.error = 'Không thể tải hướng dẫn điều trị.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  closeGuideModal() {
+    this.showGuideModal = false;
+    this.treatmentGuide = null;
   }
 
   /**
@@ -108,7 +136,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
     if (tab === 'history' && this.detectionHistory.length === 0) {
       this.loadDetectionHistory();
-    } else if (tab === 'diseases' && this.commonDiseases.length === 0) {
+    } else if (tab === 'diseases' && this.diseaseLibrary.length === 0) {
       this.onPlantTypeChange('indoor');
     }
   }
@@ -200,36 +228,27 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
    * Check if symptom form can be submitted
    */
   canSubmitSymptoms(): boolean {
-    const plantIdValid = this.symptomForm.get('plantId')?.valid;
-    const symptomsValid = this.symptomForm.get('symptoms')?.valid;
     const descriptionValid = this.symptomForm.get('description')?.valid;
-    
-    return !!(plantIdValid && symptomsValid && descriptionValid && !this.isLoading);
+    return !!(descriptionValid && !this.isLoading);
   }
 
   /**
    * Submit symptom analysis
    */
   submitSymptoms(): void {
-    // Mark all fields as touched to show validation errors
     this.symptomForm.markAllAsTouched();
-    
     if (!this.symptomForm.valid) {
-      console.log('Form is invalid:');
-      console.log('Plant ID valid:', this.symptomForm.get('plantId')?.valid);
-      console.log('Plant ID value:', this.symptomForm.get('plantId')?.value);
-      console.log('Symptoms valid:', this.symptomForm.get('symptoms')?.valid);
-      console.log('Symptoms value:', this.symptomForm.get('symptoms')?.value);
-      console.log('Description valid:', this.symptomForm.get('description')?.valid);
-      console.log('Description value:', this.symptomForm.get('description')?.value);
       return;
     }
-
     this.isLoading = true;
     this.error = null;
     this.detectionResult = null;
-
-    this.diseaseService.detectDiseaseFromSymptoms(this.symptomForm.value)
+    // Gửi đúng body cho backend: chỉ gồm description và detectionMethod
+    const body = {
+      description: this.symptomForm.get('description')?.value,
+      detectionMethod: 'SYMPTOMS'
+    };
+    this.diseaseService.detectDiseaseFromSymptoms(body)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -237,21 +256,8 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (err) => {
-          console.warn('Disease detection API error:', err.message || err);
-          
-          // Check if this is a JSON parsing error (status 200 but invalid JSON)
-          const isJsonParsingError = err.message && err.message.includes('Expected') && err.message.includes('JSON');
-          const isServerError = err.status === 500 || err.status === 404;
-          
-          if (isJsonParsingError || isServerError) {
-            console.log('Backend JSON/Server error detected, using mock result as fallback');
-            this.error = null; // Don't show error for better UX
-            this.isLoading = false;
-            this.detectionResult = this.getMockDetectionResult();
-          } else {
-            this.error = 'Không thể phân tích triệu chứng. Vui lòng thử lại sau.';
-            this.isLoading = false;
-          }
+          this.error = 'Không thể phân tích triệu chứng. Vui lòng thử lại sau.';
+          this.isLoading = false;
         }
       });
   }
@@ -309,7 +315,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (diseases) => {
-          this.commonDiseases = diseases;
+          this.diseaseLibrary = diseases;
           this.isLoading = false;
         },
         error: (err) => {
@@ -328,6 +334,31 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
             this.error = 'Không thể tải danh sách bệnh. Vui lòng thử lại sau.';
             this.isLoading = false;
           }
+        }
+      });
+  }
+
+  /**
+   * Tìm kiếm bệnh qua mô tả triệu chứng (AI)
+   */
+  searchDiseasesByDescription(description: string): void {
+    if (!description || description.trim().length < 5) {
+      this.error = 'Vui lòng nhập mô tả triệu chứng.';
+      return;
+    }
+    this.isLoading = true;
+    this.error = null;
+    this.symptomSearchDiseases = [];
+    // Use GET method with ?keyword= for backend
+    this.diseaseService.searchDiseasesByDescription(description.trim())
+      .subscribe({
+        next: (diseases) => {
+          this.symptomSearchDiseases = diseases;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.error = 'Không thể tìm kiếm bệnh. Vui lòng thử lại sau.';
+          this.isLoading = false;
         }
       });
   }

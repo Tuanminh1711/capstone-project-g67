@@ -1,5 +1,12 @@
 <app-top-navigator></app-top-navigator>
 <div class="user-plant-detail-container">
+  <style>
+    .user-plant-detail-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+  </style>
   <ng-container *ngIf="loading">
     <div class="loading-bar">
       <div class="loading-spinner"></div>
@@ -13,58 +20,62 @@
     </div>
   </ng-container>
   <ng-container *ngIf="!loading && plant">
-    <div class="plant-header">
-      <h2>{{ plant.nickname || 'Chưa đặt tên' }}</h2>
-      <span class="plant-id">#{{ plant.userPlantId }}</span>
-    </div>
-    
-    <!-- Hiển thị ảnh hoặc placeholder -->
-    <div class="plant-images">
-      <ng-container *ngIf="plant.imageUrls && plant.imageUrls.length > 0; else noImages">
-        <img *ngFor="let img of plant.imageUrls" [src]="img" alt="Ảnh cây" class="plant-img" 
-             (error)="onImageError($event)" />
-      </ng-container>
-      <ng-template #noImages>
-        <div class="no-image-placeholder">
-          <span class="placeholder-icon">🌱</span>
-          <span class="placeholder-text">Chưa có ảnh</span>
-        </div>
-      </ng-template>
-    </div>
-    
-    <div class="plant-info">
-      <div class="info-row"><b>Ngày trồng:</b> <span>{{ plant.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span></div>
-      <div class="info-row"><b>Vị trí:</b> <span>{{ plant.locationInHouse || 'Chưa cập nhật' }}</span></div>
-    </div>
-
-    <!-- Lịch nhắc nhở chăm sóc -->
-    <div class="care-reminders-section">
-      <h3 class="care-reminders-title">🗓️ Lịch nhắc nhở chăm sóc</h3>
-      <ng-container *ngIf="loadingCareReminders">
-        <div class="care-reminders-loading">
-          <div class="loading-spinner"></div>
-          <span>Đang tải lịch nhắc nhở...</span>
-        </div>
-      </ng-container>
-      <ng-container *ngIf="!loadingCareReminders && careRemindersError">
-        <div class="care-reminders-error">{{ careRemindersError }}</div>
-      </ng-container>
-      <ng-container *ngIf="!loadingCareReminders && !careRemindersError && careReminders.length > 0">
-        <div class="care-reminders-list">
-          <div class="care-reminder-card" *ngFor="let reminder of careReminders">
-            <div class="reminder-header">
-              <span class="reminder-type">{{ reminder.careTypeName }}</span>
-              <span class="reminder-status" [class.active]="reminder.enabled">{{ reminder.enabled ? 'Đang bật' : 'Tạm tắt' }}</span>
+    <div class="plant-main-flex">
+      <div class="plant-info-card new-layout">
+        <div class="plant-id">#{{ plant.userPlantId }}</div>
+        <div class="plant-avatar big-square">
+          <ng-container *ngIf="plant.imageUrls && plant.imageUrls.length > 0; else noImages">
+            <img class="plant-main-img big" [src]="plant.imageUrls[0]" alt="Ảnh cây" (error)="onImageError($event)" />
+          </ng-container>
+          <ng-template #noImages>
+            <div class="no-image-placeholder big square">
+              <span class="placeholder-icon">🌱</span>
             </div>
-            <div class="reminder-info">
-              <span class="reminder-next">Lần tới: <b>{{ reminder.nextCareDate ? (reminder.nextCareDate | date:'dd/MM/yyyy') : '---' }}</b></span>
-              <span class="reminder-freq">Tần suất: {{ reminder.frequencyDays ? (reminder.frequencyDays + ' ngày') : '---' }}</span>
-              <span class="reminder-time" *ngIf="reminder.reminderTime">⏰ {{ reminder.reminderTime }}</span>
-            </div>
-            <div class="reminder-custom-message" *ngIf="reminder.customMessage">💬 {{ reminder.customMessage }}</div>
+          </ng-template>
+        </div>
+        <div class="plant-name">{{ plant.nickname || 'Chưa đặt tên' }}</div>
+        <div class="plant-info-details below">
+          <div class="info-row"><i class="fas fa-calendar-alt"></i> <b>Ngày trồng:</b> <span>{{ plant.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span></div>
+          <div class="info-row"><i class="fas fa-map-marker-alt"></i> <b>Vị trí:</b> <span>{{ plant.locationInHouse || 'Chưa cập nhật' }}</span></div>
+        </div>
+      </div>
+      <div class="care-reminders-section modern-reminders no-scroll">
+        <h3 class="care-reminders-title">🗓️ Lịch nhắc nhở chăm sóc</h3>
+        <ng-container *ngIf="loadingCareReminders">
+          <div class="care-reminders-loading">
+            <div class="loading-spinner"></div>
+            <span>Đang tải lịch nhắc nhở...</span>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!loadingCareReminders && careReminders.length > 0">
+          <div class="care-reminders-list grid-layout">
+            <div class="care-reminder-card modern-card" *ngFor="let reminder of careReminders">
+              <div class="reminder-header">
+                <span class="reminder-type">
+                  <ng-container [ngSwitch]="reminder.careTypeId">
+                    <span *ngSwitchCase="1">💧</span>
+                    <span *ngSwitchCase="2">🌱</span>
+                    <span *ngSwitchCase="3">✂️</span>
+                    <span *ngSwitchCase="4">🧴</span>
+                    <span *ngSwitchDefault>🔔</span>
+                  </ng-container>
+                  {{ reminder.careTypeName }}
+                </span>
+                <span class="reminder-status" [class.active]="reminder.enabled">{{ reminder.enabled ? 'Đang bật' : 'Tạm tắt' }}</span>
+              </div>
+              <div class="reminder-info">
+                <span class="reminder-next"><b>{{ reminder.nextCareDate ? (reminder.nextCareDate | date:'dd/MM/yyyy') : '---' }}</b></span>
+                <span class="reminder-freq">Tần suất: {{ reminder.frequencyDays ? (reminder.frequencyDays + ' ngày') : '---' }}</span>
+                <span class="reminder-time" *ngIf="reminder.reminderTime">⏰ {{ reminder.reminderTime }}</span>
+              </div>
+              <div class="reminder-custom-message" *ngIf="reminder.customMessage">💬 {{ reminder.customMessage }}</div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!loadingCareReminders && careReminders.length === 0">
+          <div class="care-reminders-error">Không có lịch nhắc nhở.</div>
+        </ng-container>
+      </div>
     </div>
     
   

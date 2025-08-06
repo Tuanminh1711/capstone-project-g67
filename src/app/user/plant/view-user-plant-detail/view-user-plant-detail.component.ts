@@ -89,7 +89,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
           this.errorMsg = 'Không tìm thấy thông tin cây trong vườn.';
         }
         this.loading = false;
-        // fetchCareReminders will be called after subscribe
+        this.fetchCareReminders();
         return [res];
       })
     );
@@ -144,12 +144,14 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
     const headers = token ? new HttpHeaders({ 'Authorization': `Bearer ${token}` }) : undefined;
     this.http.get<any>(apiUrl, { headers }).subscribe({
       next: (res: any) => {
-        if (res && Array.isArray(res.data)) {
-          this.careReminders = res.data;
-        } else {
-          this.careReminders = [];
-          this.careRemindersError = 'Không có lịch nhắc nhở.';
+        let arr: any[] = [];
+        if (Array.isArray(res)) {
+          arr = res;
+        } else if (res && Array.isArray(res.data)) {
+          arr = res.data;
         }
+        this.careReminders = arr;
+        this.careRemindersError = arr.length === 0 ? 'Không có lịch nhắc nhở.' : '';
         this.loadingCareReminders = false;
         this.cdr.detectChanges();
       },

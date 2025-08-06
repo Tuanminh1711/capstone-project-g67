@@ -1,3 +1,219 @@
+// --- Modern Plant Info & Care Reminders Styles ---
+.plant-main-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: flex-start;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.plant-info-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 32px 44px 28px 44px;
+  min-width: 420px;
+  max-width: 540px;
+  flex: 1 1 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid #e0e0e0;
+}
+.plant-header-flex {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+.plant-avatar img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #b2dfdb;
+  background: #f5f5f5;
+}
+.no-image-placeholder.big {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f5f5f5;
+  font-size: 2.2rem;
+  color: #bdbdbd;
+  border: 2px solid #b2dfdb;
+}
+.plant-header-info h2 {
+  margin: 0 0 2px 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1976d2;
+}
+.plant-header-info .plant-id {
+  font-size: 1.05rem;
+  color: #757575;
+}
+.plant-info-details {
+  margin-top: 10px;
+  width: 100%;
+}
+.plant-info-details .info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+.plant-info-details i {
+  color: #90caf9;
+  font-size: 1.1rem;
+}
+.modern-reminders {
+  flex: 2 1 400px;
+  min-width: 340px;
+  max-width: 700px;
+  background: #f9fafc;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 28px 32px 22px 32px;
+  border: 1px solid #e0e0e0;
+}
+.care-reminders-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1976d2;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+.care-reminders-list.horizontal-scroll {
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #b2dfdb #f9fafc;
+}
+.care-reminder-card.modern-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.07);
+  padding: 18px 22px 14px 22px;
+  min-width: 220px;
+  max-width: 260px;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s;
+  position: relative;
+}
+.care-reminder-card.modern-card:hover {
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.13);
+  border-color: #90caf9;
+}
+.reminder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.reminder-type {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #388e3c;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.reminder-status {
+  font-size: 0.98rem;
+  color: #bdbdbd;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 2px 10px;
+  background: #f5f5f5;
+  transition: color 0.2s, background 0.2s;
+}
+.reminder-status.active {
+  color: #1976d2;
+  background: #e3f2fd;
+}
+.reminder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 1.01rem;
+}
+.reminder-next {
+  color: #1976d2;
+  font-weight: 600;
+}
+.reminder-freq {
+  color: #757575;
+}
+.reminder-time {
+  color: #ffb300;
+  font-size: 0.98rem;
+}
+.reminder-custom-message {
+  margin-top: 4px;
+  color: #43a047;
+  font-size: 0.98rem;
+  background: #e8f5e9;
+  border-radius: 8px;
+  padding: 4px 8px;
+  word-break: break-word;
+}
+.care-reminders-error {
+  color: #b71c1c;
+  font-size: 1.08rem;
+  margin-top: 12px;
+  text-align: center;
+}
+.care-reminders-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.08rem;
+  color: #1976d2;
+  margin-top: 10px;
+}
+.loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #b2dfdb;
+  border-top: 3px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@media (max-width: 1200px) {
+  .plant-info-card {
+    min-width: 320px;
+    max-width: 100%;
+    padding: 24px 18px 18px 18px;
+  }
+}
+@media (max-width: 900px) {
+  .plant-main-flex {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .plant-info-card, .modern-reminders {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+}
 .user-plant-detail-container {
   max-width: 700px;
   margin: 80px auto 32px auto; /* Tăng margin-top để tránh top-nav */
