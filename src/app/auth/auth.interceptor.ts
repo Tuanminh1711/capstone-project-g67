@@ -54,6 +54,17 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       
       if (shouldLog) {
         console.error('API Error:', error);
+        console.log('Interceptor - Error details:');
+        console.log('- Status:', error.status);
+        console.log('- StatusText:', error.statusText);
+        console.log('- URL:', error.url);
+        console.log('- Error object type:', typeof error.error);
+        console.log('- Error object value:', error.error);
+        
+        if (error.error && typeof error.error === 'object') {
+          console.log('- Error object keys:', Object.keys(error.error));
+          console.log('- Error object JSON:', JSON.stringify(error.error, null, 2));
+        }
       }
       
       // Xử lý thông báo lỗi
@@ -70,6 +81,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         errorMessage = error.message;
       }
       
+      console.log('Final error message to throw:', errorMessage);
       return throwError(() => new Error(errorMessage));
     })
   );

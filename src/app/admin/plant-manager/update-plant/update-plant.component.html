@@ -33,21 +33,21 @@
       <div class="form-row">
         <div class="form-group">
           <label for="commonName">Tên thường gọi *</label>
-          <input id="commonName" type="text" [(ngModel)]="updateForm.commonName" name="commonName" required #commonName="ngModel" />
+        <input id="commonName" type="text" [(ngModel)]="updateForm.commonName" name="commonName" required #commonName="ngModel" (ngModelChange)="onFieldChange()" />
         </div>
         <div class="form-group">
           <label for="scientificName">Tên khoa học *</label>
-          <input id="scientificName" type="text" [(ngModel)]="updateForm.scientificName" name="scientificName" required #scientificName="ngModel" />
+        <input id="scientificName" type="text" [(ngModel)]="updateForm.scientificName" name="scientificName" required #scientificName="ngModel" (ngModelChange)="onFieldChange()" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="categoryId">ID Danh mục *</label>
-          <input id="categoryId" type="number" [(ngModel)]="updateForm.categoryId" name="categoryId" required min="1" />
+        <input id="categoryId" type="number" [(ngModel)]="updateForm.categoryId" name="categoryId" required min="1" (ngModelChange)="onFieldChange()" />
         </div>
         <div class="form-group">
           <label for="status">Trạng thái *</label>
-          <select id="status" [(ngModel)]="updateForm.status" name="status" required>
+        <select id="status" [(ngModel)]="updateForm.status" name="status" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
           </select>
         </div>
@@ -55,19 +55,19 @@
       <div class="form-row">
         <div class="form-group">
           <label for="lightRequirement">Yêu cầu ánh sáng *</label>
-          <select id="lightRequirement" [(ngModel)]="updateForm.lightRequirement" name="lightRequirement" required>
+        <select id="lightRequirement" [(ngModel)]="updateForm.lightRequirement" name="lightRequirement" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of lightRequirementOptions" [value]="option.value">{{ option.label }}</option>
           </select>
         </div>
         <div class="form-group">
           <label for="waterRequirement">Yêu cầu nước *</label>
-          <select id="waterRequirement" [(ngModel)]="updateForm.waterRequirement" name="waterRequirement" required>
+        <select id="waterRequirement" [(ngModel)]="updateForm.waterRequirement" name="waterRequirement" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of waterRequirementOptions" [value]="option.value">{{ option.label }}</option>
           </select>
         </div>
         <div class="form-group">
           <label for="careDifficulty">Độ khó chăm sóc *</label>
-          <select id="careDifficulty" [(ngModel)]="updateForm.careDifficulty" name="careDifficulty" required>
+        <select id="careDifficulty" [(ngModel)]="updateForm.careDifficulty" name="careDifficulty" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of careDifficultyOptions" [value]="option.value">{{ option.label }}</option>
           </select>
         </div>
@@ -75,25 +75,25 @@
       <div class="form-row">
         <div class="form-group">
           <label for="suitableLocation">Vị trí phù hợp</label>
-          <input id="suitableLocation" type="text" [(ngModel)]="updateForm.suitableLocation" name="suitableLocation" />
+        <input id="suitableLocation" type="text" [(ngModel)]="updateForm.suitableLocation" name="suitableLocation" (ngModelChange)="onFieldChange()" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group full-width">
           <label for="description">Mô tả về cây</label>
-          <textarea id="description" [(ngModel)]="updateForm.description" name="description" rows="3"></textarea>
+        <textarea id="description" [(ngModel)]="updateForm.description" name="description" rows="3" (ngModelChange)="onFieldChange()"></textarea>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group full-width">
           <label for="careInstructions">Hướng dẫn chăm sóc</label>
-          <textarea id="careInstructions" [(ngModel)]="updateForm.careInstructions" name="careInstructions" rows="3"></textarea>
+        <textarea id="careInstructions" [(ngModel)]="updateForm.careInstructions" name="careInstructions" rows="3" (ngModelChange)="onFieldChange()"></textarea>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group full-width">
           <label for="commonDiseases">Bệnh thường gặp</label>
-          <input id="commonDiseases" type="text" [(ngModel)]="updateForm.commonDiseases" name="commonDiseases" />
+        <input id="commonDiseases" type="text" [(ngModel)]="updateForm.commonDiseases" name="commonDiseases" (ngModelChange)="onFieldChange()" />
         </div>
       </div>
       <div class="form-actions">

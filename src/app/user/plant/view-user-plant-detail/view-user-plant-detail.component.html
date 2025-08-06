@@ -35,7 +35,36 @@
     <div class="plant-info">
       <div class="info-row"><b>Ngày trồng:</b> <span>{{ plant.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span></div>
       <div class="info-row"><b>Vị trí:</b> <span>{{ plant.locationInHouse || 'Chưa cập nhật' }}</span></div>
-      <!-- <div class="info-row"><b>Nhắc nhở:</b> <span [class.enabled]="plant.reminderEnabled">{{ plant.reminderEnabled ? 'Bật' : 'Tắt' }}</span></div> -->
+    </div>
+
+    <!-- Lịch nhắc nhở chăm sóc -->
+    <div class="care-reminders-section">
+      <h3 class="care-reminders-title">🗓️ Lịch nhắc nhở chăm sóc</h3>
+      <ng-container *ngIf="loadingCareReminders">
+        <div class="care-reminders-loading">
+          <div class="loading-spinner"></div>
+          <span>Đang tải lịch nhắc nhở...</span>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!loadingCareReminders && careRemindersError">
+        <div class="care-reminders-error">{{ careRemindersError }}</div>
+      </ng-container>
+      <ng-container *ngIf="!loadingCareReminders && !careRemindersError && careReminders.length > 0">
+        <div class="care-reminders-list">
+          <div class="care-reminder-card" *ngFor="let reminder of careReminders">
+            <div class="reminder-header">
+              <span class="reminder-type">{{ reminder.careTypeName }}</span>
+              <span class="reminder-status" [class.active]="reminder.enabled">{{ reminder.enabled ? 'Đang bật' : 'Tạm tắt' }}</span>
+            </div>
+            <div class="reminder-info">
+              <span class="reminder-next">Lần tới: <b>{{ reminder.nextCareDate ? (reminder.nextCareDate | date:'dd/MM/yyyy') : '---' }}</b></span>
+              <span class="reminder-freq">Tần suất: {{ reminder.frequencyDays ? (reminder.frequencyDays + ' ngày') : '---' }}</span>
+              <span class="reminder-time" *ngIf="reminder.reminderTime">⏰ {{ reminder.reminderTime }}</span>
+            </div>
+            <div class="reminder-custom-message" *ngIf="reminder.customMessage">💬 {{ reminder.customMessage }}</div>
+          </div>
+        </div>
+      </ng-container>
     </div>
     
   

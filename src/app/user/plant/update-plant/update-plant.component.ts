@@ -193,6 +193,27 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  // Clear all selected images
+  clearSelectedImages(): void {
+    // Clean up preview URLs to prevent memory leaks
+    this.selectedImages.forEach(file => {
+      const url = this.imagePreviewUrls.get(file);
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    
+    this.selectedImages = [];
+    this.imagePreviewUrls.clear();
+    console.log('Cleared all selected images');
+  }
+
+  // Get total file size of selected images
+  getTotalFileSize(): string {
+    const totalBytes = this.selectedImages.reduce((total, file) => total + file.size, 0);
+    return this.formatFileSize(totalBytes);
+  }
+
   // Phần còn lại giữ nguyên...
   ngOnInit(): void {
     if (!this.checkAuthenticationSafely()) {
@@ -438,83 +459,151 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
     const formValues = this.updateForm.value;
     
-    // Convert date to the required format
-    const plantingDate = new Date(formValues.plantingDate);
-    plantingDate.setHours(0, 0, 0, 0); // Set to start of day
-    
-    const updateData: UpdatePlantRequest = {
-      userPlantId: this.userPlantId,
-      nickname: formValues.nickname.trim(),
-      plantingDate: plantingDate.toISOString(),
-      locationInHouse: formValues.locationInHouse.trim(),
-      reminderEnabled: formValues.reminderEnabled
-    };
+    // Process and normalize data in component
+    const processedData = this.processFormData(formValues);
 
-    console.log('Updating plant with data:', updateData);
+    console.log('Updating plant with processed data:', processedData);
 
     // Check if there are new images to upload
     if (this.selectedImages && this.selectedImages.length > 0) {
-      console.log('Uploading new images and updating plant info...');
-      this.uploadImagesAndUpdatePlant(updateData);
+      console.log('Updating plant with new images using new API...');
+      this.updatePlantWithImages(processedData);
     } else {
       console.log('Updating plant info only (no new images)...');
-      this.updatePlantInfo(updateData);
+      this.updatePlantInfo(processedData);
     }
+  }
+
+  private processFormData(formValues: any): UpdatePlantRequest {
+    // Convert date to 'YYYY-MM-DD 00:00:00' format
+    let plantingDateFormatted: string;
+    if (formValues.plantingDate) {
+      const dateValue = formValues.plantingDate;
+      let dateObj: Date;
+      if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // YYYY-MM-DD format
+        dateObj = new Date(dateValue + 'T00:00:00');
+      } else {
+        dateObj = new Date(dateValue);
+      }
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date provided, using current date');
+        dateObj = new Date();
+      }
+      // Format: YYYY-MM-DD 00:00:00
+      const yyyy = dateObj.getFullYear();
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      plantingDateFormatted = `${yyyy}-${mm}-${dd} 00:00:00`;
+    } else {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      plantingDateFormatted = `${yyyy}-${mm}-${dd} 00:00:00`;
+    }
+
+    const processedData: UpdatePlantRequest = {
+      userPlantId: this.userPlantId!.toString().trim(),
+      nickname: (formValues.nickname || '').toString().trim(),
+      locationInHouse: (formValues.locationInHouse || '').toString().trim(),
+      plantingDate: plantingDateFormatted, // 'YYYY-MM-DD 00:00:00'
+      reminderEnabled: Boolean(formValues.reminderEnabled)
+    };
+
+    console.log('Form data processing:');
+    console.log('- Original date:', formValues.plantingDate);
+    console.log('- Formatted:', plantingDateFormatted);
+    console.log('- Processed data:', processedData);
+    return processedData;
+  }
+
+  private updatePlantWithImages(updateData: UpdatePlantRequest): void {
+    console.log('Using new update-with-images API...');
+    this.myGardenService.updateUserPlantWithImages(updateData, this.selectedImages)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Plant updated with images successfully:', response);
+          
+          if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
+            this.handleSuccessfulUpdate();
+          } else {
+            console.error('Unexpected response format:', response);
+            this.handleUpdateError('Phản hồi từ server không đúng định dạng');
+          }
+        },
+        error: (error) => {
+          console.error('Error updating plant with images:', error);
+          this.handleUpdateError(this.extractErrorMessage(error));
+        }
+      });
   }
 
   private async uploadImagesAndUpdatePlant(updateData: UpdatePlantRequest): Promise<void> {
     try {
-      // First update plant info
-      console.log('Step 1: Updating plant info...');
-      const updateResponse = await firstValueFrom(this.myGardenService.updateUserPlant(updateData));
-      
-      if (!updateResponse || !(updateResponse.status === 200 || updateResponse.message?.includes('success') || updateResponse.message?.includes('thành công'))) {
-        throw new Error('Failed to update plant info');
-      }
-      
-      console.log('Step 2: Plant info updated successfully, now uploading images...');
-      console.log(`Starting upload of ${this.selectedImages.length} images...`);
-      
-      // Upload all images sequentially
-      const uploadedImageUrls: string[] = [];
-      
-      for (let i = 0; i < this.selectedImages.length; i++) {
-        const file = this.selectedImages[i];
-        console.log(`Uploading image ${i + 1}/${this.selectedImages.length}: ${file.name}`);
-        
-        try {
-          const uploadResponse = await firstValueFrom(this.myGardenService.uploadPlantImage(file));
-          
-          if (uploadResponse && uploadResponse.data) {
-            uploadedImageUrls.push(uploadResponse.data);
-            console.log(`Image ${i + 1} uploaded successfully:`, uploadResponse.data);
-          } else {
-            throw new Error('Upload response invalid');
-          }
-        } catch (error) {
-          console.error(`Failed to upload image ${i + 1}:`, error);
-          this.toastService.error(`Không thể tải ảnh "${file.name}". Tiếp tục với các ảnh khác.`);
-        }
-      }
-      
-      console.log(`Successfully uploaded ${uploadedImageUrls.length}/${this.selectedImages.length} images`);
-      
-      if (uploadedImageUrls.length > 0) {
-        console.log('Images uploaded successfully. Plant update completed with new images.');
-        this.toastService.success(`Cập nhật cây thành công! Đã tải lên ${uploadedImageUrls.length} ảnh mới.`);
-      } else {
-        console.log('Plant updated successfully but no images were uploaded.');
-        this.toastService.success('Cập nhật thông tin cây thành công!');
-      }
-      
-      // Handle success (clear form and navigate)
-      this.handleUpdateSuccess(updateResponse);
-      
+      // This method is now deprecated in favor of updatePlantWithImages
+      console.warn('uploadImagesAndUpdatePlant is deprecated, use updatePlantWithImages instead');
+      this.updatePlantWithImages(updateData);
     } catch (error) {
-      console.error('Error in upload process:', error);
-      this.isSubmitting = false;
-      this.handleUpdateError(error);
+      console.error('Error in deprecated uploadImagesAndUpdatePlant:', error);
+      this.handleUpdateError('Có lỗi xảy ra khi cập nhật thông tin cây');
     }
+  }
+
+  private handleSuccessfulUpdate(): void {
+    this.isSubmitting = false;
+    // Khi cập nhật ảnh mới, luôn clear toàn bộ ảnh cũ trên UI
+    if (this.selectedImages && this.selectedImages.length > 0 && this.currentPlant) {
+      (this.currentPlant as any).imageUrls = [];
+      (this.currentPlant as any).images = [];
+    }
+    this.selectedImages = [];
+    this.imagePreviewUrls.clear();
+    
+    this.toastService.success('Cập nhật thông tin cây thành công!');
+    
+    // Refresh plant data to show updated info
+    this.loadPlantData();
+    
+    // Optionally navigate back
+    setTimeout(() => {
+      this.router.navigate(['/my-garden']);
+    }, 1500);
+  }
+
+  private handleUpdateError(errorMessage: string): void {
+    this.isSubmitting = false;
+    this.toastService.error(errorMessage);
+  }
+
+  private extractErrorMessage(error: any): string {
+    console.error('Full error object:', error);
+    
+    let errorMessage = 'Không thể cập nhật thông tin cây';
+    
+    // More detailed error handling
+    if (error.status === 400) {
+      if (error.error?.message) {
+        errorMessage = `Dữ liệu không hợp lệ: ${error.error.message}`;
+      } else {
+        errorMessage = 'Dữ liệu gửi lên không đúng định dạng. Vui lòng kiểm tra lại thông tin.';
+      }
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 404) {
+      errorMessage = 'Không tìm thấy cây để cập nhật.';
+    } else if (error.status === 413) {
+      errorMessage = 'Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
+    } else if (error.status === 500) {
+      errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+    } else if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    return errorMessage;
   }
 
   private updatePlantInfo(updateData: UpdatePlantRequest): void {
@@ -522,65 +611,20 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.handleUpdateSuccess(response);
+          console.log('Plant info updated successfully:', response);
+          
+          if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
+            this.handleSuccessfulUpdate();
+          } else {
+            console.error('Unexpected response format:', response);
+            this.handleUpdateError('Phản hồi từ server không đúng định dạng');
+          }
         },
         error: (error) => {
-          this.isSubmitting = false;
-          this.handleUpdateError(error);
+          console.error('Error updating plant info:', error);
+          this.handleUpdateError(this.extractErrorMessage(error));
         }
       });
-  }
-
-  private handleUpdateSuccess(response: any): void {
-    this.isSubmitting = false;
-    
-    if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
-      // Clear selected images after successful upload
-      this.clearImagePreviews();
-      this.selectedImages = [];
-      
-      // Reset file input
-      const fileInput = document.getElementById('update-images') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
-      }
-      
-      this.toastService.success('Cập nhật thông tin cây thành công!');
-      
-      // Navigate back to my garden after successful update
-      setTimeout(() => {
-        this.router.navigate(['/user/my-garden']);
-      }, 1000);
-    } else {
-      this.errorMessage = 'Không thể cập nhật thông tin cây';
-      this.toastService.error('Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.');
-    }
-  }
-
-  private handleUpdateError(error: any): void {
-    let errorMessage = 'Không thể cập nhật thông tin cây';
-    
-    switch(error.status) {
-      case 400:
-        errorMessage = 'Thông tin không hợp lệ. Vui lòng kiểm tra lại.';
-        break;
-      case 401:
-      case 403:
-        errorMessage = 'Bạn không có quyền chỉnh sửa cây này.';
-        break;
-      case 404:
-        errorMessage = 'Không tìm thấy cây để cập nhật.';
-        break;
-      case 500:
-        errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
-        break;
-      default:
-        errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
-    }
-    
-    this.errorMessage = errorMessage;
-    this.toastService.error(errorMessage);
-    console.error('Update error:', error);
   }
 
   private markFormGroupTouched(): void {

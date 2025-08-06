@@ -128,7 +128,7 @@ export class ReportPlantPageComponent implements OnInit {
     this.http.post('/api/plants-report/reason', {
       plantId: this.plant.id,
       reason: this.reason.trim()
-    }, { withCredentials: true, headers }).subscribe({
+    }, { headers }).subscribe({
       next: () => {
         this.toast.success('Báo cáo của bạn đã được gửi!');
         this.router.navigate(['/plant-info']);

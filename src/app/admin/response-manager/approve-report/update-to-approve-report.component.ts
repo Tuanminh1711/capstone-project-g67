@@ -1,3 +1,6 @@
+import { ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
+
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -64,6 +67,7 @@ interface ApiResponse<T = any> {
   styleUrls: ['./update-to-approve-report.scss']
 })
 export class UpdatePlantComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
+  @ViewChild('plantForm') plantForm!: NgForm;
   private destroy$ = new Subject<void>();
   private readonly baseUrl = `${environment.apiUrl}/manager`;
   
@@ -153,6 +157,19 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   redirectToEditPage(): void {
     this.toast.info('Chuyển đến trang chỉnh sửa cây.');
     this.router.navigate(['/admin/plants/edit', this.plantId]);
+  }
+
+    // Called on any field change to update form state and enable save button
+  onFieldChange(): void {
+    this.hasPlantBeenSaved = false;
+    this.setError('');
+    this.setSuccess('');
+    // Mark form as dirty to ensure plantForm.valid updates
+    if (this.plantForm && this.plantForm.form) {
+      this.plantForm.form.markAsDirty();
+      this.plantForm.form.updateValueAndValidity();
+    }
+    this.cdr.detectChanges();
   }
 
   private loadReportData(): void {

@@ -9,6 +9,14 @@ import { CookieService } from '../../../auth/cookie.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
 import { MyGardenService, UserPlant, ApiResponse, PaginatedResponse } from './my-garden.service';
+
+// Extend UserPlant type to include imageUrls and images for template compatibility
+declare module './my-garden.service' {
+  interface UserPlant {
+    imageUrls?: string[];
+    images?: any[];
+  }
+}
 import { CareReminderService, CareReminderSchedule, CARE_TYPES, getDefaultCareReminders } from './care-reminder.service';
 import { CareReminderDialogComponent } from './care-reminder-dialog.component';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
@@ -24,6 +32,36 @@ import { ChangeDetectionStrategy } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MyGardenComponent implements OnInit, OnDestroy {
+  // Track current image index for each plant (userPlantId)
+  plantImageSlideIndex: { [userPlantId: number]: number } = {};
+
+  // Get the image to display for a plant (slide)
+  getPlantSlideImage(plant: UserPlant): string {
+    if (plant.imageUrls && plant.imageUrls.length > 0) {
+      const idx = this.plantImageSlideIndex[plant.userPlantId] ?? 0;
+      return plant.imageUrls.slice(-3).reverse()[idx] || '/assets/image/logo.png';
+    }
+    return plant.imageUrl || '/assets/image/logo.png';
+  }
+
+  // Get number of images in the slide (max 3 newest)
+  getPlantSlideCount(plant: UserPlant): number {
+    return plant.imageUrls && plant.imageUrls.length > 0 ? Math.min(3, plant.imageUrls.length) : 1;
+  }
+
+  // Go to next image in slide
+  nextPlantImage(plant: UserPlant): void {
+    const count = this.getPlantSlideCount(plant);
+    const current = this.plantImageSlideIndex[plant.userPlantId] ?? 0;
+    this.plantImageSlideIndex[plant.userPlantId] = (current + 1) % count;
+  }
+
+  // Go to previous image in slide
+  prevPlantImage(plant: UserPlant): void {
+    const count = this.getPlantSlideCount(plant);
+    const current = this.plantImageSlideIndex[plant.userPlantId] ?? 0;
+    this.plantImageSlideIndex[plant.userPlantId] = (current - 1 + count) % count;
+  }
   // Map to store reminder enabled state for each userPlantId
   reminderEnabledMap: { [userPlantId: number]: boolean } = {};
   userPlants: UserPlant[] = [];
@@ -252,15 +290,26 @@ export class MyGardenComponent implements OnInit, OnDestroy {
 
                 if (validPlants.length > 0) {
                   // Map API response to userPlants array với validation
-                  this.userPlants = validPlants.map((p: any) => ({
-                    userPlantId: Number(p.userPlantId),
-                    plantId: Number(p.plantId),
-                    imageUrl: p.imageUrl,
-                    nickname: p.nickname || 'Cây chưa có tên',
-                    plantLocation: p.plantLocation || 'Vị trí không xác định',
-                    // Add default values for fields not present in API
-                    reminderEnabled: false
-                  }));
+                  this.userPlants = validPlants.map((p: any) => {
+                    // Always assign up to 3 newest imageUrls for slide and detail
+                    let imageUrls: string[] = [];
+                    if (Array.isArray(p.imageUrls) && p.imageUrls.length > 0) {
+                      imageUrls = p.imageUrls.slice(-3).reverse();
+                    } else if (Array.isArray(p.images) && p.images.length > 0) {
+                      imageUrls = p.images.map((img: any) => img?.imageUrl).filter((url: string) => !!url).slice(-3).reverse();
+                    } else if (p.imageUrl) {
+                      imageUrls = [p.imageUrl];
+                    }
+                    return {
+                      userPlantId: Number(p.userPlantId),
+                      plantId: Number(p.plantId),
+                      imageUrl: p.imageUrl,
+                      imageUrls,
+                      nickname: p.nickname || 'Cây chưa có tên',
+                      plantLocation: p.plantLocation || 'Vị trí không xác định',
+                      reminderEnabled: false
+                    };
+                  });
                   this.errorMessage = '';
                   // Show success message if this is a refresh after adding a plant
                   if (this.successMessage) {
@@ -317,14 +366,25 @@ export class MyGardenComponent implements OnInit, OnDestroy {
                 });
 
                 if (validPlants.length > 0) {
-                  this.userPlants = validPlants.map((p: any) => ({
-                    userPlantId: Number(p.userPlantId || p.id),
-                    plantId: Number(p.plantId || p.id),
-                    imageUrl: p.imageUrl,
-                    nickname: p.nickname || p.name || 'Cây chưa có tên',
-                    plantLocation: p.plantLocation || p.location || 'Vị trí không xác định',
-                    reminderEnabled: false
-                  }));
+                  this.userPlants = validPlants.map((p: any) => {
+                    let imageUrls: string[] = [];
+                    if (Array.isArray(p.imageUrls) && p.imageUrls.length > 0) {
+                      imageUrls = p.imageUrls.slice(-3).reverse();
+                    } else if (Array.isArray(p.images) && p.images.length > 0) {
+                      imageUrls = p.images.map((img: any) => img?.imageUrl).filter((url: string) => !!url).slice(-3).reverse();
+                    } else if (p.imageUrl) {
+                      imageUrls = [p.imageUrl];
+                    }
+                    return {
+                      userPlantId: Number(p.userPlantId || p.id),
+                      plantId: Number(p.plantId || p.id),
+                      imageUrl: p.imageUrl,
+                      imageUrls,
+                      nickname: p.nickname || p.name || 'Cây chưa có tên',
+                      plantLocation: p.plantLocation || p.location || 'Vị trí không xác định',
+                      reminderEnabled: false
+                    };
+                  });
                   this.errorMessage = '';
                   // Show success message for fallback format too
                   if (this.successMessage) {
@@ -496,14 +556,25 @@ export class MyGardenComponent implements OnInit, OnDestroy {
 
         if (validPlants.length > 0) {
           // Map API response to userPlants array với validation
-          this.userPlants = validPlants.map((p: any) => ({
-            userPlantId: Number(p.userPlantId),
-            plantId: Number(p.plantId),
-            imageUrl: p.imageUrl,
-            nickname: p.nickname || 'Cây chưa có tên',
-            plantLocation: p.plantLocation || 'Vị trí không xác định',
-            reminderEnabled: false
-          }));
+          this.userPlants = validPlants.map((p: any) => {
+            let imageUrls: string[] = [];
+            if (Array.isArray(p.imageUrls) && p.imageUrls.length > 0) {
+              imageUrls = p.imageUrls.slice(-3).reverse();
+            } else if (Array.isArray(p.images) && p.images.length > 0) {
+              imageUrls = p.images.map((img: any) => img?.imageUrl).filter((url: string) => !!url).slice(-3).reverse();
+            } else if (p.imageUrl) {
+              imageUrls = [p.imageUrl];
+            }
+            return {
+              userPlantId: Number(p.userPlantId),
+              plantId: Number(p.plantId),
+              imageUrl: p.imageUrl,
+              imageUrls,
+              nickname: p.nickname || 'Cây chưa có tên',
+              plantLocation: p.plantLocation || 'Vị trí không xác định',
+              reminderEnabled: false
+            };
+          });
           this.errorMessage = '';
           this.onUserPlantsLoaded();
         } else {

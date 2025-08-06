@@ -1,3 +1,4 @@
+
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -138,6 +139,13 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     this.cleanupSubscriptions();
   }
 
+    // Track if form is dirty (user has made changes)
+  formDirty = false;
+
+  // Mark form as dirty on any field change
+  onFieldChange(): void {
+    this.formDirty = true;
+  }
   // Add method to redirect to working edit page if API doesn't work
   redirectToEditPage(): void {
     this.toast.info('Chuyển đến trang chỉnh sửa cây.');

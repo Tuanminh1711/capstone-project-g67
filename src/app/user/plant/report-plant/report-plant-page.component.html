@@ -22,7 +22,7 @@
           <div class="plant-images">
             <div class="main-image">
               <div class="image-wrapper">
-                <img [src]="plant.imageUrls[0] || '/assets/image/logo.png'" [alt]="plant.commonName" class="plant-img" />
+                <img [src]="(plant.imageUrls && plant.imageUrls.length ? plant.imageUrls[0] : '/assets/image/logo.png')" [alt]="plant.commonName" class="plant-img" />
               </div>
             </div>
             @if (plant.imageUrls && plant.imageUrls.length > 1) {

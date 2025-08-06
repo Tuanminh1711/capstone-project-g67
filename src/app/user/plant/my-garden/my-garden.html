@@ -70,7 +70,7 @@
         </div>
       </div>
       <div class="empty-content">
-        <h3>{{ isLoggedIn ? 'Khu vườn của bạn đang trống' : 'Chào mừng đến với My Garden!' }}</h3>
+        <h3>{{ isLoggedIn ? 'Khu vườn của bạn đang trống' : 'Chào mừng đến với Khu vườn của tôi!' }}</h3>
         <p>{{ error ? error : (isLoggedIn ? 'Hãy bắt đầu trồng những cây cảnh yêu thích để tạo nên khu vườn xanh tươi!' : 'Đăng nhập để bắt đầu tạo khu vườn xanh của riêng bạn!') }}</p>
         @if (isLoggedIn) {
           <div class="empty-actions">
@@ -117,7 +117,7 @@
                   <div class="plant-image-wrapper">
                     <div class="plant-image-container">
                       <img 
-                        [src]="plant.imageUrl ? plant.imageUrl : '/assets/image/logo.png'" 
+                        [src]="plant.imageUrls && plant.imageUrls.length > 0 ? plant.imageUrls[0] : (plant.imageUrl ? plant.imageUrl : '/assets/image/logo.png')" 
                         [alt]="plant.nickname"
                         class="plant-image"
                         (error)="$any($event.target).src='/assets/image/logo.png'"

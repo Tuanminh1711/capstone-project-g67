@@ -1,6 +1,19 @@
+interface CareReminder {
+  scheduleId: number;
+  careTypeId: number;
+  careTypeName: string;
+  enabled: boolean;
+  frequencyDays: number | null;
+  reminderTime: string | null;
+  customMessage: string | null;
+  startDate: string | null;
+  lastCareDate: string | null;
+  nextCareDate: string | null;
+}
 import { Component, OnInit, inject, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule, NavigationEnd } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CookieService } from '../../../auth/cookie.service';
 import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../../shared/top-navigator';
 import { Subscription, filter, switchMap } from 'rxjs';
@@ -13,10 +26,14 @@ import { Subscription, filter, switchMap } from 'rxjs';
   styleUrls: ['./view-user-plant-detail.component.scss']
 })
 export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterViewInit {
+  careReminders: CareReminder[] = [];
+  loadingCareReminders = false;
+  careRemindersError = '';
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private cookieService = inject(CookieService);
 
   userPlantId!: number;
   plant: any = null;
@@ -60,6 +77,8 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
     this.loading = true;
     this.errorMsg = '';
     this.plant = null;
+    this.careReminders = [];
+    this.careRemindersError = '';
     
     return this.http.get<any>(`/api/user-plants/user-plant-detail/${this.userPlantId}`).pipe(
       switchMap(res => {
@@ -70,6 +89,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
           this.errorMsg = 'Không tìm thấy thông tin cây trong vườn.';
         }
         this.loading = false;
+        // fetchCareReminders will be called after subscribe
         return [res];
       })
     );
@@ -79,6 +99,8 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
     this.loading = true;
     this.errorMsg = '';
     this.plant = null;
+    this.careReminders = [];
+    this.careRemindersError = '';
     
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) {
@@ -88,6 +110,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
     }
     
     this.userPlantId = +idParam;
+
     this.http.get<any>(`/api/user-plants/user-plant-detail/${this.userPlantId}`).subscribe({
       next: (res) => {
         if (res && res.data) {
@@ -98,6 +121,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
         }
         this.loading = false;
         this.cdr.detectChanges();
+        this.fetchCareReminders();
       },
       error: (err) => {
         if (err.status === 404) {
@@ -106,6 +130,33 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
           this.errorMsg = 'Không thể tải chi tiết cây. Vui lòng thử lại.';
         }
         this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  fetchCareReminders() {
+    if (!this.userPlantId) return;
+    this.loadingCareReminders = true;
+    this.careRemindersError = '';
+    const apiUrl = `/api/plant-care/${this.userPlantId}/care-reminders`;
+    const token = this.cookieService.getAuthToken();
+    const headers = token ? new HttpHeaders({ 'Authorization': `Bearer ${token}` }) : undefined;
+    this.http.get<any>(apiUrl, { headers }).subscribe({
+      next: (res: any) => {
+        if (res && Array.isArray(res.data)) {
+          this.careReminders = res.data;
+        } else {
+          this.careReminders = [];
+          this.careRemindersError = 'Không có lịch nhắc nhở.';
+        }
+        this.loadingCareReminders = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.careReminders = [];
+        this.careRemindersError = 'Không thể tải lịch nhắc nhở.';
+        this.loadingCareReminders = false;
         this.cdr.detectChanges();
       }
     });
