@@ -9,12 +9,16 @@ import com.plantcare_backend.dto.response.plantsManager.PlantReportListResponseD
 import com.plantcare_backend.dto.response.plantsManager.PlantReportDetailResponseDTO;
 import com.plantcare_backend.dto.request.plantsManager.*;
 import com.plantcare_backend.exception.ResourceNotFoundException;
+import com.plantcare_backend.model.PlantImage;
 import com.plantcare_backend.model.Plants;
+import com.plantcare_backend.repository.PlantImageRepository;
+import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.service.PlantManagementService;
 import com.plantcare_backend.service.PlantService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -25,20 +29,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/manager")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200/")
+@Slf4j
 public class PlantManagementController {
     @Autowired
     private final PlantManagementService plantManagementService;
     @Autowired
     private final PlantService plantService;
+    @Autowired
+    private final PlantRepository plantRepository;
+    @Autowired
+    private final PlantImageRepository plantImageRepository;
 
     @PostMapping("/create-plant")
     // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
@@ -55,36 +66,175 @@ public class PlantManagementController {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
         }
     }
+
     // up load anh cho plant
-    @PostMapping("/upload-plant-image")
-    public ResponseEntity<ResponseData<String>> uploadPlantImage(@RequestParam("image") MultipartFile image) {
+    @PostMapping("/upload-plant-image/{plantId}")
+    public ResponseEntity<ResponseData<String>> uploadPlantImageForPlant(
+            @PathVariable Long plantId,
+            @RequestParam("image") MultipartFile image,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+
         try {
+            // 1. Validate plant exists
+            Plants plant = plantRepository.findById(plantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Plant not found with id: " + plantId));
+
+            // 2. Validate file
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ResponseData<>(400, "File is empty", null));
             }
+
             String contentType = image.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 return ResponseEntity.badRequest().body(new ResponseData<>(400, "File must be an image", null));
             }
+
             if (image.getSize() > 5 * 1024 * 1024) {
                 return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 5MB", null));
             }
+
+            // 3. Upload file
             String uploadDir = "uploads/plants/";
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
+
             String originalFilename = image.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
             Path filePath = uploadPath.resolve(newFilename);
             Files.copy(image.getInputStream(), filePath);
-            String imageUrl = "/api/plants/" + newFilename;
-            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+
+            String imageUrl = "/api/manager/plants/" + newFilename;
+
+            // 4. Add image to plant database
+            PlantImage plantImage = PlantImage.builder()
+                    .plant(plant)
+                    .imageUrl(imageUrl)
+                    .isPrimary(false) // Default to false, can be set later
+                    .build();
+
+            plantImageRepository.save(plantImage);
+
+            // 5. Log tracking
+            log.info("Uploaded image for plant ID: {}, filename: {}, uploaded by user: {}",
+                    plantId, newFilename, userId);
+
+            return ResponseEntity.ok(new ResponseData<>(200,
+                    "Upload thành công cho plant: " + plant.getCommonName(), imageUrl));
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.badRequest().body(new ResponseData<>(400, e.getMessage(), null));
         } catch (Exception e) {
+            log.error("Upload failed for plant ID: {}", plantId, e);
             return ResponseEntity.internalServerError().body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
         }
     }
+
+    @PutMapping("/update-plant-images/{plantId}")
+    public ResponseEntity<ResponseData<PlantDetailResponseDTO>> updatePlantImages(
+            @PathVariable Long plantId,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds,
+            @RequestParam(value = "setPrimaryImageId", required = false) Long setPrimaryImageId,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+
+        try {
+            Plants plant = plantRepository.findById(plantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Plant not found with id: " + plantId));
+
+            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+                List<PlantImage> imagesToDelete = plantImageRepository.findAllById(deleteImageIds);
+                for (PlantImage image : imagesToDelete) {
+                    if (image.getPlant().getId().equals(plantId)) {
+                        String filename = image.getImageUrl().substring(image.getImageUrl().lastIndexOf("/") + 1);
+                        Path filePath = Paths.get("uploads/plants/").resolve(filename);
+                        try {
+                            Files.deleteIfExists(filePath);
+                        } catch (IOException e) {
+                            log.warn("Could not delete file: {}", filename, e);
+                        }
+                    }
+                }
+                plantImageRepository.deleteAll(imagesToDelete);
+                log.info("Deleted {} images for plant ID: {}", imagesToDelete.size(), plantId);
+            }
+
+            if (images != null && !images.isEmpty()) {
+                for (MultipartFile image : images) {
+                    if (image == null || image.isEmpty()) {
+                        continue;
+                    }
+
+                    String contentType = image.getContentType();
+                    if (contentType == null || !contentType.startsWith("image/")) {
+                        continue;
+                    }
+
+                    if (image.getSize() > 5 * 1024 * 1024) {
+                        continue;
+                    }
+
+                    String uploadDir = "uploads/plants/";
+                    Path uploadPath = Paths.get(uploadDir);
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+
+                    String originalFilename = image.getOriginalFilename();
+                    String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    String newFilename = UUID.randomUUID().toString() + fileExtension;
+                    Path filePath = uploadPath.resolve(newFilename);
+                    Files.copy(image.getInputStream(), filePath);
+
+                    String imageUrl = "/api/manager/plants/" + newFilename;
+
+                    PlantImage plantImage = PlantImage.builder()
+                            .plant(plant)
+                            .imageUrl(imageUrl)
+                            .isPrimary(false)
+                            .build();
+
+                    plantImageRepository.save(plantImage);
+                    log.info("Added new image for plant ID: {}, filename: {}", plantId, newFilename);
+                }
+            }
+
+            if (setPrimaryImageId != null) {
+                List<PlantImage> allImages = plantImageRepository.findByPlantId(plantId);
+                for (PlantImage image : allImages) {
+                    image.setIsPrimary(false);
+                }
+
+                PlantImage primaryImage = plantImageRepository.findById(setPrimaryImageId)
+                        .orElse(null);
+                if (primaryImage != null && primaryImage.getPlant().getId().equals(plantId)) {
+                    primaryImage.setIsPrimary(true);
+                    plantImageRepository.save(primaryImage);
+                    log.info("Set image ID: {} as primary for plant ID: {}", setPrimaryImageId, plantId);
+                }
+            }
+
+            // 5. Get updated plant details
+            PlantDetailResponseDTO updatedPlant = plantManagementService.getPlantDetail(plantId);
+
+            return ResponseEntity.ok(new ResponseData<>(200,
+                    "Plant images updated successfully", updatedPlant));
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.badRequest().body(new ResponseData<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Update plant images failed for plant ID: {}", plantId, e);
+            return ResponseEntity.internalServerError().body(new ResponseData<>(500,
+                    "Update plant images failed: " + e.getMessage(), null));
+        }
+    }
+
     // trích xuất ảnh
     @GetMapping("/plants/{filename}")
     public ResponseEntity<Resource> getPlantImage(@PathVariable String filename) {

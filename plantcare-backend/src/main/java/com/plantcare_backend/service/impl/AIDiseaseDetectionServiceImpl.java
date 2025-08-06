@@ -61,7 +61,7 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
 
         DiseaseDetectionResultDTO result = analyzeSymptoms(request, userId);
 
-        saveDetectionResult(result, userId, request.getPlantId(), "SYMPTOMS");
+        saveDetectionResult(result, userId,null, "SYMPTOMS");
 
         return result;
     }
@@ -247,53 +247,71 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     }
 
     private DiseaseDetectionResultDTO analyzeSymptoms(DiseaseDetectionRequestDTO request, Long userId) {
-        String symptoms = request.getSymptoms().toLowerCase();
+        String description = request.getDescription().toLowerCase();
+
+        List<String> keywords = extractKeywords(description);
 
         List<PlantDisease> diseases = plantDiseaseRepository.findByIsActiveTrue();
-        PlantDisease matchedDisease = null;
+        PlantDisease bestMatch = null;
+        double bestScore = 0.0;
 
         for (PlantDisease disease : diseases) {
-            if (disease.getSymptoms() != null &&
-                    disease.getSymptoms().toLowerCase().contains(symptoms)) {
-                matchedDisease = disease;
-                break;
+            double score = calculateMatchScore(disease, keywords);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = disease;
             }
         }
 
-        if (matchedDisease == null) {
-            PlantDiseaseType enumDisease = PlantDiseaseType.NUTRIENT_DEFICIENCY;
+        if (bestMatch != null && bestScore > 0.3) {
             return DiseaseDetectionResultDTO.builder()
-                    .detectedDisease(enumDisease.getVietnameseName())
-                    .confidenceScore(0.6)  // Độ tin cậy thấp hơn
-                    .severity(enumDisease.getSeverity())
-                    .symptoms(enumDisease.getSymptoms())
-                    .recommendedTreatment("Cần thêm thông tin điều trị")
-                    .prevention("Cần thêm thông tin phòng ngừa")
-                    .causes("Cần thêm thông tin nguyên nhân")
-                    .isConfirmed(false)
-                    .status("DETECTED")
-                    .detectedAt(new Timestamp(System.currentTimeMillis()))
+                    .detectedDisease(bestMatch.getDiseaseName())
+                    .confidenceScore(bestScore)
+                    .severity(bestMatch.getSeverity())
+                    .symptoms(bestMatch.getSymptoms())
+                    .recommendedTreatment(bestMatch.getTreatment()) // ← Sử dụng treatment thực tế
+                    .prevention(bestMatch.getPrevention()) // ← Sử dụng prevention thực tế
+                    .causes(bestMatch.getCauses()) // ← Sử dụng causes thực tế
                     .detectionMethod("SYMPTOMS")
                     .aiModelVersion("1.0.0")
+                    .treatmentGuide(createTreatmentGuide(bestMatch))
                     .build();
         }
 
         return DiseaseDetectionResultDTO.builder()
-                .detectedDisease(matchedDisease.getDiseaseName())
-                .confidenceScore(0.85)
-                .severity(matchedDisease.getSeverity())
-                .symptoms(matchedDisease.getSymptoms())
-                .recommendedTreatment(matchedDisease.getTreatment())
-                .prevention(matchedDisease.getPrevention())
-                .causes(matchedDisease.getCauses())
-                .imageUrl(matchedDisease.getImageUrl())
-                .isConfirmed(false)
-                .status("DETECTED")
-                .detectedAt(new Timestamp(System.currentTimeMillis()))
+                .detectedDisease("Không xác định được bệnh cụ thể")
+                .confidenceScore(0.2)
+                .severity("LOW")
+                .symptoms("Cần thêm thông tin chi tiết về triệu chứng")
+                .recommendedTreatment("Vui lòng cung cấp thêm thông tin về triệu chứng để có hướng dẫn điều trị chính xác")
                 .detectionMethod("SYMPTOMS")
                 .aiModelVersion("1.0.0")
-                .treatmentGuide(createTreatmentGuide(matchedDisease))
                 .build();
+    }
+    private List<String> extractKeywords(String description) {
+        String[] words = description.split("\\s+");
+        List<String> keywords = new ArrayList<>();
+
+        for (String word : words) {
+            if (word.length() > 2) {
+                keywords.add(word.toLowerCase());
+            }
+        }
+
+        return keywords;
+    }
+
+    private double calculateMatchScore(PlantDisease disease, List<String> keywords) {
+        double score = 0.0;
+        String symptoms = disease.getSymptoms().toLowerCase();
+
+        for (String keyword : keywords) {
+            if (symptoms.contains(keyword)) {
+                score += 0.3;
+            }
+        }
+
+        return Math.min(score, 1.0); // Giới hạn tối đa 1.0
     }
 
     private void saveDetectionResult(DiseaseDetectionResultDTO result, Long userId, Long plantId, String method) {

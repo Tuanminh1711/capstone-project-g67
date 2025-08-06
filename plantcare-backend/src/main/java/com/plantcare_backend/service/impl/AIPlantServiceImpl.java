@@ -52,7 +52,6 @@ public class AIPlantServiceImpl implements AIPlantService {
         try {
             log.info("Starting plant identification for user: {} (ID: {})", user.getUsername(), userId);
 
-            // 1. Validate image
             if (!validatePlantImage(image)) {
                 vipUsageService.trackUsage(user, "AI_PLANT_IDENTIFICATION", false);
                 return PlantIdentificationResponseDTO.builder()
@@ -62,10 +61,8 @@ public class AIPlantServiceImpl implements AIPlantService {
                         .build();
             }
 
-            // 2. Call Plant.id API
             List<PlantIdentificationResponseDTO.PlantResult> aiResults = callPlantIdAPI(image, language, maxResults);
 
-            // 3. Match with database
             List<PlantIdentificationResponseDTO.PlantResult> matchedResults = matchWithDatabase(aiResults);
 
             PlantIdentificationResponseDTO result = PlantIdentificationResponseDTO.builder()
@@ -93,16 +90,13 @@ public class AIPlantServiceImpl implements AIPlantService {
     @Override
     public Boolean validatePlantImage(MultipartFile image) {
         try {
-            // Gọi API để kiểm tra xem ảnh có chứa thực vật không
-            // Có thể sử dụng Google Vision API hoặc Plant.id API
-            return true; // Tạm thời return true, sẽ implement sau
+            return true;
         } catch (Exception e) {
             log.error("Error validating plant image", e);
             return false;
         }
     }
 
-    // Debug method để test API key
     public void testApiKey() {
         try {
             log.info("Testing Plant.id API key: {}", plantIdApiKey.substring(0, 10) + "...");
@@ -110,7 +104,6 @@ public class AIPlantServiceImpl implements AIPlantService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Test với một request đơn giản
             Map<String, Object> testBody = new HashMap<>();
             testBody.put("api_key", plantIdApiKey);
             testBody.put("images",
@@ -176,11 +169,9 @@ public class AIPlantServiceImpl implements AIPlantService {
     private List<PlantIdentificationResponseDTO.PlantResult> callPlantIdAPI(MultipartFile image, String language,
                                                                             Integer maxResults) {
         try {
-            // 1. Prepare request headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-            // 2. Prepare request body
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("images", new org.springframework.core.io.ByteArrayResource(image.getBytes()) {
                 @Override
@@ -188,14 +179,13 @@ public class AIPlantServiceImpl implements AIPlantService {
                     return image.getOriginalFilename();
                 }
             });
-            body.add("api_key", plantIdApiKey); // Add API key to body
-            body.add("organs", "leaf"); // Focus on leaf identification
+            body.add("api_key", plantIdApiKey);
+            body.add("organs", "leaf");
             body.add("include_related_images", "false");
             body.add("language", language);
             body.add("details",
                     "common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,similar_images");
 
-            // 3. Make API call
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.exchange(
                     plantIdBaseUrl + "/identify",
@@ -204,7 +194,6 @@ public class AIPlantServiceImpl implements AIPlantService {
                     String.class);
             log.info("Plant.id API Response: {}", response.getBody());
 
-            // 4. Parse response
             return parsePlantIdResponse(response.getBody(), maxResults);
 
         } catch (Exception e) {
@@ -218,7 +207,6 @@ public class AIPlantServiceImpl implements AIPlantService {
             JsonNode rootNode = objectMapper.readTree(responseBody);
             List<PlantIdentificationResponseDTO.PlantResult> results = new ArrayList<>();
 
-            // Sửa từ "result.classification" thành "suggestions"
             if (rootNode.has("suggestions")) {
                 JsonNode suggestions = rootNode.get("suggestions");
 
@@ -252,14 +240,11 @@ public class AIPlantServiceImpl implements AIPlantService {
         List<PlantIdentificationResponseDTO.PlantResult> matchedResults = new ArrayList<>();
 
         for (PlantIdentificationResponseDTO.PlantResult aiResult : aiResults) {
-            // Thêm logging này
             log.info("Trying to match AI result: {}", aiResult.getScientificName());
 
-            // Tìm kiếm trong database theo tên khoa học
             Optional<Plants> exactMatch = plantRepository.findByScientificNameIgnoreCase(aiResult.getScientificName());
 
             if (exactMatch.isPresent()) {
-                // Thêm logging này
                 log.info("✅ Exact match found in database: {}", exactMatch.get().getScientificName());
 
                 Plants plant = exactMatch.get();
@@ -268,15 +253,12 @@ public class AIPlantServiceImpl implements AIPlantService {
                 matchedResult.setIsExactMatch(true);
                 matchedResults.add(matchedResult);
             } else {
-                // Thêm logging này
                 log.info("❌ No exact match found for: {}", aiResult.getScientificName());
 
-                // Tìm kiếm partial match
                 List<Plants> partialMatches = plantRepository.findByScientificNameContainingIgnoreCaseOrCommonNameContainingIgnoreCase(
                         aiResult.getScientificName(), aiResult.getScientificName());
 
                 if (!partialMatches.isEmpty()) {
-                    // Thêm logging này
                     log.info("✅ Partial match found: {}", partialMatches.get(0).getScientificName());
 
                     Plants bestMatch = partialMatches.get(0);
@@ -285,7 +267,6 @@ public class AIPlantServiceImpl implements AIPlantService {
                     matchedResult.setIsExactMatch(false);
                     matchedResults.add(matchedResult);
                 } else {
-                    // Thêm logging này
                     log.info("❌ No partial match found, keeping AI result");
                     matchedResults.add(aiResult);
                 }
@@ -299,8 +280,8 @@ public class AIPlantServiceImpl implements AIPlantService {
         return PlantIdentificationResponseDTO.PlantResult.builder()
                 .scientificName(plant.getScientificName())
                 .commonName(plant.getCommonName())
-                .vietnameseName(plant.getCommonName()) // Tạm thời dùng common name
-                .confidence(1.0) // Exact match từ database
+                .vietnameseName(plant.getCommonName())
+                .confidence(1.0)
                 .description(plant.getDescription())
                 .careInstructions(plant.getCareInstructions())
                 .plantId(plant.getId())
@@ -316,6 +297,10 @@ public class AIPlantServiceImpl implements AIPlantService {
         if (principal == null) {
             throw new RuntimeException("User not authenticated");
         }
-        return (Long) principal;
+        String username = principal.toString();
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        return (long) user.getId();
     }
 }

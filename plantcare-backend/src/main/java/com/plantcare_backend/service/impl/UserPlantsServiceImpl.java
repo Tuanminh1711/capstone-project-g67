@@ -179,11 +179,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         userPlant.setPlantId(requestDTO.getPlantId());
         userPlant.setPlantName(requestDTO.getNickname());
 
-        // Convert String to Timestamp for planting date
         Timestamp plantingTimestamp = null;
         if (requestDTO.getPlantingDate() != null && !requestDTO.getPlantingDate().trim().isEmpty()) {
             try {
-                // Parse ISO 8601 format: 2025-08-03T00:00:00.000Z
                 String dateStr = requestDTO.getPlantingDate();
                 if (dateStr.endsWith("Z")) {
                     dateStr = dateStr.substring(0, dateStr.length() - 1); // Remove Z
@@ -227,7 +225,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
         log.info("Saving {} images for user plant ID: {}", images.size(), userPlant.getUserPlantId());
 
-        // Use environment-specific upload directory
         String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
         Path uploadPath = Paths.get(uploadDir);
 
@@ -319,30 +316,23 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     public void updateUserPlant(UpdateUserPlantRequestDTO requestDTO, Long userId) {
         log.info("Updating user plant: {} for user: {}", requestDTO.getUserPlantId(), userId);
 
-        // Validate input
         validateUpdateUserPlantRequest(requestDTO);
 
-        // Find and validate user plant ownership
         UserPlants userPlant = userPlantRepository.findByUserPlantIdAndUserId(requestDTO.getUserPlantId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
 
-        // Store old values for audit
         String oldNickname = userPlant.getPlantName();
         Timestamp oldPlantDate = userPlant.getPlantDate();
         String oldLocation = userPlant.getPlantLocation();
 
-        // Update user plant fields
         userPlant.setPlantName(requestDTO.getNickname());
         userPlant.setPlantDate(requestDTO.getPlantingDate());
         userPlant.setPlantLocation(requestDTO.getLocationInHouse());
 
-        // Handle image updates
         handleUserPlantImageUpdates(userPlant, requestDTO);
 
-        // Save user plant
         userPlantRepository.save(userPlant);
 
-        // Update care schedules reminder settings if needed
         updateCareScheduleReminders(userPlant.getUserPlantId(), requestDTO.isReminderEnabled());
 
         log.info(
@@ -456,7 +446,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         for (UserPlantImageUpdateDTO update : imageUpdates) {
             switch (update.getAction().toUpperCase()) {
                 case "UPDATE":
-                    // Update ảnh đã tồn tại
+
                     if (update.getImageId() != null) {
                         userPlant.getImages().stream()
                                 .filter(img -> img.getId().equals(update.getImageId()))
@@ -473,7 +463,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                     break;
 
                 case "DELETE":
-                    // Xóa ảnh cụ thể
                     if (update.getImageId() != null) {
                         boolean removed = userPlant.getImages()
                                 .removeIf(img -> img.getId().equals(update.getImageId()));
@@ -485,7 +474,6 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                     break;
 
                 case "ADD":
-                    // Thêm ảnh mới
                     UserPlantImage newImage = UserPlantImage.builder()
                             .userPlants(userPlant)
                             .imageUrl(update.getImageUrl())
@@ -505,14 +493,11 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     }
 
     private void handleLegacyImageReplacement(UserPlants userPlant, List<String> imageUrls) {
-        // Xóa tất cả ảnh cũ
         if (userPlant.getImages() != null && !userPlant.getImages().isEmpty()) {
             log.info("Removing {} existing images for user plant: {}", userPlant.getImages().size(),
                     userPlant.getUserPlantId());
             userPlant.getImages().clear();
         }
-
-        // Thêm ảnh mới
         if (imageUrls != null && !imageUrls.isEmpty()) {
             List<UserPlantImage> newImages = new ArrayList<>();
             for (String imageUrl : imageUrls) {
@@ -533,14 +518,11 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     public UserPlantResponseDTO createNewPlant(CreateUserPlantRequestDTO request, Long userId) {
         log.info("Creating new plant for user: {}", userId);
 
-        // 1. Validate request
         userPlantValidator.validateUserPlant(request, userId);
 
-        // 2. Validate category exists
         PlantCategory category = plantCategoryRepository.findById(Long.valueOf(request.getCategoryId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        // 3. Create new plant
         Plants newPlant = new Plants();
         newPlant.setScientificName(request.getScientificName());
         newPlant.setCommonName(request.getCommonName());
@@ -553,27 +535,23 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         newPlant.setSuitableLocation(request.getSuitableLocation());
         newPlant.setCommonDiseases(request.getCommonDiseases());
         newPlant.setStatus(Plants.PlantStatus.ACTIVE);
-        newPlant.setCreatedBy(userId); // Đánh dấu user tạo
+        newPlant.setCreatedBy(userId);
 
-        // 4. Save plant
         Plants savedPlant = plantRepository.save(newPlant);
 
-        // 5. Handle images if any
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             savePlantImages(savedPlant, request.getImageUrls());
         }
 
-        // 6. Add to user collection automatically
         UserPlants userPlant = new UserPlants();
         userPlant.setUserId(userId);
         userPlant.setPlantId(savedPlant.getId());
-        userPlant.setPlantName(request.getCommonName()); // Default nickname
+        userPlant.setPlantName(request.getCommonName());
         userPlant.setPlantDate(new java.sql.Timestamp(System.currentTimeMillis()));
         userPlant.setPlantLocation("Default location");
         userPlant.setCreated_at(new java.sql.Timestamp(System.currentTimeMillis()));
         userPlantRepository.save(userPlant);
 
-        // 7. Return response
         return convertToUserPlantResponseDTO(savedPlant, userPlant);
     }
 
