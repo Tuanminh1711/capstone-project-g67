@@ -35,9 +35,20 @@
   </div>
 
   <div *ngIf="plant && !loading" class="update-plant-content">
+    <!-- Quản lý ảnh cho plant -->
     <div class="plant-image-block">
-      <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="plant-image-gallery">
-        <img *ngFor="let imageUrl of plant.imageUrls" [src]="imageUrl" [alt]="plant.commonName" (error)="onImageError($event)" />
+      <div class="plant-image-gallery">
+        <div class="plant-image-item" *ngFor="let imageUrl of plant.imageUrls; let i = index">
+          <label style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <img [src]="getPlantImageUrl(imageUrl)" [alt]="plant.commonName" (error)="onImageError($event)" (click)="$event.preventDefault()" />
+            <input type="file" accept="image/*" style="display:none" (change)="onReplaceImage($event, i)" />
+          </label>
+        </div>
+        <!-- Ô upload ảnh -->
+        <label class="plant-image-item add-image-item" tabindex="0">
+          <input type="file" multiple accept="image/*" (change)="onImageFilesSelected($event)" style="display:none" />
+          <span class="add-icon">+</span>
+        </label>
       </div>
       <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
         Không có ảnh

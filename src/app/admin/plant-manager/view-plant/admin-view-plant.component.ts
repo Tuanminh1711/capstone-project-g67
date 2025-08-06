@@ -357,15 +357,13 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     if (!filename) return '';
     // Nếu là URL tuyệt đối thì trả về luôn
     if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
-    // Nếu đã có tiền tố /api/user-plants thì trả về luôn
-    if (filename.startsWith('/api/user-plants') || filename.startsWith('api/user-plants')) {
+    // Nếu đã có tiền tố /api/manager/plants thì trả về luôn
+    if (filename.startsWith('/api/manager/plants') || filename.startsWith('api/manager/plants')) {
       return filename.startsWith('/') ? filename : '/' + filename;
     }
-    // Nếu đã có tiền tố /user-plants thì thêm /api vào trước
-    if (filename.startsWith('/user-plants') || filename.startsWith('user-plants')) {
-      return filename.startsWith('/') ? '/api' + filename : '/api/' + filename;
-    }
-    // Chỉ có tên file, nối đúng endpoint /api/user-plants
-    return `/api/user-plants/${filename}`;
+    // Nếu chỉ là tên file, nối đúng endpoint /api/manager/plants
+    if (!filename.startsWith('/')) return `/api/manager/plants/${filename}`;
+    // Nếu là đường dẫn khác, trả về như cũ
+    return filename;
   }
 }

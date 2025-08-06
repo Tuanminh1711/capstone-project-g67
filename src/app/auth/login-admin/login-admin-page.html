@@ -5,7 +5,7 @@
       <span class="logo-text">PLANCARE</span>
     </div>
     <h2 class="auth-title">Đăng nhập Quản trị/Expert/Staff</h2>
-    <form (ngSubmit)="onSubmit()" autocomplete="on">
+    <form *ngIf="!showForgotPassword" (ngSubmit)="onSubmit()" autocomplete="on">
       <input class="auth-input" type="text" name="username" [(ngModel)]="username" placeholder="Tên đăng nhập hoặc Email" required />
       <input class="auth-input" type="password" name="password" [(ngModel)]="password" placeholder="Mật khẩu" required />
       <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
@@ -13,6 +13,38 @@
         <ng-container *ngIf="loading; else loginText">Đang đăng nhập...</ng-container>
         <ng-template #loginText>Đăng nhập</ng-template>
       </button>
+      <div class="forgot-link-wrap">
+        <a (click)="showForgotPassword = true" class="forgot-link">Quên mật khẩu?</a>
+      </div>
     </form>
-  </div>
+    <form *ngIf="showForgotPassword" (ngSubmit)="forgotStep === 1 ? sendResetCode() : resetPassword()" class="forgot-form">
+      <div *ngIf="forgotStep === 1">
+        <input class="auth-input" type="email" [(ngModel)]="forgotEmail" name="forgotEmail" placeholder="Nhập email quản trị viên" required />
+        <button class="auth-btn" type="submit">Gửi mã xác nhận</button>
+      </div>
+      <div *ngIf="forgotStep === 2">
+        <div class="pin-input-group" style="display:flex; gap:8px; justify-content:center; margin-bottom:12px;">
+          <input *ngFor="let d of pinDigits; let i = index"
+                 class="pin-input"
+                 maxlength="1"
+                 type="text"
+                 pattern="[0-9]*"
+                 inputmode="numeric"
+                 [(ngModel)]="pinCode[i]"
+                 (input)="onPinInput($event, i)"
+                 (keydown)="onPinKeydown($event, i)"
+                 #pinBox
+                 style="width:36px; height:44px; text-align:center; font-size:1.5em; border:1.5px solid #aaa; border-radius:6px; background:#f8f8f8;" />
+        </div>
+        <button class="auth-btn" type="button" (click)="verifyResetCode()" [disabled]="resetCode.length !== 6">Xác nhận mã</button>
+        <div *ngIf="showNewPassword">
+          <input class="auth-input" type="password" [(ngModel)]="newPassword" name="newPassword" placeholder="Mật khẩu mới" required />
+          <button class="auth-btn" type="button" (click)="resetPassword()" [disabled]="!newPassword">Đặt lại mật khẩu</button>
+        </div>
+      </div>
+  <!-- toast sẽ hiển thị thông báo, không hiện dưới form nữa -->
+      <div class="forgot-link-wrap">
+        <a (click)="showForgotPassword = false" class="forgot-link">Quay lại đăng nhập</a>
+      </div>
+    </form>
 </div>

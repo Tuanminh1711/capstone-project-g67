@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
-
+import { HttpClient } from '@angular/common/http';
+import { CookieService } from '../../../auth/cookie.service';
 @Component({
   selector: 'app-expert-top-navigator',
   standalone: true,
@@ -56,7 +57,9 @@ export class ExpertTopNavigatorComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+     private http: HttpClient,
+    private cookieService: CookieService
   ) {}
 
   ngOnInit(): void {
@@ -70,9 +73,26 @@ export class ExpertTopNavigatorComponent implements OnInit {
     this.updatePageInfo();
   }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login-admin']);
+logout() {
+    // Gọi API logout và chuyển về /login-admin, không phụ thuộc AuthService
+    const token = this.cookieService.getCookie('auth_token');
+    if (token) {
+      this.http.post('/api/auth/logout', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: () => {
+          this.cookieService.removeAuthToken();
+          window.location.href = '/login-admin';
+        },
+        error: () => {
+          this.cookieService.removeAuthToken();
+          window.location.href = '/login-admin';
+        }
+      });
+    } else {
+      this.cookieService.removeAuthToken();
+      window.location.href = '/login-admin';
+    }
   }
 
   private updatePageInfo(): void {

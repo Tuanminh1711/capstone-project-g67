@@ -6,6 +6,7 @@ import { AdminSupportTicketsService } from '../admin-support-tickets.service';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { HandleTicketDialogComponent } from '../handle/handle-ticket-dialog.component';
+import { ClaimTicketDialogComponent } from '../claim/claim-ticket-dialog.component';
 import { ReleaseTicketConfirmDialogComponent } from '../release/release-ticket-confirm-dialog.component';
 import { ResponseTicketDialogComponent } from '../response/response-ticket-dialog.component';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -206,19 +207,16 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
   // Claim ticket action (for unclaimed tickets)
   onClaimTicket(): void {
     if (!this.ticket) return;
-
-    const dialogRef = this.dialog.open(HandleTicketDialogComponent, {
-      width: '500px',
-      data: { ticket: this.ticket }
+    // Mở dialog nhập note nhận ticket
+    const dialogRef = this.dialog.open(ClaimTicketDialogComponent, {
+      data: { ticketId: this.ticket!.ticketId },
+      width: '400px',
+      disableClose: true
     });
-
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
-        setTimeout(() => {
-          this.toastService.success('Đã nhận phiếu hỗ trợ thành công!');
-          this.loadTicketDetail(); // Reload to get updated status
-        }, 0);
+        this.toastService.success('Đã nhận phiếu hỗ trợ thành công!');
+        this.loadTicketDetail();
       }
     });
   }

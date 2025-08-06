@@ -1,3 +1,5 @@
+
+
 import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -50,6 +52,38 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     this.currentPlant = null;
   }
 
+    // Dropdown vị trí trong nhà
+  locationOptions: string[] = [
+    'Phòng khách', 'Ban công', 'Phòng ngủ', 'Nhà bếp', 'Cửa sổ', 'Sân thượng', 'Văn phòng', 'Khác'
+  ];
+
+  // Thay thế ảnh cũ tại vị trí i
+  // Chỉ cho phép thay thế 1 ảnh duy nhất
+  onReplaceImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0 && this.currentPlant) {
+      const file = input.files[0];
+      this.uploadImage(file).then(url => {
+        this.currentPlant!.imageUrl = url;
+        this.cdr.detectChanges();
+      });
+    }
+  }
+
+  // Thêm ảnh mới vào cuối
+  // Chỉ cho phép thêm 1 ảnh duy nhất (giống thay thế)
+  onAddImage(event: Event): void {
+    this.onReplaceImage(event);
+  }
+
+  // Upload ảnh lên server, trả về url
+  uploadImage(file: File): Promise<string> {
+    // Gọi đúng service uploadPlantImage (kiểu file)
+    return this.myGardenService.uploadPlantImage(file)
+      .toPromise()
+      .then((res: any) => res.data);
+  }
+
   // Các phương thức hiển thị ảnh
   get currentImage(): string {
     const images = this.getAllPlantImageUrls();
@@ -80,23 +114,38 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     }
   }
 
+    // Lưu ảnh (gọi API updateUserPlant với imageUrl mới)
+  saveImage(): void {
+    if (!this.currentPlant) return;
+    const updateData = {
+      userPlantId: this.currentPlant.userPlantId.toString(),
+      nickname: this.currentPlant.nickname,
+      locationInHouse: this.currentPlant.plantLocation,
+      plantingDate: (this.currentPlant as any).plantingDate || new Date().toISOString(),
+      reminderEnabled: this.currentPlant.reminderEnabled,
+      imageUrl: this.currentPlant.imageUrl
+    };
+    this.isSubmitting = true;
+    this.myGardenService.updateUserPlant(updateData as any).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.toastService.success('Lưu ảnh thành công!');
+        setTimeout(() => {
+          this.router.navigate(['/user/my-garden']);
+        }, 1000);
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.toastService.error('Lưu ảnh thất bại!');
+      }
+    });
+  }
+
+
   // Lấy tất cả URL ảnh của cây
   getAllPlantImageUrls(): string[] {
     if (!this.currentPlant) return [];
-    
-    // Ưu tiên trường imageUrls nếu có
-    let imageUrls: string[] = [];
-    if (Array.isArray((this.currentPlant as any).imageUrls)) {
-      imageUrls = (this.currentPlant as any).imageUrls;
-    } 
-    // Fallback cho trường images nếu imageUrls không có
-    else if (Array.isArray((this.currentPlant as any).images)) {
-      imageUrls = (this.currentPlant as any).images
-        .map((img: any) => img?.imageUrl)
-        .filter((url: string) => !!url);
-    }
-    
-    return imageUrls.length > 0 ? imageUrls : [this.placeholderImage];
+    return this.currentPlant.imageUrl ? [this.currentPlant.imageUrl] : [];
   }
 
   // Xử lý lỗi ảnh
@@ -475,7 +524,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private processFormData(formValues: any): UpdatePlantRequest {
-    // Convert date to 'YYYY-MM-DD 00:00:00' format
+    // Convert date to ISO format 'YYYY-MM-DDTHH:mm:ss'
     let plantingDateFormatted: string;
     if (formValues.plantingDate) {
       const dateValue = formValues.plantingDate;
@@ -490,17 +539,17 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         console.warn('Invalid date provided, using current date');
         dateObj = new Date();
       }
-      // Format: YYYY-MM-DD 00:00:00
+      // Format: YYYY-MM-DDTHH:mm:ss (ISO 8601, no timezone)
       const yyyy = dateObj.getFullYear();
       const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
       const dd = String(dateObj.getDate()).padStart(2, '0');
-      plantingDateFormatted = `${yyyy}-${mm}-${dd} 00:00:00`;
+      plantingDateFormatted = `${yyyy}-${mm}-${dd}T00:00:00`;
     } else {
       const now = new Date();
       const yyyy = now.getFullYear();
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const dd = String(now.getDate()).padStart(2, '0');
-      plantingDateFormatted = `${yyyy}-${mm}-${dd} 00:00:00`;
+      plantingDateFormatted = `${yyyy}-${mm}-${dd}T00:00:00`;
     }
 
     const processedData: UpdatePlantRequest = {
@@ -568,7 +617,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     
     // Optionally navigate back
     setTimeout(() => {
-      this.router.navigate(['/my-garden']);
+      this.router.navigate(['/user/my-garden']);
     }, 1500);
   }
 

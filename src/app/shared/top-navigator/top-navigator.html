@@ -11,11 +11,11 @@
   </div>
   <div class="nav-links-actions">
     <div class="nav-links" [class.mobile-active]="showMobileMenu">
-      <a class="nav-link" routerLink="/home" (click)="closeMobileMenu()">Trang chủ</a>
-      <a class="nav-link" routerLink="/plant-info" (click)="closeMobileMenu()">Tìm kiếm cây cảnh</a>
-      <a class="nav-link" routerLink="/user/my-garden" (click)="closeMobileMenu()">Khu vườn của tôi</a>
-      <a class="nav-link" href="#" (click)="goToCareExpert(); closeMobileMenu(); $event.preventDefault();">Chăm sóc cùng chuyên gia</a>
-      <a class="nav-link" routerLink="/about-us" (click)="closeMobileMenu()">Về chúng tôi</a>
+  <a class="nav-link" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Trang chủ</a>
+  <a class="nav-link" routerLink="/plant-info" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Tìm kiếm cây cảnh</a>
+  <a class="nav-link" routerLink="/user/my-garden" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Khu vườn của tôi</a>
+  <a class="nav-link" href="#" (click)="goToCareExpert(); closeMobileMenu(); $event.preventDefault();">Chăm sóc cùng chuyên gia</a>
+  <a class="nav-link" routerLink="/about-us" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Về chúng tôi</a>
     </div>
     <div class="nav-actions">
       @if (isLoggedIn) {

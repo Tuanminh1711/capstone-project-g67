@@ -13,7 +13,97 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login-admin-page.scss']
 })
 export class LoginAdminPageComponent {
+  showNewPassword = false;
+
+  verifyResetCode() {
+    if (this.resetCode.length !== 6) {
+      this.toast.error('Mã xác nhận phải đủ 6 số.');
+      return;
+    }
+    this.authService.verifyResetCode(this.forgotEmail, this.resetCode).subscribe({
+      next: () => {
+        this.toast.success('Mã xác nhận hợp lệ! Nhập mật khẩu mới.');
+        this.showNewPassword = true;
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.toast.error(err.error?.message || 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
+        this.showNewPassword = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+  pinDigits = Array(6).fill(0);
+  pinCode: string[] = ['', '', '', '', '', ''];
+
+  // Xử lý nhập mã pin từng ô
+  onPinInput(event: any, idx: number) {
+    const input = event.target;
+    const val = input.value.replace(/[^0-9]/g, '');
+    this.pinCode[idx] = val;
+    if (val && idx < this.pinDigits.length - 1) {
+      const next = input.parentElement.querySelectorAll('.pin-input')[idx + 1];
+      if (next) next.focus();
+    }
+    this.resetCode = this.pinCode.join('');
+  }
+
+  onPinKeydown(event: KeyboardEvent, idx: number) {
+    const input = event.target as HTMLInputElement;
+    if (event.key === 'Backspace' && !input.value && idx > 0) {
+      const prev = input.parentElement!.querySelectorAll('.pin-input')[idx - 1];
+      if (prev) (prev as HTMLInputElement).focus();
+    }
+  }
   // Dịch các message lỗi phổ biến sang tiếng Việt
+  showForgotPassword = false;
+  forgotEmail = '';
+  resetCode = '';
+  newPassword = '';
+  forgotStep = 1;
+  forgotMsg = '';
+
+  sendResetCode() {
+    if (!this.forgotEmail) {
+      this.forgotMsg = 'Vui lòng nhập email.';
+      return;
+    }
+    this.forgotMsg = '';
+    this.authService.forgotPassword(this.forgotEmail).subscribe({
+      next: () => {
+        this.forgotMsg = 'Đã gửi mã xác nhận tới email! Vui lòng nhập mã xác nhận.';
+        this.forgotStep = 2;
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.forgotMsg = err.error?.message || 'Gửi mã thất bại';
+      }
+    });
+  }
+
+  resetPassword() {
+    if (!this.forgotEmail || !this.resetCode || !this.newPassword) {
+      this.toast.error('Vui lòng nhập đủ thông tin.');
+      return;
+    }
+    this.authService.resetPassword(this.forgotEmail, this.resetCode, this.newPassword).subscribe({
+      next: () => {
+        this.toast.success('Đặt lại mật khẩu thành công!');
+        this.forgotStep = 1;
+        this.showForgotPassword = false;
+        this.showNewPassword = false;
+        this.newPassword = '';
+        this.pinCode = ['', '', '', '', '', ''];
+        this.router.navigate(['/login-admin']);
+      },
+      error: err => {
+        this.toast.error(err.error?.message || 'Đặt lại mật khẩu thất bại');
+      }
+    });
+  }
+  // Thêm hàm gọi verify-reset-code API
+  // (đã dùng ở trên)
+
   private translateErrorMessage(msg: string): string {
     if (!msg) return '';
     const map: { [key: string]: string } = {

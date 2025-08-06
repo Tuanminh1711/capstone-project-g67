@@ -66,7 +66,7 @@
                   <span class="btn-icon">🌱</span>
                   <span class="btn-text">Thêm vào bộ sưu tập</span>
                 </button>
-                <button class="report-btn modern" (click)="onReportPlant()" title="Báo cáo thông tin sai">
+                <button class="report-btn modern" (click)="onReportPlant()" title="Báo cáo thông tin sai" [disabled]="plant.status === 'INACTIVE'">
                   <span class="btn-icon">🚩</span>
                   <span class="btn-text">Báo cáo</span>
                 </button>

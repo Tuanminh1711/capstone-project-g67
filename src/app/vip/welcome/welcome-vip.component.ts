@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
   standalone: true,
   templateUrl: './welcome-vip.component.html',
   styleUrls: ['./welcome-vip.component.scss'],
-  imports: [TopNavigatorComponent, FooterComponent]
+  imports: [TopNavigatorComponent]
 })
 export class WelcomeVipComponent {
   constructor(private router: Router) {}

@@ -1,143 +1,189 @@
-// --- Modern Plant Info & Care Reminders Styles ---
+// --- Plant Detail Minimalist Layout ---
+.user-plant-detail-container {
+  max-width: 900px;
+  margin: 48px auto 24px auto;
+  background: #fafbfc;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 32px 20px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
 .plant-main-flex {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+.plant-info-flex-row {
+  width: 100%;
   display: flex;
   flex-direction: row;
   gap: 32px;
   align-items: flex-start;
-  margin-top: 18px;
-  flex-wrap: wrap;
+  justify-content: center;
 }
-.plant-info-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  padding: 32px 44px 28px 44px;
-  min-width: 420px;
-  max-width: 540px;
-  flex: 1 1 480px;
+
+.plant-avatar-info {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  border: 1px solid #e0e0e0;
-}
-.plant-header-flex {
-  display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 10px;
+  min-width: 200px;
 }
-.plant-avatar img {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #b2dfdb;
-  background: #f5f5f5;
-}
-.no-image-placeholder.big {
-  width: 72px;
-  height: 72px;
+
+.plant-avatar.big-square {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: #f5f5f5;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  margin-bottom: 14px;
+}
+
+.plant-main-img.big.big-square {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  border: none;
+}
+
+.no-image-placeholder.big.big-square {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 2.2rem;
   color: #bdbdbd;
-  border: 2px solid #b2dfdb;
+  border: 2px dashed #d1d5db;
 }
-.plant-header-info h2 {
-  margin: 0 0 2px 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #1976d2;
+
+.plant-id.highlight {
+  background: #f3f4f6;
+  color: #222;
+  border-radius: 8px;
+  border: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  box-shadow: none;
+  padding: 8px 22px;
+  margin: 12px auto 6px auto;
+  display: block;
+  text-align: center;
+  letter-spacing: 1px;
 }
-.plant-header-info .plant-id {
-  font-size: 1.05rem;
-  color: #757575;
+
+.plant-name {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 6px;
+  text-align: center;
 }
+
 .plant-info-details {
-  margin-top: 10px;
-  width: 100%;
+  flex: 1 1 400px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  padding: 18px 18px 12px 18px;
+  border: 1px solid #ececec;
+  min-width: 220px;
+  max-width: 420px;
 }
 .plant-info-details .info-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.05rem;
-  margin-bottom: 6px;
+  gap: 10px;
+  font-size: 1em;
+  margin-bottom: 8px;
+  color: #333;
 }
 .plant-info-details i {
-  color: #90caf9;
-  font-size: 1.1rem;
+  color: #bdbdbd;
+  font-size: 1.05rem;
 }
-.modern-reminders {
-  flex: 2 1 400px;
-  min-width: 340px;
-  max-width: 700px;
-  background: #f9fafc;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  padding: 28px 32px 22px 32px;
-  border: 1px solid #e0e0e0;
+
+// --- Care Reminders ---
+// --- Care Reminders ---
+.care-reminders-section {
+  width: 100%;
+  margin-top: 18px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  padding: 18px 14px 14px 14px;
+  border: 1px solid #ececec;
 }
 .care-reminders-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #1976d2;
-  margin-bottom: 16px;
-  letter-spacing: 0.5px;
+  color: #222;
+  margin-bottom: 12px;
+  letter-spacing: 0.2px;
 }
-.care-reminders-list.horizontal-scroll {
+.care-reminders-list.flex-row {
   display: flex;
   flex-direction: row;
-  gap: 18px;
+  gap: 16px;
+  flex-wrap: nowrap;
   overflow-x: auto;
-  padding-bottom: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: #b2dfdb #f9fafc;
+  padding-bottom: 4px;
 }
 .care-reminder-card.modern-card {
   background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.07);
-  padding: 18px 22px 14px 22px;
-  min-width: 220px;
-  max-width: 260px;
-  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  padding: 12px 12px 10px 12px;
+  min-width: 170px;
+  max-width: 210px;
+  border: 1px solid #ececec;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   transition: box-shadow 0.2s;
   position: relative;
 }
 .care-reminder-card.modern-card:hover {
-  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.13);
-  border-color: #90caf9;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  border-color: #bdbdbd;
 }
 .reminder-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 2px;
 }
 .reminder-type {
-  font-size: 1.1rem;
+  font-size: 1em;
   font-weight: 500;
-  color: #388e3c;
+  color: #444;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 .reminder-status {
-  font-size: 0.98rem;
-  color: #bdbdbd;
+  font-size: 0.95em;
+  color: #888;
   font-weight: 500;
-  border-radius: 8px;
-  padding: 2px 10px;
-  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 2px 8px;
+  background: #f3f4f6;
   transition: color 0.2s, background 0.2s;
 }
 .reminder-status.active {
@@ -148,7 +194,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 1.01rem;
+  font-size: 0.98em;
 }
 .reminder-next {
   color: #1976d2;
@@ -158,9 +204,310 @@
   color: #757575;
 }
 .reminder-time {
+  color: #888;
+  font-size: 0.95em;
+}
+.reminder-custom-message {
+  margin-top: 2px;
+  color: #444;
+  font-size: 0.95em;
+  background: #f6f8fa;
+  border-radius: 6px;
+  padding: 3px 7px;
+  word-break: break-word;
+}
+.care-reminders-error {
+  color: #b71c1c;
+  font-size: 1em;
+  margin-top: 10px;
+  text-align: center;
+}
+.care-reminders-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1em;
+  color: #1976d2;
+  margin-top: 8px;
+}
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #bdbdbd;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+// --- Responsive ---
+@media (max-width: 900px) {
+  .user-plant-detail-container {
+    padding: 10px 2px 10px 2px;
+    border-radius: 8px;
+  }
+  .plant-main-flex {
+    gap: 12px;
+  }
+  .plant-info-flex-row {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  .plant-info-details {
+    padding: 10px 6px 8px 6px;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .care-reminders-section {
+    padding: 10px 6px 8px 6px;
+  }
+  .care-reminders-list.flex-row {
+    gap: 8px;
+  }
+  .care-reminder-card.modern-card {
+    min-width: 120px;
+    max-width: 160px;
+    padding: 7px 4px 6px 4px;
+  }
+}
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(60px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+// --- Responsive ---
+@media (max-width: 900px) {
+  .user-plant-detail-container {
+    padding: 18px 4px 18px 4px;
+    border-radius: 14px;
+  }
+  .plant-main-flex {
+    gap: 18px;
+  }
+  .plant-info-flex-row {
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+  }
+  .plant-info-details {
+    padding: 18px 10px 14px 10px;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .care-reminders-section {
+    padding: 18px 10px 14px 10px;
+  }
+  .care-reminders-list.flex-row {
+    gap: 12px;
+  }
+  .care-reminder-card.modern-card {
+    min-width: 170px;
+    max-width: 210px;
+    padding: 12px 8px 10px 8px;
+  }
+}
+.plant-header-flex {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+
+.plant-avatar img {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 3px solid #43e97b;
+  background: #f5f5f5;
+  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.15);
+}
+
+.no-image-placeholder.big {
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #f5f5f5;
+  font-size: 3rem;
+  color: #bdbdbd;
+  border: 3px solid #43e97b;
+  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.15);
+}
+
+.no-image-placeholder.big.big-square {
+  width: 200px;
+  height: 200px;
+  border-radius: 18px;
+}
+
+.plant-id {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #0d47a1;
+  border-radius: 14px;
+  padding: 10px 28px;
+  font-size: 1.25em;
+  font-weight: 900;
+  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.18);
+  border: 2px solid #43e97b;
+  margin: 18px auto 8px auto;
+  display: block;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.plant-id.highlight {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0d47a1;
+  border-radius: 16px;
+  border: 2.5px solid #1976d2;
+  font-size: 1.3em;
+  font-weight: 900;
+  box-shadow: 0 6px 24px rgba(25, 118, 210, 0.13);
+  padding: 12px 36px;
+  margin: 18px auto 8px auto;
+  display: block;
+  text-align: center;
+  letter-spacing: 1.5px;
+}
+
+.care-reminders-list.flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.care-reminders-list.one-row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 24px;
+}
+
+.plant-header-info h2 {
+  margin: 0 0 2px 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1976d2;
+}
+
+.plant-header-info .plant-id {
+  font-size: 1.05rem;
+  color: #757575;
+}
+
+.plant-info-details {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.plant-info-details .info-row {
+  max-width: 1100px;
+  margin: 60px auto 6px auto;
+  gap: 8px;
+  font-size: 1.05rem;
+}
+
+.plant-info-details i {
+  color: #90caf9;
+  font-size: 1.1rem;
+}
+
+.modern-reminders {
+  flex: 2 1 400px;
+  min-width: 340px;
+  max-width: 700px;
+  margin-left: 24px;
+  margin-right: 24px;
+  background: #f5f5f5;
+  border-radius: 16px;
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border: 3px solid #43e97b;
+  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.15);
+  font-weight: 600;
+  color: #1976d2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.care-reminder-card.modern-card {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #0d47a1;
+  border-radius: 14px;
+  padding: 10px 28px;
+  font-size: 1.25em;
+  font-weight: 900;
+  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.18);
+  border: 2px solid #43e97b;
+  margin: 18px auto 8px auto;
+  display: block;
+  text-align: center;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.care-reminder-card.modern-card:hover {
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.13);
+}
+
+.reminder-type {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #388e3c;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reminder-status {
+  font-size: 0.98rem;
+  color: #bdbdbd;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 2px 10px;
+  background: #f5f5f5;
+  transition: color 0.2s, background 0.2s;
+}
+
+.reminder-status.active {
+  color: #1976d2;
+  background: #e3f2fd;
+}
+
+.reminder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 1.01rem;
+}
+
+.reminder-next {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.reminder-freq {
+  color: #757575;
+}
+
+.reminder-time {
   color: #ffb300;
   font-size: 0.98rem;
 }
+
 .reminder-custom-message {
   margin-top: 4px;
   color: #43a047;
@@ -170,12 +517,14 @@
   padding: 4px 8px;
   word-break: break-word;
 }
+
 .care-reminders-error {
   color: #b71c1c;
   font-size: 1.08rem;
   margin-top: 12px;
   text-align: center;
 }
+
 .care-reminders-loading {
   display: flex;
   align-items: center;
@@ -184,6 +533,7 @@
   color: #1976d2;
   margin-top: 10px;
 }
+
 .loading-spinner {
   width: 22px;
   height: 22px;
@@ -192,10 +542,13 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Responsive */
 @media (max-width: 1200px) {
   .plant-info-card {
     min-width: 320px;
@@ -203,318 +556,17 @@
     padding: 24px 18px 18px 18px;
   }
 }
+
 @media (max-width: 900px) {
   .plant-main-flex {
     flex-direction: column;
     gap: 24px;
   }
-  .plant-info-card, .modern-reminders {
+
+  .plant-info-card,
+  .modern-reminders {
     max-width: 100%;
     min-width: 0;
     width: 100%;
-  }
-}
-.user-plant-detail-container {
-  max-width: 700px;
-  margin: 80px auto 32px auto; /* Tăng margin-top để tránh top-nav */
-  background: linear-gradient(145deg, #ffffff 0%, #f8fffe 100%);
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(27, 94, 32, 0.12), 0 2px 8px rgba(27, 94, 32, 0.08);
-  padding: 40px 36px 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  position: relative;
-  animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-}
-
-.user-plant-detail-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 50%, #43e97b 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-@keyframes slideInUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(60px) scale(0.95); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
-  }
-}
-
-@keyframes shimmer {
-  0%, 100% { background-position: -200% 0; }
-  50% { background-position: 200% 0; }
-}
-
-.plant-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 28px;
-  width: 100%;
-  padding-bottom: 18px;
-  border-bottom: 2px solid #f0f9f4;
-}
-
-.plant-header h2 {
-  font-size: 2.4em;
-  font-weight: 900;
-  color: #1b5e20;
-  margin: 0;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.plant-id {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  color: #0d47a1;
-  border-radius: 12px;
-  padding: 6px 16px;
-  font-size: 1.1em;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(13, 71, 161, 0.15);
-  border: 1px solid #90caf9;
-}
-
-.plant-images {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 28px;
-  width: 100%;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-}
-
-.plant-img {
-  width: 130px;
-  height: 130px;
-  object-fit: cover;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(27, 94, 32, 0.15);
-  border: 3px solid #e8f5e8;
-  background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
-}
-
-.plant-img:hover {
-  transform: scale(1.08) rotate(-3deg);
-  box-shadow: 0 8px 24px rgba(27, 94, 32, 0.25);
-  border-color: #4caf50;
-}
-
-.plant-info {
-  width: 100%;
-  margin-bottom: 28px;
-  background: linear-gradient(135deg, #f9fffe 0%, #f1f8f4 100%);
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #e8f5e8;
-}
-
-.info-row {
-  margin-bottom: 16px;
-  font-size: 1.15em;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f4f0;
-}
-
-.info-row:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.info-row b {
-  color: #1b5e20;
-  font-weight: 800;
-  min-width: 130px;
-  display: inline-block;
-  font-size: 1.05em;
-}
-
-.info-row .enabled {
-  color: #2e7d32;
-  font-weight: 800;
-  background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-size: 0.9em;
-}
-
-.plant-images-detail {
-  width: 100%;
-  margin-top: 22px;
-}
-
-.image-detail-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 22px;
-}
-
-.image-detail-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 140px;
-}
-
-.plant-img-detail {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  border: 2px solid #e3f2fd;
-  background: #f6fcf3;
-}
-
-.img-desc {
-  font-size: 1em;
-  color: #555;
-  text-align: center;
-  margin: 0;
-}
-
-.loading-bar {
-  text-align: center;
-  color: #2e7d32;
-  margin-top: 60px;
-  font-size: 1.2em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  min-height: 200px;
-  justify-content: center;
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 5px solid #e8f5e8;
-  border-top: 5px solid #43e97b;
-  border-radius: 50%;
-  animation: spin 1s ease-in-out infinite;
-  margin: 0 auto 16px auto;
-  box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-msg {
-  color: #c62828;
-  text-align: center;
-  margin-top: 40px;
-  font-size: 1.2em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  padding: 24px;
-  border-radius: 16px;
-  border: 1px solid #ef9a9a;
-}
-
-.error-icon {
-  font-size: 3em;
-  margin-bottom: 8px;
-  animation: bounce 1s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
-}
-
-.no-image-placeholder {
-  width: 130px;
-  height: 130px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
-  border: 3px dashed #c8e6c9;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.no-image-placeholder:hover {
-  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-  border-color: #4caf50;
-}
-
-.placeholder-icon {
-  font-size: 2.5em;
-  opacity: 0.7;
-}
-
-.placeholder-text {
-  font-size: 0.85em;
-  color: #666;
-  font-weight: 600;
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .user-plant-detail-container {
-    margin: 70px 10px 32px 10px; /* Điều chỉnh margin cho mobile */
-    padding: 24px 20px;
-    border-radius: 16px;
-  }
-
-  .plant-header h2 {
-    font-size: 1.8em;
-  }
-
-  .plant-images {
-    gap: 12px;
-  }
-
-  .plant-img {
-    width: 100px;
-    height: 100px;
-    border-radius: 16px;
-  }
-
-  .no-image-placeholder {
-    width: 100px;
-    height: 100px;
-    border-radius: 16px;
-  }
-
-  .info-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .info-row b {
-    min-width: auto;
-    font-size: 1em;
   }
 }

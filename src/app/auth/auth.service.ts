@@ -49,6 +49,29 @@ export interface VerifyEmailResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  /**
+   * Xác thực mã OTP quên mật khẩu (dùng cho cả user và admin)
+   */
+  verifyResetCode(email: string, code: string) {
+    return this.http.post<any>(`${this.apiUrl}/auth/verify-reset-code`, null, {
+      params: { email, code }
+    });
+  }
+  /**
+   * Gửi email quên mật khẩu (dùng cho cả user và admin)
+   */
+  forgotPassword(email: string) {
+    return this.http.post<any>(`${this.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  /**
+   * Đặt lại mật khẩu với mã xác nhận (dùng cho cả user và admin)
+   */
+  resetPassword(email: string, code: string, newPassword: string) {
+    return this.http.post<any>(`${this.apiUrl}/auth/reset-password`, null, {
+      params: { email, code, newPassword }
+    });
+  }
   private apiUrl = environment.apiUrl; // Direct to backend
 
   constructor(
@@ -91,13 +114,13 @@ export class AuthService {
   /**
    * Đăng xuất
    */
-  logout(redirect = true): void {
+  logout(redirect = true, forceAdminLogin = false): void {
     const token = this.cookieService.getCookie('auth_token');
-    const role = this.jwtUserUtil.getRoleFromToken();
     const doRedirect = () => {
+      this.cookieService.removeAuthToken();
       if (redirect) {
-        if (role === 'admin' || role === 'staff' || role === 'expert') {
-          window.location.href = '/auth/login-admin';
+        if (forceAdminLogin) {
+          window.location.href = '/login-admin';
         } else {
           window.location.href = '/home';
         }
@@ -108,16 +131,13 @@ export class AuthService {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: () => {
-          this.cookieService.removeAuthToken();
           doRedirect();
         },
         error: () => {
-          this.cookieService.removeAuthToken();
           doRedirect();
         }
       });
     } else {
-      this.cookieService.removeAuthToken();
       doRedirect();
     }
   }
