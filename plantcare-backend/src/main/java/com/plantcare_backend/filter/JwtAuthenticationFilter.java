@@ -33,14 +33,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String requestURI = request.getRequestURI();
 
-        // Skip JWT validation for public endpoints
         if (isPublicEndpoint(requestURI)) {
             System.out.println("JWT Filter: Skipping public endpoint: " + requestURI);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Get JWT token from Authorization header
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             System.out.println("JWT Filter: No valid Authorization header for: " + requestURI);
@@ -48,22 +46,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7); // Remove "Bearer " prefix
+        String token = authHeader.substring(7);
 
         try {
-            // Validate JWT token
             if (jwtUtil.validateToken(token)) {
-                // Extract user information
                 Long userId = jwtUtil.getUserIdFromToken(token);
                 String username = jwtUtil.getUsernameFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
 
-                // Set user information in request attributes
                 request.setAttribute("userId", userId);
                 request.setAttribute("username", username);
                 request.setAttribute("role", role);
 
-                // Set authentication context
                 List<GrantedAuthority> authorities = List.of(() -> "ROLE_" + role);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username,
                         null, authorities);
@@ -81,7 +75,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicEndpoint(String requestURI) {
-        // Define public endpoints that don't need JWT validation
         return requestURI.startsWith("/api/auth/") ||
                 requestURI.startsWith("/api/plants/") ||
                 requestURI.startsWith("/api/swagger-ui/") ||
