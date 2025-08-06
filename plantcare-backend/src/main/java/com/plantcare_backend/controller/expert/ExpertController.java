@@ -5,6 +5,7 @@ import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeCategoryStatusRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
+import com.plantcare_backend.dto.request.expert.UpdateArticleRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
@@ -288,6 +289,29 @@ public class ExpertController {
         } catch (Exception e) {
             log.error("Get article detail failed, articleId: {}", articleId, e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Get article detail failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(method = "PUT", summary = "Update article", description = "Update an existing article")
+    @PutMapping("/update-article/{articleId}")
+    public ResponseData<ArticleDetailResponseDTO> updateArticle(
+            @PathVariable Long articleId,
+            @Valid @RequestBody UpdateArticleRequestDTO updateRequest) {
+        log.info("Request update article, articleId: {}", articleId);
+        
+        try {
+            ArticleDetailResponseDTO updatedArticle = expertService.updateArticle(articleId, updateRequest);
+            return new ResponseData<>(HttpStatus.OK.value(), "Article updated successfully", updatedArticle);
+        } catch (ResourceNotFoundException e) {
+            log.error("Article not found for update, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid enum value for update, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid enum value: " + e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("Update article failed, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Update article failed: " + e.getMessage(), null);
         }
     }
 

@@ -4,6 +4,7 @@ import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
+import com.plantcare_backend.dto.request.expert.UpdateArticleRequestDTO;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
 import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
 import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
@@ -32,4 +33,6 @@ public interface ExpertService {
     Page<ArticleResponseDTO> getArticlesByExpert(Long expertId, Pageable pageable);
     
     ArticleDetailResponseDTO getArticleDetail(Long articleId);
+    
+    ArticleDetailResponseDTO updateArticle(Long articleId, UpdateArticleRequestDTO updateRequest);
 }
