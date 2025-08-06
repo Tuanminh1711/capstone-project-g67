@@ -4,9 +4,12 @@ import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeCategoryStatusRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
+import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
+import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
+import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.service.ActivityLogService;
@@ -17,9 +20,21 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/expert")
@@ -147,6 +162,132 @@ public class ExpertController {
         } catch (Exception e) {
             log.error("Change category status failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change category status failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(method = "POST", summary = "Upload article image", description = "Upload image for article")
+    @PostMapping("/upload-article-image")
+    public ResponseEntity<ResponseData<String>> uploadArticleImage(
+            @RequestParam("image") MultipartFile image,
+            @RequestAttribute("userId") Integer expertId) {
+        log.info("Request upload article image, expertId: {}", expertId);
+        
+        try {
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File is empty", null));
+            }
+
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File must be an image", null));
+            }
+
+            if (image.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File size must be less than 5MB", null));
+            }
+
+            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "articles/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String originalFilename = image.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + fileExtension;
+
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(image.getInputStream(), filePath);
+
+            String imageUrl = "/api/expert/article-images/" + newFilename;
+
+            log.info("Article image uploaded successfully: {}", imageUrl);
+            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+
+        } catch (Exception e) {
+            log.error("Upload article image failed, expertId: {}", expertId, e);
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/article-images/{filename}")
+    public ResponseEntity<Resource> getArticleImage(@PathVariable String filename) {
+        try {
+            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "articles/";
+            Path filePath = Paths.get(uploadDir).resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            log.error("Error serving article image: {}", filename, e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(method = "GET", summary = "Get articles by expert", description = "Get paginated list of articles created by expert")
+    @GetMapping("/get_list_articles")
+    public ResponseData<Page<ArticleResponseDTO>> getListArticles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestAttribute("userId") Integer expertId) {
+        log.info("Request get articles by expert, expertId: {}, page: {}, size: {}", expertId, page, size);
+
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ArticleResponseDTO> articles = expertService.getArticlesByExpert(expertId.longValue(), pageable);
+            return new ResponseData<>(HttpStatus.OK.value(), "Get articles successfully", articles);
+        } catch (Exception e) {
+            log.error("Get articles failed, expertId: {}", expertId, e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Get articles failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(method = "PATCH", summary = "Change article status", description = "Change article status (PUBLISHED/DELETED)")
+    @PatchMapping("/change-article-status/{articleId}")
+    public ResponseData<?> changeArticleStatus(
+            @PathVariable Long articleId,
+            @Valid @RequestBody ChangeArticleStatusRequestDTO changeArticleStatusRequestDTO,
+            @RequestAttribute("userId") Integer expertId) {
+        log.info("Request change article status, articleId: {}, status: {}", articleId, changeArticleStatusRequestDTO.getStatus());
+        
+        try {
+            expertService.changeArticleStatus(articleId, changeArticleStatusRequestDTO.getStatus());
+            activityLogService.logActivity(expertId, "Change_Article_Status",
+                    "Expert change article status to " + changeArticleStatusRequestDTO.getStatus() + " for article id " + articleId);
+            return new ResponseData<>(HttpStatus.OK.value(), "Change article status successfully", null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Article not found for status change, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("Change article status failed, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
+        }
+    }
+
+    @Operation(method = "GET", summary = "Get article detail", description = "Get detailed information of a specific article")
+    @GetMapping("/get_article_detail/{articleId}")
+    public ResponseData<ArticleDetailResponseDTO> getArticleDetail(@PathVariable Long articleId) {
+        log.info("Request get article detail, articleId: {}", articleId);
+        
+        try {
+            ArticleDetailResponseDTO articleDetail = expertService.getArticleDetail(articleId);
+            return new ResponseData<>(HttpStatus.OK.value(), "Get article detail successfully", articleDetail);
+        } catch (ResourceNotFoundException e) {
+            log.error("Article not found, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("Get article detail failed, articleId: {}", articleId, e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Get article detail failed: " + e.getMessage());
         }
     }
 

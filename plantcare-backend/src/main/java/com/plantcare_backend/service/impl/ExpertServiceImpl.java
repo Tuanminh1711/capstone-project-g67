@@ -2,7 +2,11 @@ package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
+import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
+import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
+import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
+import com.plantcare_backend.dto.response.expert.ArticleImageDetailDTO;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.repository.ArticleCategoryRepository;
@@ -25,6 +29,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -146,18 +155,102 @@ public class ExpertServiceImpl implements ExpertService {
         log.info("Article created successfully with ID: {}", savedArticle.getId());
 
         if (createArticleRequestDTO.getImageUrls() != null && !createArticleRequestDTO.getImageUrls().isEmpty()) {
-            List<ArticleImage> articleImages = new ArrayList<>();
-            for (String imageUrl : createArticleRequestDTO.getImageUrls()) {
-                ArticleImage articleImage = ArticleImage.builder()
-                        .article(savedArticle)
-                        .imageUrl(imageUrl)
-                        .build();
-                articleImages.add(articleImage);
-            }
-            articleImageRepository.saveAll(articleImages);
-            log.info("Saved {} images for article ID: {}", articleImages.size(), savedArticle.getId());
+            saveArticleImages(savedArticle, createArticleRequestDTO.getImageUrls());
         }
         
         return savedArticle.getId();
+    }
+
+    private void saveArticleImages(Article article, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+
+        List<ArticleImage> articleImages = new ArrayList<>();
+        for (String imageUrl : imageUrls) {
+            ArticleImage articleImage = ArticleImage.builder()
+                    .article(article)
+                    .imageUrl(imageUrl)
+                    .build();
+            articleImages.add(articleImage);
+        }
+        articleImageRepository.saveAll(articleImages);
+        log.info("Saved {} images for article ID: {}", articleImages.size(), article.getId());
+    }
+
+    @Override
+    public void changeArticleStatus(Long articleId, Article.ArticleStatus status) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article with id " + articleId + " not found"));
+
+        // Kiểm tra xem article có phải của expert này không (optional)
+        // Có thể thêm logic kiểm tra author nếu cần
+
+        // Validation: Không cho phép chuyển từ DELETED sang status khác
+        if (article.getStatus() == Article.ArticleStatus.DELETED && status != Article.ArticleStatus.DELETED) {
+            throw new InvalidDataException("Cannot change status of deleted article");
+        }
+
+        article.setStatus(status);
+        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        articleRepository.save(article);
+
+        log.info("Article status changed from {} to {} for article ID: {}", article.getStatus(), status, articleId);
+    }
+
+    @Override
+    public Page<ArticleResponseDTO> getArticlesByExpert(Long expertId, Pageable pageable) {
+        Page<Article> articlesPage = articleRepository.findByAuthorId(expertId, pageable);
+        
+        log.info("Found {} articles for expert ID: {}", articlesPage.getTotalElements(), expertId);
+        return articlesPage.map(this::convertToArticleResponseDTO);
+    }
+
+    private ArticleResponseDTO convertToArticleResponseDTO(Article article) {
+        return ArticleResponseDTO.builder()
+                .id(article.getId())
+                .title(article.getTitle())
+                .categoryName(article.getCategory() != null ? article.getCategory().getName() : null)
+                .imageUrls(article.getImages() != null ? 
+                    article.getImages().stream()
+                        .map(img -> img.getImageUrl())
+                        .toList() : null)
+                .build();
+    }
+
+    @Override
+    public ArticleDetailResponseDTO getArticleDetail(Long articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article not found"));
+
+        ArticleDetailResponseDTO dto = new ArticleDetailResponseDTO();
+        dto.setId(article.getId());
+        dto.setTitle(article.getTitle());
+        dto.setContent(article.getContent());
+        dto.setCategoryName(article.getCategory() != null ? article.getCategory().getName() : null);
+        dto.setAuthorName(article.getAuthor() != null ? article.getAuthor().getUsername() : null);
+        dto.setStatus(article.getStatus());
+        dto.setCreatedBy(article.getCreatedBy());
+        dto.setCreatedAt(article.getCreatedAt());
+        dto.setUpdatedAt(article.getUpdatedAt());
+
+        List<String> imageUrls = new ArrayList<>();
+        List<ArticleImageDetailDTO> imageDetails = new ArrayList<>();
+
+        if (article.getImages() != null) {
+            for (ArticleImage img : article.getImages()) {
+                imageUrls.add(img.getImageUrl());
+
+                ArticleImageDetailDTO imageDetail = new ArticleImageDetailDTO();
+                imageDetail.setId(img.getId());
+                imageDetail.setImageUrl(img.getImageUrl());
+                imageDetail.setDescription(null); // ArticleImage không có description field
+                imageDetails.add(imageDetail);
+            }
+        }
+        dto.setImageUrls(imageUrls);
+        dto.setImages(imageDetails);
+
+        return dto;
     }
 }
