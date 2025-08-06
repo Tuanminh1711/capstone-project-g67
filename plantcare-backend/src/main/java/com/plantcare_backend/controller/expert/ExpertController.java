@@ -8,9 +8,10 @@ import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
+import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
+import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.InvalidDataException;
-import com.plantcare_backend.model.Article;
 import com.plantcare_backend.service.ActivityLogService;
 import com.plantcare_backend.service.ExpertService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -231,15 +235,16 @@ public class ExpertController {
     }
 
     @Operation(method = "GET", summary = "Get articles by expert", description = "Get paginated list of articles created by expert")
-    @GetMapping("/articles")
-    public ResponseData<List<Article>> getArticlesByExpert(
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize,
+    @GetMapping("/get_list_articles")
+    public ResponseData<Page<ArticleResponseDTO>> getListArticles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestAttribute("userId") Integer expertId) {
-        log.info("Request get articles by expert, expertId: {}, pageNo: {}, pageSize: {}", expertId, pageNo, pageSize);
+        log.info("Request get articles by expert, expertId: {}, page: {}, size: {}", expertId, page, size);
 
         try {
-            List<Article> articles = expertService.getArticlesByExpert(expertId.longValue(), pageNo, pageSize);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ArticleResponseDTO> articles = expertService.getArticlesByExpert(expertId.longValue(), pageable);
             return new ResponseData<>(HttpStatus.OK.value(), "Get articles successfully", articles);
         } catch (Exception e) {
             log.error("Get articles failed, expertId: {}", expertId, e);
@@ -266,6 +271,23 @@ public class ExpertController {
         } catch (Exception e) {
             log.error("Change article status failed, articleId: {}", articleId, e);
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
+        }
+    }
+
+    @Operation(method = "GET", summary = "Get article detail", description = "Get detailed information of a specific article")
+    @GetMapping("/get_article_detail/{articleId}")
+    public ResponseData<ArticleDetailResponseDTO> getArticleDetail(@PathVariable Long articleId) {
+        log.info("Request get article detail, articleId: {}", articleId);
+        
+        try {
+            ArticleDetailResponseDTO articleDetail = expertService.getArticleDetail(articleId);
+            return new ResponseData<>(HttpStatus.OK.value(), "Get article detail successfully", articleDetail);
+        } catch (ResourceNotFoundException e) {
+            log.error("Article not found, articleId: {}", articleId, e);
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("Get article detail failed, articleId: {}", articleId, e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Get article detail failed: " + e.getMessage());
         }
     }
 

@@ -4,6 +4,9 @@ import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
+import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
+import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
+import com.plantcare_backend.dto.response.expert.ArticleImageDetailDTO;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.repository.ArticleCategoryRepository;
@@ -196,11 +199,58 @@ public class ExpertServiceImpl implements ExpertService {
     }
 
     @Override
-    public List<Article> getArticlesByExpert(Long expertId, int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+    public Page<ArticleResponseDTO> getArticlesByExpert(Long expertId, Pageable pageable) {
         Page<Article> articlesPage = articleRepository.findByAuthorId(expertId, pageable);
         
         log.info("Found {} articles for expert ID: {}", articlesPage.getTotalElements(), expertId);
-        return articlesPage.getContent();
+        return articlesPage.map(this::convertToArticleResponseDTO);
+    }
+
+    private ArticleResponseDTO convertToArticleResponseDTO(Article article) {
+        return ArticleResponseDTO.builder()
+                .id(article.getId())
+                .title(article.getTitle())
+                .categoryName(article.getCategory() != null ? article.getCategory().getName() : null)
+                .imageUrls(article.getImages() != null ? 
+                    article.getImages().stream()
+                        .map(img -> img.getImageUrl())
+                        .toList() : null)
+                .build();
+    }
+
+    @Override
+    public ArticleDetailResponseDTO getArticleDetail(Long articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article not found"));
+
+        ArticleDetailResponseDTO dto = new ArticleDetailResponseDTO();
+        dto.setId(article.getId());
+        dto.setTitle(article.getTitle());
+        dto.setContent(article.getContent());
+        dto.setCategoryName(article.getCategory() != null ? article.getCategory().getName() : null);
+        dto.setAuthorName(article.getAuthor() != null ? article.getAuthor().getUsername() : null);
+        dto.setStatus(article.getStatus());
+        dto.setCreatedBy(article.getCreatedBy());
+        dto.setCreatedAt(article.getCreatedAt());
+        dto.setUpdatedAt(article.getUpdatedAt());
+
+        List<String> imageUrls = new ArrayList<>();
+        List<ArticleImageDetailDTO> imageDetails = new ArrayList<>();
+
+        if (article.getImages() != null) {
+            for (ArticleImage img : article.getImages()) {
+                imageUrls.add(img.getImageUrl());
+
+                ArticleImageDetailDTO imageDetail = new ArticleImageDetailDTO();
+                imageDetail.setId(img.getId());
+                imageDetail.setImageUrl(img.getImageUrl());
+                imageDetail.setDescription(null); // ArticleImage không có description field
+                imageDetails.add(imageDetail);
+            }
+        }
+        dto.setImageUrls(imageUrls);
+        dto.setImages(imageDetails);
+
+        return dto;
     }
 }
