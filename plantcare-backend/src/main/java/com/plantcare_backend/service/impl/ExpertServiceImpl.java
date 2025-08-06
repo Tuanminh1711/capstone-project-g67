@@ -3,6 +3,8 @@ import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
 import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
+import com.plantcare_backend.dto.request.expert.UpdateArticleRequestDTO;
+import com.plantcare_backend.dto.request.expert.ArticleImageUpdateDTO;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
 import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
 import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
@@ -252,5 +254,77 @@ public class ExpertServiceImpl implements ExpertService {
         dto.setImages(imageDetails);
 
         return dto;
+    }
+
+    @Override
+    public ArticleDetailResponseDTO updateArticle(Long articleId, UpdateArticleRequestDTO updateRequest) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article not found with id: " + articleId));
+
+        ArticleCategory category = articleCategoryRepository.findById(updateRequest.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        article.setTitle(updateRequest.getTitle());
+        article.setContent(updateRequest.getContent());
+        article.setCategory(category);
+        article.setStatus(Article.ArticleStatus.valueOf(updateRequest.getStatus()));
+        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+        // Cập nhật ảnh - Logic linh hoạt
+        if (updateRequest.getImageUpdates() != null && !updateRequest.getImageUpdates().isEmpty()) {
+            // Xử lý update ảnh linh hoạt
+            handleFlexibleImageUpdates(article, updateRequest.getImageUpdates());
+        } else if (updateRequest.getImageUrls() != null) {
+            // Logic cũ - thay thế toàn bộ ảnh
+            if (updateRequest.getImageUrls().isEmpty()) {
+                article.getImages().clear();
+            } else {
+                article.getImages().clear();
+
+                List<ArticleImage> newImages = updateRequest.getImageUrls().stream()
+                        .map(url -> ArticleImage.builder()
+                                .article(article)
+                                .imageUrl(url)
+                                .build())
+                        .collect(Collectors.toList());
+
+                article.getImages().addAll(newImages);
+            }
+        }
+        // Nếu cả imageUpdates và imageUrls đều null, giữ nguyên ảnh cũ
+
+        Article updatedArticle = articleRepository.save(article);
+        return getArticleDetail(updatedArticle.getId());
+    }
+
+    private void handleFlexibleImageUpdates(Article article, List<ArticleImageUpdateDTO> imageUpdates) {
+        for (ArticleImageUpdateDTO imageUpdate : imageUpdates) {
+            switch (imageUpdate.getAction().toUpperCase()) {
+                case "ADD":
+                    if (imageUpdate.getImageUrl() != null) {
+                        ArticleImage newImage = ArticleImage.builder()
+                                .article(article)
+                                .imageUrl(imageUpdate.getImageUrl())
+                                .build();
+                        article.getImages().add(newImage);
+                    }
+                    break;
+                case "UPDATE":
+                    if (imageUpdate.getImageId() != null && imageUpdate.getImageUrl() != null) {
+                        article.getImages().stream()
+                                .filter(img -> img.getId() != null && img.getId().equals(imageUpdate.getImageId()))
+                                .findFirst()
+                                .ifPresent(img -> img.setImageUrl(imageUpdate.getImageUrl()));
+                    }
+                    break;
+                case "DELETE":
+                    if (imageUpdate.getImageId() != null) {
+                        article.getImages().removeIf(img -> img.getId() != null && img.getId().equals(imageUpdate.getImageId()));
+                    }
+                    break;
+                default:
+                    log.warn("Unknown image update action: {}", imageUpdate.getAction());
+            }
+        }
     }
 }
