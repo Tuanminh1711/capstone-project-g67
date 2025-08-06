@@ -7,6 +7,7 @@ import { AuthService } from '../../auth/auth.service';
 import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
 import { ChatStompService, ChatMessage } from '../../vip/chat/chat-stomp.service';
 import { Subscription } from 'rxjs';
+import { UrlService } from '../../shared/url.service';
 
 @Component({
   selector: 'app-expert-chat',
@@ -38,7 +39,8 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
     private ws: ChatStompService,
-    private http: HttpClient
+    private http: HttpClient,
+    private urlService: UrlService
   ) {}
 
   ngOnInit(): void {
@@ -99,15 +101,14 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     return currentId === senderId;
   }
 
-  // Load lịch sử tin nhắn từ database - copy từ VIP chat
+  // Load lịch sử tin nhắn từ database - dùng UrlService giống VIP chat
   fetchHistory(): void {
     this.loading = true;
     this.error = '';
-    // Gọi đúng endpoint không có /api nếu backend không có prefix /api
-    this.http.get<ChatMessage[]>('/chat/history').subscribe({
+    const chatHistoryUrl = this.urlService.getApiUrl('api/chat/history');
+    this.http.get<ChatMessage[]>(chatHistoryUrl).subscribe({
       next: (data: any) => {
         const messages = Array.isArray(data) ? data : (data?.data || []);
-        
         this.messages = messages;
         this.loading = false;
         this.cdr.markForCheck();

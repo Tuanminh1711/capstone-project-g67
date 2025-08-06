@@ -79,7 +79,7 @@ export class AdminSidebarComponent {
           title: 'Thống kê',
           open: false,
           items: [
-            { label: 'Tổng hợp thống kê', link: '/admin/statistics/overview' }
+            { label: 'Tổng hợp thống kê', link: '/admin/statistics' }
           ]
         }
       ];

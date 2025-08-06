@@ -34,8 +34,7 @@ export class AdminTopNavigatorComponent {
   logout() {
     // Sử dụng AuthService để logout đúng cách
     this.authService.logout();
-    
-    // Chuyển hướng về trang home
-    this.router.navigate(['/home']);
+    // Sau khi logout, chuyển hướng về trang đăng nhập admin
+    this.router.navigate(['/login-admin']);
   }
 }

@@ -73,7 +73,7 @@
             <div class="image-column">
               <div class="plant-image">
                 <img *ngIf="plant.imageUrls && plant.imageUrls.length > 0" 
-                     [src]="plant.imageUrls[0]" 
+                     [src]="getPlantImageUrl(plant.imageUrls[0])" 
                      [alt]="plant.commonName"
                      (error)="onImageError($event)">
                 <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
@@ -212,8 +212,8 @@
               <div class="image-gallery">
                 <div *ngFor="let imageUrl of plant.imageUrls; let i = index" 
                      class="gallery-image" 
-                     (click)="openImageModal(imageUrl, i)">
-                  <img [src]="imageUrl" [alt]="plant.commonName + ' - Ảnh ' + (i+1)">
+                     (click)="openImageModal(getPlantImageUrl(imageUrl), i)">
+                  <img [src]="getPlantImageUrl(imageUrl)" [alt]="plant.commonName + ' - Ảnh ' + (i+1)">
                   <div class="image-overlay">
                     <i class="fas fa-search-plus"></i>
                   </div>

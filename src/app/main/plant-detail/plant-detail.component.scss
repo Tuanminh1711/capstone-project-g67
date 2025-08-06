@@ -34,12 +34,16 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  padding-top: 32px;
+  padding-bottom: 32px;
 }
 
 .plant-detail-content {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 12px;
+  padding: 32px 16px 0 16px;
   display: flex;
   flex-direction: column;
   gap: 40px;
@@ -71,13 +75,13 @@
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(16,185,129,0.10);
   border: 1.5px solid #bbf7d0;
-  padding: 0;
   background: #f0fdf4;
   width: 220px;
   height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 18px;
 }
 .plant-info-image.modern .main-image .image-wrapper.modern .plant-img.modern {
   width: 100%;
@@ -195,20 +199,25 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
+  align-items: stretch;
 }
 .plant-detail-card.modern.left-card, .plant-detail-card.modern.right-card {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  background: white;
-  border-radius: 36px;
+  gap: 24px;
+  background: #fff;
+  border-radius: 32px;
   box-shadow: 0 8px 32px rgba(16,185,129,0.10);
   border: 1.5px solid #e0f2fe;
   padding: 40px 32px;
+  min-height: 420px;
   transition: box-shadow 0.25s;
 }
-.plant-detail-card.modern.left-card:hover, .plant-detail-card.modern.right-card:hover {
-  box-shadow: 0 16px 48px rgba(16,185,129,0.16);
+.plant-detail-card.modern.left-card {
+  align-items: flex-start;
+}
+.plant-detail-card.modern.right-card {
+  align-items: flex-start;
 }
 .plant-detail-card.modern.left-card .plant-info-image.modern {
   margin-bottom: 8px;
@@ -324,12 +333,6 @@
 @media (max-width: 1100px) {
   .plant-detail-content {
     padding: 12px 2px;
-  }
-  .plant-info-card.modern {
-    flex-direction: column;
-    gap: 24px;
-    padding: 28px 8px 24px 8px;
-    border-radius: 24px;
   }
   .plant-detail-cards.modern {
     grid-template-columns: 1fr;

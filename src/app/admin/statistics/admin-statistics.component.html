@@ -3,26 +3,43 @@
     <span class="icon">📊</span>
     <h2>Thống kê tổng hợp hệ thống</h2>
   </div>
-  <button (click)="fetchAllStatistics()" [disabled]="loading" class="refresh-btn">
-    <span *ngIf="!loading">Làm mới</span>
-    <span *ngIf="loading">Đang tải...</span>
-  </button>
+  <form class="date-range-form" (ngSubmit)="fetchAllStatistics()">
+    <div class="date-inputs">
+      <label>Chọn từ ngày
+        <input type="date" [(ngModel)]="startDate" name="startDate" required />
+      </label>
+      <span style="font-weight:600;color:#19916c;padding:0 6px;">→</span>
+      <label>đến ngày
+        <input type="date" [(ngModel)]="endDate" name="endDate" required />
+      </label>
+    </div>
+  </form>
   <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
-  <div *ngIf="!loading && !errorMsg" class="stat-list">
-    <div class="statistic-card">
-      <div class="stat-icon users">👥</div>
-      <div class="stat-label">Tổng số người dùng đã truy cập</div>
-      <div class="stat-number">{{ totalBrowseUsers ?? '-' }}</div>
+
+  <div *ngIf="!loading && !errorMsg" class="charts-section">
+    <div class="chart-card">
+      <h3>Người dùng truy cập theo ngày</h3>
+      <canvas baseChart
+        [data]="browseUsersChartData"
+        [options]="chartOptions"
+        [type]="'bar'"
+        style="height:320px;max-width:100%"></canvas>
     </div>
-    <div class="statistic-card">
-      <div class="stat-icon reg">📝</div>
-      <div class="stat-label">Tổng số người dùng đã đăng ký</div>
-      <div class="stat-number">{{ totalRegisteredUsers ?? '-' }}</div>
+    <div class="chart-card">
+      <h3>Người dùng đăng ký theo ngày</h3>
+      <canvas baseChart
+        [data]="registerUsersChartData"
+        [options]="chartOptions"
+        [type]="'bar'"
+        style="height:320px;max-width:100%"></canvas>
     </div>
-    <div class="statistic-card">
-      <div class="stat-icon plant">🌱</div>
-      <div class="stat-label">Tổng số cây đã được thêm</div>
-      <div class="stat-number">{{ totalAddedPlants ?? '-' }}</div>
+    <div class="chart-card">
+      <h3>Số cây được thêm theo ngày</h3>
+      <canvas baseChart
+        [data]="addedPlantsChartData"
+        [options]="chartOptions"
+        [type]="'bar'"
+        style="height:320px;max-width:100%"></canvas>
     </div>
   </div>
 </div>

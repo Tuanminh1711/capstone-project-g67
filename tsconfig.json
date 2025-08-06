@@ -5,7 +5,6 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
@@ -13,12 +12,15 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve",
+    "module": "esnext",
+    "moduleResolution": "node",
     "baseUrl": "./src",
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "paths": {
-      "environments/*": ["environments/*"]
+      "environments/*": [ "environments/*" ]
     },
     "preserveWatchOutput": true,
     "pretty": false
