@@ -45,7 +45,8 @@ public class UserPlantValidator {
         }
 
         if (!ValidationUtils.isValidScientificName(scientificName)) {
-            throw new ValidationException("Tên khoa học phải có định dạng: Chi loài (ví dụ: Ficus elastica)");
+            throw new ValidationException(
+                    "Tên khoa học phải có định dạng: Chi loài [cultivar] (ví dụ: Ficus elastica, Aglaonema rotundum pink)");
         }
 
         if (!ValidationUtils.isLengthInRange(scientificName,
