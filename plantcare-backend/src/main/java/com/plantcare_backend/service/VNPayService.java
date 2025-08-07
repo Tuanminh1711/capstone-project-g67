@@ -5,7 +5,7 @@ import com.plantcare_backend.model.VipOrder;
 import java.util.Map;
 
 public interface VNPayService {
-    String createPaymentUrl(VipOrder order, String ipAddress);
+    String createPaymentUrl(VipOrder order, String ipAddress, String returnUrl);
     boolean verifyPaymentResponse(Map<String, String> response);
     String generateChecksum(Map<String, String> params);
 }

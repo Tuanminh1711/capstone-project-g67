@@ -13,12 +13,14 @@ import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.AIDiseaseDetectionService;
 import com.plantcare_backend.service.NotificationService;
+import com.plantcare_backend.service.PlantIdService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.plantcare_backend.dto.response.ai_disease.PlantIdResponse;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -28,6 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService {
+
+    // ==================== DEPENDENCIES ====================
     private final PlantDiseaseRepository plantDiseaseRepository;
     private final DiseaseDetectionRepository diseaseDetectionRepository;
     private final TreatmentProgressRepository treatmentProgressRepository;
@@ -35,18 +39,19 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     private final UserPlantRepository userPlantsRepository;
     private final NotificationService notificationService;
     private final TreatmentGuideRepository treatmentGuideRepository;
+    private final PlantIdService plantIdService;
+
+    // ==================== PUBLIC METHODS (Interface Implementation) ====================
 
     @Override
-    public DiseaseDetectionResultDTO detectDiseaseFromImage(MultipartFile image, Long userId, Long plantId) {
-        log.info("Detecting disease from image for user: {}, plant: {}", userId, plantId);
+    public DiseaseDetectionResultDTO detectDiseaseFromImage(MultipartFile image, Long userId) {
+        log.info("Detecting disease from image for user: {}", userId);
 
-        if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Image file is required");
-        }
+        validateImage(image);
 
-        DiseaseDetectionResultDTO result = simulateDiseaseDetection(image, userId, plantId);
+        DiseaseDetectionResultDTO result = simulateDiseaseDetection(image, userId);
 
-        saveDetectionResult(result, userId, plantId, "IMAGE");
+        saveDetectionResult(result, userId, "IMAGE");
 
         if ("CRITICAL".equals(result.getSeverity()) || "HIGH".equals(result.getSeverity())) {
             sendUrgentDiseaseAlert(userId, result.getDetectedDisease(), result.getSeverity());
@@ -61,7 +66,7 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
 
         DiseaseDetectionResultDTO result = analyzeSymptoms(request, userId);
 
-        saveDetectionResult(result, userId,null, "SYMPTOMS");
+        saveDetectionResult(result, userId, "SYMPTOMS");
 
         return result;
     }
@@ -224,27 +229,57 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         return plantDiseaseRepository.findBySeverityAndIsActiveTrue(severity);
     }
 
-    private DiseaseDetectionResultDTO simulateDiseaseDetection(MultipartFile image, Long userId, Long plantId) {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    // ==================== PRIVATE METHODS - AI DISEASE DETECTION ====================
 
-        PlantDiseaseType[] diseases = PlantDiseaseType.values();
-        PlantDiseaseType randomDisease = diseases[new Random().nextInt(diseases.length)];
-
-        double confidence = 0.7 + (new Random().nextDouble() * 0.3);
-
-        return DiseaseDetectionResultDTO.builder()
-                .detectedDisease(randomDisease.getVietnameseName())
-                .confidenceScore(confidence)
-                .severity(randomDisease.getSeverity())
-                .symptoms(randomDisease.getSymptoms())
-                .detectionMethod("IMAGE")
-                .aiModelVersion("1.0.0")
-                .build();
+    private DiseaseDetectionResultDTO simulateDiseaseDetection(MultipartFile image, Long userId) {
+        return analyzeImageWithPlantId(image, userId);
     }
+
+    private DiseaseDetectionResultDTO analyzeImageWithPlantId(MultipartFile image, Long userId) {
+        try {
+            log.info("Analyzing image with Plant.id API for user: {}, plant: {}", userId);
+
+            PlantIdResponse plantIdResponse = plantIdService.analyzePlantDisease(image);
+
+            if (plantIdResponse == null || plantIdResponse.getResults() == null || plantIdResponse.getResults().isEmpty()) {
+                log.warn("No results from Plant.id API");
+                return createUnknownDiseaseResult();
+            }
+
+            PlantIdResponse.PlantIdResult bestResult = plantIdResponse.getResults().get(0);
+
+            // Tìm bệnh có probability cao nhất
+            PlantIdResponse.PlantIdDisease bestDisease = null;
+            if (bestResult.getDiseases() != null && !bestResult.getDiseases().isEmpty()) {
+                bestDisease = bestResult.getDiseases().stream()
+                        .max((d1, d2) -> Double.compare(d1.getProbability(), d2.getProbability()))
+                        .orElse(null);
+            }
+
+            if (bestDisease != null) {
+                log.info("Detected disease: {} with confidence: {}", bestDisease.getName(), bestDisease.getProbability());
+
+                return DiseaseDetectionResultDTO.builder()
+                        .detectedDisease(bestDisease.getName())
+                        .confidenceScore(bestDisease.getProbability())
+                        .severity(determineSeverity(bestDisease.getName()))
+                        .symptoms(bestDisease.getDescription())
+                        .recommendedTreatment(bestDisease.getTreatment())
+                        .detectionMethod("AI_PLANT_ID")
+                        .aiModelVersion("2.0.0")
+                        .build();
+            } else {
+                log.info("No disease detected, plant appears healthy");
+                return createHealthyPlantResult();
+            }
+
+        } catch (Exception e) {
+            log.error("Error analyzing image with Plant.id API", e);
+            return createUnknownDiseaseResult();
+        }
+    }
+
+    // ==================== PRIVATE METHODS - SYMPTOM ANALYSIS ====================
 
     private DiseaseDetectionResultDTO analyzeSymptoms(DiseaseDetectionRequestDTO request, Long userId) {
         String description = request.getDescription().toLowerCase();
@@ -288,6 +323,7 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
                 .aiModelVersion("1.0.0")
                 .build();
     }
+
     private List<String> extractKeywords(String description) {
         String[] words = description.split("\\s+");
         List<String> keywords = new ArrayList<>();
@@ -314,19 +350,92 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         return Math.min(score, 1.0); // Giới hạn tối đa 1.0
     }
 
-    private void saveDetectionResult(DiseaseDetectionResultDTO result, Long userId, Long plantId, String method) {
+    // ==================== PRIVATE METHODS - RESULT CREATION ====================
+
+    private DiseaseDetectionResultDTO createUnknownDiseaseResult() {
+        return DiseaseDetectionResultDTO.builder()
+                .detectedDisease("Không xác định được bệnh")
+                .confidenceScore(0.0)
+                .severity("LOW")
+                .symptoms("Không có triệu chứng rõ ràng")
+                .recommendedTreatment("Vui lòng cung cấp ảnh rõ ràng hơn hoặc thử lại sau")
+                .detectionMethod("AI_PLANT_ID")
+                .aiModelVersion("2.0.0")
+                .build();
+    }
+
+    private DiseaseDetectionResultDTO createHealthyPlantResult() {
+        return DiseaseDetectionResultDTO.builder()
+                .detectedDisease("Cây khỏe mạnh")
+                .confidenceScore(0.9)
+                .severity("LOW")
+                .symptoms("Không phát hiện bệnh")
+                .recommendedTreatment("Cây của bạn đang khỏe mạnh. Tiếp tục chăm sóc như bình thường")
+                .detectionMethod("AI_PLANT_ID")
+                .aiModelVersion("2.0.0")
+                .build();
+    }
+
+    // ==================== PRIVATE METHODS - UTILITY FUNCTIONS ====================
+
+    private String determineSeverity(String diseaseName) {
+        if (diseaseName == null) return "LOW";
+
+        String lowerDiseaseName = diseaseName.toLowerCase();
+
+        // Bệnh nghiêm trọng
+        if (lowerDiseaseName.contains("critical") ||
+                lowerDiseaseName.contains("severe") ||
+                lowerDiseaseName.contains("fatal") ||
+                lowerDiseaseName.contains("deadly")) {
+            return "CRITICAL";
+        }
+
+        // Bệnh cao
+        if (lowerDiseaseName.contains("high") ||
+                lowerDiseaseName.contains("serious") ||
+                lowerDiseaseName.contains("advanced") ||
+                lowerDiseaseName.contains("severe")) {
+            return "HIGH";
+        }
+
+        // Bệnh trung bình
+        if (lowerDiseaseName.contains("medium") ||
+                lowerDiseaseName.contains("moderate") ||
+                lowerDiseaseName.contains("mild")) {
+            return "MEDIUM";
+        }
+
+        // Bệnh nhẹ hoặc không xác định
+        return "LOW";
+    }
+
+    private void validateImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("Image file is required");
+        }
+
+        // Kiểm tra định dạng file
+        String contentType = image.getContentType();
+        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new IllegalArgumentException("Chỉ chấp nhận file JPG hoặc PNG");
+        }
+
+        // Kiểm tra kích thước file (max 10MB)
+        if (image.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File quá lớn (tối đa 10MB)");
+        }
+    }
+
+    // ==================== PRIVATE METHODS - DATABASE OPERATIONS ====================
+
+    private void saveDetectionResult(DiseaseDetectionResultDTO result, Long userId, String method) {
         Users user = userRepository.findById(Math.toIntExact(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserPlants userPlant = null;
-        if (plantId != null) {
-            userPlant = userPlantsRepository.findById(plantId)
-                    .orElse(null);
-        }
-
         DiseaseDetection detection = new DiseaseDetection();
         detection.setUser(user);
-        detection.setUserPlant(userPlant);
+        detection.setUserPlant(null);
         detection.setDetectedDisease(result.getDetectedDisease());
         detection.setConfidenceScore(result.getConfidenceScore());
         detection.setSeverity(result.getSeverity());
@@ -338,6 +447,8 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
 
         diseaseDetectionRepository.save(detection);
     }
+
+    // ==================== PRIVATE METHODS - TREATMENT GUIDE ====================
 
     private TreatmentGuideDTO createTreatmentGuide(PlantDisease disease) {
         List<TreatmentGuide> guides = treatmentGuideRepository.findByDiseaseIdOrderByStepNumber(disease.getId());
@@ -393,6 +504,8 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     private String calculateEstimatedDuration(List<TreatmentGuide> guides) {
         return "2-3 tuần";
     }
+
+    // ==================== PRIVATE METHODS - NOTIFICATIONS ====================
 
     private void sendUrgentDiseaseAlert(Long userId, String diseaseName, String severity) {
         String message = String.format("⚠️ CẢNH BÁO: Phát hiện bệnh %s (Mức độ: %s). Cần xử lý ngay!", diseaseName, severity);

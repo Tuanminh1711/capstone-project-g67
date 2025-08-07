@@ -42,13 +42,12 @@ public class AIDiseaseDetectionController {
     @Operation(summary = "Detect disease from image", description = "Upload plant image for AI disease detection")
     public ResponseEntity<DiseaseDetectionResultDTO> detectDiseaseFromImage(
             @Parameter(description = "Plant image file") @RequestParam("image") MultipartFile image,
-            @Parameter(description = "Plant ID") @RequestParam("plantId") Long plantId,
             @RequestAttribute("userId") Long userId) {
 
-        log.info("Disease detection request from image for user: {}, plant: {}", userId, plantId);
+        log.info("Disease detection request from image for user: {}, plant: {}", userId);
 
         try {
-            DiseaseDetectionResultDTO result = aiDiseaseDetectionService.detectDiseaseFromImage(image, userId, plantId);
+            DiseaseDetectionResultDTO result = aiDiseaseDetectionService.detectDiseaseFromImage(image, userId);
 
             // Log activity
             activityLogService.logActivity(Math.toIntExact(userId), "DISEASE_DETECTION",
