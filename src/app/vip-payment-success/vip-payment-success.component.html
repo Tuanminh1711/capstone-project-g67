@@ -1,0 +1,9 @@
+<div class="vip-success-container">
+  <div class="icon-success">
+    <span>🎉</span>
+  </div>
+  <h2>{{ message }}</h2>
+  <p *ngIf="username">Xin chào <b>{{ username }}</b>!</p>
+  <p *ngIf="newRole">Bạn đã được nâng cấp lên <b>{{ newRole }}</b>.</p>
+  <a routerLink="/home" class="btn btn-primary">Về trang chủ</a>
+</div>

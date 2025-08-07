@@ -220,47 +220,21 @@
           <i class="fas fa-images"></i>
           Hình Ảnh
         </h3>
-        
-        <div formArrayName="imageUrls" class="image-urls-container">
-          <div *ngFor="let imageUrl of imageUrls.controls; let i = index" class="image-url-group">
-            <div class="form-group">
-              <label class="form-label">
-                Ảnh {{ i + 1 }} <span class="required">*</span>
-              </label>
-              <div class="input-group">
-                <input
-                  type="file"
-                  accept="image/*"
-                  (change)="onImageFileSelected($event, i)"
-                  class="form-control mt-1"
-                  title="Chọn ảnh để upload"
-                />
-                <button
-                  type="button"
-                  class="btn btn-danger btn-sm"
-                  (click)="removeImageUrl(i)"
-                  [disabled]="imageUrls.length <= 1"
-                  title="Xóa ảnh"
-                >
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-              <div class="error-message" *ngIf="getImageUrlError(i)">
-                {{ getImageUrlError(i) }}
-              </div>
-            </div>
+        <div class="form-group">
+          <label class="form-label">
+            Ảnh đại diện <span class="required">*</span>
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onImageFileSelected($event)"
+            class="form-control mt-1"
+            title="Chọn ảnh để upload"
+          />
+          <div class="error-message" *ngIf="!selectedImageFile && isSubmitting">
+            Vui lòng chọn ảnh cho cây
           </div>
         </div>
-
-        <button
-          type="button"
-          class="btn btn-outline-primary btn-sm"
-          (click)="addImageUrl()"
-          title="Thêm URL hình ảnh"
-        >
-          <i class="fas fa-plus"></i>
-          Thêm Hình Ảnh
-        </button>
       </div>
 
       <!-- Action Buttons -->

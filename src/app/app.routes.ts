@@ -48,6 +48,10 @@ export const routes: Routes = [
   { path: 'user/plant-care-reminder/:userPlantId', loadComponent: () => import('./user/plant/plant-care-reminder-setup/plant-care-reminder-setup.component').then(m => m.PlantCareReminderSetupComponent) },
   { path: 'user/add-plant/:plantId', loadComponent: () => import('./user/plant/add-plant/add-plant.component').then(m => m.AddPlantComponent) },
   { path: 'user/report-plant/:id', loadComponent: () => import('./user/plant/report-plant/report-plant-page.component').then(m => m.ReportPlantPageComponent) },
+  {
+    path: 'vip-payment-success',
+    loadComponent: () => import('./vip-payment-success/vip-payment-success.component').then(m => m.VipPaymentSuccessComponent)
+  },
 
   // EXPERT
   { 

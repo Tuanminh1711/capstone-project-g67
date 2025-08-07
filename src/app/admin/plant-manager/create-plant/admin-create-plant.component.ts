@@ -35,18 +35,17 @@ export interface CreatePlantRequest {
 })
 export class AdminCreatePlantComponent extends BaseAdminListComponent implements OnInit {
 
-  async onImageFileSelected(event: Event, index: number) {
+  selectedImageFile: File | null = null;
+
+  onImageFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-    try {
-      const imageUrl = await this.createPlantService.uploadPlantImage(file);
-      this.imageUrls.at(index).setValue(imageUrl);
-      this.toastService.success('Upload ảnh thành công!');
-      this.cdr.markForCheck();
-    } catch (err: any) {
-      this.toastService.error(err?.message || 'Upload ảnh thất bại');
+    if (!input.files || input.files.length === 0) {
+      this.selectedImageFile = null;
+      return;
     }
+    this.selectedImageFile = input.files[0];
+    // Debug log
+    console.log('Selected image file:', this.selectedImageFile);
   }
   createPlantForm: FormGroup;
   categories: PlantCategory[] = [];
@@ -109,23 +108,8 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
       waterRequirement: ['', [Validators.required]],
       careDifficulty: ['', [Validators.required]],
       suitableLocation: ['', [Validators.required]],
-      commonDiseases: [''],
-      imageUrls: this.fb.array([this.fb.control('', [Validators.required])])
+      commonDiseases: ['']
     });
-  }
-
-  get imageUrls(): FormArray {
-    return this.createPlantForm.get('imageUrls') as FormArray;
-  }
-
-  addImageUrl(): void {
-    this.imageUrls.push(this.fb.control('', [Validators.required]));
-  }
-
-  removeImageUrl(index: number): void {
-    if (this.imageUrls.length > 1) {
-      this.imageUrls.removeAt(index);
-    }
   }
 
   private async loadCategories(): Promise<void> {
@@ -149,15 +133,23 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
   }
 
   async onSubmit(): Promise<void> {
+
+    console.log('Form invalid:', this.createPlantForm.invalid);
+    console.log('Form value:', this.createPlantForm.value);
     if (this.createPlantForm.invalid) {
       this.markFormGroupTouched();
       this.setError('Vui lòng kiểm tra lại thông tin nhập vào');
       return;
     }
 
-    setTimeout(() => {
-      this.isSubmitting = true;
-    });
+
+    if (!this.selectedImageFile) {
+      this.setError('Vui lòng chọn ảnh cho cây');
+      console.error('selectedImageFile is null at submit');
+      return;
+    }
+
+  this.isSubmitting = true;
 
     try {
       const formValue = this.createPlantForm.value;
@@ -172,34 +164,39 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
         careDifficulty: formValue.careDifficulty,
         suitableLocation: formValue.suitableLocation.trim(),
         commonDiseases: formValue.commonDiseases?.trim() || '',
-        imageUrls: formValue.imageUrls.filter((url: string) => url.trim()).map((url: string) => url.trim())
+        imageUrls: [] // Không gửi imageUrls khi tạo plant
       };
 
-      // Validate required fields
+      // Validate required fields (không check imageUrls)
       if (!createPlantRequest.scientificName || !createPlantRequest.commonName || 
           !createPlantRequest.categoryId || !createPlantRequest.description ||
           !createPlantRequest.careInstructions || !createPlantRequest.lightRequirement ||
           !createPlantRequest.waterRequirement || !createPlantRequest.careDifficulty ||
-          !createPlantRequest.suitableLocation || !createPlantRequest.imageUrls.length) {
+          !createPlantRequest.suitableLocation) {
         this.setError('Vui lòng điền đầy đủ tất cả thông tin bắt buộc');
         return;
       }
 
+      // 1. Tạo plant trước
       const response = await this.createPlantService.createPlant(createPlantRequest);
-      if (response && (response as any).status === 500) {
-        throw new Error((response as any).message || 'Server error occurred');
+      if (!response || !response.id) {
+        throw new Error((response as any)?.message || 'Tạo cây thất bại');
       }
+
+      // 2. Upload ảnh với plantId vừa tạo
+  console.log('Uploading image for plantId:', response.id, 'file:', this.selectedImageFile);
+  await this.createPlantService.uploadPlantImage(response.id, this.selectedImageFile);
 
       this.setSuccess('Tạo cây mới thành công!');
       this.createPlantForm.reset();
       this.createPlantForm = this.initializeForm();
+      this.selectedImageFile = null;
       this.router.navigate(['/admin/plants']);
     } catch (error: any) {
       this.handleApiError(error);
     } finally {
-      setTimeout(() => {
-        this.isSubmitting = false;
-      });
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -234,35 +231,15 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
   }
 
   getFieldError(fieldName: string): string {
-    const field = this.createPlantForm.get(fieldName);
-    if (field?.touched && field?.errors) {
-      if (field.errors['required']) return `${this.getFieldLabel(fieldName)} là bắt buộc`;
-      if (field.errors['minlength']) return `${this.getFieldLabel(fieldName)} phải có ít nhất ${field.errors['minlength'].requiredLength} ký tự`;
-      if (field.errors['pattern']) return 'URL không hợp lệ';
+    const control = this.createPlantForm.get(fieldName);
+    if (control && control.touched && control.invalid) {
+      if (control.errors?.required) {
+        return 'Trường này là bắt buộc';
+      }
+      if (control.errors?.minlength) {
+        return `Tối thiểu ${control.errors.minlength.requiredLength} ký tự`;
+      }
     }
     return '';
-  }
-
-  getImageUrlError(index: number): string {
-    const control = this.imageUrls.at(index);
-    if (control?.touched && control?.errors) {
-      if (control.errors['required']) return 'URL ảnh là bắt buộc';
-    }
-    return '';
-  }
-
-  private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      scientificName: 'Tên khoa học',
-      commonName: 'Tên thường gọi',
-      categoryId: 'Danh mục',
-      description: 'Mô tả',
-      careInstructions: 'Hướng dẫn chăm sóc',
-      lightRequirement: 'Yêu cầu ánh sáng',
-      waterRequirement: 'Yêu cầu nước',
-      careDifficulty: 'Độ khó chăm sóc',
-      suitableLocation: 'Vị trí phù hợp'
-    };
-    return labels[fieldName] || fieldName;
   }
 }

@@ -45,7 +45,6 @@
                   <img [src]="img" alt="Ảnh cây" (error)="onImageError($event)" />
                   <input type="file" accept="image/*" style="display:none" (change)="onReplaceImage($event)" />
                 </label>
-                <button type="button" class="save-image-btn" (click)="saveImage()">Lưu ảnh</button>
               </div>
               <!-- Ô thêm ảnh mới -->
               <label class="image-item add-image">

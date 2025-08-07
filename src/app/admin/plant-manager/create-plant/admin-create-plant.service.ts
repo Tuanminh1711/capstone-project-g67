@@ -58,8 +58,8 @@ export class AdminCreatePlantService {
     return firstValueFrom(this.http.get<PlantCategory[]>(url));
   }
 
-  async uploadPlantImage(file: File): Promise<string> {
-    const url = `${this.baseUrl}/manager/upload-plant-image`;
+  async uploadPlantImage(plantId: number, file: File): Promise<string> {
+    const url = `${this.baseUrl}/manager/upload-plant-image/${plantId}`;
     const formData = new FormData();
     formData.append('image', file);
     // Không set Content-Type, để browser tự set multipart/form-data
