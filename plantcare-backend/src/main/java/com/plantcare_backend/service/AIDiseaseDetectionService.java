@@ -16,7 +16,7 @@ import java.util.List;
 
 public interface AIDiseaseDetectionService {
     // Phát hiện bệnh từ hình ảnh
-    DiseaseDetectionResultDTO detectDiseaseFromImage(MultipartFile image, Long userId, Long plantId);
+    DiseaseDetectionResultDTO detectDiseaseFromImage(MultipartFile image, Long userId);
 
     // Phát hiện bệnh từ triệu chứng
     DiseaseDetectionResultDTO detectDiseaseFromSymptoms(DiseaseDetectionRequestDTO request, Long userId);

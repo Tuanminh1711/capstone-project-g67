@@ -30,13 +30,17 @@ public class PaymentController {
     private VNPayService vnPayService;
 
     @PostMapping("/vnpay/create")
-    public ResponseEntity<?> createVNPayPayment(@RequestParam Integer userId, @RequestParam BigDecimal amount, HttpServletRequest request) {
+    public ResponseEntity<?> createVNPayPayment(
+            @RequestParam Integer userId,
+            @RequestParam BigDecimal amount,
+            @RequestParam String returnUrl,
+            HttpServletRequest request) {
         VipOrder order = vipOrderService.createOrder(userId, amount);
 
         activityLogService.logActivity(userId, "CREATE_VNPAY_ORDER", "Created VNPAY order with amount: " + amount, request);
 
         String ipAddress = getClientIpAddress(request);
-        String paymentUrl = vnPayService.createPaymentUrl(order, ipAddress);
+        String paymentUrl = vnPayService.createPaymentUrl(order, ipAddress, returnUrl);
 
         return ResponseEntity.ok(Map.of("orderId", order.getOrderId(), "paymentUrl", paymentUrl, "amount", amount));
     }
@@ -97,20 +101,20 @@ public class PaymentController {
     @GetMapping("/test-timezone")
     public ResponseEntity<?> testTimezone() {
         Map<String, Object> response = new HashMap<>();
-        
+
         // Test current time in different formats
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         java.time.ZonedDateTime zonedNow = java.time.ZonedDateTime.now();
         java.util.Date utilDate = new java.util.Date();
         java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
-        
+
         response.put("localDateTime", now.toString());
         response.put("zonedDateTime", zonedNow.toString());
         response.put("utilDate", utilDate.toString());
         response.put("sqlTimestamp", sqlTimestamp.toString());
         response.put("currentTimeMillis", System.currentTimeMillis());
         response.put("defaultTimezone", java.util.TimeZone.getDefault().getID());
-        
+
         return ResponseEntity.ok(response);
     }
 

@@ -19,7 +19,7 @@ public class VNPayServiceImpl implements VNPayService {
     private VNPayConfig vnPayConfig;
 
     @Override
-    public String createPaymentUrl(VipOrder order, String ipAddress) {
+    public String createPaymentUrl(VipOrder order, String ipAddress, String returnUrl) {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TxnRef = String.valueOf(order.getOrderId());
@@ -38,7 +38,7 @@ public class VNPayServiceImpl implements VNPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan VIP membership - Order: " + order.getOrderId());
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", returnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
