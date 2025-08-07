@@ -1,4 +1,4 @@
-// ...
+
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
@@ -34,6 +34,33 @@ export interface CreatePlantRequest {
   styleUrls: ['./admin-create-plant.component.scss']
 })
 export class AdminCreatePlantComponent extends BaseAdminListComponent implements OnInit {
+  createdPlantId: number | null = null;
+  async onUploadImage() {
+    if (!this.createdPlantId) {
+      this.setError('Bạn cần tạo cây trước khi upload ảnh!');
+      return;
+    }
+    if (!this.selectedImageFile) {
+      this.setError('Vui lòng chọn ảnh để upload!');
+      return;
+    }
+    this.isSubmitting = true;
+    try {
+      await this.createPlantService.uploadPlantImage(this.createdPlantId, this.selectedImageFile);
+      this.setSuccess('Upload ảnh thành công!');
+      this.selectedImageFile = null;
+      this.createdPlantId = null;
+      this.createPlantForm.reset();
+      this.createPlantForm = this.initializeForm();
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
+      this.router.navigate(['/admin/plants']);
+    } catch (error: any) {
+      this.handleApiError(error);
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
+    }
+  }
 
   selectedImageFile: File | null = null;
 
@@ -143,14 +170,7 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
     }
 
 
-    if (!this.selectedImageFile) {
-      this.setError('Vui lòng chọn ảnh cho cây');
-      console.error('selectedImageFile is null at submit');
-      return;
-    }
-
-  this.isSubmitting = true;
-
+    this.isSubmitting = true;
     try {
       const formValue = this.createPlantForm.value;
       const createPlantRequest: CreatePlantRequest = {
@@ -164,9 +184,8 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
         careDifficulty: formValue.careDifficulty,
         suitableLocation: formValue.suitableLocation.trim(),
         commonDiseases: formValue.commonDiseases?.trim() || '',
-        imageUrls: [] // Không gửi imageUrls khi tạo plant
+        imageUrls: []
       };
-
       // Validate required fields (không check imageUrls)
       if (!createPlantRequest.scientificName || !createPlantRequest.commonName || 
           !createPlantRequest.categoryId || !createPlantRequest.description ||
@@ -174,31 +193,26 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
           !createPlantRequest.waterRequirement || !createPlantRequest.careDifficulty ||
           !createPlantRequest.suitableLocation) {
         this.setError('Vui lòng điền đầy đủ tất cả thông tin bắt buộc');
+        this.isSubmitting = false;
         return;
       }
-
       // 1. Tạo plant trước
       const response = await this.createPlantService.createPlant(createPlantRequest);
       if (!response || !response.id) {
         throw new Error((response as any)?.message || 'Tạo cây thất bại');
       }
-
-      // 2. Upload ảnh với plantId vừa tạo
-  console.log('Uploading image for plantId:', response.id, 'file:', this.selectedImageFile);
-  await this.createPlantService.uploadPlantImage(response.id, this.selectedImageFile);
-
-      this.setSuccess('Tạo cây mới thành công!');
-      this.createPlantForm.reset();
-      this.createPlantForm = this.initializeForm();
-      this.selectedImageFile = null;
-      this.router.navigate(['/admin/plants']);
+      // Lưu lại plantId để upload ảnh sau
+      this.setSuccess('Tạo cây mới thành công! Hãy upload ảnh cho cây này.');
+      this.createdPlantId = response.id;
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
     } catch (error: any) {
       this.handleApiError(error);
-    } finally {
       this.isSubmitting = false;
       this.cdr.detectChanges();
     }
   }
+  
 
   private handleApiError(error: any) {
     let errorMessage = error?.error?.message || error?.message || 'Có lỗi xảy ra khi tạo cây mới';

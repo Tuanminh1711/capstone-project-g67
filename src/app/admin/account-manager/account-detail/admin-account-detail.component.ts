@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../auth/auth.service';
 
 interface UserDetail {
   id: number;
@@ -41,15 +42,25 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
   private router = inject(Router);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
+
+  currentUserId: string | null = null;
+  currentUserRole: string | null = null;
+  showAllInfo: boolean = false;
+  showOnlyUsernameAndRole: boolean = false;
 
   constructor() {
     super();
   }
 
   ngOnInit() {
+    // Get current user info
+    this.currentUserId = this.authService.getCurrentUserId();
+    this.currentUserRole = this.authService.getCurrentUserRole();
+
     // Load user detail immediately on component init
     this.loadUserDetailFromRoute();
-    
+
     // Subscribe to route params changes
     this.route.params.subscribe(params => {
       const newUserId = +(params as any)['id'];
@@ -83,19 +94,20 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
 
   loadUserDetail() {
     if (this.loading || !this.userId) return; // Prevent multiple simultaneous requests
-    
+
     this.setLoading(true);
     this.setError('');
     this.cdr.detectChanges(); // Force UI update immediately
-    
+
     // Use proxy path for consistency
     const apiUrl = `/api/admin/userdetail/${this.userId}`;
-    
+
     this.http.get<any>(apiUrl).subscribe({
       next: (response) => {
         if (response && (response.data || response.id)) {
           this.user = response.data || response;
           this.dataLoaded = true;
+          this.updateFieldVisibility();
         } else {
           this.setError('Không tìm thấy thông tin người dùng');
           this.dataLoaded = false;
@@ -129,6 +141,52 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
         this.cdr.detectChanges();
       }
     });
+  }
+
+  /**
+   * Determine which fields to show based on current user and viewed user
+   */
+  updateFieldVisibility() {
+    if (!this.user || !this.currentUserRole) {
+      this.showAllInfo = false;
+      this.showOnlyUsernameAndRole = false;
+      return;
+    }
+    const viewedRole = this.user.role?.toUpperCase();
+    const currentRole = this.currentUserRole?.toUpperCase();
+    const isSelf = this.currentUserId && this.user.id && this.currentUserId == this.user.id.toString();
+
+    // Always hide all but username/role for VIP
+    if (viewedRole === 'VIP') {
+      this.showAllInfo = false;
+      this.showOnlyUsernameAndRole = true;
+      return;
+    }
+
+    // Admin viewing self, staff, or expert: show all info
+    if (currentRole === 'ADMIN' && (isSelf || viewedRole === 'STAFF' || viewedRole === 'EXPERT')) {
+      this.showAllInfo = true;
+      this.showOnlyUsernameAndRole = false;
+      return;
+    }
+
+    // Staff viewing self or expert: show all info
+    if (currentRole === 'STAFF' && (isSelf || viewedRole === 'EXPERT')) {
+      this.showAllInfo = true;
+      this.showOnlyUsernameAndRole = false;
+      return;
+    }
+
+    // Otherwise, admin/staff viewing user: only show username and role
+    if ((currentRole === 'ADMIN' || currentRole === 'STAFF') && viewedRole === 'USER') {
+      this.showAllInfo = false;
+      this.showOnlyUsernameAndRole = true;
+      return;
+    }
+
+    // Default: show all info
+    this.showAllInfo = true;
+    this.showOnlyUsernameAndRole = false;
   }
 
   goBack() {

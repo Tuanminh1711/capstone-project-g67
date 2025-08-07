@@ -4,41 +4,34 @@
   <div class="header-container-care center">
     <h1 class="header-title-care small">CÀI ĐẶT NHẮC NHỞ CHĂM SÓC CÂY</h1>
   </div>
-  <div class="add-schedule-actions outside-actions wide-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+  <div class="add-schedule-actions" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 8px;">
     <button type="button" class="add-schedule-btn help-btn beautify-btn" (click)="openGuide()" title="Hướng dẫn sử dụng">
       <i class="fas fa-question-circle"></i> Hướng dẫn
     </button>
-    <button type="button" class="add-schedule-btn beautify-btn" (click)="enableAllRemindersDefaultTomorrow8h()" title="Bật tất cả nhắc nhở mặc định">
-      <i class="fas fa-bell"></i> Bật tất cả nhắc nhở
-    </button>
-    <div class="right-actions align-right">
-      @if (!hasFertilizerReminder) {
-        <button type="button" class="add-schedule-btn fertilizer outside beautify small-btn" (click)="addSchedule(2)" title="Thêm lịch nhắc bón phân">
-          <i class="fas fa-leaf icon-small"></i> Bón phân
-        </button>
-      }
-      @if (!hasPruneReminder) {
-        <button type="button" class="add-schedule-btn prune outside beautify small-btn" (click)="addSchedule(3)" title="Thêm lịch nhắc cắt tỉa">
-          <i class="fas fa-cut icon-small"></i> Cắt tỉa
-        </button>
-      }
-      @if (!hasSprayReminder) {
-        <button type="button" class="add-schedule-btn spray outside beautify small-btn" (click)="addSchedule(4)" title="Thêm lịch nhắc phun thuốc">
-          <i class="fas fa-spray-can icon-small"></i> Phun thuốc
-        </button>
-      }
-    </div>
-  </div>
-  <div class="add-schedule-actions full-width center">
-@if (!hasWaterReminder) {
+    <ng-container *ngIf="!hasWaterReminder">
       <button type="button" class="add-schedule-btn water" (click)="addSchedule(1)" title="Thêm lịch nhắc tưới nước">
         Tưới nước
       </button>
-    }
+    </ng-container>
+    <ng-container *ngIf="!hasFertilizerReminder">
+      <button type="button" class="add-schedule-btn fertilizer outside beautify small-btn" (click)="addSchedule(2)" title="Thêm lịch nhắc bón phân">
+        <i class="fas fa-leaf icon-small"></i> Bón phân
+      </button>
+    </ng-container>
+    <ng-container *ngIf="!hasPruneReminder">
+      <button type="button" class="add-schedule-btn prune outside beautify small-btn" (click)="addSchedule(3)" title="Thêm lịch nhắc cắt tỉa">
+        <i class="fas fa-cut icon-small"></i> Cắt tỉa
+      </button>
+    </ng-container>
+    <ng-container *ngIf="!hasSprayReminder">
+      <button type="button" class="add-schedule-btn spray outside beautify small-btn" (click)="addSchedule(4)" title="Thêm lịch nhắc phun thuốc">
+        <i class="fas fa-spray-can icon-small"></i> Phun thuốc
+      </button>
+    </ng-container>
   </div>
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div formArrayName="schedules" class="stretch-form wide-form">
-      <div *ngFor="let schedule of schedules.controls; let i = index" [formGroupName]="i" class="schedule-block">
+  <div *ngFor="let schedule of enabledSchedules; let i = index" [formGroupName]="i" class="schedule-block">
         <div class="schedule-header">
           <span class="schedule-title">
             <ng-container [ngSwitch]="schedule.get('careTypeId')?.value">
@@ -66,7 +59,7 @@
           </div>
           <div class="form-row">
             <label>Ngày bắt đầu</label>
-            <input type="date" formControlName="startDate" />
+            <input type="date" formControlName="startDate" style="width: 100%;" />
           </div>
           <div class="form-row full-width">
             <label>Tin nhắn tuỳ chỉnh</label>
@@ -76,7 +69,7 @@
       </div>
     </div>
     <div class="form-actions center beautify-save">
-      <button type="submit" class="save-reminder-btn beautify-save-btn" [disabled]="form.invalid || loading">
+  <button *ngIf="enabledSchedules.length > 0" type="submit" class="save-reminder-btn beautify-save-btn" [disabled]="form.invalid || loading">
         <i class="fas fa-save"></i> Lưu tất cả nhắc nhở
       </button>
       <span *ngIf="loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Đang lưu...</span>

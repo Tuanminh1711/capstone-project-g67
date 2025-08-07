@@ -1,3 +1,5 @@
+
+
 import { environment } from 'environments/environment';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -7,6 +9,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
 
@@ -15,7 +21,7 @@ import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigat
 @Component({
   selector: 'app-plant-care-reminder-setup',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, TopNavigatorComponent],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, TopNavigatorComponent, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatNativeDateModule],
   templateUrl: './plant-care-reminder-setup.component.html',
   styleUrls: ['./plant-care-reminder-setup.component.scss']
 })
@@ -53,114 +59,145 @@ export class PlantCareReminderSetupComponent {
 
   ngOnInit() {
     this.userPlantId = this.route.snapshot.paramMap.get('userPlantId');
-    if (this.schedules.length === 0) {
-      this.enableAllRemindersDefaultTomorrow8h();
-    }
+    if (!this.userPlantId) return;
+    this.loading = true;
+    this.http.get<any[]>(`${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`).subscribe({
+      next: (data) => {
+        this.schedules.clear();
+        if (data && data.length > 0) {
+          for (const s of data) {
+            let startDateValue = s.startDate;
+            this.schedules.push(this.fb.group({
+              scheduleId: [s.scheduleId],
+              careTypeId: [s.careTypeId, Validators.required],
+              enabled: [s.enabled],
+              frequencyDays: [s.frequencyDays, [Validators.required, Validators.min(1)]],
+              reminderTime: [s.reminderTime, Validators.required],
+              customMessage: [s.customMessage || '', Validators.maxLength(100)],
+              startDate: [startDateValue, Validators.required]
+            }));
+          }
+          this.loading = false;
+          this.cdr.detectChanges();
+        } else {
+          // Nếu chưa setup nhắc nhở nào, chỉ hiển thị thông báo và 4 nút thêm từng loại
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
+  // Không chuyển đổi format ngày, giữ nguyên giá trị trả về từ API
+
   get hasWaterReminder(): boolean {
-    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 1);
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 1 && s.get('enabled')?.value === true);
   }
   get hasFertilizerReminder(): boolean {
-    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 2);
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 2 && s.get('enabled')?.value === true);
   }
   get hasPruneReminder(): boolean {
-    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 3);
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 3 && s.get('enabled')?.value === true);
   }
   get hasSprayReminder(): boolean {
-    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 4);
+    return this.schedules.controls.some(s => s.get('careTypeId')?.value === 4 && s.get('enabled')?.value === true);
   }
 
   get schedules() {
     return this.form.get('schedules') as FormArray;
   }
 
-  addSchedule(careTypeId?: number, useTomorrow8h?: boolean) {
-    const typeId = careTypeId || 1;
+  addSchedule(careTypeId: number) {
+    // Chỉ thêm loại được chọn, không bật tất cả
     let startDate = new Date();
+  startDate.setDate(startDate.getDate() + 1); // Nếu không truyền startDate, mặc định là ngày mai
     let reminderTime = '08:00';
-    if (useTomorrow8h) {
-      startDate = new Date();
-      startDate.setDate(startDate.getDate() + 1);
-      reminderTime = '08:00';
-    }
     this.schedules.push(this.fb.group({
-      careTypeId: [typeId, Validators.required],
+      careTypeId: [careTypeId, Validators.required],
       enabled: [true],
       frequencyDays: [1, [Validators.required, Validators.min(1)]],
       reminderTime: [reminderTime, Validators.required],
       customMessage: ['Đã tới giờ chăm sóc cây', Validators.maxLength(100)],
-      startDate: [startDate.toISOString().slice(0,10), Validators.required]
+      startDate: [startDate, Validators.required]
     }));
     this.form.get('newCareTypeId')?.setValue(null);
   }
 
-  // Hàm bật tất cả nhắc nhở với trạng thái mặc định 8h sáng ngày hôm sau
-  enableAllRemindersDefaultTomorrow8h() {
-    this.schedules.clear();
-    for (const type of this.careTypes) {
-      this.addSchedule(type.id, true);
-    }
-  }
+  // Hàm này không còn dùng nữa, logic đã chuyển sang addSchedule từng loại riêng lẻ
 
   getCareTypeName(id: number): string {
     const found = this.careTypes.find(t => t.id === id);
     return found ? found.name : 'Lịch nhắc';
   }
-
-  removeSchedule(i: number) {
-    this.schedules.removeAt(i);
+  get enabledSchedules() {
+    return this.schedules.controls.filter((s: any) => s.get('enabled')?.value);
   }
 
- submit() {
-  if (this.form.invalid || !this.userPlantId) return;
-  this.loading = true;
-
-  // Chỉ chuyển startDate sang ISO, giữ nguyên reminderTime là string
-  const raw = this.form.value;
-  const schedules = (raw.schedules || []).map((s: any) => {
-    let startDateObj = null;
-    if (s.startDate) {
-      startDateObj = new Date(s.startDate).toISOString();
+  removeSchedule(i: number): void {
+    if (this.schedules && this.schedules.length > i) {
+      this.schedules.removeAt(i);
     }
-    return {
-      ...s,
-      reminderTime: s.reminderTime, // giữ nguyên string '08:00'
-      startDate: startDateObj
-    };
-  });
+  }
 
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return '';
-  };
-  const token = getCookie('auth_token');
-  const options: any = {
-    responseType: 'text' as 'text',
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  };
-  this.http.post(
-    `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
-    { schedules },
-    options
-  ).subscribe({
-    next: (res: any) => {
-      this.toast.success(typeof res === 'string' ? res : 'Đã lưu lịch nhắc nhở thành công!');
-      setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
-    },
-    error: err => {
-      if (err.status === 403) {
-        this.toast.error('Bạn không có quyền thực hiện thao tác này!');
-      } else {
-        const msg = typeof err?.error === 'string' ? err.error : (err?.error?.message || 'Có lỗi xảy ra khi lưu.');
-        this.toast.error(msg);
+  submit(): void {
+    if (!this.form || this.form.invalid || !this.userPlantId) return;
+    this.loading = true;
+    // Prepare schedules for API
+    const raw = this.form.value;
+    const schedules = raw.schedules.map((s: any) => {
+      let startDate = s.startDate;
+      if (!startDate) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        startDate = tomorrow.toISOString().slice(0, 10);
+      } else if (startDate instanceof Date) {
+        startDate = startDate.toISOString().slice(0, 10);
+      } else if (typeof startDate === 'string' && startDate.length > 10) {
+        startDate = new Date(startDate).toISOString().slice(0, 10);
       }
-      this.loading = false;
-      this.cdr.detectChanges();
-    }
-  });
-}
-
+      // Remove scheduleId if present
+      const { scheduleId, ...rest } = s;
+      return {
+        ...rest,
+        reminderTime: s.reminderTime,
+        startDate
+      };
+    });
+    // Auth token if needed
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return '';
+    };
+    const token = getCookie('auth_token');
+    const options: any = {
+      responseType: 'text' as 'text',
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    };
+    this.http.post(
+      `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
+      { schedules },
+      options
+    ).subscribe({
+      next: (res: any) => {
+        this.toast.success(typeof res === 'string' ? res : 'Đã lưu lịch nhắc nhở thành công!');
+        setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
+      },
+      error: (err: any) => {
+        if (err.status === 403) {
+          this.toast.error('Bạn không có quyền thực hiện thao tác này!');
+        } else {
+          const msg = typeof err?.error === 'string' ? err.error : (err?.error?.message || 'Có lỗi xảy ra khi lưu.');
+          this.toast.error(msg);
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 }

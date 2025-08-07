@@ -26,20 +26,27 @@ export class VipPaymentSuccessComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      this.http.get<any>('/api/payment/vnpay-return', { params }).subscribe({
-        next: (res) => {
+    this.route.queryParams.subscribe((params) => {
+      this.http.get('/api/payment/vnpay-return', { params }).subscribe(
+        (res: any) => {
           this.loading = false;
           this.message = res.message || 'Thanh toán thành công!';
           this.username = res.username || '';
           this.newRole = res.newRole || '';
           this.userId = res.userId || '';
+          if (res.success) {
+            alert(res.message);
+            if (res.redirectTo) {
+              this.router.navigateByUrl(res.redirectTo);
+            }
+          }
         },
-        error: () => {
+        (error) => {
           this.loading = false;
-          this.message = 'Thanh toán thất bại hoặc không hợp lệ!';
+          this.message = 'Thanh toán thất bại hoặc bị hủy';
+          alert('Thanh toán thất bại hoặc bị hủy');
         }
-      });
+      );
     });
   }
 }

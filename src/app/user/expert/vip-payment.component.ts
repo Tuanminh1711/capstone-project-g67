@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { ToastService } from 'app/shared/toast/toast.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -19,7 +20,8 @@ export class VipPaymentComponent {
   error = '';
 
   constructor(
-    private authService: AuthService,
+  private authService: AuthService,
+  private toastService: ToastService,
     private http: HttpClient,
     private jwtUtil: JwtUserUtilService
   ) {
@@ -44,8 +46,9 @@ export class VipPaymentComponent {
     this.loading = true;
     const userId = this.jwtUtil.getUserIdFromToken() || 1;
     const amount = 100000;
-    const params = `userId=${encodeURIComponent(userId)}&amount=${encodeURIComponent(amount)}`;
-    // Sử dụng environment để lấy baseUrl phù hợp môi trường
+    // Thêm returnUrl FE để VNPAY redirect về FE sau thanh toán
+    const returnUrl = encodeURIComponent(window.location.origin + '/vip-payment-success');
+    const params = `userId=${encodeURIComponent(userId)}&amount=${encodeURIComponent(amount)}&returnUrl=${returnUrl}`;
     const apiUrl = environment.apiUrl;
     const paymentUrl = `${apiUrl}/payment/vnpay/create?${params}`;
     this.http.post<any>(
@@ -56,7 +59,6 @@ export class VipPaymentComponent {
         if (res && res.paymentUrl) {
           // Thêm thông báo cho user về việc chuyển hướng
           console.log('Redirecting to VNPay payment gateway...');
-          // Chuyển hướng sang trang thanh toán, sau khi thanh toán thành công sẽ về /vip/welcome
           window.location.href = res.paymentUrl;
         } else {
           this.error = 'Không lấy được link thanh toán.';
@@ -64,8 +66,16 @@ export class VipPaymentComponent {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Payment creation error:', err);
-        this.error = 'Lỗi khi tạo thanh toán. Vui lòng thử lại.';
+        // Nếu BE trả về lỗi xác nhận thành công (ví dụ sau khi redirect về FE và xác nhận xong)
+        if (err?.error?.success) {
+          this.toastService.success('Thanh toán thành công! Vui lòng đăng nhập lại để xác nhận.');
+          setTimeout(() => {
+            this.authService.logout(true);
+          }, 2000);
+        } else {
+          console.error('Payment creation error:', err);
+          this.error = 'Lỗi khi tạo thanh toán. Vui lòng thử lại.';
+        }
         this.loading = false;
       }
     });

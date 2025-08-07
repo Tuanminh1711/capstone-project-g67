@@ -366,4 +366,42 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     // Nếu là đường dẫn khác, trả về như cũ
     return filename;
   }
+
+  
+  lockUnlockPlant(plant: any): void {
+    if (!plant) return;
+    const isCurrentlyActive = plant.status === 'ACTIVE';
+    const actionText = isCurrentlyActive ? 'khóa' : 'mở khóa';
+    const newStatus = isCurrentlyActive ? 'INACTIVE' : 'ACTIVE';
+    if (!confirm(`Bạn có chắc chắn muốn ${actionText} cây "${plant.commonName}"?`)) {
+      return;
+    }
+    plant.isUpdating = true;
+    const lockData = {
+      plantId: plant.id,
+      lock: isCurrentlyActive // true = khóa (INACTIVE), false = mở khóa (ACTIVE)
+    };
+    this.http.post('/api/manager/lock-unlock', lockData).subscribe({
+      next: (response: any) => {
+        plant.status = newStatus;
+        plant.isUpdating = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        plant.isUpdating = false;
+        let errorMessage = `Không thể ${actionText} cây. `;
+        if (error.status === 401) {
+          errorMessage += 'Bạn không có quyền thực hiện thao tác này.';
+        } else if (error.status === 404) {
+          errorMessage += 'Không tìm thấy cây này.';
+        } else if (error.error?.message) {
+          errorMessage += error.error.message;
+        } else {
+          errorMessage += 'Vui lòng thử lại sau.';
+        }
+        alert(errorMessage);
+      }
+    });
+  }
+  
 }
