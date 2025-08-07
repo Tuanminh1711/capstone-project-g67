@@ -6,7 +6,9 @@
   </button>
 
   <div class="logo">
-    <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
+    <a routerLink="/home" (click)="closeMobileMenu()">
+      <img src="assets/image/logo-remove.png" alt="PlantCare Logo" class="logo-img" />
+    </a>
     <a routerLink="/home" (click)="closeMobileMenu()" class="logo-text">PLANTCARE</a>
   </div>
   <div class="nav-links-actions">
