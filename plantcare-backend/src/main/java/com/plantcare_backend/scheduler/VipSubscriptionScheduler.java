@@ -1,10 +1,13 @@
 package com.plantcare_backend.scheduler;
 
+import com.plantcare_backend.model.VipSubscription;
 import com.plantcare_backend.service.vip.VipSubscriptionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Slf4j
@@ -13,15 +16,20 @@ public class VipSubscriptionScheduler {
     private VipSubscriptionService vipSubscriptionService;
 
     // Chạy mỗi giờ để kiểm tra và xử lý VIP subscriptions hết hạn
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 0 */6 * * ?")
     public void processExpiredVipSubscriptions() {
         try {
             log.info("Starting VIP subscription expiration check...");
 
-            int processedCount = vipSubscriptionService.getExpiredSubscriptions().size();
-            vipSubscriptionService.processExpiredSubscriptions();
+            List<VipSubscription> expiredSubscriptions = vipSubscriptionService.getExpiredSubscriptions();
+            int processedCount = expiredSubscriptions.size();
 
-            log.info("Completed processing {} expired VIP subscriptions", processedCount);
+            if (processedCount > 0) {
+                vipSubscriptionService.processExpiredSubscriptions();
+                log.info("Completed processing {} expired VIP subscriptions", processedCount);
+            } else {
+                log.info("No expired VIP subscriptions found");
+            }
 
         } catch (Exception e) {
             log.error("Critical error in VIP subscription scheduler", e);

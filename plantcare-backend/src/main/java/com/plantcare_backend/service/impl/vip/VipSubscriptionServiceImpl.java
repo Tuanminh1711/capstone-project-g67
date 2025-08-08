@@ -3,6 +3,7 @@ package com.plantcare_backend.service.impl.vip;
 import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.RoleRepository;
 import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.repository.VipOrderRepository;
 import com.plantcare_backend.repository.VipSubscriptionRepository;
 import com.plantcare_backend.service.NotificationService;
 import com.plantcare_backend.service.vip.VipSubscriptionService;
@@ -29,6 +30,9 @@ public class VipSubscriptionServiceImpl implements VipSubscriptionService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private VipOrderRepository vipOrderRepository;
 
     @Override
     @Transactional
@@ -60,7 +64,8 @@ public class VipSubscriptionServiceImpl implements VipSubscriptionService {
         }
 
         // Cập nhật role user thành VIP
-        Role vipRole = roleRepository.findByRoleName(Role.RoleName.VIP).orElseThrow(() -> new RuntimeException("VIP role not found"));
+        Role vipRole = roleRepository.findByRoleName(Role.RoleName.VIP)
+                .orElseThrow(() -> new RuntimeException("VIP role not found"));
         user.setRole(vipRole);
         userRepository.save(user);
 
@@ -73,6 +78,10 @@ public class VipSubscriptionServiceImpl implements VipSubscriptionService {
         } catch (Exception e) {
             log.warn("Failed to create notification for VIP upgrade: {}", e.getMessage());
         }
+
+        order.setVipStartDate(startDate);
+        order.setVipEndDate(endDate);
+        vipOrderRepository.save(order);
 
         return savedSubscription;
     }
