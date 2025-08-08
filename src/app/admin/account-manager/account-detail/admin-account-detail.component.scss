@@ -1,6 +1,16 @@
+.hidden-info-box {
+  background: #f5f5f5;
+  color: #888;
+  border: 1.5px dashed #bbb;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  font-size: 1.08em;
+  margin: 16px 0;
+}
 .admin-account-detail-container {
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: 1100px;
+  margin: 24px auto 0 auto;
   padding: 24px;
   background: #fff;
   border-radius: 12px;

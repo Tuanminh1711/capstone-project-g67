@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -24,7 +25,8 @@ export class VipPaymentSuccessComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit() {
@@ -42,10 +44,9 @@ export class VipPaymentSuccessComponent implements OnInit {
           this.redirectTo = res.redirectTo || '/home';
 
           if (res.success) {
-            alert(res.message);
-            if (res.redirectTo) {
-              this.router.navigateByUrl(res.redirectTo);
-            }
+            alert('Bạn đã nâng cấp VIP thành công. Vui lòng đăng xuất và đăng nhập lại để cập nhật quyền!');
+            this.auth.logout(true);
+            // Sau khi logout, sẽ chuyển hướng về trang chủ (đã có trong logout)
           }
         },
         (error) => {

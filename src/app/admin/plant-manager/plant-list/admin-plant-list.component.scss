@@ -63,6 +63,7 @@
   flex-direction: column;
 }
 
+
 .admin-layout.sidebar-collapsed .admin-main-content {
   margin-left: 0;
   align-items: center;
@@ -78,7 +79,7 @@
   flex-direction: column;
   height: 100%; // Sử dụng toàn bộ chiều cao
   overflow: hidden; // Container không scroll
-  
+  margin-top: 24px;
   // Force normal table display for all table elements
   table, thead, tbody, tr, th, td {
     display: revert !important;

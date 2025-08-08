@@ -73,13 +73,18 @@ export class HomeComponent {
   goToCareExpert() {
     const role = this.jwtUserUtil.getRoleFromToken();
     if (role && role.toLowerCase() === 'vip') {
-      this.router.navigate(['/vip/welcome-vip']);
+      this.router.navigate(['/vip/welcome']);
     } else {
       this.router.navigate(['/care-expert']);
     }
   }
 
   goToVipUpgrade() {
-    this.router.navigate(['/user/exper/vip-payment']);
+    const role = this.jwtUserUtil.getRoleFromToken();
+    if (role && role.toLowerCase() === 'vip') {
+      this.router.navigate(['/vip/welcome']);
+    } else {
+      this.router.navigate(['/user/exper/vip-payment']);
+    }
   }
 }

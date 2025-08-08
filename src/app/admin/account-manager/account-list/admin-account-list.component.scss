@@ -28,6 +28,7 @@ app-admin-sidebar {
   z-index: 100;
 }
 
+
 .admin-account-list-content {
   flex: 1 1 0;
   display: flex;
@@ -45,6 +46,7 @@ app-admin-sidebar {
   box-shadow: 0 2px 12px #b2dfdb44;
   padding: 32px 24px 24px;
   transition: margin-left 0.25s cubic-bezier(.4,2,.6,1);
+  margin-top: 24px;
 }
 
 /* Adjustments when sidebar is collapsed */

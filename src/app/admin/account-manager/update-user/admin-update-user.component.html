@@ -33,9 +33,11 @@
                    class="avatar-image"
                    (error)="onAvatarError($event)">
             }
-            <div class="avatar-placeholder" [style.display]="hasUserAvatar() ? 'none' : 'flex'">
-              <i class="fas fa-user"></i>
-            </div>
+            @else {
+              <div class="avatar-placeholder">
+                <i class="fas fa-user"></i>
+              </div>
+            }
           </div>
           <div class="user-basic-info">
             <h4 class="user-fullname">{{ user.fullName }}</h4>
@@ -55,142 +57,128 @@
       <!-- Update Form -->
       <div class="update-form">
         <h3>Cập nhật thông tin</h3>
-        <form (ngSubmit)="updateUser()" #updateForm="ngForm">
-          <div class="form-grid">
-            <!-- Basic Info -->
-            <div class="form-section">
-              <h4>Thông tin cơ bản</h4>
-              
-              <div class="form-group">
-                <label for="username">Tên đăng nhập</label>
-                <input 
-                  type="text" 
-                  id="username" 
-                  name="username" 
-                  [(ngModel)]="formData.username" 
-                  readonly 
-                  class="form-control readonly-input"
-                  title="Tên đăng nhập không thể thay đổi">
-                <small class="form-text">Tên đăng nhập không thể thay đổi</small>
-              </div>
-
-              <div class="form-group">
-                <label for="fullName">Họ và tên *</label>
-                <input 
-                  type="text" 
-                  id="fullName" 
-                  name="fullName" 
-                  [(ngModel)]="formData.fullName" 
-                  required 
-                  class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="email">Email *</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
-                  [(ngModel)]="formData.email" 
-                  required 
-                  class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="phoneNumber">Số điện thoại</label>
-                <input 
-                  type="tel" 
-                  id="phoneNumber" 
-                  name="phoneNumber" 
-                  [(ngModel)]="formData.phoneNumber" 
-                  class="form-control">
+        @if (canEditNone || isVip) {
+          <div class="hidden-info-box">Không thể cập nhật tài khoản này.</div>
+        }
+        @else if (canEditRoleOnly) {
+          <form (ngSubmit)="updateUser()" #updateForm="ngForm">
+            <div class="form-grid">
+              <div class="form-section">
+                <h4>Chỉ chỉnh sửa vai trò</h4>
+                <div class="form-group">
+                  <label for="username">Tên đăng nhập</label>
+                  <input type="text" id="username" name="username" [(ngModel)]="formData.username" readonly class="form-control readonly-input" title="Tên đăng nhập không thể thay đổi">
+                  <small class="form-text">Tên đăng nhập không thể thay đổi</small>
+                </div>
+                <div class="form-group">
+                  <label for="roleId">Vai trò</label>
+                  <select id="roleId" name="roleId" [(ngModel)]="formData.roleId" class="form-control">
+                    <option value="1">Quản trị viên</option>
+                    <option value="2">Nhân viên</option>
+                    <option value="3">Người dùng</option>
+                    <option value="4">Khách</option>
+                    <option value="5">Chuyên gia</option>
+                    <option value="6">VIP</option>
+                  </select>
+                </div>
               </div>
             </div>
-
-            <!-- Additional Info -->
-            <div class="form-section">
-              <h4>Thông tin bổ sung</h4>
-              
-              <div class="form-group">
-                <label for="gender">Giới tính</label>
-                <select 
-                  id="gender" 
-                  name="gender" 
-                  [(ngModel)]="formData.gender" 
-                  class="form-control">
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
-                </select>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="updating || updateForm.invalid">
+                @if (updating) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                  Đang cập nhật...
+                }
+                @else {
+                  <i class="fas fa-save"></i>
+                  Cập nhật
+                }
+              </button>
+            </div>
+          </form>
+        }
+        @else if (canEditAll) {
+          <form (ngSubmit)="updateUser()" #updateForm="ngForm">
+            <div class="form-grid">
+              <!-- Basic Info -->
+              <div class="form-section">
+                <h4>Thông tin cơ bản</h4>
+                <div class="form-group">
+                  <label for="username">Tên đăng nhập</label>
+                  <input type="text" id="username" name="username" [(ngModel)]="formData.username" readonly class="form-control readonly-input" title="Tên đăng nhập không thể thay đổi">
+                  <small class="form-text">Tên đăng nhập không thể thay đổi</small>
+                </div>
+                <div class="form-group">
+                  <label for="fullName">Họ và tên *</label>
+                  <input type="text" id="fullName" name="fullName" [(ngModel)]="formData.fullName" required class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="email">Email *</label>
+                  <input type="email" id="email" name="email" [(ngModel)]="formData.email" required class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="phoneNumber">Số điện thoại</label>
+                  <input type="tel" id="phoneNumber" name="phoneNumber" [(ngModel)]="formData.phoneNumber" class="form-control">
+                </div>
               </div>
-
-              <div class="form-group">
-                <label for="roleId">Vai trò</label>
-                <select 
-                  id="roleId" 
-                  name="roleId" 
-                  [(ngModel)]="formData.roleId" 
-                  class="form-control">
-                  <option value="2">Người dùng</option>
-                  <option value="1">Quản trị viên</option>
-                  <option value="3">Nhân viên</option>
-                  <option value="4">Chuyên gia</option>
-                  <option value="5">VIP</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="status">Trạng thái</label>
-                <select 
-                  id="status" 
-                  name="status" 
-                  [(ngModel)]="formData.status" 
-                  class="form-control">
-                  <option value="ACTIVE">Hoạt động</option>
-                  <option value="INACTIVE">Đã khóa</option>
-                  <option value="BANNED">Cấm</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="password">Mật khẩu mới</label>
-                <input 
-                  type="password" 
-                  id="password" 
-                  name="password" 
-                  [(ngModel)]="formData.password" 
-                  class="form-control"
-                  placeholder="Để trống nếu không muốn thay đổi">
-                <small class="form-text">Để trống nếu không muốn thay đổi mật khẩu</small>
+              <!-- Additional Info -->
+              <div class="form-section">
+                <h4>Thông tin bổ sung</h4>
+                <div class="form-group">
+                  <label for="gender">Giới tính</label>
+                  <select id="gender" name="gender" [(ngModel)]="formData.gender" class="form-control">
+                    <option value="male">Nam</option>
+                    <option value="female">Nữ</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="roleId">Vai trò</label>
+                  <select id="roleId" name="roleId" [(ngModel)]="formData.roleId" class="form-control" [disabled]="user.role.toUpperCase() === 'ADMIN'">
+                    <option value="2">Người dùng</option>
+                    <option value="1">Quản trị viên</option>
+                    <option value="3">Nhân viên</option>
+                    <option value="4">Chuyên gia</option>
+                    <option value="5">VIP</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="status">Trạng thái</label>
+                  <select id="status" name="status" [(ngModel)]="formData.status" class="form-control">
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="INACTIVE">Đã khóa</option>
+                    <option value="BANNED">Cấm</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="password">Mật khẩu mới</label>
+                  <input type="password" id="password" name="password" [(ngModel)]="formData.password" class="form-control" placeholder="Để trống nếu không muốn thay đổi">
+                  <small class="form-text">Để trống nếu không muốn thay đổi mật khẩu</small>
+                </div>
               </div>
             </div>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              (click)="goBack()">
-              <i class="fas fa-arrow-left"></i>
-              Quay lại
-            </button>
-            
-            <button 
-              type="submit" 
-              class="btn btn-primary" 
-              [disabled]="updating || updateForm.invalid">
-              @if (updating) {
-                <i class="fas fa-spinner fa-spin"></i>
-                Đang cập nhật...
-              } @else {
-                <i class="fas fa-save"></i>
-                Cập nhật
-              }
-            </button>
-          </div>
-        </form>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="updating || updateForm.invalid">
+                @if (updating) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                  Đang cập nhật...
+                }
+                @else {
+                  <i class="fas fa-save"></i>
+                  Cập nhật
+                }
+              </button>
+            </div>
+          </form>
+        }
       </div>
     </div>
   }
-</div>
