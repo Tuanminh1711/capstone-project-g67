@@ -1,9 +1,6 @@
 package com.plantcare_backend.service.impl.vip;
 
-import com.plantcare_backend.model.Notification;
-import com.plantcare_backend.model.Role;
-import com.plantcare_backend.model.Users;
-import com.plantcare_backend.model.VipOrder;
+import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.RoleRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.repository.VipOrderRepository;
@@ -59,8 +56,11 @@ public class VipOrderServiceImpl implements VipOrderService {
         order.setStatus(VipOrder.Status.SUCCESS);
         vipOrderRepository.save(order);
 
-        // Tạo hoặc cập nhật subscription
-        vipSubscriptionService.createSubscription(order);
+        VipSubscription subscription = vipSubscriptionService.createSubscription(order);
+
+        order.setVipStartDate(subscription.getStartDate());
+        order.setVipEndDate(subscription.getEndDate());
+        vipOrderRepository.save(order);
 
         return order;
     }

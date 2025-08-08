@@ -31,4 +31,16 @@ public class ChatMessage {
     private Timestamp sentAt;
 
     private Boolean isRead;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chat_type")
+    private ChatType chatType;
+
+    @Column(name = "conversation_id")
+    private String conversationId;
+
+    public enum ChatType {
+        COMMUNITY, // Group chat
+        PRIVATE    // 1-1 chat
+    }
 }
