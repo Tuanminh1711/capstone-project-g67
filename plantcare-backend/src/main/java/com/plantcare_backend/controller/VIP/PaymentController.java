@@ -2,7 +2,7 @@ package com.plantcare_backend.controller.VIP;
 
 import com.plantcare_backend.model.VipOrder;
 import com.plantcare_backend.service.VNPayService;
-import com.plantcare_backend.service.VipOrderService;
+import com.plantcare_backend.service.vip.VipOrderService;
 import com.plantcare_backend.service.ActivityLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -33,16 +31,33 @@ public class PaymentController {
     public ResponseEntity<?> createVNPayPayment(
             @RequestParam Integer userId,
             @RequestParam BigDecimal amount,
+            @RequestParam String subscriptionType,
             @RequestParam String returnUrl,
             HttpServletRequest request) {
-        VipOrder order = vipOrderService.createOrder(userId, amount);
 
-        activityLogService.logActivity(userId, "CREATE_VNPAY_ORDER", "Created VNPAY order with amount: " + amount, request);
+        VipOrder.SubscriptionType type;
+        try {
+            type = VipOrder.SubscriptionType.valueOf(subscriptionType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid subscription type. Must be MONTHLY or YEARLY");
+        }
+
+        VipOrder order = vipOrderService.createOrder(userId, amount, type);
+
+        activityLogService.logActivity(userId, "CREATE_VNPAY_ORDER",
+                "Created VNPAY order with amount: " + amount + " for " + type.getDisplayName(), request);
 
         String ipAddress = getClientIpAddress(request);
         String paymentUrl = vnPayService.createPaymentUrl(order, ipAddress, returnUrl);
 
-        return ResponseEntity.ok(Map.of("orderId", order.getOrderId(), "paymentUrl", paymentUrl, "amount", amount));
+        Map<String, Object> response = new HashMap<>();
+        response.put("orderId", order.getOrderId());
+        response.put("paymentUrl", paymentUrl);
+        response.put("amount", amount);
+        response.put("subscriptionType", type.getDisplayName());
+        response.put("durationMonths", type.getMonths());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vnpay-return")
@@ -67,6 +82,8 @@ public class PaymentController {
                 responseData.put("newRole", "VIP");
                 responseData.put("username", order.getUser().getUsername());
                 responseData.put("redirectTo", "/home");
+                responseData.put("subscriptionType", order.getSubscriptionType().getDisplayName());
+                responseData.put("durationMonths", order.getSubscriptionDurationMonths());
 
                 return ResponseEntity.ok(responseData);
             } else {

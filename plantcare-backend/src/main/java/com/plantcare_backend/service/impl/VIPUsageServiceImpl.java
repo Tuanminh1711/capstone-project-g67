@@ -1,7 +1,7 @@
 package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.model.Users;
-import com.plantcare_backend.service.VIPUsageService;
+import com.plantcare_backend.service.vip.VIPUsageService;
 import org.springframework.stereotype.Service;
 
 @Service

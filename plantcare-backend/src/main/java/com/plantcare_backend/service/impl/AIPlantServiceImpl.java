@@ -8,7 +8,7 @@ import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.AIPlantService;
-import com.plantcare_backend.service.VIPUsageService;
+import com.plantcare_backend.service.vip.VIPUsageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.HashMap;

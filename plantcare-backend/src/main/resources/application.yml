@@ -71,6 +71,14 @@ management:
         step: 5s
         enabled: true
 
+  # VIP Configuration
+  vip:
+    subscription:
+      check-interval: "0 0 * * * ?"  # Mỗi giờ
+      reminder-interval: "0 0 8 * * ?"  # 8h sáng mỗi ngày
+      reminder-days-before: 7  # Nhắc nhở 7 ngày trước khi hết hạn
+      auto-renewal: false  # Tắt auto renewal mặc định
+
 # Logging
 logging:
   level:
