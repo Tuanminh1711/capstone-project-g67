@@ -1,572 +1,346 @@
-// --- Plant Detail Minimalist Layout ---
-.user-plant-detail-container {
-  max-width: 900px;
-  margin: 48px auto 24px auto;
-  background: #fafbfc;
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  padding: 32px 20px 24px 20px;
+// Avatar & Info
+.plant-avatar-block.professional.multi-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 0;
+}
+.plant-avatar.big-vertical.professional {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.plant-main-img.big.big-vertical,
+.no-image-placeholder.big.big-vertical {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 18px;
+}
+.plant-name.professional {
+  margin-top: 32px;
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #178a4c;
+  text-align: center;
+}
+.plant-name.professional.bottom-center {
+  position: absolute;
+  left: 50%;
+  bottom: -28px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #2d7a3e;
+  text-align: center;
+  width: max-content;
+  min-width: 180px;
+  word-break: break-word;
+  min-height: 1.3em;
+  background: rgba(255,255,255,0.85);
+  border-radius: 8px;
+  padding: 2px 18px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  z-index: 2;
+}
+// Info dưới chân
+.plant-info-bottom.professional.fixed-bottom-full {
+  width: 100%;
+  margin-top: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 6px;
+  font-size: 1.08em;
+  color: #222;
+}
+.plant-info-bottom.professional.fixed-bottom-full .info-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 1em;
+  margin-bottom: 2px;
+}
+.plant-info-bottom.professional.fixed-bottom-full .info-value {
+  font-weight: 500;
+  color: #178a4c;
+  font-size: 1em;
+  margin-bottom: 2px;
+}
+.plant-info-bottom.professional.fixed-bottom-full .info-value.location {
+  color: #178a4c;
+  font-style: italic;
+  margin-bottom: 0;
+}
+// Tasklist nhắc nhở
+.care-reminders-section.professional {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(67,67,67,0.07);
+  padding: 24px 22px 18px 22px;
+  border: 1px solid #ececec;
+  width: 100%;
+}
+.care-reminders-title.professional {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: #178a4c;
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+.care-reminders-tasklist {
+  width: 100%;
+}
+.tasklist-cards.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+.tasklist-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(80,120,200,0.10);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s;
+  border: 1.5px solid #e0e7ef;
+}
+.tasklist-card-header {
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.08em;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.03em;
+}
+.tasklist-card-title {
+  flex: 1;
+}
+.tasklist-card-info {
+  padding: 10px 18px 10px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tasklist-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f4f8;
+  font-size: 1.02em;
+}
+.tasklist-card-row:last-child {
+  border-bottom: none;
+}
+.tasklist-label {
+  font-weight: 600;
+  color: #178a4c;
+}
+.tasklist-value {
+  font-weight: 500;
+  color: #222;
+}
+.tasklist-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 18px 12px 18px;
+  background: #e8f5e9;
+  border-top: 1px solid #b2dfdb;
+  font-size: 0.98em;
+  border-radius: 0 0 14px 14px;
+  color: #888;
+}
+// Responsive
+@media (max-width: 900px) {
+  .plant-avatar-block.professional.multi-vertical {
+    align-items: center;
+  }
+  .plant-info-bottom.professional.fixed-bottom-full {
+    margin-top: 28px;
+    font-size: 1em;
+  }
+  .tasklist-cards.two-col {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+@media (max-width: 1200px) {
+  .user-plant-detail-container {
+    max-width: 100vw;
+    padding: 12px;
+  }
+  .plant-detail-grid.professional {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+.user-plant-detail-container {
+  max-width: 1400px;
+  margin: 64px auto 24px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px 32px;
   position: relative;
   overflow: hidden;
   font-family: 'Segoe UI', Arial, sans-serif;
+  animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1);
 }
-
-.plant-main-flex {
-  width: 100%;
+.plant-avatar-block.professional.multi-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px;
+  min-height: 180px;
+  margin-top: 32px;
+  position: relative;
+  margin-bottom: 40px; // Tăng khoảng cách dưới khung ảnh
+}
+.plant-avatar-block.multi-horizontal {
   display: flex;
   flex-direction: column;
-  gap: 24px;
   align-items: center;
+  position: relative;
+  margin-top: 32px;
+  margin-bottom: 40px;
+  padding-bottom: 56px;
 }
-
-.plant-info-flex-row {
-  width: 100%;
+.plant-avatar-row {
   display: flex;
   flex-direction: row;
   gap: 32px;
-  align-items: flex-start;
-  justify-content: center;
 }
 
-.plant-avatar-info {
+.plant-avatar-with-name {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 200px;
+  justify-content: flex-start;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 0px 12px 18px 12px; // Giảm padding trên, giữ padding dưới
+  min-width: 560px;
+  max-width: 560px;
 }
 
-.plant-avatar.big-square {
-  width: 180px;
-  height: 180px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #f3f4f6;
+.plant-name.professional {
+  margin-bottom: 8px; // Giảm khoảng cách dưới nickname
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #178a4c;
+  text-align: center;
+  width: 100%;
+  word-break: break-word;
+}
+
+.plant-avatar-row-all {
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  gap: 32px;
   justify-content: center;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-  margin-bottom: 14px;
+  width: 100%;
 }
 
-.plant-main-img.big.big-square {
+.plant-avatar.big-horizontal {
+  width: 160px;
+  height: 160px;
+  min-width: 160px;
+  min-height: 160px;
+  max-width: 160px;
+  max-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  overflow: hidden;
+  position: relative;
+}
+.plant-main-img.big.big-horizontal {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  border: none;
+  border-radius: 18px;
+  background: #f5f5f5;
 }
-
-.no-image-placeholder.big.big-square {
+.no-image-placeholder.big.big-horizontal {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
-  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.2rem;
-  color: #bdbdbd;
-  border: 2px dashed #d1d5db;
+  font-size: 48px;
+  color: #bbb;
+  background: #f5f5f5;
+  border-radius: 18px;
 }
-
-.plant-id.highlight {
-  background: #f3f4f6;
-  color: #222;
-  border-radius: 8px;
-  border: none;
-  font-size: 1.1em;
-  font-weight: 600;
-  box-shadow: none;
-  padding: 8px 22px;
-  margin: 12px auto 6px auto;
-  display: block;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.plant-name {
-  font-size: 1.1em;
-  font-weight: 500;
-  color: #222;
-  margin-bottom: 6px;
-  text-align: center;
-}
-
-.plant-info-details {
-  flex: 1 1 400px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-  padding: 18px 18px 12px 18px;
-  border: 1px solid #ececec;
-  min-width: 220px;
-  max-width: 420px;
-}
-.plant-info-details .info-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1em;
+.plant-name.professional {
+  margin-top: 16px;
   margin-bottom: 8px;
-  color: #333;
-}
-.plant-info-details i {
-  color: #bdbdbd;
-  font-size: 1.05rem;
-}
-
-// --- Care Reminders ---
-// --- Care Reminders ---
-.care-reminders-section {
-  width: 100%;
-  margin-top: 18px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-  padding: 18px 14px 14px 14px;
-  border: 1px solid #ececec;
-}
-.care-reminders-title {
   font-size: 1.1rem;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 12px;
-  letter-spacing: 0.2px;
+  font-weight: 500;
+  color: #2d7a3e;
+  text-align: center;
+  width: 100%;
+  word-break: break-word;
+  display: block;
+  min-height: 1.3em;
 }
-.care-reminders-list.flex-row {
+.plant-info-inline.professional.bottom-right {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 0.95rem;
+  color: #666;
+  background: rgba(255,255,255,0.85);
+  border-radius: 12px 0 0 0;
+  padding: 8px 16px 8px 8px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: row;
   gap: 16px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-.care-reminder-card.modern-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-  padding: 12px 12px 10px 12px;
-  min-width: 170px;
-  max-width: 210px;
-  border: 1px solid #ececec;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: box-shadow 0.2s;
-  position: relative;
-}
-.care-reminder-card.modern-card:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-  border-color: #bdbdbd;
-}
-.reminder-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  margin-bottom: 2px;
 }
-.reminder-type {
-  font-size: 1em;
+.plant-info-inline .info-label {
   font-weight: 500;
+  color: #2d7a3e;
+}
+.plant-info-inline .info-value {
   color: #444;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-weight: 400;
 }
-.reminder-status {
-  font-size: 0.95em;
-  color: #888;
-  font-weight: 500;
-  border-radius: 6px;
-  padding: 2px 8px;
-  background: #f3f4f6;
-  transition: color 0.2s, background 0.2s;
-}
-.reminder-status.active {
-  color: #1976d2;
-  background: #e3f2fd;
-}
-.reminder-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.98em;
-}
-.reminder-next {
-  color: #1976d2;
-  font-weight: 600;
-}
-.reminder-freq {
-  color: #757575;
-}
-.reminder-time {
+.plant-info-inline .location {
   color: #888;
   font-size: 0.95em;
 }
-.reminder-custom-message {
-  margin-top: 2px;
-  color: #444;
-  font-size: 0.95em;
-  background: #f6f8fa;
-  border-radius: 6px;
-  padding: 3px 7px;
-  word-break: break-word;
-}
-.care-reminders-error {
-  color: #b71c1c;
-  font-size: 1em;
-  margin-top: 10px;
-  text-align: center;
-}
-.care-reminders-loading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1em;
-  color: #1976d2;
-  margin-top: 8px;
-}
-.loading-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #e0e0e0;
-  border-top: 2px solid #bdbdbd;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-// --- Responsive ---
-@media (max-width: 900px) {
-  .user-plant-detail-container {
-    padding: 10px 2px 10px 2px;
-    border-radius: 8px;
-  }
-  .plant-main-flex {
+@media (max-width: 600px) {
+  .plant-avatar-block.multi-horizontal {
     gap: 12px;
+    min-height: 120px;
   }
-  .plant-info-flex-row {
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
+  .plant-avatar.big-horizontal {
+    width: 100px;
+    height: 100px;
+    min-width: 100px;
+    min-height: 100px;
+    max-width: 100px;
+    max-height: 100px;
   }
-  .plant-info-details {
-    padding: 10px 6px 8px 6px;
-    min-width: 0;
-    max-width: 100%;
-  }
-  .care-reminders-section {
-    padding: 10px 6px 8px 6px;
-  }
-  .care-reminders-list.flex-row {
+  .plant-info-inline.professional.bottom-right {
+    font-size: 0.85rem;
+    padding: 6px 10px 6px 6px;
     gap: 8px;
-  }
-  .care-reminder-card.modern-card {
-    min-width: 120px;
-    max-width: 160px;
-    padding: 7px 4px 6px 4px;
-  }
-}
-@keyframes slideInUp {
-  from { opacity: 0; transform: translateY(60px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-// --- Responsive ---
-@media (max-width: 900px) {
-  .user-plant-detail-container {
-    padding: 18px 4px 18px 4px;
-    border-radius: 14px;
-  }
-  .plant-main-flex {
-    gap: 18px;
-  }
-  .plant-info-flex-row {
-    flex-direction: column;
-    gap: 18px;
-    align-items: center;
-  }
-  .plant-info-details {
-    padding: 18px 10px 14px 10px;
-    min-width: 0;
-    max-width: 100%;
-  }
-  .care-reminders-section {
-    padding: 18px 10px 14px 10px;
-  }
-  .care-reminders-list.flex-row {
-    gap: 12px;
-  }
-  .care-reminder-card.modern-card {
-    min-width: 170px;
-    max-width: 210px;
-    padding: 12px 8px 10px 8px;
-  }
-}
-.plant-header-flex {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 10px;
-}
-
-.plant-avatar img {
-  width: 160px;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 16px;
-  border: 3px solid #43e97b;
-  background: #f5f5f5;
-  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.15);
-}
-
-.no-image-placeholder.big {
-  width: 160px;
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  background: #f5f5f5;
-  font-size: 3rem;
-  color: #bdbdbd;
-  border: 3px solid #43e97b;
-  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.15);
-}
-
-.no-image-placeholder.big.big-square {
-  width: 200px;
-  height: 200px;
-  border-radius: 18px;
-}
-
-.plant-id {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  color: #0d47a1;
-  border-radius: 14px;
-  padding: 10px 28px;
-  font-size: 1.25em;
-  font-weight: 900;
-  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.18);
-  border: 2px solid #43e97b;
-  margin: 18px auto 8px auto;
-  display: block;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.plant-id.highlight {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #0d47a1;
-  border-radius: 16px;
-  border: 2.5px solid #1976d2;
-  font-size: 1.3em;
-  font-weight: 900;
-  box-shadow: 0 6px 24px rgba(25, 118, 210, 0.13);
-  padding: 12px 36px;
-  margin: 18px auto 8px auto;
-  display: block;
-  text-align: center;
-  letter-spacing: 1.5px;
-}
-
-.care-reminders-list.flex-row {
-  display: flex;
-  flex-direction: row;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-
-.care-reminders-list.one-row {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  gap: 24px;
-}
-
-.plant-header-info h2 {
-  margin: 0 0 2px 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #1976d2;
-}
-
-.plant-header-info .plant-id {
-  font-size: 1.05rem;
-  color: #757575;
-}
-
-.plant-info-details {
-  margin-top: 10px;
-  width: 100%;
-}
-
-.plant-info-details .info-row {
-  max-width: 1100px;
-  margin: 60px auto 6px auto;
-  gap: 8px;
-  font-size: 1.05rem;
-}
-
-.plant-info-details i {
-  color: #90caf9;
-  font-size: 1.1rem;
-}
-
-.modern-reminders {
-  flex: 2 1 400px;
-  min-width: 340px;
-  max-width: 700px;
-  margin-left: 24px;
-  margin-right: 24px;
-  background: #f5f5f5;
-  border-radius: 16px;
-  width: 160px;
-  height: 160px;
-  object-fit: cover;
-  border: 3px solid #43e97b;
-  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.15);
-  font-weight: 600;
-  color: #1976d2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-}
-
-.care-reminder-card.modern-card {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  color: #0d47a1;
-  border-radius: 14px;
-  padding: 10px 28px;
-  font-size: 1.25em;
-  font-weight: 900;
-  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.18);
-  border: 2px solid #43e97b;
-  margin: 18px auto 8px auto;
-  display: block;
-  text-align: center;
-  letter-spacing: 1px;
-  position: relative;
-}
-
-.care-reminder-card.modern-card:hover {
-  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.13);
-}
-
-.reminder-type {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #388e3c;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.reminder-status {
-  font-size: 0.98rem;
-  color: #bdbdbd;
-  font-weight: 500;
-  border-radius: 8px;
-  padding: 2px 10px;
-  background: #f5f5f5;
-  transition: color 0.2s, background 0.2s;
-}
-
-.reminder-status.active {
-  color: #1976d2;
-  background: #e3f2fd;
-}
-
-.reminder-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 1.01rem;
-}
-
-.reminder-next {
-  color: #1976d2;
-  font-weight: 600;
-}
-
-.reminder-freq {
-  color: #757575;
-}
-
-.reminder-time {
-  color: #ffb300;
-  font-size: 0.98rem;
-}
-
-.reminder-custom-message {
-  margin-top: 4px;
-  color: #43a047;
-  font-size: 0.98rem;
-  background: #e8f5e9;
-  border-radius: 8px;
-  padding: 4px 8px;
-  word-break: break-word;
-}
-
-.care-reminders-error {
-  color: #b71c1c;
-  font-size: 1.08rem;
-  margin-top: 12px;
-  text-align: center;
-}
-
-.care-reminders-loading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.08rem;
-  color: #1976d2;
-  margin-top: 10px;
-}
-
-.loading-spinner {
-  width: 22px;
-  height: 22px;
-  border: 3px solid #b2dfdb;
-  border-top: 3px solid #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .plant-info-card {
-    min-width: 320px;
-    max-width: 100%;
-    padding: 24px 18px 18px 18px;
-  }
-}
-
-@media (max-width: 900px) {
-  .plant-main-flex {
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .plant-info-card,
-  .modern-reminders {
-    max-width: 100%;
-    min-width: 0;
-    width: 100%;
   }
 }

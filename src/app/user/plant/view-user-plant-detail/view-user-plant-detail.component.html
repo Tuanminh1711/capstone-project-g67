@@ -1,67 +1,81 @@
 <app-top-navigator></app-top-navigator>
-<div class="user-plant-detail-container">
-  <div class="plant-main-flex">
-    <div class="plant-info-flex-row">
-      <div class="plant-avatar-info">
-        <div class="plant-avatar big-square">
-          @if (plant?.imageUrls && plant.imageUrls.length > 0) {
-            <img class="plant-main-img big big-square" [src]="plant.imageUrls[0]" alt="Ảnh cây" (error)="onImageError($event)" />
-          } @else {
-            <div class="no-image-placeholder big big-square">
-              <span class="placeholder-icon">🌱</span>
+<div class="user-plant-detail-container professional">
+  <div class="plant-detail-grid professional">
+    <div class="plant-detail-left professional">
+      <div class="plant-avatar-block professional multi-horizontal" style="position:relative;">
+        <div class="plant-avatar-row">
+          <div class="plant-avatar-with-name">
+            <div class="plant-name professional">{{ plant?.nickname || 'Chưa đặt tên' }}</div>
+            <div class="plant-avatar-row-all">
+              <div class="plant-avatar big-horizontal professional" *ngFor="let img of [0,1,2]">
+                <ng-container *ngIf="plant?.imageUrls && plant.imageUrls.length > img; else noImages">
+                  <img class="plant-main-img big big-horizontal" [src]="plant.imageUrls[img]" alt="Ảnh cây" (error)="onImageError($event)" />
+                </ng-container>
+                <ng-template #noImages>
+                  <div class="no-image-placeholder big big-horizontal">
+                    <span class="placeholder-icon">🌱</span>
+                  </div>
+                </ng-template>
+              </div>
             </div>
-          }
+          </div>
         </div>
-        <div class="plant-id highlight">#{{ plant?.userPlantId }}</div>
-        <div class="plant-name">{{ plant?.nickname || 'Chưa đặt tên' }}</div>
-      </div>
-      <div class="plant-info-details">
-        <div class="info-row">
+        <div class="plant-info-inline professional bottom-right">
           <span class="info-label">Ngày trồng:</span>
           <span class="info-value">{{ plant?.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Vị trí:</span>
-          <span class="info-value">{{ plant?.locationInHouse || 'Chưa cập nhật' }}</span>
+          <span class="info-value location">{{ plant?.locationInHouse || 'Chưa cập nhật' }}</span>
         </div>
       </div>
     </div>
-    <div class="care-reminders-section">
-      <div class="care-reminders-title">Lịch nhắc nhở chăm sóc</div>
-      @if (loadingCareReminders) {
-        <div class="care-reminders-loading">
-          <div class="loading-spinner"></div>
-          <span>Đang tải lịch nhắc nhở...</span>
-        </div>
-      }
-      @if (!loadingCareReminders && careReminders.length > 0) {
-        <div class="care-reminders-list flex-row">
-          @for (reminder of careReminders; track $index) {
-            <div class="care-reminder-card modern-card">
-              <div class="reminder-header">
-                <span class="reminder-type">
-                  @if (reminder.careTypeId === 1) {<span>💧</span>}
-                  @else if (reminder.careTypeId === 2) {<span>🌱</span>}
-                  @else if (reminder.careTypeId === 3) {<span>✂️</span>}
-                  @else if (reminder.careTypeId === 4) {<span>🧴</span>}
-                  @else {<span>🔔</span>}
-                  {{ reminder.careTypeName }}
-                </span>
-                <span class="reminder-status" [class.active]="reminder.enabled">{{ reminder.enabled ? 'Đang bật' : 'Tạm tắt' }}</span>
+    <div class="plant-detail-right professional">
+      <div class="care-reminders-section professional">
+        <div class="care-reminders-title professional">Lịch nhắc nhở chăm sóc</div>
+        <ng-container *ngIf="loadingCareReminders">
+          <div class="care-reminders-loading professional">
+            <div class="loading-spinner"></div>
+            <span>Đang tải lịch nhắc nhở...</span>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!loadingCareReminders && careReminders.length > 0">
+          <div class="care-reminders-tasklist">
+            <div class="tasklist-cards two-col">
+              <div class="tasklist-card" *ngFor="let reminder of careReminders">
+                <div class="tasklist-card-header">
+                  <span class="tasklist-card-title">{{ reminder.careTypeName }}</span>
+                </div>
+                <div class="tasklist-card-info">
+                  <div class="tasklist-card-row">
+                    <span class="tasklist-label">Trạng thái:</span>
+                    <span class="tasklist-value">{{ reminder.enabled ? 'Đang bật' : 'Tạm tắt' }}</span>
+                  </div>
+                  <div class="tasklist-card-row">
+                    <span class="tasklist-label">Ngày tiếp theo:</span>
+                    <span class="tasklist-value">{{ reminder.nextCareDate ? (reminder.nextCareDate | date:'dd/MM/yyyy') : '---' }}</span>
+                  </div>
+                  <div class="tasklist-card-row">
+                    <span class="tasklist-label">Tần suất:</span>
+                    <span class="tasklist-value">{{ reminder.frequencyDays ? (reminder.frequencyDays + ' ngày') : '---' }}</span>
+                  </div>
+                  <div class="tasklist-card-row" *ngIf="reminder.reminderTime">
+                    <span class="tasklist-label">Thời gian nhắc:</span>
+                    <span class="tasklist-value">{{ reminder.reminderTime }}</span>
+                  </div>
+                  <div class="tasklist-card-row" *ngIf="reminder.customMessage">
+                    <span class="tasklist-label">Ghi chú:</span>
+                    <span class="tasklist-value">{{ reminder.customMessage }}</span>
+                  </div>
+                </div>
+                <div class="tasklist-card-footer">
+                  <span class="tasklist-date">{{ reminder.nextCareDate ? (reminder.nextCareDate | date:'dd/MM/yyyy') : '' }}</span>
+                </div>
               </div>
-              <div class="reminder-info">
-                <span class="reminder-next">{{ reminder.nextCareDate ? (reminder.nextCareDate | date:'dd/MM/yyyy') : '---' }}</span>
-                <span class="reminder-freq">Tần suất: {{ reminder.frequencyDays ? (reminder.frequencyDays + ' ngày') : '---' }}</span>
-                @if (reminder.reminderTime) {<span class="reminder-time">⏰ {{ reminder.reminderTime }}</span>}
-              </div>
-              @if (reminder.customMessage) {<div class="reminder-custom-message">{{ reminder.customMessage }}</div>}
             </div>
-          }
-        </div>
-      }
-      @if (!loadingCareReminders && careReminders.length === 0) {
-        <div class="care-reminders-error">Không có lịch nhắc nhở.</div>
-      }
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!loadingCareReminders && careReminders.length === 0">
+          <div class="care-reminders-error professional">Không có lịch nhắc nhở.</div>
+        </ng-container>
+      </div>
     </div>
   </div>
 </div>

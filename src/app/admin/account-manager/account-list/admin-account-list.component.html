@@ -1,8 +1,6 @@
 <div class="admin-account-list-container">
   @if (accounts$ | async; as accounts) {
-    <div class="account-list-header">
-  <!-- Đã bỏ nút cập nhật theo yêu cầu -->
-    </div>
+  <!-- Removed header and update button as requested -->
     <div class="message-bar-wrapper">
       @if (errorMsg) {
         <div class="error-bar message-bar">{{ errorMsg }}</div>
@@ -41,7 +39,8 @@
                   'active': acc.status.toLowerCase() === 'active',
                   'inactive': acc.status.toLowerCase() === 'inactive',
                   'banned': acc.status.toLowerCase() === 'banned'
-                }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)">
+                }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)" [disabled]="(acc.id + '') === (currentUserId + '')"
+                  [title]="(acc.id + '') === (currentUserId + '') ? 'Bạn không thể thay đổi trạng thái của chính mình' : ''">
                   <option value="ACTIVE">Hoạt động</option>
                   <option value="INACTIVE">Đã khóa</option>
                   <option value="BANNED">Cấm</option>
@@ -55,9 +54,13 @@
                   <button class="logs-btn" (click)="viewActivityLogs(acc)" title="Xem nhật ký hoạt động">
                     <i class="fas fa-history"></i>
                   </button>
-                  <button class="reset-btn" (click)="resetPassword(acc)" title="Đặt lại mật khẩu">
-                    <i class="fas fa-key"></i>
-                  </button>
+                    <button 
+                      class="reset-btn" 
+                      (click)="resetPassword(acc)" 
+                      [title]="(acc.id + '') !== (currentUserId + '') ? 'Chỉ có thể đặt lại mật khẩu của chính mình' : 'Đặt lại mật khẩu'" 
+                      [disabled]="(acc.id + '') !== (currentUserId + '')">
+                      <i class="fas fa-key"></i>
+                    </button>
                 </div>
               </td>
             </tr>

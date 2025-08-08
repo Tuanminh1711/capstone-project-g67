@@ -68,7 +68,6 @@ export class ConfirmationDialogComponent implements OnInit, OnDestroy {
   onDialogClick(event: Event): void {
     event.stopPropagation();
   }
-
   getIconClass(): string {
     switch (this.dialogData?.type) {
       case 'danger':
