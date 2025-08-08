@@ -1,7 +1,127 @@
-<div class="vip-payment-page">
-  <h2>Xác nhận thanh toán VIP</h2>
-    <div class="payment-info">
-      <div class="amount-label">Số tiền cần thanh toán:</div>
-      <div class="amount">100.000 VNĐ</div>
+<div class="vip-upgrade-container">
+  <!-- Header -->
+  <div class="upgrade-header">
+    <h1>Nâng cấp tài khoản VIP</h1>
+    <p class="subtitle">Chọn gói phù hợp và tận hưởng những tính năng đặc biệt</p>
+  </div>
+
+  <!-- Subscription Cards -->
+  <div class="subscription-cards">
+    <!-- Monthly Package -->
+    <div class="subscription-card" 
+         [class.selected]="selectedSubscriptionType === 'MONTHLY'"
+         (click)="selectSubscriptionType('MONTHLY')">
+      
+      <div class="card-header">
+        <h3>{{ subscriptionDetails.MONTHLY.name }}</h3>
+        <div class="price-section">
+          <div class="current-price">
+            {{ subscriptionDetails.MONTHLY.price | currency:'VND':'symbol':'1.0-0' }}
+          </div>
+          <div class="price-period">/tháng</div>
+        </div>
+      </div>
+
+      <div class="card-features">
+        <ul>
+          <li *ngFor="let feature of subscriptionDetails.MONTHLY.features">
+            <i class="fas fa-check"></i>
+            {{ feature }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-footer">
+        <div class="duration">Thời hạn: {{ subscriptionDetails.MONTHLY.duration }}</div>
+      </div>
     </div>
-    <a class="pay-btn" href="#" (click)="payVip(); $event.preventDefault();">Xác nhận thanh toán VIP</a>
+
+    <!-- Yearly Package -->
+    <div class="subscription-card popular" 
+         [class.selected]="selectedSubscriptionType === 'YEARLY'"
+         (click)="selectSubscriptionType('YEARLY')">
+      
+      <div class="popular-badge">Phổ biến nhất</div>
+      
+      <div class="card-header">
+        <h3>{{ subscriptionDetails.YEARLY.name }}</h3>
+        <div class="price-section">
+          <div class="original-price">
+            {{ subscriptionDetails.YEARLY.originalPrice | currency:'VND':'symbol':'1.0-0' }}
+          </div>
+          <div class="current-price">
+            {{ subscriptionDetails.YEARLY.price | currency:'VND':'symbol':'1.0-0' }}
+          </div>
+          <div class="price-period">/năm</div>
+        </div>
+        <div class="savings-badge">
+          Tiết kiệm {{ getSavingsPercentage('YEARLY') }}%
+        </div>
+      </div>
+
+      <div class="card-features">
+        <ul>
+          <li *ngFor="let feature of subscriptionDetails.YEARLY.features">
+            <i class="fas fa-check"></i>
+            {{ feature }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-footer">
+        <div class="duration">Thời hạn: {{ subscriptionDetails.YEARLY.duration }}</div>
+        <div class="monthly-equivalent">
+          Chỉ {{ subscriptionDetails.YEARLY.price / 12 | currency:'VND':'symbol':'1.0-0' }}/tháng
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Summary -->
+  <div class="payment-summary">
+    <div class="summary-header">
+      <h3>Tóm tắt thanh toán</h3>
+    </div>
+    
+    <div class="summary-details">
+      <div class="summary-row">
+        <span>Gói đăng ký:</span>
+        <span>{{ subscriptionDetails[selectedSubscriptionType].name }}</span>
+      </div>
+      
+      <div class="summary-row" *ngIf="selectedSubscriptionType === 'YEARLY'">
+        <span>Tiết kiệm:</span>
+        <span class="savings">-{{ getSavings(selectedSubscriptionType) | currency:'VND':'symbol':'1.0-0' }}</span>
+      </div>
+      
+      <div class="summary-row total">
+        <span>Tổng thanh toán:</span>
+        <span class="total-amount">
+          {{ subscriptionDetails[selectedSubscriptionType].price | currency:'VND':'symbol':'1.0-0' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Button -->
+  <div class="payment-action">
+    <button class="pay-button" 
+            [disabled]="loading"
+            (click)="payVip()">
+      <i class="fas fa-credit-card" *ngIf="!loading"></i>
+      <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+      <span>{{ loading ? 'Đang xử lý...' : 'Thanh toán ngay' }}</span>
+    </button>
+    
+    <p class="secure-payment">
+      <i class="fas fa-lock"></i>
+      Thanh toán an toàn với VNPay
+    </p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+</div>

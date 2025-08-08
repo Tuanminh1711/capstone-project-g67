@@ -1,71 +1,285 @@
-.vip-payment-page {
-  max-width: 400px;
-  margin: 40px auto;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(62, 122, 47, 0.15);
-  padding: 32px 24px;
+.vip-upgrade-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.upgrade-header {
   text-align: center;
+  margin-bottom: 3rem;
+  
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+    color: #7f8c8d;
+    margin: 0;
+  }
 }
 
-.vip-payment-page h2 {
-  color: #4a7c35;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 24px;
+.subscription-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
 }
 
-.user-info {
-  text-align: left;
-  margin-bottom: 18px;
-  font-size: 1rem;
-  color: #2e5d1c;
-}
-
-.payment-info {
-  margin-bottom: 24px;
-}
-
-.amount-label {
-  font-size: 1.08rem;
-  color: #4a7c35;
-  margin-bottom: 6px;
-}
-
-.amount {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #e67e22;
-  margin-bottom: 8px;
-}
-
-.pay-btn {
-  min-width: 180px;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #4a7c35, #6ba653);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
+.subscription-card {
+  position: relative;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(74, 124, 53, 0.18);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.selected {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+  
+  &.popular {
+    border-color: #28a745;
+    
+    &.selected {
+      box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+  }
 }
 
-.pay-btn:hover {
-  background: linear-gradient(135deg, #3e5f2f, #4a7c35);
-  box-shadow: 0 8px 20px rgba(62, 95, 47, 0.22);
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 1;
 }
 
-.loading {
-  color: #4a7c35;
-  font-size: 1.1rem;
-  margin-bottom: 16px;
+.card-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
 }
 
-.error {
-  color: #dc3545;
-  font-size: 1.1rem;
-  margin-bottom: 16px;
+.price-section {
+  position: relative;
+  
+  .original-price {
+    font-size: 1rem;
+    color: #7f8c8d;
+    text-decoration: line-through;
+    margin-bottom: 0.25rem;
+  }
+  
+  .current-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #007bff;
+    line-height: 1;
+  }
+  
+  .price-period {
+    font-size: 1rem;
+    color: #7f8c8d;
+    margin-top: 0.25rem;
+  }
+  
+  .savings-badge {
+    background: #28a745;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: inline-block;
+  }
+}
+
+.card-features {
+  margin-bottom: 1.5rem;
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+    li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      
+      i {
+        color: #28a745;
+        margin-right: 0.75rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+.card-footer {
+  text-align: center;
+  
+  .duration {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+  
+  .monthly-equivalent {
+    font-size: 0.9rem;
+    color: #28a745;
+    font-weight: 600;
+  }
+}
+
+.payment-summary {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  
+  .summary-header {
+    margin-bottom: 1.5rem;
+    
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0;
+    }
+  }
+  
+  .summary-details {
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e9ecef;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &.total {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2c3e50;
+        
+        .total-amount {
+          color: #007bff;
+          font-size: 1.3rem;
+        }
+      }
+      
+      .savings {
+        color: #28a745;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.payment-action {
+  text-align: center;
+  
+  .pay-button {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+    }
+    
+    &:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+  
+  .secure-payment {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .vip-upgrade-container {
+    padding: 1rem;
+  }
+  
+  .upgrade-header h1 {
+    font-size: 2rem;
+  }
+  
+  .subscription-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .subscription-card {
+    padding: 1.5rem;
+  }
+  
+  .current-price {
+    font-size: 2rem;
+  }
 }

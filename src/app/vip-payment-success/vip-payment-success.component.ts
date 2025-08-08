@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -10,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './vip-payment-success.component.html',
-  styleUrls: ['./vip-payment-success.component.scss']
+  styleUrls: ['./vip-payment-success.component.scss'],
 })
 export class VipPaymentSuccessComponent implements OnInit {
   message = 'Đang xác thực thanh toán...';
@@ -18,6 +16,10 @@ export class VipPaymentSuccessComponent implements OnInit {
   newRole = '';
   userId = '';
   loading = true;
+
+  subscriptionType = '';
+  durationMonths = 0;
+  redirectTo = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -34,6 +36,11 @@ export class VipPaymentSuccessComponent implements OnInit {
           this.username = res.username || '';
           this.newRole = res.newRole || '';
           this.userId = res.userId || '';
+
+          this.subscriptionType = res.subscriptionType || '';
+          this.durationMonths = res.durationMonths || 0;
+          this.redirectTo = res.redirectTo || '/home';
+
           if (res.success) {
             alert(res.message);
             if (res.redirectTo) {

@@ -1,9 +1,25 @@
-<div class="vip-success-container">
-  <div class="icon-success">
-    <span>🎉</span>
+<div class="success-page">
+  <div class="success-content">
+    <div *ngIf="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>{{ message }}</p>
+    </div>
+    
+    <div *ngIf="!loading" class="success-info">
+      <i class="fas fa-check-circle success-icon"></i>
+      <h2>Thanh toán thành công!</h2>
+      <p>{{ message }}</p>
+      
+      <div class="user-info">
+        <p><strong>Người dùng:</strong> {{ username }}</p>
+        <p><strong>Vai trò mới:</strong> {{ newRole }}</p>
+        <p><strong>Gói đăng ký:</strong> {{ subscriptionType }}</p>
+        <p><strong>Thời hạn:</strong> {{ durationMonths }} tháng</p>
+      </div>
+      
+      <div class="redirect-info">
+        <p>Bạn sẽ được chuyển hướng trong giây lát...</p>
+      </div>
+    </div>
   </div>
-  <h2>{{ message }}</h2>
-  <p *ngIf="username">Xin chào <b>{{ username }}</b>!</p>
-  <p *ngIf="newRole">Bạn đã được nâng cấp lên <b>{{ newRole }}</b>.</p>
-  <a routerLink="/home" class="btn btn-primary">Về trang chủ</a>
 </div>
