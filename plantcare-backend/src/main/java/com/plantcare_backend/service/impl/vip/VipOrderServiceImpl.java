@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.vip;
 
 import com.plantcare_backend.model.Notification;
 import com.plantcare_backend.model.Role;
@@ -8,7 +8,8 @@ import com.plantcare_backend.repository.RoleRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.repository.VipOrderRepository;
 import com.plantcare_backend.service.NotificationService;
-import com.plantcare_backend.service.VipOrderService;
+import com.plantcare_backend.service.vip.VipOrderService;
+import com.plantcare_backend.service.vip.VipSubscriptionService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +29,19 @@ public class VipOrderServiceImpl implements VipOrderService {
     private RoleRepository roleRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private VipSubscriptionService vipSubscriptionService;
 
     @Override
-    public VipOrder createOrder(Integer userId, BigDecimal amount) {
+    public VipOrder createOrder(Integer userId, BigDecimal amount, VipOrder.SubscriptionType subscriptionType) {
         Users user = userRepository.findById(userId).orElseThrow();
         VipOrder order = VipOrder.builder()
                 .user(user)
                 .amount(amount)
                 .status(VipOrder.Status.PENDING)
                 .paymentMethod("VNPAY")
+                .subscriptionType(subscriptionType)
+                .subscriptionDurationMonths(subscriptionType.getMonths())
                 .build();
         return vipOrderRepository.save(order);
     }
@@ -54,23 +59,9 @@ public class VipOrderServiceImpl implements VipOrderService {
         order.setStatus(VipOrder.Status.SUCCESS);
         vipOrderRepository.save(order);
 
-        // Update user role
-        Role vipRole = roleRepository.findByRoleName(Role.RoleName.VIP)
-                .orElseThrow(() -> new RuntimeException("VIP role not found"));
-        Users user = order.getUser();
-        user.setRole(vipRole);
-        userRepository.save(user);
-        try {
-            notificationService.createNotification(
-                    (long) order.getUser().getId(),
-                    "Nâng cấp VIP thành công",
-                    "Chúc mừng! Tài khoản của bạn đã được nâng cấp lên VIP.",
-                    Notification.NotificationType.SUCCESS,
-                    "/vip/benefits" // link đến trang lợi ích VIP
-            );
-        } catch (Exception e) {
-            log.warn("Failed to create notification for VIP upgrade: {}", e.getMessage());
-        }
+        // Tạo hoặc cập nhật subscription
+        vipSubscriptionService.createSubscription(order);
+
         return order;
     }
 }

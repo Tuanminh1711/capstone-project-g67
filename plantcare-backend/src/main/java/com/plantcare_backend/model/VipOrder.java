@@ -35,6 +35,19 @@ public class VipOrder {
     @Column(name = "payment_method")
     private String paymentMethod;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "subscription_type", nullable = false)
+    private SubscriptionType subscriptionType;
+
+    @Column(name = "subscription_duration_months", nullable = false)
+    private Integer subscriptionDurationMonths;
+
+    @Column(name = "vip_start_date")
+    private Timestamp vipStartDate;
+
+    @Column(name = "vip_end_date")
+    private Timestamp vipEndDate;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
@@ -45,5 +58,26 @@ public class VipOrder {
 
     public enum Status {
         PENDING, SUCCESS, FAILED
+    }
+
+    public enum SubscriptionType {
+        MONTHLY("Tháng", 1),
+        YEARLY("Năm", 12);
+
+        private final String displayName;
+        private final int months;
+
+        SubscriptionType(String displayName, int months) {
+            this.displayName = displayName;
+            this.months = months;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public int getMonths() {
+            return months;
+        }
     }
 }
