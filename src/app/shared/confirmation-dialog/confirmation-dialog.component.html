@@ -8,9 +8,12 @@
     
     <!-- Dialog Header -->
     <div class="dialog-header">
-      <div class="dialog-icon" [ngClass]="getIconClass()">
-        <span class="icon-emoji">{{ dialogData?.icon || '🗑️' }}</span>
-      </div>
+      <!-- Ẩn icon nếu là dialog xác nhận trạng thái dropdown (type warning và icon question) -->
+      <ng-container *ngIf="!(dialogData?.type === 'warning' && dialogData?.icon === 'question')">
+        <div class="dialog-icon" [ngClass]="getIconClass()">
+          <span class="icon-emoji">{{ dialogData?.icon || '🗑️' }}</span>
+        </div>
+      </ng-container>
       <h3 class="dialog-title">{{ dialogData?.title || 'Xác nhận' }}</h3>
     </div>
     

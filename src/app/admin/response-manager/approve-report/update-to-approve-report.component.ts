@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -154,9 +155,11 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone = inject(NgZone)
+    private zone: NgZone = inject(NgZone),
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
+    this.pageTitleService.setTitle('DUYỆT BÁO CÁO');
   }
 
   ngOnInit(): void {
@@ -634,6 +637,10 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       this.setError('Vui lòng kiểm tra lại các trường dữ liệu!');
       return;
     }
+    if (!this.adminNotes.trim()) {
+      this.setError('Vui lòng nhập ghi chú của admin trước khi lưu thông tin cây!');
+      return;
+    }
     this.isUpdating = true;
     this.setError('');
     this.setSuccess('');
@@ -702,6 +709,8 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       this.validationErrors.push('Invalid status');
     }
 
+    // KHÔNG kiểm tra adminNotes khi lưu thông tin cây
+
     if (this.validationErrors.length > 0) {
       this.setError('Please fix the validation errors below');
       return false;
@@ -757,6 +766,11 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   // Helper method to check if approve button should be enabled
   canApprove(): boolean {
     return this.hasPlantBeenSaved && this.adminNotes.trim().length > 0 && !this.isApproving;
+  }
+
+  // Helper method to check if save button should be enabled (for clarity, not strictly needed)
+  canSave(): boolean {
+  return !!this.plantForm?.valid && !this.isUpdating && !this.isApproving;
   }
 
   // Get tooltip text for approve button

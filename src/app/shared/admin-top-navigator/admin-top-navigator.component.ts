@@ -14,6 +14,7 @@ import { CookieService } from '../../auth/cookie.service';
 })
 export class AdminTopNavigatorComponent {
   @Input() sidebarOpen = true;
+  @Input() pageTitle: string = 'Dashboard';
   @Output() sidebarToggle = new EventEmitter<void>();
 
   username: string = '';

@@ -1,78 +1,91 @@
-<div class="admin-support-tickets-page">
-  <h1>Quản lý phiếu hỗ trợ</h1>
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="loading-spinner"></div>
-    <p>Đang tải danh sách phiếu hỗ trợ...</p>
-  </div>
-  <div *ngIf="!isLoading && tickets.length > 0" class="tickets-table-container">
 
-    <table class="tickets-table">
-      <thead>
-        <tr>
-          <th>STT</th>
-          <th>Tiêu đề</th>
-          <th>Mô tả</th>
-          <th>Người gửi</th>
-          <th>Trạng thái</th>
-          <th>Ngày tạo</th>
-          <th>Số phản hồi</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ticket of filteredTickets; let i = index" (click)="viewTicketDetail(ticket)">
-          <td>{{ i + 1 + (page * 10) }}</td>
-          <td>{{ ticket.title }}</td>
-          <td>{{ ticket.description }}</td>
-          <td>{{ ticket.userName }}</td>
-          <td>
-            <span class="status-label" [class]="getStatusClass(ticket.status)">
-              {{ getStatusText(ticket.status) }}
-            </span>
-          </td>
-          <td>{{ formatDate(ticket.createdAt) }}</td>
-          <td>{{ ticket.responseCount }}</td>
-          <td>
-            <div class="action-buttons" (click)="$event.stopPropagation()">
-              <!-- Nút Nhận phiếu hỗ trợ - chỉ hiện khi OPEN -->
-              <button *ngIf="canClaimTicket(ticket)" 
-                      class="claim-btn"
-                      (click)="openClaimDialog(ticket); $event.stopPropagation()"
-                      title="Nhận phiếu hỗ trợ để xử lý">
-                <i class="fas fa-user-check"></i>
-                <span>Nhận xử lý</span>
-              </button>
-              
-              <!-- Nút Trả lại phiếu hỗ trợ - hiện khi CLAIMED hoặc IN_PROGRESS -->
-              <button *ngIf="ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'" 
-                      class="release-btn"
-                      (click)="openReleaseDialog(ticket); $event.stopPropagation()"
-                      title="Trả lại phiếu hỗ trợ cho admin khác xử lý">
-                <i class="fas fa-undo-alt"></i>
-                <span>Trả lại</span>
-              </button>
-              
-              <!-- Nút Mở lại phiếu hỗ trợ - chỉ hiện khi CLOSED -->
-              <button *ngIf="canReopenTicket(ticket)" 
-                      class="reopen-btn"
-                      (click)="onReopenTicket(ticket); $event.stopPropagation()"
-                      title="Mở lại phiếu hỗ trợ">
-                <i class="fas fa-redo"></i>
-                <span>Mở lại</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button [disabled]="page === 0" (click)="onPageChange(page - 1)">&lt;</button>
-      <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
-      <button [disabled]="page + 1 >= totalPages" (click)="onPageChange(page + 1)">&gt;</button>
-    </div>
+<div class="admin-report-list-container" *ngIf="tickets.length >= 0">
+  <div class="message-bar-wrapper">
+    <div *ngIf="errorMsg" class="error-bar message-bar">{{ errorMsg }}</div>
+    <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
   </div>
-  <div *ngIf="!isLoading && tickets.length === 0" class="empty-container">
-    <h2>Không có phiếu hỗ trợ nào</h2>
-    <p>Không có phiếu nào được gửi bởi người dùng.</p>
+
+  <div class="search-bar" style="position: relative;">
+    <input 
+      type="text" 
+      [(ngModel)]="searchText" 
+      (input)="onSearchInputChange()"
+      placeholder="Tìm kiếm phiếu hỗ trợ..."
+      class="search-input"
+      style="padding-right: 38px;"
+    >
+    <span class="search-icon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #888; pointer-events: none;">
+      <i class="fas fa-search"></i>
+    </span>
+  </div>
+
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tiêu đề</th>
+        <th>Mô tả</th>
+        <th>Người gửi</th>
+        <th>Trạng thái</th>
+        <th>Ngày tạo</th>
+        <th>Số phản hồi</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ticket of filteredTickets; let i = index" (click)="viewTicketDetail(ticket)">
+        <td>{{ i + 1 + (page * 10) }}</td>
+        <td>{{ ticket.title }}</td>
+        <td>{{ ticket.description }}</td>
+        <td>{{ ticket.userName }}</td>
+        <td>
+          <span class="status-label" [class]="getStatusClass(ticket.status)">
+            {{ getStatusText(ticket.status) }}
+          </span>
+        </td>
+        <td>{{ formatDate(ticket.createdAt) }}</td>
+        <td>{{ ticket.responseCount }}</td>
+        <td>
+          <div class="action-buttons" (click)="$event.stopPropagation()">
+            <button *ngIf="canClaimTicket(ticket)" 
+                    class="claim-btn"
+                    (click)="openClaimDialog(ticket); $event.stopPropagation()"
+                    title="Nhận phiếu hỗ trợ để xử lý">
+              <i class="fas fa-user-check"></i>
+              <span>Nhận xử lý</span>
+            </button>
+            <button *ngIf="ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'" 
+                    class="release-btn"
+                    (click)="openReleaseDialog(ticket); $event.stopPropagation()"
+                    title="Trả lại phiếu hỗ trợ cho admin khác xử lý">
+              <i class="fas fa-undo-alt"></i>
+              <span>Trả lại</span>
+            </button>
+            <button *ngIf="canReopenTicket(ticket)" 
+                    class="reopen-btn"
+                    (click)="onReopenTicket(ticket); $event.stopPropagation()"
+                    title="Mở lại phiếu hỗ trợ">
+              <i class="fas fa-redo"></i>
+              <span>Mở lại</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination-bar" style="justify-content: flex-end;" *ngIf="totalPages > 1">
+    <button class="pagination-btn" (click)="onPageChange(page - 1)" [disabled]="page === 0">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <span class="pagination-index">{{ page + 1 }} / {{ totalPages }}</span>
+    <button class="pagination-btn" (click)="onPageChange(page + 1)" [disabled]="page + 1 >= totalPages">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-bar">Đang tải...</div>
+  <div *ngIf="!isLoading && tickets.length === 0" class="empty-state">
+    <p>Không có phiếu hỗ trợ nào.</p>
   </div>
 </div>

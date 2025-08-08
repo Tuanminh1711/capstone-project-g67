@@ -120,6 +120,23 @@ app-admin-sidebar {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+/* Cột tên đăng nhập và họ tên rộng hơn một chút */
+.account-table td:nth-child(1), /* username */
+.account-table td:nth-child(2)  /* fullName */ {
+  max-width: 200px;
+}
+
+/* Cột email rộng hơn */
+.account-table td:nth-child(3) {
+  max-width: 240px;
+}
+
+/* Cột thao tác không bị co lại quá nhỏ */
+.account-table td:last-child {
+  max-width: 160px;
 }
 
 .account-table th {

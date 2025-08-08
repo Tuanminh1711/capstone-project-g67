@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -59,9 +60,10 @@ export class ReportListComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private http = inject(HttpClient);
 
-  constructor() {}
+  constructor(private pageTitleService: AdminPageTitleService) {}
 
   ngOnInit() {
+    this.pageTitleService.setTitle('DANH SÁCH BÁO CÁO');
     // Kiểm tra phân quyền thực tế từ JWT
     const jwtUtil = this.jwtUserUtil;
     const role = jwtUtil.getRoleFromToken();

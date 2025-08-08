@@ -1,14 +1,9 @@
 <div class="admin-plant-list-container">
-  <div class="header-section">
-    <h2>Danh sách cây trồng</h2>
-    <button class="create-btn" (click)="goToCreatePlant()">
-      <i class="fas fa-plus"></i>
-      Tạo Cây Mới
-    </button>
-  </div>
   <div class="search-bar">
-    <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm tên, danh mục..." />
-    <button (click)="onSearch()">Tìm kiếm</button>
+    <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm tên, danh mục..." class="search-input" />
+    <span class="search-icon">
+      <i class="fas fa-search"></i>
+    </span>
   </div>
   <div *ngIf="errorMsg" class="error-bar">
     {{ errorMsg }}

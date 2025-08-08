@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -68,15 +69,16 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
   }
 
   ngOnInit() {
+    this.pageTitleService.setTitle('CẬP NHẬT TÀI KHOẢN');
     // Load user detail immediately on component init
     this.loadUserDetailFromRoute();
-    
     // Subscribe to route params changes
     this.route.params.subscribe(params => {
       const newUserId = +params['id'];

@@ -1,5 +1,6 @@
 
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -34,7 +35,6 @@ export interface CreatePlantRequest {
   styleUrls: ['./admin-create-plant.component.scss']
 })
 export class AdminCreatePlantComponent extends BaseAdminListComponent implements OnInit {
-  createdPlantId: number | null = null;
   async onUploadImage() {
     if (!this.createdPlantId) {
       this.setError('Bạn cần tạo cây trước khi upload ảnh!');
@@ -61,6 +61,8 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
       this.cdr.detectChanges();
     }
   }
+  createdPlantId: number | null = null;
+  // ...existing code...
 
   selectedImageFile: File | null = null;
 
@@ -114,13 +116,15 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
     private router: Router,
     private createPlantService: AdminCreatePlantService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
     this.createPlantForm = this.initializeForm();
   }
 
   ngOnInit(): void {
+    this.pageTitleService.setTitle('TẠO CÂY');
     this.loadCategories();
   }
 

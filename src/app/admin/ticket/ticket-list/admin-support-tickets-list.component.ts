@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -17,6 +18,11 @@ import { ToastService } from '../../../shared/toast/toast.service';
   styleUrls: ['./admin-support-tickets-list.component.scss']
 })
 export class AdminSupportTicketsListComponent implements OnInit {
+  errorMsg: string = '';
+  successMsg: string = '';
+  onSearchInputChange() {
+    this.onSearch();
+  }
   viewTicketDetail(ticket: AdminSupportTicket) {
     // Điều hướng đến trang chi tiết ticket (SPA)
     this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
@@ -70,7 +76,9 @@ export class AdminSupportTicketsListComponent implements OnInit {
     });
   }
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, private pageTitleService: AdminPageTitleService) {
+    this.pageTitleService.setTitle('DANH SÁCH TICKET');
+  }
 
   ngOnInit() {
     this.loadTickets();

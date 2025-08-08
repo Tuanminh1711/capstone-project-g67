@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ReportDetailService, ReportDetail } from './report-detail.service';
@@ -40,7 +41,9 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
   toastService: ToastService;
   ngZone: NgZone;
 
+  private pageTitleService = inject(AdminPageTitleService);
   constructor() {
+    this.pageTitleService.setTitle('CHI TIẾT BÁO CÁO');
     this.route = inject(ActivatedRoute);
     this.router = inject(Router);
     this.reportService = inject(ReportDetailService);
@@ -55,26 +58,21 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
     this.isLoggedIn = this.jwtUserUtil.isLoggedIn();
     const userIdFromToken = this.jwtUserUtil.getUserIdFromToken();
     const roleFromToken = this.jwtUserUtil.getRoleFromToken();
-    
     if (userIdFromToken) {
       this.userId = parseInt(userIdFromToken);
     }
-    
     if (roleFromToken) {
       this.userRole = roleFromToken.toLowerCase() as 'admin' | 'staff' | 'user';
     }
-    
     // Chỉ check role admin, không redirect
     if (!this.isLoggedIn || (this.userRole !== 'admin' && this.userRole !== 'staff')) {
       this.errorMsg = 'Bạn không có quyền truy cập trang này. Chỉ admin và staff mới được phép.';
       this.loading = false;
       return;
     }
-
     // Sử dụng params observable để theo dõi route changes
     this.routeSubscription = this.route.params.subscribe(params => {
       this.reportId = Number(params['id']);
-      
       if (this.reportId && !isNaN(this.reportId)) {
         this.loadReport();
       } else {

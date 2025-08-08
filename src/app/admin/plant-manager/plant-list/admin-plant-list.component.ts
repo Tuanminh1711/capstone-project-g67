@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { AuthService } from '../../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -58,12 +59,14 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
     private http: HttpClient, 
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
   }
 
   ngOnInit() {
+    this.pageTitleService.setTitle('DANH SÁCH CÂY');
     // Check role before loading data
     const role = this.authService.getCurrentUserRole();
     if (role !== 'ADMIN' && role !== 'STAFF') {

@@ -1,20 +1,19 @@
 <!-- Giao diện chuyên nghiệp, tối giản, không lạm dụng icon -->
 <div class="update-plant-page">
   <div class="update-plant-header">
-    <h1>Chấp nhận Report</h1>
-    <p class="subtitle">Xem xét và chấp nhận report từ người dùng</p>
+  <!-- Đã xóa tiêu đề và mô tả -->
     
     <!-- Workflow guidance -->
     <div class="workflow-guidance">
-      <div class="workflow-step" [class.completed]="hasPlantBeenSaved">
+      <div class="workflow-step" [class.completed]="adminNotes.trim().length > 0">
         <span class="step-number">1</span>
-        <span class="step-text">Chỉnh sửa và lưu thông tin cây</span>
-        <span *ngIf="hasPlantBeenSaved" class="step-status">✓ Hoàn thành</span>
+        <span class="step-text">Chỉnh sửa thông tin cây và nhập ghi chú admin</span>
+        <span *ngIf="adminNotes.trim().length > 0" class="step-status">✓ Đã nhập ghi chú</span>
       </div>
-      <div class="workflow-step" [class.completed]="canApprove()">
+      <div class="workflow-step" [class.completed]="hasPlantBeenSaved && canApprove()">
         <span class="step-number">2</span>
-        <span class="step-text">Nhập ghi chú và chấp nhận report</span>
-        <span *ngIf="canApprove()" class="step-status">✓ Sẵn sàng</span>
+        <span class="step-text">Lưu thông tin cây và chấp nhận report</span>
+        <span *ngIf="hasPlantBeenSaved && canApprove()" class="step-status">✓ Hoàn thành</span>
       </div>
     </div>
   </div>
@@ -130,10 +129,13 @@
       <div class="form-actions">
         <button type="button" (click)="resetForm()" [disabled]="isUpdating || isApproving" class="btn ghost">Đặt lại</button>
         <button type="button" (click)="onCancel()" [disabled]="isUpdating || isApproving" class="btn secondary">Hủy bỏ</button>
-        <button type="submit" [disabled]="!plantForm.valid || isUpdating || isApproving" class="btn secondary" 
-                title="Lưu thông tin cây trước khi chấp nhận report">
-          {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây' }}
-        </button>
+          <button type="submit"
+            [disabled]="!plantForm.valid || !adminNotes.trim() || isUpdating || isApproving"
+            class="btn secondary"
+            [ngClass]="{'disabled': !plantForm.valid || !adminNotes.trim()}"
+            [title]="!plantForm.valid || !adminNotes.trim() ? 'Cần chỉnh sửa thông tin cây và nhập ghi chú admin trước khi lưu' : ''">
+            {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây' }}
+          </button>
         <button type="button" 
                 (click)="onApprove()" 
                 [disabled]="!canApprove()" 

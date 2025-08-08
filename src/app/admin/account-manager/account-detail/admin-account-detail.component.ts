@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -49,11 +50,13 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
   showAllInfo: boolean = false;
   showOnlyUsernameAndRole: boolean = false;
 
+  private pageTitleService = inject(AdminPageTitleService);
   constructor() {
     super();
   }
 
   ngOnInit() {
+    this.pageTitleService.setTitle('CHI TIẾT TÀI KHOẢN');
     // Get current user info
     this.currentUserId = this.authService.getCurrentUserId();
     this.currentUserRole = this.authService.getCurrentUserRole();

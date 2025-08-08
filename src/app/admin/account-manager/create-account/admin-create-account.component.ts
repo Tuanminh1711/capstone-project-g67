@@ -1,4 +1,5 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,8 +14,8 @@ import { ToastService } from '../../../shared/toast/toast.service';
   templateUrl: './admin-create-account.component.html',
   styleUrls: ['./admin-create-account.component.scss']
 })
-
 export class AdminCreateAccountComponent extends BaseAdminListComponent {
+
   private translateErrorMessage(msg: string): string {
     const map: { [key: string]: string } = {
       'password must be at least 8 characters': 'Mật khẩu phải có ít nhất 8 ký tự',
@@ -57,9 +58,14 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     private createAccountService: AdminCreateAccountService,
     private router: Router,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
+  }
+
+  ngOnInit(): void {
+    this.pageTitleService.setTitle('TẠO TÀI KHOẢN');
   }
 
   validateForm(): string | null {

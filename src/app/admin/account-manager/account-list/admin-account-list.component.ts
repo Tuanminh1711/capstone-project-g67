@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
@@ -36,12 +37,14 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     private accountService: AdminAccountService,
     private route: ActivatedRoute,
     private router: Router,
-    private confirmationDialog: ConfirmationDialogService
+    private confirmationDialog: ConfirmationDialogService,
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
   }
 
   ngOnInit() {
+    this.pageTitleService.setTitle('DANH SÁCH TÀI KHOẢN');
     this.route.queryParams.subscribe(params => {
       if (params['successMsg']) {
         this.setSuccess(params['successMsg']);
@@ -134,14 +137,38 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     const select = event.target as HTMLSelectElement;
     const newStatus = select.value.toUpperCase();
     if (account.status.toUpperCase() === newStatus) return;
-    this.accountService.changeStatus(account.id, newStatus).subscribe({
-      next: () => {
-        account.status = newStatus;
-      },
-      error: (err) => {
-        this.setError(err?.error?.message || 'Không thể cập nhật trạng thái tài khoản');
+    this.confirmationDialog.showDialog({
+      title: 'Xác nhận thay đổi trạng thái',
+      message: `Bạn có chắc chắn muốn đổi trạng thái tài khoản "${account.username}" thành "${this.getStatusText(newStatus)}"?`,
+      confirmText: 'Đồng ý',
+      cancelText: 'Hủy',
+      icon: 'question',
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (!confirmed) {
+        // Nếu hủy, reset lại dropdown về trạng thái cũ
+        select.value = account.status.toUpperCase();
+        return;
       }
+      this.accountService.changeStatus(account.id, newStatus).subscribe({
+        next: () => {
+          this.reloadAccounts();
+        },
+        error: (err) => {
+          this.setError(err?.error?.message || 'Không thể cập nhật trạng thái tài khoản');
+          this.reloadAccounts();
+        }
+      });
     });
+  }
+
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'Hoạt động';
+      case 'INACTIVE': return 'Đã khóa';
+      case 'BANNED': return 'Cấm';
+      default: return status;
+    }
   }
 
   viewDetail(account: Account) {

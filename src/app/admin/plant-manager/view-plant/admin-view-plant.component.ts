@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -81,10 +82,12 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+  private pageTitleService: AdminPageTitleService
   ) {}
 
   ngOnInit(): void {
+    this.pageTitleService.setTitle('CHI TIẾT CÂY');
     // Subscribe để handle navigation changes
     this.routeSubscription = this.route.params.subscribe(params => {
       const newPlantId = +params['id'];

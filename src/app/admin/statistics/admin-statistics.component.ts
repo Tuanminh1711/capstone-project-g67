@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { AdminPageTitleService } from '../../shared/admin-page-title.service';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -57,9 +58,10 @@ export class AdminStatisticsComponent implements OnInit {
     }
   };
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private pageTitleService: AdminPageTitleService) {}
 
   ngOnInit() {
+    this.pageTitleService.setTitle('THỐNG KÊ');
     this.fetchAllStatistics();
   }
 

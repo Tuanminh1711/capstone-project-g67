@@ -5,6 +5,9 @@ import { AdminSidebarComponent } from '../admin-sidebar/admin-sidebar.component'
 import { AdminTopNavigatorComponent } from '../admin-top-navigator/admin-top-navigator.component';
 import { AdminFooterComponent } from '../admin-footer/admin-footer.component';
 
+import { Input } from '@angular/core';
+import { AdminPageTitleService } from '../admin-page-title.service';
+
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
@@ -12,4 +15,11 @@ import { AdminFooterComponent } from '../admin-footer/admin-footer.component';
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent {}
+export class AdminLayoutComponent {
+  pageTitle: string = 'Dashboard';
+  constructor(private pageTitleService: AdminPageTitleService) {
+    this.pageTitleService.title$.subscribe(title => {
+      this.pageTitle = title;
+    });
+  }
+}

@@ -1,3 +1,39 @@
+/* Search Icon in Input */
+
+/* Search Bar giống report list */
+
+/* Search Bar giống report list, chiếm toàn bộ chiều ngang container */
+.search-bar {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+.search-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  padding-right: 38px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.search-input:focus {
+  outline: none;
+  border-color: #388e3c;
+  box-shadow: 0 0 0 2px rgba(56, 142, 60, 0.1);
+}
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 1.2em;
+  pointer-events: none;
+  z-index: 2;
+}
 .admin-layout {
   height: 60vh; // Sử dụng toàn bộ chiều cao màn hình
   background: linear-gradient(120deg, #f6fcf3 0%, #e3f2fd 100%);
@@ -61,90 +97,28 @@
   flex-shrink: 0; // Không cho phép thu nhỏ
 }
 
+
+
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
   flex-shrink: 0;
+}
 
-  h2 {
-    margin: 0;
-  }
-
-  .create-btn {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-weight: 600;
-    font-size: 1.0em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
-
-    &:hover {
-      background: linear-gradient(135deg, #218838, #1ea584);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    }
-
-    i {
-      font-size: 1.1em;
-    }
-  }
-
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .header-section {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
-
-    .create-btn {
-      justify-content: center;
-    }
+  }
+  .create-btn {
+    justify-content: center;
   }
 }
 
-.search-bar {
-  display: flex;
-  gap: 12px; // Tăng từ 10px lên 12px
-  margin-bottom: 14px; // Tăng từ 12px lên 14px
-  flex-shrink: 0; // Không cho phép thu nhỏ
 
-  input {
-    flex: 0.7; // Tăng từ 0.6 lên 0.7
-    max-width: 280px; // Tăng từ 250px lên 280px
-    padding: 10px 16px; // Tăng từ 8px 14px lên 10px 16px
-    border-radius: 8px; // Giảm border-radius
-    border: 1px solid #c8e6c9; // Giảm border width
-    font-size: 1.05em; // Tăng từ 1.0em lên 1.05em
-    background: #f6fcf3;
-
-    &:focus {
-      border: 2px solid #388e3c;
-      outline: none;
-    }
-  }
-
-  button {
-    background: #43e97b;
-    color: #fff;
-    border: none;
-    border-radius: 8px; // Giảm border-radius
-    padding: 10px 24px; // Tăng từ 8px 20px lên 10px 24px
-    font-weight: 700; // Giảm font-weight
-    font-size: 1.05em; // Tăng từ 1.0em lên 1.05em
-    cursor: pointer;
-
-    &:hover {
-      background: #38f9d7;
-    }
-  }
-}
 
 .table-wrapper {
   flex: 1;

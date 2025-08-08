@@ -1,26 +1,188 @@
+/* Search Icon in Input */
 .search-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 18px;
+  position: relative;
 }
 .search-input {
-  flex: 1 1 320px;
-  max-width: 400px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1.5px solid #bfc8d6;
-  background: #f5f7fa;
-  color: #222;
-  font-size: 1rem;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  padding-right: 38px;
+}
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 1.2em;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Layout & Container */
+.admin-report-list-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 32px 32px 24px 32px;
+  max-width: none;
+  margin: 24px 0;
+}
+
+/* Message Bar */
+.message-bar-wrapper {
+  margin-bottom: 16px;
+}
+.error-bar {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid #c62828;
+}
+.success-bar {
+  background: #e8f5e9;
+  color: #388e3c;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid #388e3c;
+}
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.search-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
 }
 .search-input:focus {
-  border-color: #1976d2;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.13);
+  outline: none;
+  border-color: #388e3c;
+  box-shadow: 0 0 0 2px rgba(56, 142, 60, 0.1);
 }
 .search-btn {
+  background: #388e3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.search-btn:hover {
+  background: #2e7d32;
+}
+
+/* Table */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: white;
+  table-layout: fixed;
+}
+.report-table th,
+.report-table td {
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 15px;
+  vertical-align: middle;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.report-table td:nth-child(2) {
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+.report-table th {
+  background: #e8f5e9;
+  color: #388e3c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.report-table th:hover {
+  background: #c8e6c9;
+}
+.report-table tr:hover {
+  background: #f5f5f5;
+}
+
+/* Status Badge */
+.status-label {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+.status-open {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+.status-claimed {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+.status-in-progress {
+  background: #fff3e0;
+  color: #f57c00;
+}
+.status-closed {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.claim-btn, .release-btn, .reopen-btn {
+  background: #388e3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.claim-btn:hover, .release-btn:hover, .reopen-btn:hover {
+  background: #2e7d32;
+}
+
+/* Pagination */
+.pagination-bar {
+  display: flex;
+  width: 100%;
+  position: relative;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  align-self: flex-end;
+  margin-right: 0;
+}
+.pagination-btn {
   background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
   color: #fff;
   border: none;
@@ -35,90 +197,34 @@
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
   transition: background 0.18s, box-shadow 0.18s;
 }
-.search-btn:hover {
+.pagination-btn:disabled {
+  background: #e0e0e0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+.pagination-btn:hover:not(:disabled) {
   background: linear-gradient(90deg, #1565c0 0%, #42a5f5 100%);
   box-shadow: 0 4px 16px rgba(25, 118, 210, 0.18);
 }
-.tickets-table-container {
-  overflow-x: auto;
-  border-radius: 14px;
-  box-shadow: 0 4px 24px rgba(67, 160, 71, 0.10);
-  background: #f6fcf7;
-  padding: 0 0 12px 0;
-}
-.tickets-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
-  margin-bottom: 20px;
-  background: transparent;
-}
-.tickets-table th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #e8f5e9;
-  color: #43a047;
-  font-size: 1.08rem;
-  font-weight: 700;
-  padding: 12px 10px;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.04);
-  text-align: center;
-}
-.tickets-table td {
-  background: #fff;
-  border: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 12px rgba(67, 160, 71, 0.06);
-  vertical-align: middle;
-  padding: 10px 10px;
-  font-size: 1.01rem;
-  color: #222;
-  text-align: center;
-  transition: box-shadow 0.18s;
-}
-.tickets-table tr {
-  transition: box-shadow 0.18s;
-}
-.tickets-table tr:hover td {
-  box-shadow: 0 4px 24px rgba(67, 160, 71, 0.13);
-  background: #e8f5e9;
-}
-.status-label {
-  display: inline-block;
-  padding: 6px 18px;
-  border-radius: 18px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-.status-open {
-  color: #43a047;
-}
-
-.status-claimed {
+.pagination-index {
+  font-weight: 600;
   color: #1976d2;
+  font-size: 1.08rem;
+  margin: 0 8px;
 }
 
-.status-in-progress {
-  color: #f57c00;
+/* Loading & Empty State */
+.loading-bar {
+  margin-top: 18px;
+  color: #1976d2;
+  font-weight: 500;
+  text-align: center;
 }
-
-.status-closed {
-  color: #d32f2f;
-}
-
-/* Action Buttons Container */
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+.empty-state {
+  margin-top: 18px;
+  color: #888;
+  text-align: center;
+  font-size: 1.08rem;
 }
 
 /* Simple Action Buttons - giống style trang báo cáo */
