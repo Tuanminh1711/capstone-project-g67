@@ -44,4 +44,7 @@ public interface UserRepository extends JpaRepository<Users, Integer>, JpaSpecif
     Optional<Users> findByIdWithRole(@Param("id") Long id);
 
     List<Users> findByRole_RoleNameIn(List<String> roleNames);
+
+    @Query("SELECT u FROM Users u WHERE u.role.roleName = 'EXPERT' AND u.status = 'ACTIVE'")
+    List<Users> findAllExperts();
 }

@@ -21,4 +21,5 @@ public interface VipSubscriptionService {
     boolean isUserVipActive(Integer userId);
 
     VipSubscription getActiveSubscription(Integer userId);
+
 }

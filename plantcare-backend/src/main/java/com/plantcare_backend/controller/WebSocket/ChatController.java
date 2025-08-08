@@ -1,27 +1,28 @@
 package com.plantcare_backend.controller.WebSocket;
 
 import com.plantcare_backend.dto.chat.ChatMessage;
+import com.plantcare_backend.dto.chat.ConversationDTO;
+import com.plantcare_backend.dto.request.expert.ExpertDTO;
 import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.ChatMessageRepository;
 import com.plantcare_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.AccessDeniedException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,22 +45,18 @@ public class ChatController {
         log.info("Received chat message: {}", chatMessage);
 
         try {
-            // Validate senderId
             if (chatMessage.getSenderId() == null) {
                 throw new IllegalArgumentException("Sender ID cannot be null");
             }
 
-            // Validate content
             if (chatMessage.getContent() == null || chatMessage.getContent().trim().isEmpty()) {
                 throw new IllegalArgumentException("Message content cannot be empty");
             }
 
-            // Validate content length
             if (chatMessage.getContent().trim().length() > 1000) {
                 throw new IllegalArgumentException("Message content too long (max 1000 characters)");
             }
 
-            // Find sender with role
             Optional<Users> senderOpt = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getSenderId()));
             if (senderOpt.isEmpty()) {
                 throw new IllegalArgumentException("Sender not found");
@@ -68,7 +65,6 @@ public class ChatController {
             Users sender = senderOpt.get();
             log.info("Sender found: {} with role: {}", sender.getUsername(), sender.getRole().getRoleName());
 
-            // Handle receiverId - can be null for broadcast messages
             Users receiver = null;
             if (chatMessage.getReceiverId() != null) {
                 Optional<Users> receiverOpt = userRepository.findById(chatMessage.getReceiverId());
@@ -76,7 +72,6 @@ public class ChatController {
                 log.info("Receiver found: {}", receiver != null ? receiver.getUsername() : "null");
             }
 
-            // Check role permissions
             if (!sender.getRole().getRoleName().equals(Role.RoleName.VIP) &&
                     !sender.getRole().getRoleName().equals(Role.RoleName.EXPERT)) {
                 throw new AccessDeniedException("Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.");
@@ -85,10 +80,11 @@ public class ChatController {
             // Create and save message entity
             com.plantcare_backend.model.ChatMessage entity = com.plantcare_backend.model.ChatMessage.builder()
                     .sender(sender)
-                    .receiver(receiver)
+                    .receiver(null)
                     .content(chatMessage.getContent().trim())
                     .sentAt(Timestamp.from(Instant.now()))
                     .isRead(false)
+                    .chatType(com.plantcare_backend.model.ChatMessage.ChatType.COMMUNITY)
                     .build();
 
             chatMessageRepository.save(entity);
@@ -109,7 +105,7 @@ public class ChatController {
 
     @GetMapping("/history")
     public List<ChatMessage> getChatHistory(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+                                            @RequestParam(defaultValue = "50") int size) {
         log.info("Fetching chat history... page: {}, size: {}", page, size);
         try {
             List<com.plantcare_backend.model.ChatMessage> entities = chatMessageRepository.findAll();
@@ -162,5 +158,176 @@ public class ChatController {
     public String handleException(Throwable exception) {
         log.error("WebSocket error: ", exception);
         return "Error: " + exception.getMessage();
+    }
+
+    @MessageMapping("/chat.sendPrivateMessage")
+    @SendToUser("/queue/private-messages")
+    public ChatMessage sendPrivateMessage(@Payload ChatMessage chatMessage) throws AccessDeniedException {
+        log.info("Received private chat message: {}", chatMessage);
+
+        try {
+            if (chatMessage.getSenderId() == null || chatMessage.getReceiverId() == null) {
+                throw new IllegalArgumentException("Sender ID and Receiver ID cannot be null");
+            }
+
+            if (chatMessage.getContent() == null || chatMessage.getContent().trim().isEmpty()) {
+                throw new IllegalArgumentException("Message content cannot be empty");
+            }
+
+            Optional<Users> senderOpt = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getSenderId()));
+            Optional<Users> receiverOpt = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getReceiverId()));
+
+            if (senderOpt.isEmpty() || receiverOpt.isEmpty()) {
+                throw new IllegalArgumentException("Sender or Receiver not found");
+            }
+
+            Users sender = senderOpt.get();
+            Users receiver = receiverOpt.get();
+
+            if (!sender.getRole().getRoleName().equals(Role.RoleName.VIP) &&
+                    !sender.getRole().getRoleName().equals(Role.RoleName.EXPERT)) {
+                throw new AccessDeniedException("Chỉ tài khoản VIP hoặc Chuyên gia mới được chat private.");
+            }
+
+            // Tạo conversation ID
+            String conversationId = generateConversationId(chatMessage.getSenderId(), chatMessage.getReceiverId());
+
+            // Create and save message entity
+            com.plantcare_backend.model.ChatMessage entity = com.plantcare_backend.model.ChatMessage.builder()
+                    .sender(sender)
+                    .receiver(receiver)
+                    .content(chatMessage.getContent().trim())
+                    .sentAt(Timestamp.from(Instant.now()))
+                    .isRead(false)
+                    .chatType(com.plantcare_backend.model.ChatMessage.ChatType.PRIVATE)
+                    .conversationId(conversationId)
+                    .build();
+
+            chatMessageRepository.save(entity);
+            log.info("Private chat message saved with ID: {}", entity.getMessageId());
+
+            // Set response data
+            chatMessage.setTimestamp(entity.getSentAt().toInstant().toString());
+            chatMessage.setSenderRole(sender.getRole().getRoleName().name());
+            chatMessage.setConversationId(conversationId);
+
+            return chatMessage;
+
+        } catch (Exception e) {
+            log.error("Error processing private chat message: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    // hepler method để tạo conversation ID
+    private String generateConversationId(Integer user1Id, Integer user2Id) {
+        // Sắp xếp ID để đảm bảo conversation ID nhất quán
+        int minId = Math.min(user1Id, user2Id);
+        int maxId = Math.max(user1Id, user2Id);
+        return "conv_" + minId + "_" + maxId;
+    }
+
+    // API để lấy private messages
+    @GetMapping("/private/{receiverId}")
+    public List<ChatMessage> getPrivateMessages(@PathVariable Integer receiverId,
+                                                @RequestAttribute("userId") Integer senderId) {
+        log.info("Fetching private messages between {} and {}", senderId, receiverId);
+
+        try {
+            List<com.plantcare_backend.model.ChatMessage> entities =
+                    chatMessageRepository.findPrivateMessages(senderId, receiverId);
+
+            return entities.stream()
+                    .map(entity -> ChatMessage.builder()
+                            .senderId(entity.getSender().getId())
+                            .receiverId(entity.getReceiver().getId())
+                            .senderRole(entity.getSender().getRole().getRoleName().name())
+                            .content(entity.getContent())
+                            .timestamp(entity.getSentAt().toInstant().toString())
+                            .conversationId(entity.getConversationId())
+                            .build())
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching private messages: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    @GetMapping("/conversations")
+    public List<ConversationDTO> getConversations(@RequestAttribute("userId") Integer userId) {
+        log.info("Fetching conversations for user: {}", userId);
+
+        try {
+            // Lấy thông tin user hiện tại
+            Optional<Users> currentUser = userRepository.findById(userId);
+            if (currentUser.isEmpty()) {
+                return List.of();
+            }
+
+            Users user = currentUser.get();
+            List<String> conversationIds = chatMessageRepository.findConversationIdsByUserId(userId);
+
+            return conversationIds.stream()
+                    .map(convId -> {
+                        String[] parts = convId.split("_");
+                        Integer otherUserId = parts[1].equals(userId.toString()) ?
+                                Integer.parseInt(parts[2]) : Integer.parseInt(parts[1]);
+
+                        Optional<Users> otherUser = userRepository.findById(otherUserId);
+
+                        // Nếu là VIP user, chỉ hiển thị conversations với experts
+                        if (user.getRole().getRoleName() == Role.RoleName.VIP) {
+                            if (otherUser.isEmpty() ||
+                                    otherUser.get().getRole().getRoleName() != Role.RoleName.EXPERT) {
+                                return null; // Bỏ qua conversations không phải với expert
+                            }
+                        }
+
+                        return ConversationDTO.builder()
+                                .conversationId(convId)
+                                .otherUserId(otherUserId)
+                                .otherUsername(otherUser.map(Users::getUsername).orElse("Unknown"))
+                                .otherUserRole(otherUser.map(u -> u.getRole().getRoleName().name()).orElse(""))
+                                .build();
+                    })
+                    .filter(Objects::nonNull) // Lọc bỏ null values
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching conversations: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    // API để mark messages as read
+    @PostMapping("/mark-read")
+    public ResponseEntity<String> markMessagesAsRead(@RequestAttribute("userId") Integer userId) {
+        try {
+            chatMessageRepository.markMessagesAsRead(userId);
+            return ResponseEntity.ok("Messages marked as read");
+        } catch (Exception e) {
+            log.error("Error marking messages as read: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("Error marking messages as read");
+        }
+    }
+
+    @GetMapping("/experts")
+    public ResponseEntity<List<ExpertDTO>> getExperts() {
+        try {
+            List<Users> experts = userRepository.findAllExperts();
+            List<ExpertDTO> expertDTOs = experts.stream()
+                    .map(expert -> ExpertDTO.builder()
+                            .id(expert.getId())
+                            .username(expert.getUsername())
+                            .role(expert.getRole().getRoleName().name())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(expertDTOs);
+        } catch (Exception e) {
+            log.error("Error fetching experts: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
     }
 }

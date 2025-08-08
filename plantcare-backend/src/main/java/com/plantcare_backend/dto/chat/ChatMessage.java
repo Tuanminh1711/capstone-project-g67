@@ -13,4 +13,6 @@ public class ChatMessage {
     private String senderRole; // "VIP" hoặc "EXPERT"
     private String content;
     private String timestamp; // ISO string hoặc để backend tự sinh
+    private String conversationId;
+    private String chatType;
 }
