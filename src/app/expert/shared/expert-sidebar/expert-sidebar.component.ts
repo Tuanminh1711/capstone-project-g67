@@ -36,6 +36,13 @@ import { AuthService } from '../../../auth/auth.service';
           </li>
           
           <li class="nav-item">
+            <a [routerLink]="['/expert/private-chat']" class="nav-link" routerLinkActive="active">
+              <span class="nav-icon">🔒</span>
+              <span class="nav-text">Tin nhắn riêng tư</span>
+            </a>
+          </li>
+          
+          <li class="nav-item">
             <a [routerLink]="['/expert/consultation']" class="nav-link" routerLinkActive="active">
               <span class="nav-icon">📋</span>
               <span class="nav-text">Tư vấn</span>

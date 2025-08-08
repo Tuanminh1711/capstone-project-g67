@@ -6,7 +6,18 @@
     <div class="chat-header">
       <div class="header-info">
         <div class="chat-title">
-          <h3>Phòng Chat VIP Community</h3>
+          <h3 *ngIf="!showPrivateChat">Phòng Chat VIP Community</h3>
+          <h3 *ngIf="showPrivateChat">Private Chat</h3>
+        </div>
+        <div class="header-actions">
+          <button *ngIf="!showPrivateChat" class="nav-btn" (click)="switchToPrivateChat()" title="Chuyển sang Private Chat">
+            <i class="fas fa-comments"></i>
+            Private Chat
+          </button>
+          <button *ngIf="showPrivateChat" class="nav-btn" (click)="switchToCommunityChat()" title="Quay lại Community Chat">
+            <i class="fas fa-users"></i>
+            Community Chat
+          </button>
         </div>
         <div class="online-status">
           <span class="status-dot"></span>
@@ -15,113 +26,323 @@
       </div>
     </div>
 
-    <!-- Chat Messages -->
-    <div class="chat-messages" #messagesContainer>
-      <div *ngIf="loading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Đang tải tin nhắn...</p>
-      </div>
-
-      <div *ngIf="error && !loading" class="error-state">
-        <div class="error-icon">⚠️</div>
-        <p>{{ error }}</p>
-        <button class="retry-btn" (click)="fetchHistory()">Thử lại</button>
-      </div>
-
-      <div *ngIf="!loading && messages.length === 0" class="empty-state">
-        <div class="empty-icon">💭</div>
-        <h4>Chưa có tin nhắn nào</h4>
-        <p>Hãy bắt đầu cuộc trò chuyện đầu tiên!</p>
-      </div>
-
-      <div *ngIf="!loading && messages.length > 0" class="messages-list">
-        <div *ngFor="let msg of messages; trackBy: trackMessage" 
-             class="message-wrapper"
-             [class.own-message]="isOwnMessage(msg)"
-             [class.other-message]="!isOwnMessage(msg)">
+    <!-- Private Chat Sidebar -->
+    <div *ngIf="showPrivateChat" class="private-chat-layout">
+      <!-- Conversations Sidebar -->
+      <div class="conversations-sidebar">
+        <div class="sidebar-header">
+          <h4>Trò chuyện</h4>
+        </div>
+        
+        <!-- Experts Section -->
+        <div class="experts-section" *ngIf="experts.length > 0">
+          <div class="experts-header">
+            <h4>Danh sách chuyên gia</h4>
+            <span class="experts-count">{{ experts.length }} chuyên gia</span>
+          </div>
           
-          <!-- Tin nhắn của người khác (bên trái) -->
-          <div class="message-row" *ngIf="!isOwnMessage(msg)">
-            <!-- Tên + Role badge -->
-            <div class="sender-info">
-              <span class="sender-name">{{ getSenderName(msg) }}</span>
-              <div class="role-badge" [class]="getRoleBadgeClass(msg.senderRole)">
-                {{ getRoleDisplayName(msg.senderRole) }}
+          <div class="experts-list">
+            <div class="expert-item" 
+                 *ngFor="let expert of experts"
+                 (click)="startConversationWithExpert(expert)">
+              <div class="expert-avatar">
+                <div class="avatar-placeholder expert-avatar-placeholder">
+                  {{ expert.username.charAt(0).toUpperCase() || 'E' }}
+                </div>
               </div>
-            </div>
-            <!-- Bubble tin nhắn -->
-            <div class="message-bubble">
-              <div class="message-content">{{ msg.content }}</div>
-            </div>
-            <!-- Thời gian -->
-            <div class="message-time-inline">
-              {{ formatTime(msg.timestamp) }}
+              
+              <div class="expert-info">
+                <div class="expert-name">{{ expert.username }}</div>
+                <div class="expert-role">Chuyên gia</div>
+              </div>
+              
+              <div class="expert-action">
+                <i class="fas fa-comment"></i>
+              </div>
             </div>
           </div>
+        </div>
 
-          <!-- Tin nhắn của mình (bên phải) -->
-          <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
-            <!-- Thời gian + status -->
-            <div class="message-time-inline own-time">
-              <div class="message-status">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
+        <div class="conversations-divider" *ngIf="experts.length > 0 && conversations.length > 0">
+          <span>Cuộc trò chuyện gần đây</span>
+        </div>
+        
+        <div class="conversations-list">
+          <div *ngIf="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Đang tải...</p>
+          </div>
+
+          <div *ngIf="!loading && conversations.length === 0" class="empty-state">
+            <div class="empty-icon">💬</div>
+            <p>Chưa có cuộc trò chuyện nào</p>
+          </div>
+
+          <div *ngFor="let conversation of conversations" 
+               class="conversation-item"
+               [class.selected]="selectedConversation?.conversationId === conversation.conversationId"
+               (click)="selectConversation(conversation)">
+            
+            <div class="conversation-avatar">
+              <div class="avatar-placeholder">
+                {{ conversation.otherUsername.charAt(0).toUpperCase() || 'U' }}
               </div>
-              {{ formatTime(msg.timestamp) }}
             </div>
-            <!-- Bubble tin nhắn -->
-            <div class="message-bubble own-bubble">
-              <div class="message-content">{{ msg.content }}</div>
+            
+            <div class="conversation-info">
+              <div class="conversation-name">
+                {{ conversation.otherUsername }}
+                <span class="role-badge" [class]="'role-' + conversation.otherUserRole.toLowerCase()">
+                  {{ conversation.otherUserRole }}
+                </span>
+              </div>
+              
+              <div class="conversation-preview">
+                <span class="last-message">{{ conversation.lastMessage || 'Chưa có tin nhắn' }}</span>
+                <span class="last-time" *ngIf="conversation.lastMessageTime">
+                  {{ formatTime(conversation.lastMessageTime) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="conversation-status" *ngIf="conversation.hasUnreadMessages">
+              <div class="unread-badge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="chat-area">
+        <div *ngIf="!selectedConversation" class="no-conversation-selected">
+          <div class="empty-icon">💬</div>
+          <h4>Chọn một cuộc trò chuyện</h4>
+          <p>Chọn một người dùng từ danh sách để bắt đầu trò chuyện</p>
+        </div>
+
+        <div *ngIf="selectedConversation" class="chat-messages" #messagesContainer>
+          <!-- Chat Messages for Private Chat -->
+          <div *ngIf="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Đang tải tin nhắn...</p>
+          </div>
+
+          <div *ngIf="error && !loading" class="error-state">
+            <div class="error-icon">⚠️</div>
+            <p>{{ error }}</p>
+            <button class="retry-btn" (click)="loadPrivateMessages(selectedConversation.otherUserId)">Thử lại</button>
+          </div>
+
+          <div *ngIf="!loading && messages.length === 0" class="empty-state">
+            <div class="empty-icon">💭</div>
+            <h4>Chưa có tin nhắn nào</h4>
+            <p>Hãy bắt đầu cuộc trò chuyện với {{ selectedConversation.otherUsername }}!</p>
+          </div>
+
+          <div *ngIf="!loading && messages.length > 0" class="messages-list">
+            <div *ngFor="let msg of messages; trackBy: trackMessage" 
+                 class="message-wrapper"
+                 [class.own-message]="isOwnMessage(msg)"
+                 [class.other-message]="!isOwnMessage(msg)">
+              
+              <!-- Tin nhắn của người khác (bên trái) -->
+              <div class="message-row" *ngIf="!isOwnMessage(msg)">
+                <!-- Tên + Role badge -->
+                <div class="sender-info">
+                  <span class="sender-name">{{ getSenderName(msg) }}</span>
+                  <div class="role-badge" [class]="getRoleBadgeClass(msg.senderRole)">
+                    {{ getRoleDisplayName(msg.senderRole) }}
+                  </div>
+                </div>
+                <!-- Bubble tin nhắn -->
+                <div class="message-bubble">
+                  <div class="message-content">{{ msg.content }}</div>
+                </div>
+                <!-- Thời gian -->
+                <div class="message-time-inline">
+                  {{ formatTime(msg.timestamp) }}
+                </div>
+              </div>
+
+              <!-- Tin nhắn của mình (bên phải) -->
+              <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
+                <!-- Thời gian + status -->
+                <div class="message-time-inline own-time">
+                  <div class="message-status">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                  </div>
+                  {{ formatTime(msg.timestamp) }}
+                </div>
+                <!-- Bubble tin nhắn -->
+                <div class="message-bubble own-bubble">
+                  <div class="message-content">{{ msg.content }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input for Private Chat -->
+        <div *ngIf="selectedConversation" class="chat-input-container">
+          <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
+            <div class="input-actions">
+              <button type="button" class="input-action-btn" disabled title="Đính kèm hình ảnh">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+              </button>
+              
+              <button type="button" class="input-action-btn" disabled title="Đính kèm file">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="input-wrapper">
+              <textarea 
+                class="message-input" 
+                [(ngModel)]="newMessage" 
+                name="message"
+                placeholder="Nhập tin nhắn cho {{ selectedConversation.otherUsername }}..."
+                rows="1"
+                maxlength="1000"
+                (keydown)="onEnterPress($event)"
+                #messageInput></textarea>
+              
+              <button 
+                type="submit" 
+                class="send-button"
+                [class.active]="newMessage.trim().length > 0"
+                [disabled]="newMessage.trim().length === 0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+          
+          <div class="input-footer">
+            <div class="char-counter" [class.warning]="newMessage.length > 800">
+              {{ newMessage.length }}/1000
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Chat Input -->
-    <div class="chat-input-container">
-      <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
-        <div class="input-actions">
-          <button type="button" class="input-action-btn" disabled title="Đính kèm hình ảnh">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-            </svg>
-          </button>
-          
-          <button type="button" class="input-action-btn" disabled title="Đính kèm file">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
-            </svg>
-          </button>
+    <!-- Community Chat (Original Layout) -->
+    <div *ngIf="!showPrivateChat">
+      <!-- Chat Messages -->
+      <div class="chat-messages" #messagesContainer>
+        <div *ngIf="loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Đang tải tin nhắn...</p>
         </div>
 
-        <div class="input-wrapper">
-          <textarea 
-            class="message-input" 
-            [(ngModel)]="newMessage" 
-            name="message"
-            placeholder="Nhập tin nhắn VIP của bạn..."
-            rows="1"
-            maxlength="1000"
-            (keydown)="onEnterPress($event)"
-            #messageInput></textarea>
-          
-          <button 
-            type="submit" 
-            class="send-button"
-            [class.active]="newMessage.trim().length > 0"
-            [disabled]="newMessage.trim().length === 0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-            </svg>
-          </button>
+        <div *ngIf="error && !loading" class="error-state">
+          <div class="error-icon">⚠️</div>
+          <p>{{ error }}</p>
+          <button class="retry-btn" (click)="fetchHistory()">Thử lại</button>
         </div>
-      </form>
-      
-      <div class="input-footer">
-        <div class="char-counter" [class.warning]="newMessage.length > 800">
-          {{ newMessage.length }}/1000
+
+        <div *ngIf="!loading && messages.length === 0" class="empty-state">
+          <div class="empty-icon">💭</div>
+          <h4>Chưa có tin nhắn nào</h4>
+          <p>Hãy bắt đầu cuộc trò chuyện đầu tiên!</p>
+        </div>
+
+        <div *ngIf="!loading && messages.length > 0" class="messages-list">
+          <div *ngFor="let msg of messages; trackBy: trackMessage" 
+               class="message-wrapper"
+               [class.own-message]="isOwnMessage(msg)"
+               [class.other-message]="!isOwnMessage(msg)">
+            
+            <!-- Tin nhắn của người khác (bên trái) -->
+            <div class="message-row" *ngIf="!isOwnMessage(msg)">
+              <!-- Tên + Role badge -->
+              <div class="sender-info">
+                <span class="sender-name">{{ getSenderName(msg) }}</span>
+                <div class="role-badge" [class]="getRoleBadgeClass(msg.senderRole)">
+                  {{ getRoleDisplayName(msg.senderRole) }}
+                </div>
+              </div>
+              <!-- Bubble tin nhắn -->
+              <div class="message-bubble">
+                <div class="message-content">{{ msg.content }}</div>
+              </div>
+              <!-- Thời gian -->
+              <div class="message-time-inline">
+                {{ formatTime(msg.timestamp) }}
+              </div>
+            </div>
+
+            <!-- Tin nhắn của mình (bên phải) -->
+            <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
+              <!-- Thời gian + status -->
+              <div class="message-time-inline own-time">
+                <div class="message-status">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                </div>
+                {{ formatTime(msg.timestamp) }}
+              </div>
+              <!-- Bubble tin nhắn -->
+              <div class="message-bubble own-bubble">
+                <div class="message-content">{{ msg.content }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input -->
+      <div class="chat-input-container">
+        <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
+          <div class="input-actions">
+            <button type="button" class="input-action-btn" disabled title="Đính kèm hình ảnh">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+              </svg>
+            </button>
+            
+            <button type="button" class="input-action-btn" disabled title="Đính kèm file">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="input-wrapper">
+            <textarea 
+              class="message-input" 
+              [(ngModel)]="newMessage" 
+              name="message"
+              placeholder="Nhập tin nhắn VIP của bạn..."
+              rows="1"
+              maxlength="1000"
+              (keydown)="onEnterPress($event)"
+              #messageInput></textarea>
+            
+            <button 
+              type="submit" 
+              class="send-button"
+              [class.active]="newMessage.trim().length > 0"
+              [disabled]="newMessage.trim().length === 0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+        
+        <div class="input-footer">
+          <div class="char-counter" [class.warning]="newMessage.length > 800">
+            {{ newMessage.length }}/1000
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,16 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ChangeDetectionStrategy, TrackByFunction } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  NgZone,
+  ChangeDetectionStrategy,
+  TrackByFunction,
+} from '@angular/core';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subscription, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -10,14 +19,16 @@ import { AuthService } from '../../auth/auth.service';
 import { trackByMessageId } from '../../shared/performance';
 import { environment } from '../../../environments/environment';
 import { UrlService } from '../../shared/url.service';
+import { ChatService, ExpertDTO } from '../../shared/services/chat.service';
+import { ConversationDTO } from './conversation.interface';
 
 @Component({
   selector: 'app-vip-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, TopNavigatorComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TopNavigatorComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent implements OnInit, OnDestroy {
   messages: ChatMessage[] = [];
@@ -25,9 +36,16 @@ export class ChatComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   currentUserId: string | null = null;
+  
+  // Private chat properties
+  conversations: ConversationDTO[] = [];
+  selectedConversation: ConversationDTO | null = null;
+  showPrivateChat = false;
+  experts: ExpertDTO[] = [];
 
   private wsSub?: Subscription;
   private wsErrSub?: Subscription;
+  private wsPrivateSub?: Subscription;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -36,19 +54,23 @@ export class ChatComponent implements OnInit, OnDestroy {
     private ws: ChatStompService,
     private zone: NgZone,
     private authService: AuthService,
-    private urlService: UrlService
+    private urlService: UrlService,
+    private chatService: ChatService
   ) {}
 
   ngOnInit(): void {
     // Environment check for debugging only
-    const isProductionDomain = window.location.hostname.includes('plantcare.id.vn');
-    
-    console.log('Chat component environment check:', { 
-      configProduction: environment.production, 
+    const isProductionDomain =
+      window.location.hostname.includes('plantcare.id.vn');
+
+    console.log('Chat component environment check:', {
+      configProduction: environment.production,
       hostname: window.location.hostname,
       isProductionDomain,
       buildMode: environment.production ? 'production' : 'development',
-      deploymentMode: isProductionDomain ? 'production-domain' : 'development-domain'
+      deploymentMode: isProductionDomain
+        ? 'production-domain'
+        : 'development-domain',
     });
 
     // Kiểm tra quyền truy cập VIP
@@ -61,31 +83,56 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     this.currentUserId = this.authService.getCurrentUserId();
-    
+
     // Nếu không có currentUserId, log warning
     if (!this.currentUserId) {
-      console.warn('⚠️ No current user ID found! User might not be logged in properly.');
+      console.warn(
+        '⚠️ No current user ID found! User might not be logged in properly.'
+      );
     }
-    
+
     // Initialize chat on both environments
     console.log('✅ Initializing chat service');
     this.fetchHistory();
-    
+
     // Connect with authentication check
-    this.ws.connect().catch(err => {
+    this.ws.connect().catch((err) => {
       console.error('WebSocket connection failed:', err);
       this.error = 'Không thể kết nối chat: ' + (err.message || err);
       this.cdr.markForCheck();
     });
-    
-    this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
+
+    // Subscription cho tin nhắn cộng đồng
+    this.wsSub = this.ws.onCommunityMessage().subscribe((msg: ChatMessage) => {
       this.zone.run(() => {
-        this.messages.push(msg);
-        this.cdr.markForCheck();
-        this.scrollToBottom();
+        // Chỉ thêm tin nhắn cộng đồng khi đang ở chế độ cộng đồng
+        if (!this.showPrivateChat && msg.chatType === 'COMMUNITY') {
+          console.log('📨 Received community message:', msg);
+          this.messages.push(msg);
+          this.cdr.markForCheck();
+          this.scrollToBottom();
+        }
       });
     });
-    
+
+    // Subscription cho tin nhắn riêng tư
+    this.wsPrivateSub = this.ws.onPrivateMessage().subscribe((msg: ChatMessage) => {
+      this.zone.run(() => {
+        // Chỉ thêm tin nhắn riêng tư khi đang ở chế độ riêng tư và đúng conversation
+        if (this.showPrivateChat && 
+            this.selectedConversation && 
+            this.currentUserId &&
+            msg.chatType === 'PRIVATE' &&
+            ((msg.senderId === this.selectedConversation.otherUserId && msg.receiverId === +this.currentUserId) ||
+             (msg.receiverId === this.selectedConversation.otherUserId && msg.senderId === +this.currentUserId))) {
+          console.log('📨 Received private message:', msg);
+          this.messages.push(msg);
+          this.cdr.markForCheck();
+          this.scrollToBottom();
+        }
+      });
+    });
+
     this.wsErrSub = this.ws.onError().subscribe((err: string) => {
       this.zone.run(() => {
         this.error = err;
@@ -104,12 +151,12 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.log('❌ No current user ID - cannot determine message ownership');
       return false;
     }
-    
+
     if (!message.senderId) {
       console.log('❌ Message has no senderId:', message);
       return false;
     }
-    
+
     // Normalize both IDs to strings for comparison
     const currentId = this.currentUserId.toString().trim();
     const senderId = message.senderId.toString().trim();
@@ -124,17 +171,23 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   getRoleBadgeClass(role?: string): string {
     switch (role) {
-      case 'VIP': return 'vip-badge';
-      case 'EXPERT': return 'expert-badge';
-      default: return 'user-badge';
+      case 'VIP':
+        return 'vip-badge';
+      case 'EXPERT':
+        return 'expert-badge';
+      default:
+        return 'user-badge';
     }
   }
 
   getRoleDisplayName(role?: string): string {
     switch (role) {
-      case 'VIP': return 'VIP';
-      case 'EXPERT': return 'Chuyên gia';
-      default: return 'Thành viên';
+      case 'VIP':
+        return 'VIP';
+      case 'EXPERT':
+        return 'Chuyên gia';
+      default:
+        return 'Thành viên';
     }
   }
 
@@ -147,59 +200,62 @@ export class ChatComponent implements OnInit, OnDestroy {
   addDummyMessages(): void {
     // Sử dụng ID rõ ràng để test
     const testUserId = this.currentUserId || '123'; // Fallback nếu không có currentUserId
-    
+
     const dummyMessages: ChatMessage[] = [
       {
         senderId: 999, // ID khác với current user - sẽ hiện bên trái
-        content: 'Chào mọi người! Tôi có thể hỏi về cách chăm sóc cây lan không?',
+        content:
+          'Chào mọi người! Tôi có thể hỏi về cách chăm sóc cây lan không?',
         timestamp: new Date(Date.now() - 300000).toISOString(),
-        senderRole: 'VIP'
+        senderRole: 'VIP',
       },
       {
         senderId: +testUserId, // Current user ID - sẽ hiện bên phải
         content: 'Xin chào! Tôi cũng đang tìm hiểu về cây lan đây.',
         timestamp: new Date(Date.now() - 240000).toISOString(),
-        senderRole: 'VIP'
+        senderRole: 'VIP',
       },
       {
         senderId: 888, // ID khác - sẽ hiện bên trái
-        content: 'Tôi có thể chia sẻ kinh nghiệm về cây lan. Các bạn có câu hỏi gì cụ thể không?',
+        content:
+          'Tôi có thể chia sẻ kinh nghiệm về cây lan. Các bạn có câu hỏi gì cụ thể không?',
         timestamp: new Date(Date.now() - 180000).toISOString(),
-        senderRole: 'EXPERT'
+        senderRole: 'EXPERT',
       },
       {
         senderId: +testUserId, // Current user ID - sẽ hiện bên phải
-        content: 'Cảm ơn anh/chị! Tôi muốn hỏi về tần suất tưới nước cho cây lan.',
+        content:
+          'Cảm ơn anh/chị! Tôi muốn hỏi về tần suất tưới nước cho cây lan.',
         timestamp: new Date(Date.now() - 120000).toISOString(),
-        senderRole: 'VIP'
-      }
+        senderRole: 'VIP',
+      },
     ];
-    
+
     this.messages = dummyMessages;
     this.cdr.detectChanges();
   }
 
   formatTime(timestamp?: string): string {
     if (!timestamp) return '';
-    
+
     const date = new Date(timestamp);
     const now = new Date();
-    
+
     // Kiểm tra xem có phải hôm nay không
     const isToday = date.toDateString() === now.toDateString();
-    
+
     // Kiểm tra xem có phải hôm qua không
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     const isYesterday = date.toDateString() === yesterday.toDateString();
-    
+
     // Format giờ:phút
     const timeString = date.toLocaleTimeString('vi-VN', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
+      hour12: false,
     });
-    
+
     if (isToday) {
       return timeString; // Chỉ hiện giờ:phút nếu là hôm nay
     } else if (isYesterday) {
@@ -208,7 +264,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       // Hiện ngày/tháng và giờ:phút
       const dateString = date.toLocaleDateString('vi-VN', {
         day: '2-digit',
-        month: '2-digit'
+        month: '2-digit',
       });
       return `${dateString} ${timeString}`;
     }
@@ -226,59 +282,190 @@ export class ChatComponent implements OnInit, OnDestroy {
   fetchHistory() {
     this.loading = true;
     this.error = '';
-    
-    // Use UrlService to get correct endpoint
-    const chatHistoryUrl = this.urlService.getApiUrl('api/chat/history');
-    
-    this.http.get<ChatMessage[]>(chatHistoryUrl).subscribe({
+
+    this.chatService.getChatHistory().subscribe({
       next: (data: any) => {
-        const messages = Array.isArray(data) ? data : (data?.data || []);
-        
+        const messages = Array.isArray(data) ? data : data?.data || [];
+
         this.messages = messages;
         this.loading = false;
         this.cdr.markForCheck();
         this.scrollToBottom();
       },
-      error: err => {
+      error: (err) => {
         console.error('Error fetching chat history:', err);
         this.error = 'Không thể tải lịch sử chat';
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  chatType: 'COMMUNITY' | 'PRIVATE' = 'COMMUNITY';
+
+  // Private chat methods
+  loadConversations() {
+    this.loading = true;
+    
+    this.chatService.getConversations().subscribe({
+      next: (data) => {
+        this.conversations = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error loading conversations:', err);
+        this.error = 'Không thể tải danh sách trò chuyện';
         this.loading = false;
         this.cdr.markForCheck();
       }
     });
   }
 
+  selectConversation(conversation: ConversationDTO) {
+    this.selectedConversation = conversation;
+    this.loadPrivateMessages(conversation.otherUserId);
+  }
+
+  loadPrivateMessages(otherUserId: number) {
+    this.loading = true;
+    
+    this.chatService.getPrivateMessages(otherUserId).subscribe({
+      next: (data) => {
+        this.messages = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+        this.scrollToBottom();
+      },
+      error: (err) => {
+        console.error('Error loading private messages:', err);
+        this.error = 'Không thể tải tin nhắn';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  switchToPrivateChat() {
+    this.showPrivateChat = true;
+    this.chatType = 'PRIVATE';
+    this.loadConversations();
+    this.loadExperts();
+    // Không cần gọi subscribeToPrivateMessages() nữa vì đã được xử lý trong onConnect
+  }
+
+  switchToCommunityChat() {
+    this.showPrivateChat = false;
+    this.chatType = 'COMMUNITY';
+    this.selectedConversation = null;
+    this.fetchHistory();
+  }
+
+  loadExperts() {
+    this.loading = true;
+    
+    this.chatService.getExperts().subscribe({
+      next: (data) => {
+        this.experts = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error loading experts:', err);
+        this.error = 'Không thể tải danh sách chuyên gia';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  startConversationWithExpert(expert: ExpertDTO) {
+    if (!this.currentUserId) {
+      this.error = 'Không thể xác định người dùng';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    // Tạo conversation ID
+    const conversationId = this.generateConversationId(this.currentUserId, expert.id);
+    
+    // Kiểm tra xem conversation đã tồn tại chưa
+    const existingConversation = this.conversations.find(c => c.conversationId === conversationId);
+    
+    if (existingConversation) {
+      this.selectConversation(existingConversation);
+    } else {
+      // Tạo conversation mới
+      const newConversation: ConversationDTO = {
+        conversationId: conversationId,
+        otherUserId: expert.id,
+        otherUsername: expert.username,
+        otherUserRole: expert.role,
+        lastMessage: '',
+        lastMessageTime: '',
+        hasUnreadMessages: false
+      };
+      
+      this.conversations.unshift(newConversation);
+      this.selectConversation(newConversation);
+    }
+  }
+
+  private generateConversationId(user1Id: string, user2Id: number): string {
+    const minId = Math.min(+user1Id, user2Id);
+    const maxId = Math.max(+user1Id, user2Id);
+    return `conv_${minId}_${maxId}`;
+  }
+
   sendMessage() {
     if (!this.newMessage.trim()) return;
-    
+
     // Lấy userId và role từ AuthService
     const userId = this.authService.getCurrentUserId();
     const userRole = this.authService.getCurrentUserRole();
-    
+
     if (!userId) {
       this.error = 'Không thể xác định người dùng. Vui lòng đăng nhập lại.';
       this.cdr.markForCheck();
       return;
     }
-    
+
     if (!userRole || (userRole !== 'VIP' && userRole !== 'EXPERT')) {
       this.error = 'Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.';
       this.cdr.markForCheck();
       return;
     }
-    
+
     const msg: ChatMessage = {
       senderId: +userId, // Convert string to number
       content: this.newMessage.trim(),
       senderRole: userRole,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      chatType: this.chatType
     };
-    
-    this.ws.sendMessage(msg).catch(err => {
-      this.error = 'Không thể gửi tin nhắn: ' + err;
-      this.cdr.markForCheck();
-    });
-    
+
+    if (this.chatType === 'PRIVATE') {
+      if (!this.selectedConversation) {
+        this.error = 'Vui lòng chọn một cuộc trò chuyện';
+        this.cdr.markForCheck();
+        return;
+      }
+      
+      // Add conversationId for private messages
+      msg.conversationId = this.selectedConversation.conversationId;
+      msg.receiverId = this.selectedConversation.otherUserId;
+      
+      this.ws.sendPrivateMessage(msg).catch(err => {
+        this.error = 'Không thể gửi tin nhắn: ' + err;
+        this.cdr.markForCheck();
+      });
+    } else {
+      this.ws.sendMessage(msg).catch(err => {
+        this.error = 'Không thể gửi tin nhắn: ' + err;
+        this.cdr.markForCheck();
+      });
+    }
+
     this.newMessage = '';
     this.error = ''; // Clear any previous errors
     this.cdr.markForCheck();
@@ -295,8 +482,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.wsSub?.unsubscribe();
     this.wsErrSub?.unsubscribe();
+    this.wsPrivateSub?.unsubscribe();
     this.ws.disconnect();
-    
+
     this.destroy$.next();
     this.destroy$.complete();
   }

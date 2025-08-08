@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
-import { ChatStompService, ChatMessage } from '../../vip/chat/chat-stomp.service';
+import { ExpertChatStompService, ChatMessage } from './expert-chat-stomp.service';
 import { Subscription } from 'rxjs';
 import { UrlService } from '../../shared/url.service';
 
@@ -28,6 +28,7 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
   // WebSocket subscriptions - sử dụng đúng pattern như VIP chat
   private wsSub?: Subscription;
   private wsErrSub?: Subscription;
+  private wsPrivateSub?: Subscription;
   
   // User info
   currentUserId: string | null = null;
@@ -38,7 +39,7 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
-    private ws: ChatStompService,
+    private ws: ExpertChatStompService,
     private http: HttpClient,
     private urlService: UrlService
   ) {}
@@ -63,6 +64,7 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.wsSub?.unsubscribe();
     this.wsErrSub?.unsubscribe();
+    this.wsPrivateSub?.unsubscribe();
     this.ws.disconnect();
   }
 
@@ -70,12 +72,31 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
   connectToChat(): void {
     this.ws.connect();
     
-    // Subscribe to messages
-    this.wsSub = this.ws.onMessage().subscribe((msg: ChatMessage) => {
+    // Subscribe to community messages
+    this.wsSub = this.ws.onCommunityMessage().subscribe((msg: ChatMessage) => {
       this.zone.run(() => {
-        this.messages.push(msg);
-        this.cdr.markForCheck();
-        this.scrollToBottom();
+        // Chỉ thêm tin nhắn cộng đồng
+        if (msg.chatType === 'COMMUNITY') {
+          console.log('📨 Expert received community message:', msg);
+          this.messages.push(msg);
+          this.cdr.markForCheck();
+          this.scrollToBottom();
+        }
+      });
+    });
+
+    // Subscribe to private messages
+    this.wsPrivateSub = this.ws.onPrivateMessage().subscribe((msg: ChatMessage) => {
+      this.zone.run(() => {
+        // Chỉ thêm tin nhắn riêng tư nếu liên quan đến expert này
+        if (msg.chatType === 'PRIVATE' && 
+            this.currentUserId &&
+            (msg.senderId === +this.currentUserId || msg.receiverId === +this.currentUserId)) {
+          console.log('📨 Expert received private message:', msg);
+          this.messages.push(msg);
+          this.cdr.markForCheck();
+          this.scrollToBottom();
+        }
       });
     });
     
