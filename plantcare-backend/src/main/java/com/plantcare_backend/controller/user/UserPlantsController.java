@@ -127,36 +127,6 @@ public class UserPlantsController {
             return new ResponseError(HttpStatus.UNAUTHORIZED.value(), "User not authenticated");
         }
 
-        // Debug logging
-        log.info("=== DEBUG ADD USER PLANT (FORM DATA) ===");
-        log.info("Environment: {}", System.getProperty("spring.profiles.active", "default"));
-        log.info("Timezone: {}", java.util.TimeZone.getDefault().getID());
-        log.info("Current time: {}", new java.util.Date());
-        log.info("Request content type: {}", request.getContentType());
-        log.info("Request method: {}", request.getMethod());
-        log.info("All request parameters: {}", request.getParameterMap());
-        log.info("User ID: {}", userId);
-        log.info("Request DTO: {}", requestDTO);
-        log.info("Plant ID: {}", requestDTO.getPlantId());
-        log.info("Nickname: {}", requestDTO.getNickname());
-        log.info("Planting Date: {}", requestDTO.getPlantingDate());
-        log.info("Location: {}", requestDTO.getLocationInHouse());
-        log.info("Images count: {}", requestDTO.getImages() != null ? requestDTO.getImages().size() : 0);
-
-        // Thêm logging chi tiết cho từng field
-        log.info("=== DETAILED FIELD CHECK ===");
-        log.info("plantId type: {}",
-                requestDTO.getPlantId() != null ? requestDTO.getPlantId().getClass().getSimpleName() : "NULL");
-        log.info("nickname type: {}",
-                requestDTO.getNickname() != null ? requestDTO.getNickname().getClass().getSimpleName() : "NULL");
-        log.info("plantingDate type: {}",
-                requestDTO.getPlantingDate() != null ? requestDTO.getPlantingDate().getClass().getSimpleName()
-                        : "NULL");
-        log.info("locationInHouse type: {}",
-                requestDTO.getLocationInHouse() != null ? requestDTO.getLocationInHouse().getClass().getSimpleName()
-                        : "NULL");
-        log.info("==========================");
-
         try {
             userPlantsService.addUserPlant(requestDTO, requestDTO.getImages(), userId);
             activityLogService.logActivity(userId.intValue(), "ADD_USER_PLANT",

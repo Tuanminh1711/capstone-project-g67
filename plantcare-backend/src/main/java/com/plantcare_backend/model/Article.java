@@ -9,10 +9,10 @@ import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@AllArgsConstructor
 @Builder
+@Entity
 @Table(name = "care_articles")
 public class Article {
 
@@ -35,16 +35,16 @@ public class Article {
     @JoinColumn(name = "author_id")
     private Users author;
 
-    @OneToMany(mappedBy = "", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ArticleImage> images;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private ArticleStatus status = ArticleStatus.DRAFT;
+    private ArticleStatus status = ArticleStatus.PUBLISHED;
 
     public enum ArticleStatus {
-        PUBLISHED, DRAFT, DELETED;
+        PUBLISHED, DELETED;
     }
 
     @Column(name = "created_by")
