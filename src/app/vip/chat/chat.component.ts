@@ -1,3 +1,4 @@
+  // ...existing code...
 import {
   Component,
   OnInit,
@@ -6,6 +7,9 @@ import {
   NgZone,
   ChangeDetectionStrategy,
   TrackByFunction,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
 } from '@angular/core';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { CommonModule } from '@angular/common';
@@ -30,18 +34,36 @@ import { ConversationDTO } from './conversation.interface';
   styleUrls: ['./chat.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  // ...existing code...
+  // Lọc tin nhắn theo loại chat để hiển thị đúng
+  get filteredMessages(): ChatMessage[] {
+    if (this.showPrivateChat) {
+      // Chỉ hiển thị tin nhắn 1-1
+      return (this.messages || []).filter((m: any) => m.chatType === 'PRIVATE');
+    } else {
+      // Chỉ hiển thị tin nhắn cộng đồng
+      return (this.messages || []).filter((m: any) => m.chatType === 'COMMUNITY');
+    }
+  }
+  @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef;
+  
   messages: ChatMessage[] = [];
   newMessage: string = '';
   loading = false;
   error = '';
   currentUserId: string | null = null;
   
+  private shouldScrollToBottom = false;
+  private lastMessageCount = 0;
+  
   // Private chat properties
   conversations: ConversationDTO[] = [];
   selectedConversation: ConversationDTO | null = null;
   showPrivateChat = false;
   experts: ExpertDTO[] = [];
+  privateMessages: any[] = [];
+  searchQuery: string = '';
 
   private wsSub?: Subscription;
   private wsErrSub?: Subscription;
@@ -60,17 +82,13 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Environment check for debugging only
-    const isProductionDomain =
-      window.location.hostname.includes('plantcare.id.vn');
-
+    const isProductionDomain = window.location.hostname.includes('plantcare.id.vn');
     console.log('Chat component environment check:', {
       configProduction: environment.production,
       hostname: window.location.hostname,
       isProductionDomain,
       buildMode: environment.production ? 'production' : 'development',
-      deploymentMode: isProductionDomain
-        ? 'production-domain'
-        : 'development-domain',
+      deploymentMode: isProductionDomain ? 'production-domain' : 'development-domain',
     });
 
     // Kiểm tra quyền truy cập VIP
@@ -83,13 +101,13 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     this.currentUserId = this.authService.getCurrentUserId();
-
-    // Nếu không có currentUserId, log warning
     if (!this.currentUserId) {
-      console.warn(
-        '⚠️ No current user ID found! User might not be logged in properly.'
-      );
+      console.warn('⚠️ No current user ID found! User might not be logged in properly.');
     }
+
+    // Luôn load danh sách chuyên gia và trò chuyện gần đây khi vào trang
+    this.loadExperts();
+    this.loadConversations();
 
     // Initialize chat on both environments
     console.log('✅ Initializing chat service');
@@ -108,7 +126,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         // Chỉ thêm tin nhắn cộng đồng khi đang ở chế độ cộng đồng
         if (!this.showPrivateChat && msg.chatType === 'COMMUNITY') {
           console.log('📨 Received community message:', msg);
-          this.messages.push(msg);
+          // Reload lại lịch sử chat để đồng bộ
+          this.fetchHistory();
           this.cdr.markForCheck();
           this.scrollToBottom();
         }
@@ -126,7 +145,8 @@ export class ChatComponent implements OnInit, OnDestroy {
             ((msg.senderId === this.selectedConversation.otherUserId && msg.receiverId === +this.currentUserId) ||
              (msg.receiverId === this.selectedConversation.otherUserId && msg.senderId === +this.currentUserId))) {
           console.log('📨 Received private message:', msg);
-          this.messages.push(msg);
+          // Reload lại lịch sử chat 1-1 để đồng bộ
+          this.loadPrivateMessages(this.selectedConversation.otherUserId);
           this.cdr.markForCheck();
           this.scrollToBottom();
         }
@@ -270,14 +290,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  private scrollToBottom(): void {
-    setTimeout(() => {
-      const container = document.querySelector('.chat-messages');
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }, 100);
-  }
+
 
   fetchHistory() {
     this.loading = true;
@@ -289,8 +302,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         this.messages = messages;
         this.loading = false;
+        this.checkIfShouldScroll();
         this.cdr.markForCheck();
-        this.scrollToBottom();
       },
       error: (err) => {
         console.error('Error fetching chat history:', err);
@@ -334,8 +347,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.messages = data;
         this.loading = false;
+        this.checkIfShouldScroll();
         this.cdr.markForCheck();
-        this.scrollToBottom();
       },
       error: (err) => {
         console.error('Error loading private messages:', err);
@@ -347,18 +360,19 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   switchToPrivateChat() {
-    this.showPrivateChat = true;
-    this.chatType = 'PRIVATE';
-    this.loadConversations();
-    this.loadExperts();
-    // Không cần gọi subscribeToPrivateMessages() nữa vì đã được xử lý trong onConnect
+  this.showPrivateChat = true;
+  this.chatType = 'PRIVATE';
+  this.loadConversations();
+  this.loadExperts();
   }
 
   switchToCommunityChat() {
-    this.showPrivateChat = false;
-    this.chatType = 'COMMUNITY';
-    this.selectedConversation = null;
-    this.fetchHistory();
+  this.showPrivateChat = false;
+  this.chatType = 'COMMUNITY';
+  this.selectedConversation = null;
+  this.loadExperts();
+  this.loadConversations();
+  this.fetchHistory();
   }
 
   loadExperts() {
@@ -468,6 +482,12 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.newMessage = '';
     this.error = ''; // Clear any previous errors
+    
+    // Scroll to bottom after sending message
+    setTimeout(() => {
+      this.scrollToBottomSmooth();
+    }, 100);
+    
     this.cdr.markForCheck();
   }
 
@@ -477,6 +497,56 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.sendMessage();
     }
     // Allow Shift+Enter for new line (default behavior)
+  }
+
+  getInputPlaceholder(): string {
+    if (this.selectedConversation) {
+      return `Nhập tin nhắn cho ${this.selectedConversation.otherUsername}...`;
+    }
+    return 'Nhập tin nhắn VIP của bạn...';
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    try {
+      if (this.messagesContainer) {
+        const element = this.messagesContainer.nativeElement;
+        element.scrollTop = element.scrollHeight;
+      }
+    } catch (err) {
+      console.error('Error scrolling to bottom:', err);
+    }
+  }
+
+  private scrollToBottomSmooth(): void {
+    try {
+      if (this.messagesContainer) {
+        const element = this.messagesContainer.nativeElement;
+        element.scrollTo({
+          top: element.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    } catch (err) {
+      console.error('Error smooth scrolling to bottom:', err);
+    }
+  }
+
+  private checkIfShouldScroll(): void {
+    // Scroll to bottom if:
+    // 1. New messages arrived
+    // 2. User just switched conversations
+    // 3. User just sent a message
+    if (this.messages.length !== this.lastMessageCount) {
+      this.shouldScrollToBottom = true;
+      this.lastMessageCount = this.messages.length;
+    }
   }
 
   ngOnDestroy(): void {

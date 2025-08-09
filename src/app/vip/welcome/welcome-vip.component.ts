@@ -24,4 +24,8 @@ export class WelcomeVipComponent {
   goToDiseaseDetection() {
     this.router.navigate(['/vip/disease-detection']);
   }
+
+  goToChatPrivate() {
+    this.router.navigate(['/vip/chat/chat-private']);
+  }
 }

@@ -38,6 +38,9 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   imagePreviewUrl: string | null = null;
   detectionResult: DiseaseDetectionResult | null = null;
   
+    // Tham chiếu đến phần kết quả để scroll/hightlight
+    resultPanelRef?: HTMLElement;
+  
   // History data
   historyPage = 0;
   historyPageSize = 5;
@@ -254,6 +257,15 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.detectionResult = result;
           this.isLoading = false;
+            // Tự động scroll đến phần kết quả nếu có
+            setTimeout(() => {
+              const el = document.getElementById('detection-result-panel');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('highlight-result');
+                setTimeout(() => el.classList.remove('highlight-result'), 2000);
+              }
+            }, 100);
         },
         error: (err) => {
           this.error = 'Không thể phân tích triệu chứng. Vui lòng thử lại sau.';

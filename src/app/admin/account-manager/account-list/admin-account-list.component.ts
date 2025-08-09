@@ -183,6 +183,12 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
   }
 
   editUser(account: Account) {
+    if (account.role && account.role.toUpperCase() === 'VIP') {
+      if (typeof window !== 'undefined' && (window as any).showToast) {
+        (window as any).showToast('Không thể chỉnh sửa thông tin tài khoản VIP!', 'error');
+      }
+      return;
+    }
     this.router.navigate(['/admin/accounts/update', account.id]);
   }
 

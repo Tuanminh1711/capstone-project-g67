@@ -1,78 +1,175 @@
 
+
 <app-top-navigator></app-top-navigator>
-<div class="care-reminder-setup-container wide fix-header">
-  <div class="header-container-care center">
-    <h1 class="header-title-care small">CÀI ĐẶT NHẮC NHỞ CHĂM SÓC CÂY</h1>
-  </div>
-  <div class="add-schedule-actions" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 8px;">
-    <button type="button" class="add-schedule-btn help-btn beautify-btn" (click)="openGuide()" title="Hướng dẫn sử dụng">
-      <i class="fas fa-question-circle"></i> Hướng dẫn
-    </button>
-    <ng-container *ngIf="!hasWaterReminder">
-      <button type="button" class="add-schedule-btn water" (click)="addSchedule(1)" title="Thêm lịch nhắc tưới nước">
-        Tưới nước
-      </button>
-    </ng-container>
-    <ng-container *ngIf="!hasFertilizerReminder">
-      <button type="button" class="add-schedule-btn fertilizer outside beautify small-btn" (click)="addSchedule(2)" title="Thêm lịch nhắc bón phân">
-        <i class="fas fa-leaf icon-small"></i> Bón phân
-      </button>
-    </ng-container>
-    <ng-container *ngIf="!hasPruneReminder">
-      <button type="button" class="add-schedule-btn prune outside beautify small-btn" (click)="addSchedule(3)" title="Thêm lịch nhắc cắt tỉa">
-        <i class="fas fa-cut icon-small"></i> Cắt tỉa
-      </button>
-    </ng-container>
-    <ng-container *ngIf="!hasSprayReminder">
-      <button type="button" class="add-schedule-btn spray outside beautify small-btn" (click)="addSchedule(4)" title="Thêm lịch nhắc phun thuốc">
-        <i class="fas fa-spray-can icon-small"></i> Phun thuốc
-      </button>
-    </ng-container>
-  </div>
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <div formArrayName="schedules" class="stretch-form wide-form">
-  <div *ngFor="let schedule of enabledSchedules; let i = index" [formGroupName]="i" class="schedule-block">
-        <div class="schedule-header">
-          <span class="schedule-title">
-            <ng-container [ngSwitch]="schedule.get('careTypeId')?.value">
-              <i *ngSwitchCase="1" class="fas fa-tint care-icon water"></i>
-              <i *ngSwitchCase="2" class="fas fa-leaf care-icon fertilizer"></i>
-              <i *ngSwitchCase="3" class="fas fa-bug care-icon pest"></i>
-              <i *ngSwitchDefault class="fas fa-bell care-icon"></i>
-            </ng-container>
-            {{ getCareTypeName(schedule.get('careTypeId')?.value) }}
-          </span>
-          @if (schedules.length > 1) {
-            <button type="button" class="remove-schedule-btn" (click)="removeSchedule(i)" title="Xóa lịch này">
-              <i class="fas fa-trash"></i>
-            </button>
-          }
-        </div>
-        <div class="schedule-grid">
-          <div class="form-row">
-            <label>Chu kỳ (ngày)</label>
-            <input type="number" formControlName="frequencyDays" min="1" />
-          </div>
-          <div class="form-row">
-            <label>Giờ nhắc</label>
-            <input type="time" formControlName="reminderTime" />
-          </div>
-          <div class="form-row">
-            <label>Ngày bắt đầu</label>
-            <input type="date" formControlName="startDate" style="width: 100%;" />
-          </div>
-          <div class="form-row full-width">
-            <label>Tin nhắn tuỳ chỉnh</label>
-            <input type="text" formControlName="customMessage" maxlength="100" placeholder="Nhập tin nhắn..." />
-          </div>
-        </div>
+
+<div class="care-reminder-container">
+  <!-- Header Section -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="fas fa-bell icon-primary"></i>
+        Cài đặt nhắc nhở chăm sóc cây
+      </h1>
+      <p class="page-subtitle">Tạo lịch nhắc nhở để chăm sóc cây của bạn một cách khoa học và hiệu quả</p>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="care-types-sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">
+          <i class="fas fa-seedling"></i>
+          Loại chăm sóc
+        </h2>
+        <button class="btn-view-all" (click)="openAllSchedules()" [class.active]="selectedCareTypeId === 0">
+          <i class="fas fa-eye"></i>
+          Xem tất cả
+        </button>
       </div>
-    </div>
-    <div class="form-actions center beautify-save">
-  <button *ngIf="enabledSchedules.length > 0" type="submit" class="save-reminder-btn beautify-save-btn" [disabled]="form.invalid || loading">
-        <i class="fas fa-save"></i> Lưu tất cả nhắc nhở
-      </button>
-      <span *ngIf="loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Đang lưu...</span>
-    </div>
-  </form>
+      
+      <nav class="care-types-nav">
+        <ul class="care-types-list">
+          <li *ngFor="let type of careTypes" 
+              class="care-type-item" 
+              [class.active]="selectedCareTypeId === type.id"
+              (click)="selectCareType(type.id)" 
+              tabindex="0"
+              role="button">
+            <div class="care-type-content">
+              <span class="care-type-icon">
+                <i [ngClass]="type.icon"></i>
+              </span>
+              <span class="care-type-name">{{ type.name }}</span>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="reminder-form-section">
+      <div class="form-container">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" *ngIf="loading">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Đang xử lý...</span>
+          </div>
+        </div>
+
+        <!-- Form Content -->
+        <form [formGroup]="form" class="reminder-form" [class.loading]="loading">
+          <div formArrayName="schedules">
+            <ng-container *ngFor="let scheduleCtrl of scheduleFormGroups; let i = index">
+              <ng-container *ngIf="selectedCareTypeId === 0 || scheduleCtrl.get('careTypeId')?.value === selectedCareTypeId">
+                <div [formGroup]="scheduleCtrl" class="schedule-card">
+                  <!-- Card Header -->
+                  <div class="card-header">
+                    <div class="care-type-badge">
+                      <i [ngClass]="getCareTypeIcon(scheduleCtrl.get('careTypeId')?.value)"></i>
+                      <span>{{ getCareTypeName(scheduleCtrl.get('careTypeId')?.value) }}</span>
+                    </div>
+                    <!-- Only show delete button when viewing all schedules -->
+                    <button type="button" 
+                            *ngIf="selectedCareTypeId === 0"
+                            class="btn-remove-schedule" 
+                            (click)="removeSchedule(i)" 
+                            title="Xóa lịch này"
+                            aria-label="Xóa lịch nhắc nhở">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+
+                  <!-- Form Fields -->
+                  <div class="form-grid">
+                    <div class="form-field">
+                      <label class="field-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        Chu kỳ lặp lại
+                      </label>
+                      <div class="field-input">
+                        <input type="number" 
+                               formControlName="frequencyDays" 
+                               min="1" 
+                               max="365"
+                               class="input-field"
+                               placeholder="Nhập số ngày" />
+                        <span class="input-suffix">ngày</span>
+                      </div>
+                    </div>
+
+                    <div class="form-field">
+                      <label class="field-label">
+                        <i class="fas fa-clock"></i>
+                        Giờ nhắc nhở
+                      </label>
+                      <div class="field-input">
+                        <input type="time" 
+                               formControlName="reminderTime" 
+                               class="input-field" />
+                      </div>
+                    </div>
+
+                    <div class="form-field">
+                      <label class="field-label">
+                        <i class="fas fa-calendar-day"></i>
+                        Ngày bắt đầu
+                      </label>
+                      <div class="field-input">
+                        <input type="date" 
+                               formControlName="startDate" 
+                               class="input-field" />
+                      </div>
+                    </div>
+
+                    <div class="form-field full-width">
+                      <label class="field-label">
+                        <i class="fas fa-comment-alt"></i>
+                        Tin nhắn tuỳ chỉnh
+                      </label>
+                      <div class="field-input">
+                        <input type="text" 
+                               formControlName="customMessage" 
+                               maxlength="100" 
+                               class="input-field"
+                               placeholder="Nhập tin nhắn nhắc nhở của bạn..." />
+                        <div class="character-count">
+                          {{ scheduleCtrl.get('customMessage')?.value?.length || 0 }}/100
+                        </div>
+                      </div>
+                      <div class="error-message" *ngIf="scheduleCtrl.get('customMessage')?.errors?.invalidChars">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Tin nhắn chỉ được chứa chữ, số, dấu câu cơ bản.
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Card Actions -->
+                  <div class="card-actions">
+                    <button type="button" 
+                            class="btn-save-schedule" 
+                            (click)="saveSchedule(i)" 
+                            [disabled]="scheduleCtrl.invalid || loading">
+                      <i class="fas fa-save"></i>
+                      <span>Lưu lịch nhắc</span>
+                    </button>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="scheduleFormGroups.length === 0">
+            <div class="empty-state-content">
+              <i class="fas fa-calendar-plus"></i>
+              <h3>Chưa có lịch nhắc nhở nào</h3>
+              <p>Hãy tạo lịch nhắc nhở để chăm sóc cây của bạn tốt hơn</p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
 </div>

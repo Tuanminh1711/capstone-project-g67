@@ -34,7 +34,8 @@ interface UserDetail {
 })
 export class AdminAccountDetailComponent extends BaseAdminListComponent implements OnInit, AfterViewInit {
   showOnlyUsernameAndRole: boolean = false;
-  showAllInfo: boolean = true;
+  showAllInfo: boolean = false;
+  canView: boolean = true;
   user: UserDetail | null = null;
   userId: number = 0;
   private dataLoaded = false;
@@ -98,6 +99,49 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
         if (response && (response.data || response.id)) {
           this.user = response.data || response;
           this.dataLoaded = true;
+          // Lấy thông tin user hiện tại từ localStorage/sessionStorage (giả sử đã lưu)
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || '{}');
+          const currentUserId = currentUser.id;
+          const currentUserRole = (currentUser.role || '').toUpperCase();
+          const viewedRole = (this.user && this.user.role ? this.user.role : '').toUpperCase();
+          // Ẩn hết thông tin nếu là VIP
+          if (viewedRole === 'VIP') {
+            // Admin không được xem tài khoản VIP
+            if (currentUserRole === 'ADMIN' && this.user && currentUserId !== this.user.id) {
+              this.canView = false;
+              this.showOnlyUsernameAndRole = false;
+              this.showAllInfo = false;
+              this.setError('Admin không được xem thông tin tài khoản VIP.');
+              this.user = null;
+              this.setLoading(false);
+              return;
+            }
+            // Staff cũng chỉ xem username và vai trò
+            this.showOnlyUsernameAndRole = true;
+            this.showAllInfo = false;
+          } else if (viewedRole === 'USER') {
+            // Admin, staff xem user chỉ hiện username và vai trò
+            this.showOnlyUsernameAndRole = true;
+            this.showAllInfo = false;
+          } else if (currentUserRole === 'ADMIN') {
+            // Admin xem chính mình hoặc staff/expert thì hiện hết
+            if ((this.user && currentUserId === this.user.id) || viewedRole === 'STAFF' || viewedRole === 'EXPERT') {
+              this.showOnlyUsernameAndRole = false;
+              this.showAllInfo = true;
+            } else {
+              this.showOnlyUsernameAndRole = true;
+              this.showAllInfo = false;
+            }
+          } else {
+            // Staff xem staff/expert thì hiện hết
+            if (currentUserRole === 'STAFF' && (viewedRole === 'STAFF' || viewedRole === 'EXPERT')) {
+              this.showOnlyUsernameAndRole = false;
+              this.showAllInfo = true;
+            } else {
+              this.showOnlyUsernameAndRole = true;
+              this.showAllInfo = false;
+            }
+          }
         } else {
           this.setError('Không tìm thấy thông tin người dùng');
           this.dataLoaded = false;
@@ -176,12 +220,12 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
 
   getRoleText(role: string): string {
     const roleMap: { [key: string]: string } = {
-      'ADMIN': 'Administrator with full access',
-      'STAFF': 'Staff member with limited access',
-      'USER': 'Regular user with basic access',
-      'GUEST': 'Guest user with minimal access',
-      'EXPERT': 'Expert',
-      'VIP': 'VIP user with premium access'
+      'ADMIN': 'QUẢN TRỊ VIÊN',
+      'STAFF': 'NHÂN VIÊN',
+      'USER': 'NGƯỜI DÙNG',
+      'GUEST': 'KHÁCH',
+      'EXPERT': 'CHUYÊN GIA',
+      'VIP': 'VIP'
     };
     return roleMap[role?.toUpperCase()] || role;
   }

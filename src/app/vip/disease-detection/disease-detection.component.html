@@ -136,7 +136,17 @@
 
     <!-- Detection Result -->
     <div class="result-container" *ngIf="detectionResult && (activeTab === 'upload' || activeTab === 'symptoms')">
-      <div class="result-panel">
+      <div class="result-panel" id="detection-result-panel">
+<style>
+  .highlight-result {
+    box-shadow: 0 0 0 4px #4caf50;
+    animation: highlightFade 2s;
+  }
+  @keyframes highlightFade {
+    0% { box-shadow: 0 0 0 8px #4caf50; }
+    100% { box-shadow: 0 0 0 0 #4caf50; }
+  }
+</style>
         <div class="result-header">
           <h2>Kết quả phân tích</h2>
           <span class="confidence-badge">
