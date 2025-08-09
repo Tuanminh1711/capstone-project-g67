@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
@@ -8,6 +7,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
+import { AuthService } from '../../../auth/auth.service';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 
 @Component({
   selector: 'app-admin-account-list',
@@ -33,18 +34,24 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
   sortField: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  currentUserId: string | null = null;
+
   constructor(
     private accountService: AdminAccountService,
     private route: ActivatedRoute,
     private router: Router,
     private confirmationDialog: ConfirmationDialogService,
+    private authService: AuthService,
     private pageTitleService: AdminPageTitleService
   ) {
     super();
   }
 
   ngOnInit() {
-    this.pageTitleService.setTitle('DANH SÁCH TÀI KHOẢN');
+    // Đặt tiêu đề trang qua service
+    this.pageTitleService.setTitle('Quản lý tài khoản');
+    // Lấy userId hiện tại
+    this.currentUserId = this.authService.getCurrentUserId();
     this.route.queryParams.subscribe(params => {
       if (params['successMsg']) {
         this.setSuccess(params['successMsg']);
@@ -136,39 +143,39 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
   changeStatus(account: Account, event: Event) {
     const select = event.target as HTMLSelectElement;
     const newStatus = select.value.toUpperCase();
+    // Không cho phép thay đổi trạng thái của chính mình
+    if ((account.id + '') === (this.currentUserId + '')) {
+      this.setError('Bạn không thể thay đổi trạng thái của chính mình!');
+      select.value = account.status.toUpperCase(); // revert selection
+      return;
+    }
     if (account.status.toUpperCase() === newStatus) return;
     this.confirmationDialog.showDialog({
       title: 'Xác nhận thay đổi trạng thái',
-      message: `Bạn có chắc chắn muốn đổi trạng thái tài khoản "${account.username}" thành "${this.getStatusText(newStatus)}"?`,
-      confirmText: 'Đồng ý',
+      message: `Bạn có chắc chắn muốn chuyển trạng thái tài khoản "${account.username}" sang "${newStatus}"?`,
+      confirmText: 'Xác nhận',
       cancelText: 'Hủy',
-      icon: 'question',
       type: 'warning'
     }).subscribe(confirmed => {
       if (!confirmed) {
-        // Nếu hủy, reset lại dropdown về trạng thái cũ
-        select.value = account.status.toUpperCase();
+        select.value = account.status.toUpperCase(); // revert selection
         return;
       }
       this.accountService.changeStatus(account.id, newStatus).subscribe({
         next: () => {
-          this.reloadAccounts();
+          account.status = newStatus;
+          // Show toast only, do not display success message bar
+          if (typeof window !== 'undefined' && (window as any).showToast) {
+            (window as any).showToast('Thay đổi trạng thái thành công!', 'success');
+          }
+          this.setSuccess('');
+          this.reloadAccounts(); // reload the account list after status change
         },
         error: (err) => {
           this.setError(err?.error?.message || 'Không thể cập nhật trạng thái tài khoản');
-          this.reloadAccounts();
         }
       });
     });
-  }
-
-  getStatusText(status: string): string {
-    switch (status) {
-      case 'ACTIVE': return 'Hoạt động';
-      case 'INACTIVE': return 'Đã khóa';
-      case 'BANNED': return 'Cấm';
-      default: return status;
-    }
   }
 
   viewDetail(account: Account) {

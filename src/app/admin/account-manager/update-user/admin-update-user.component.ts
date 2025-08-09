@@ -1,11 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { AuthService } from '../../../auth/auth.service';
 
 interface UserDetail {
   id: number;
@@ -45,10 +45,45 @@ interface UpdateUserRequest {
   styleUrls: ['./admin-update-user.component.scss']
 })
 export class AdminUpdateUserComponent extends BaseAdminListComponent implements OnInit, AfterViewInit {
+  showPasswordField: boolean = false;
+  // Biến kiểm soát hiển thị/chỉnh sửa
+  showOnlyUsernameAndRole: boolean = false;
+  canEditRole: boolean = false;
+  canEditInfo: boolean = false;
+  canEditRoleOfAdmin: boolean = false;
   user: UserDetail | null = null;
+  originalUserData: any = null; // Lưu toàn bộ dữ liệu user gốc
   // loading, errorMsg, and successMsg handled by BaseAdminListComponent
   userId: number = 0;
   private dataLoaded = false;
+  // Phân quyền chỉnh sửa dựa vào role người đăng nhập
+  canEditNone: boolean = false;
+  isVip: boolean = false;
+  canEditRoleOnly: boolean = false;
+  canEditAll: boolean = false;
+  currentUserRole: string = '';
+
+  private setEditPermissions() {
+    // ADMIN, STAFF, EXPERT, VIP có thể chỉnh sửa tất cả
+    if (['ADMIN', 'STAFF', 'EXPERT', 'VIP'].includes(this.currentUserRole)) {
+      this.canEditAll = true;
+      this.isVip = this.currentUserRole === 'VIP';
+      this.canEditRoleOnly = false;
+      this.canEditNone = false;
+    } else if (['USER', 'GUEST'].includes(this.currentUserRole)) {
+      // USER và GUEST chỉ chỉnh sửa thông tin cơ bản
+      this.canEditAll = false;
+      this.canEditRoleOnly = true;
+      this.canEditNone = false;
+      this.isVip = false;
+    } else {
+      // Không xác định role hoặc không có quyền
+      this.canEditAll = false;
+      this.canEditRoleOnly = false;
+      this.canEditNone = true;
+      this.isVip = false;
+    }
+  }
   
   // Form data
   formData: UpdateUserRequest = {
@@ -65,20 +100,24 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
   updating = false;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef,
-    private toastService: ToastService,
-    private pageTitleService: AdminPageTitleService
+  private route: ActivatedRoute,
+  private router: Router,
+  private http: HttpClient,
+  private cdr: ChangeDetectorRef,
+  private toastService: ToastService,
+  private authService: AuthService
   ) {
     super();
   }
 
   ngOnInit() {
-    this.pageTitleService.setTitle('CẬP NHẬT TÀI KHOẢN');
+    // Lấy role người đăng nhập
+    this.currentUserRole = this.authService.getCurrentUserRole()?.toUpperCase() || '';
+    this.setEditPermissions();
+
     // Load user detail immediately on component init
     this.loadUserDetailFromRoute();
+
     // Subscribe to route params changes
     this.route.params.subscribe(params => {
       const newUserId = +params['id'];
@@ -90,6 +129,8 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
       }
     });
   }
+
+  // ...existing code...
 
   ngAfterViewInit() {
     // Force load again after view init for better UX
@@ -126,8 +167,49 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
       next: (response: any) => {
         if (response && (response.data || response.id)) {
           this.user = response.data || response;
+          this.originalUserData = { ...(response.data || response) };
           this.dataLoaded = true;
           this.populateForm();
+          // Hiển thị trường mật khẩu mới nếu đang chỉnh sửa chính mình
+          const currentUserId = this.authService.getCurrentUserId();
+          this.showPasswordField = !!(currentUserId && this.user && String(this.user.id) === String(currentUserId));
+          // Phân quyền hiển thị/chỉnh sửa
+          const userRole = this.user && this.user.role ? this.user.role.toUpperCase() : '';
+          const currentRole = this.currentUserRole;
+          // Nếu là VIP thì không cho phép truy cập
+          if (userRole === 'VIP') {
+            this.toastService.error('Không được phép chỉnh sửa tài khoản VIP!');
+            this.router.navigate(['/admin/accounts']);
+            return;
+          }
+          // Admin hoặc staff vào update của user: chỉ hiện username và vai trò, chỉ chỉnh sửa vai trò
+          if ((currentRole === 'ADMIN' || currentRole === 'STAFF') && userRole === 'USER') {
+            this.showOnlyUsernameAndRole = true;
+            this.canEditRole = true;
+            this.canEditInfo = false;
+            this.canEditRoleOfAdmin = false;
+          }
+          // Admin vào update của staff hoặc expert: hiện hết thông tin, chỉ chỉnh sửa vai trò
+          else if (currentRole === 'ADMIN' && (userRole === 'STAFF' || userRole === 'EXPERT')) {
+            this.showOnlyUsernameAndRole = false;
+            this.canEditRole = true;
+            this.canEditInfo = false;
+            this.canEditRoleOfAdmin = false;
+          }
+          // Admin vào update của admin: hiện hết thông tin, không chỉnh sửa vai trò
+          else if (currentRole === 'ADMIN' && userRole === 'ADMIN') {
+            this.showOnlyUsernameAndRole = false;
+            this.canEditRole = false;
+            this.canEditInfo = true;
+            this.canEditRoleOfAdmin = true;
+          }
+          // Trường hợp còn lại: hiện hết thông tin, cho chỉnh sửa thông tin (ví dụ user tự sửa)
+          else {
+            this.showOnlyUsernameAndRole = false;
+            this.canEditRole = false;
+            this.canEditInfo = true;
+            this.canEditRoleOfAdmin = false;
+          }
         } else {
           this.setError('Không tìm thấy thông tin người dùng');
           this.dataLoaded = false;
@@ -181,13 +263,14 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
 
   private getRoleId(role: string): number {
     const roleMap: { [key: string]: number } = {
-      'USER': 2,
       'ADMIN': 1,
-      'STAFF': 3,
-      'EXPERT': 4,
-      'VIP': 5
+      'STAFF': 2,
+      'USER': 3,
+      'GUEST': 4,
+      'EXPERT': 5,
+      'VIP': 6
     };
-    return roleMap[role?.toUpperCase()] || 2;
+    return roleMap[role?.toUpperCase()] || 3;
   }
 
   goBack() {
@@ -208,28 +291,16 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     this.setSuccess('');
     this.cdr.detectChanges();
 
-    const updateData = {
+    // Chỉ gửi đúng các trường backend yêu cầu
+    const updateData: any = {
       email: this.formData.email,
-      password: this.formData.password,
-      roleId: this.formData.roleId,
       fullName: this.formData.fullName,
       phoneNumber: this.formData.phoneNumber,
-      gender: this.formData.gender,
+      gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
+      roleId: this.formData.roleId,
       status: this.formData.status
     };
-    
-    // Convert gender to lowercase for backend
-    if (updateData.gender) {
-      updateData.gender = updateData.gender.toLowerCase();
-    }
-    
-    // Remove password if empty
-    if (!updateData.password || updateData.password.trim() === '') {
-      delete updateData.password;
-    }
-
     const apiUrl = `/api/admin/updateuser/${this.userId}`;
-
     this.http.put<any>(apiUrl, updateData).subscribe({
       next: (response: any) => {
         console.log('Update user response:', response);
@@ -296,11 +367,12 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
 
   getRoleText(role: string): string {
     const roleMap: { [key: string]: string } = {
-      'USER': 'Người dùng',
-      'ADMIN': 'Quản trị viên',
-      'STAFF': 'Nhân viên',
-      'EXPERT': 'Chuyên gia',
-      'VIP': 'VIP'
+      'ADMIN': 'Administrator with full access',
+      'STAFF': 'Staff member with limited access',
+      'USER': 'Regular user with basic access',
+      'GUEST': 'Guest user with minimal access',
+      'EXPERT': 'Expert',
+      'VIP': 'VIP user with premium access'
     };
     return roleMap[role?.toUpperCase()] || role;
   }

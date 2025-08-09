@@ -1,9 +1,15 @@
+
 <div class="admin-plant-list-container">
-  <div class="search-bar">
-    <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm tên, danh mục..." class="search-input" />
-    <span class="search-icon">
-      <i class="fas fa-search"></i>
-    </span>
+  <!-- Header and create button removed -->
+  <div class="search-bar-container">
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm báo cáo..." />
+        <span class="search-icon" (click)="onSearch()">
+          <i class="fas fa-search"></i>
+        </span>
+      </div>
+    </div>
   </div>
   <div *ngIf="errorMsg" class="error-bar">
     {{ errorMsg }}
@@ -54,7 +60,7 @@
           </td>
           <td>{{ formatDate(plant.createdAt) || '-' }}</td>
           <td>
-            <button (click)="viewPlantDetail(plant)" class="view-btn">Chi tiết</button>
+            <button (click)="viewPlantDetail(plant)" class="detail-btn">Chi tiết</button>
             <!-- <button (click)="deletePlant(plant)" class="delete-btn">Xóa</button> -->
           </td>
         </tr>

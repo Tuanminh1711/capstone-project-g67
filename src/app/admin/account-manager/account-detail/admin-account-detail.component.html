@@ -75,6 +75,12 @@
               </div>
             </div>
           </div>
+          <div class="detail-section">
+            <h4>Thông tin liên hệ & cá nhân</h4>
+            <div class="hidden-info-box">
+              Nội dung đã được ẩn vì lý do bảo mật.
+            </div>
+          </div>
         </div>
       }
 
@@ -127,16 +133,6 @@
               <div class="detail-item">
                 <span class="label">ID:</span>
                 <span class="value">#{{ user.id }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Vai trò:</span>
-                <span class="value">{{ getRoleText(user.role) }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Trạng thái:</span>
-                <span class="value" [ngClass]="getStatusClass(user.status)">
-                  {{ getStatusText(user.status) }}
-                </span>
               </div>
               <div class="detail-item">
                 <span class="label">Ngày tạo:</span>

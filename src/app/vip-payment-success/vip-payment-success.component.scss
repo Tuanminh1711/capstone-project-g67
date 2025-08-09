@@ -1,21 +1,95 @@
-.vip-success-container {
+// Modern VIP Success Styles
+.vip-success-modern {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  min-height: 70vh;
   text-align: center;
+  background: #fffde7;
+  border-radius: 24px;
+  box-shadow: 0 4px 32px rgba(67, 160, 71, 0.08);
+  padding: 48px 24px;
 }
-.icon-success {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+.loading-modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
 }
-h2 {
-  color: #2ecc40;
-  margin-bottom: 0.5rem;
+.spinner-modern {
+  width: 56px;
+  height: 56px;
+  border: 6px solid #ffd700;
+  border-top: 6px solid #43a047;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 18px;
 }
-.btn.btn-primary {
-  margin-top: 1.5rem;
-  padding: 0.75rem 2rem;
-  font-size: 1.1rem;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading-text {
+  font-size: 1.2rem;
+  color: #43a047;
+  font-weight: 600;
+}
+.success-modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.icon-success-modern {
+  font-size: 4.5rem;
+  margin-bottom: 18px;
+  animation: bounceIn 0.7s;
+}
+@keyframes bounceIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.success-title-modern {
+  color: #43a047;
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.success-desc-modern {
+  font-size: 1.15rem;
+  color: #4e5d4e;
+  margin-bottom: 18px;
+}
+.user-info-modern {
+  background: #fffde7;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(255, 214, 0, 0.08);
+  padding: 18px 32px;
+  margin-bottom: 18px;
+  font-size: 1.08rem;
+  color: #2e7d32;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.btn-confirm-logout {
+  margin-top: 18px;
+  padding: 12px 36px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 32px;
+  background: linear-gradient(90deg,#ffd700,#ffed4e);
+  color: #1e3c72;
+  border: none;
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.13);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.btn-confirm-logout:hover {
+  background: linear-gradient(90deg,#ffed4e,#ffd700);
+  transform: translateY(-2px) scale(1.04);
 }

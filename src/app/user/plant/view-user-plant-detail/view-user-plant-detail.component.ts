@@ -9,7 +9,15 @@ interface CareReminder {
   startDate: string | null;
   lastCareDate: string | null;
   nextCareDate: string | null;
+  priority?: 'low' | 'medium' | 'high';
+  userName?: string;
 }
+
+interface ReminderColumn {
+  title: string;
+  reminders: CareReminder[];
+}
+
 import { Component, OnInit, inject, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule, NavigationEnd } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -41,6 +49,12 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
   errorMsg = '';
   private navSub?: Subscription;
   private paramSub?: Subscription;
+
+  reminderColumns: ReminderColumn[] = [
+    { title: 'Next Up', reminders: [] },
+    { title: 'In Progress', reminders: [] },
+    { title: 'Needs Review', reminders: [] }
+  ];
 
   ngOnInit() {
     // Subscribe to route params changes ngay từ đầu
@@ -154,6 +168,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
         this.careRemindersError = arr.length === 0 ? 'Không có lịch nhắc nhở.' : '';
         this.loadingCareReminders = false;
         this.cdr.detectChanges();
+        this.updateReminderColumns();
       },
       error: (err: any) => {
         this.careReminders = [];
@@ -162,6 +177,24 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
         this.cdr.detectChanges();
       }
     });
+  }
+
+  updateReminderColumns() {
+    // Phân loại theo enabled, frequencyDays, hoặc custom logic
+    this.reminderColumns[0].reminders = this.careReminders.filter(r => r.enabled && (!r.frequencyDays || r.frequencyDays <= 3));
+    this.reminderColumns[1].reminders = this.careReminders.filter(r => r.enabled && r.frequencyDays && r.frequencyDays > 3);
+    this.reminderColumns[2].reminders = this.careReminders.filter(r => !r.enabled);
+    // Gán priority cho mỗi reminder (demo)
+    for (const col of this.reminderColumns) {
+      for (const r of col.reminders) {
+        if (!r.priority) {
+          if (!r.enabled) r.priority = 'low';
+          else if (r.frequencyDays && r.frequencyDays <= 3) r.priority = 'high';
+          else r.priority = 'medium';
+        }
+        if (!r.userName) r.userName = 'Bạn';
+      }
+    }
   }
 
   mapApiResponseToUserPlant(apiData: any) {

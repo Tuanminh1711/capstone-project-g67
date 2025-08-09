@@ -132,16 +132,20 @@ export class ChangePasswordComponent implements OnInit {
 
     this.loading = true;
 
-    // Format JSON đúng theo yêu cầu backend
+    // Format JSON đúng theo yêu cầu backend (không truyền userId)
     const passwordData = {
       currentPassword: this.oldPassword,
       newPassword: this.newPassword,
       confirmPassword: this.confirmPassword
     };
 
+  const authToken = this.jwtUserUtil.getAuthToken();
     this.http.post('/api/auth/change-password', passwordData, {
       withCredentials: true,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authToken ? `Bearer ${authToken}` : ''
+      }
     }).pipe(
       tap(response => {
         this.toastService.success('Đổi mật khẩu thành công!');

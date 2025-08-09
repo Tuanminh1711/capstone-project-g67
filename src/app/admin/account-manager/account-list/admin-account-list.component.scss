@@ -32,18 +32,21 @@ app-admin-sidebar {
   flex: 1 1 0;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: stretch;
   min-height: 0;
-  padding: 80px 0px 80px 80px; /* né sidebar */
+  padding: 32px 12px 32px 12px; /* padding nhỏ, không căn giữa, fit màn hình */
 }
+
+
 
 .admin-account-list-container {
   width: 100%;
-  max-width: 1100px;
+  max-width: 100vw;
+  margin: 0;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 12px #b2dfdb44;
-  padding: 32px 24px 24px;
+  padding: 24px 8px 16px 8px;
   transition: margin-left 0.25s cubic-bezier(.4,2,.6,1);
 }
 
@@ -109,7 +112,7 @@ app-admin-sidebar {
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
-  min-width: 700px; /* Ensure minimum width for all content */
+  min-width: 600px; /* Reduce minimum width for better mobile fit */
 }
 
 .account-table th,
@@ -120,23 +123,19 @@ app-admin-sidebar {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+/* Responsive: allow cell content to wrap on small screens */
+@media (max-width: 700px) {
+  .account-table th,
+  .account-table td {
+    white-space: normal;
+    word-break: break-word;
+    text-overflow: initial;
+    max-width: 120px;
+  }
+  .account-table {
+    min-width: 480px;
+  }
 }
-
-/* Cột tên đăng nhập và họ tên rộng hơn một chút */
-.account-table td:nth-child(1), /* username */
-.account-table td:nth-child(2)  /* fullName */ {
-  max-width: 200px;
-}
-
-/* Cột email rộng hơn */
-.account-table td:nth-child(3) {
-  max-width: 240px;
-}
-
-/* Cột thao tác không bị co lại quá nhỏ */
-.account-table td:last-child {
-  max-width: 160px;
 }
 
 .account-table th {

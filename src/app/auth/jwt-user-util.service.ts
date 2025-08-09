@@ -1,3 +1,4 @@
+
 import { jwtDecode } from 'jwt-decode';
 import { Injectable } from '@angular/core';
 import { CookieService } from './cookie.service';
@@ -5,6 +6,10 @@ import { CookieService } from './cookie.service';
 @Injectable({ providedIn: 'root' })
 export class JwtUserUtilService {
   constructor(private cookieService: CookieService) {}
+
+  public getAuthToken(): string | null {
+    return this.cookieService.getCookie('auth_token');
+  }
 
   getUserIdFromToken(): string | null {
     // Lấy token từ cookie thay vì localStorage
