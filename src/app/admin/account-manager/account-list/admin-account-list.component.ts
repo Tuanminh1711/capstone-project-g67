@@ -8,6 +8,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { AuthService } from '../../../auth/auth.service';
+import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 
 @Component({
   selector: 'app-admin-account-list',
@@ -40,21 +41,22 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     private route: ActivatedRoute,
     private router: Router,
     private confirmationDialog: ConfirmationDialogService,
-    private authService: AuthService
+    private authService: AuthService,
+    private pageTitleService: AdminPageTitleService
   ) {
     super();
   }
 
   ngOnInit() {
-  // Lấy userId hiện tại
-  this.currentUserId = this.authService.getCurrentUserId();
+    // Đặt tiêu đề trang qua service
+    this.pageTitleService.setTitle('Quản lý tài khoản');
+    // Lấy userId hiện tại
+    this.currentUserId = this.authService.getCurrentUserId();
     this.route.queryParams.subscribe(params => {
       if (params['successMsg']) {
         this.setSuccess(params['successMsg']);
       }
     });
-    // Lấy userId hiện tại
-    this.currentUserId = this.authService.getCurrentUserId();
     setTimeout(() => {
       this.fetchAllAccounts('');
     }, 0);

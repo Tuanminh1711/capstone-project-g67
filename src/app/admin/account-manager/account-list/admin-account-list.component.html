@@ -49,7 +49,11 @@
               <td>
                 <div class="action-buttons">
                   <button class="edit-btn" (click)="editUser(acc)" title="Chỉnh sửa tài khoản">
-                    <i class="fas fa-edit"></i>
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <!-- Disable edit button for VIP accounts -->
+                    <button class="edit-btn" (click)="editUser(acc)" title="Chỉnh sửa tài khoản (VIP không thể chỉnh sửa)" [disabled]="acc.role && acc.role.toUpperCase() === 'VIP'">
+                      <i class="fas fa-edit"></i>
                   </button>
                   <button class="logs-btn" (click)="viewActivityLogs(acc)" title="Xem nhật ký hoạt động">
                     <i class="fas fa-history"></i>
