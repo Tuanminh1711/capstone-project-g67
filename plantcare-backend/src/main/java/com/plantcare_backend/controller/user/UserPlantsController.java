@@ -284,8 +284,8 @@ public class UserPlantsController {
             throw new ValidationException("File must be an image");
         }
 
-        if (image.getSize() > 5 * 1024 * 1024) {
-            throw new ValidationException("File size must be less than 5MB");
+        if (image.getSize() > 20 * 1024 * 1024) {
+            throw new ValidationException("File size must be less than 20MB");
         }
 
         String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
@@ -379,9 +379,9 @@ public class UserPlantsController {
                         .body(new ResponseData<>(400, "File must be an image", null));
             }
 
-            if (image.getSize() > 5 * 1024 * 1024) {
+            if (image.getSize() > 20 * 1024 * 1024) {
                 return ResponseEntity.badRequest()
-                        .body(new ResponseData<>(400, "File size must be less than 5MB", null));
+                        .body(new ResponseData<>(400, "File size must be less than 20MB", null));
             }
 
             String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";

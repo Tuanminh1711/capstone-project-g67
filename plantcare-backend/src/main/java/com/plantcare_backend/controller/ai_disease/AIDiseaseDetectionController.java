@@ -41,7 +41,8 @@ public class AIDiseaseDetectionController {
     @VIPOnly
     @Operation(summary = "Detect disease from image", description = "Upload plant image for AI disease detection")
     public ResponseEntity<DiseaseDetectionResultDTO> detectDiseaseFromImage(
-            @Parameter(description = "Plant image file") @RequestParam("image") MultipartFile image,
+            @Parameter(description = "Plant image file")
+            @RequestParam("image") MultipartFile image,
             @RequestAttribute("userId") Long userId) {
 
         log.info("Disease detection request from image for user: {}, plant: {}", userId);
