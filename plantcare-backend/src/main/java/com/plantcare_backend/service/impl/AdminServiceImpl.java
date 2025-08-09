@@ -156,7 +156,6 @@ public class AdminServiceImpl implements AdminService {
 
         user.setStatus(userRequestDTO.getStatus());
         user.setEmail(userRequestDTO.getEmail());
-
         if (userRequestDTO.getRoleId() != null) {
             user.setRole(roleRepository.findById(userRequestDTO.getRoleId())
                     .orElseThrow(() -> new RuntimeException("Role not found")));
