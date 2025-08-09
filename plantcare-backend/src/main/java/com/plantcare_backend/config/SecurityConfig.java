@@ -40,7 +40,6 @@ public class SecurityConfig {
                                 "/auth/forgot-password",
                                 "/auth/verify-reset-code",
                                 "/auth/reset-password",
-                                "/auth/change-password",
                                 "/auth/resend-verification",
                                 "/auth/verify-email",
                                 "/auth/login-admin",
