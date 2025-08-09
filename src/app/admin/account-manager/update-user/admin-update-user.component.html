@@ -80,11 +80,12 @@
                     [(ngModel)]="formData.roleId" 
                     class="form-control"
                     [disabled]="!canEditRole">
-                    <option value="2">Người dùng</option>
                     <option value="1">Quản trị viên</option>
-                    <option value="3">Nhân viên</option>
-                    <option value="4">Chuyên gia</option>
-                    <option value="5">VIP</option>
+                    <option value="2">Nhân viên</option>
+                    <option value="3">Người dùng</option>
+                    <option value="4">Khách</option>
+                    <option value="5">Chuyên gia</option>
+                    <option value="6">VIP</option>
                   </select>
                 </div>
               } @else {
@@ -146,11 +147,12 @@
                     [(ngModel)]="formData.roleId" 
                     class="form-control"
                     [disabled]="!canEditRole || canEditRoleOfAdmin">
-                    <option value="2">Người dùng</option>
                     <option value="1">Quản trị viên</option>
-                    <option value="3">Nhân viên</option>
-                    <option value="4">Chuyên gia</option>
-                    <option value="5">VIP</option>
+                    <option value="2">Nhân viên</option>
+                    <option value="3">Người dùng</option>
+                    <option value="4">Khách</option>
+                    <option value="5">Chuyên gia</option>
+                    <option value="6">VIP</option>
                   </select>
                 </div>
                 <div class="form-group">

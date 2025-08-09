@@ -70,8 +70,8 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
       this.isVip = this.currentUserRole === 'VIP';
       this.canEditRoleOnly = false;
       this.canEditNone = false;
-    } else if (this.currentUserRole === 'USER') {
-      // USER chỉ chỉnh sửa thông tin cơ bản
+    } else if (['USER', 'GUEST'].includes(this.currentUserRole)) {
+      // USER và GUEST chỉ chỉnh sửa thông tin cơ bản
       this.canEditAll = false;
       this.canEditRoleOnly = true;
       this.canEditNone = false;
@@ -263,13 +263,14 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
 
   private getRoleId(role: string): number {
     const roleMap: { [key: string]: number } = {
-      'USER': 2,
       'ADMIN': 1,
-      'STAFF': 3,
-      'EXPERT': 4,
-      'VIP': 5
+      'STAFF': 2,
+      'USER': 3,
+      'GUEST': 4,
+      'EXPERT': 5,
+      'VIP': 6
     };
-    return roleMap[role?.toUpperCase()] || 2;
+    return roleMap[role?.toUpperCase()] || 3;
   }
 
   goBack() {
@@ -290,30 +291,15 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     this.setSuccess('');
     this.cdr.detectChanges();
 
-    // Chỉ gửi các trường backend chấp nhận
+    // Chỉ gửi đúng các trường backend yêu cầu
     const updateData: any = {
-      username: this.formData.username,
       email: this.formData.email,
-      password: this.formData.password,
       fullName: this.formData.fullName,
       phoneNumber: this.formData.phoneNumber,
-      livingEnvironment: this.user?.livingEnvironment || '',
-      gender: this.formData.gender,
+      gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
       roleId: this.formData.roleId,
       status: this.formData.status
     };
-    // Convert gender to lowercase for backend
-    if (updateData.gender) {
-      updateData.gender = updateData.gender.toLowerCase();
-    }
-    // Remove password if empty
-    if (!updateData.password || updateData.password.trim() === '') {
-      delete updateData.password;
-    }
-    // Không cho phép cập nhật username
-    if (updateData.username) {
-      updateData.username = this.originalUserData?.username;
-    }
     const apiUrl = `/api/admin/updateuser/${this.userId}`;
     this.http.put<any>(apiUrl, updateData).subscribe({
       next: (response: any) => {
@@ -381,11 +367,12 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
 
   getRoleText(role: string): string {
     const roleMap: { [key: string]: string } = {
-      'USER': 'Người dùng',
-      'ADMIN': 'Quản trị viên',
-      'STAFF': 'Nhân viên',
-      'EXPERT': 'Chuyên gia',
-      'VIP': 'VIP'
+      'ADMIN': 'Administrator with full access',
+      'STAFF': 'Staff member with limited access',
+      'USER': 'Regular user with basic access',
+      'GUEST': 'Guest user with minimal access',
+      'EXPERT': 'Expert',
+      'VIP': 'VIP user with premium access'
     };
     return roleMap[role?.toUpperCase()] || role;
   }

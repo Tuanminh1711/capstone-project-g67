@@ -176,9 +176,12 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
 
   getRoleText(role: string): string {
     const roleMap: { [key: string]: string } = {
-      'USER': 'Người dùng',
-      'ADMIN': 'Quản trị viên',
-      'MANAGER': 'Quản lý'
+      'ADMIN': 'Administrator with full access',
+      'STAFF': 'Staff member with limited access',
+      'USER': 'Regular user with basic access',
+      'GUEST': 'Guest user with minimal access',
+      'EXPERT': 'Expert',
+      'VIP': 'VIP user with premium access'
     };
     return roleMap[role?.toUpperCase()] || role;
   }
