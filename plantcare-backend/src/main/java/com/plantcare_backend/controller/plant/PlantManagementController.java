@@ -91,8 +91,8 @@ public class PlantManagementController {
                 return ResponseEntity.badRequest().body(new ResponseData<>(400, "File must be an image", null));
             }
 
-            if (image.getSize() > 5 * 1024 * 1024) {
-                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 5MB", null));
+            if (image.getSize() > 20 * 1024 * 1024) {
+                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 20MB", null));
             }
 
             // 3. Upload file
@@ -176,7 +176,7 @@ public class PlantManagementController {
                         continue;
                     }
 
-                    if (image.getSize() > 5 * 1024 * 1024) {
+                    if (image.getSize() > 20 * 1024 * 1024) {
                         continue;
                     }
 
