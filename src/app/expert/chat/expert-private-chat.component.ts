@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
 import { ExpertChatStompService, ChatMessage } from './expert-chat-stomp.service';
@@ -49,6 +49,7 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
@@ -60,18 +61,43 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentUserId = this.authService.getCurrentUserId();
     this.currentUserRole = this.authService.getCurrentUserRole();
-    
     if (!this.currentUserId) {
       console.warn('⚠️ No current user ID found! User might not be logged in properly.');
       this.error = 'Không thể xác định người dùng. Vui lòng đăng nhập lại.';
       return;
     }
-
-    // Load conversations first
-    this.loadConversations();
-    
+    // Lấy conversationId từ queryParams nếu có
+    this.route.queryParams.subscribe(params => {
+      const conversationId = params['conversationId'];
+      this.loadConversationsWithSelect(conversationId);
+    });
     // Connect WebSocket
     this.connectToChat();
+  }
+
+  // Load conversations và tự động chọn nếu có conversationId
+  loadConversationsWithSelect(conversationId?: string) {
+    this.loading = true;
+    const conversationsUrl = this.urlService.getApiUrl('api/chat/conversations');
+    this.http.get<PrivateConversation[]>(conversationsUrl).subscribe({
+      next: (data) => {
+        this.conversations = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+        if (conversationId) {
+          const found = this.conversations.find(c => c.conversationId === conversationId);
+          if (found) {
+            this.selectConversation(found);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error loading conversations:', err);
+        this.error = 'Không thể tải danh sách trò chuyện';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnDestroy(): void {

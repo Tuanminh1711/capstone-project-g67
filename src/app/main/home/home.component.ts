@@ -1,5 +1,7 @@
 
-import { Component, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectorRef, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { ToastService } from '../../shared/toast/toast.service';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogManager } from '../../shared/dialog-manager.service';
 import { LoginDialogComponent } from '../../auth/login/login-dialog';
@@ -16,7 +18,32 @@ import { TopNavigatorComponent } from '../../shared/top-navigator/index';
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  ngOnInit() {
+    this.checkVnpaySuccess();
+  }
+
+  checkVnpaySuccess() {
+    this.route.queryParams.subscribe(params => {
+      if (params['vnp_ResponseCode'] === '00' && params['vnp_TxnRef']) {
+        // Gọi BE xác nhận thanh toán
+        this.http.get('/api/payment/vnpay-return', { params }).subscribe({
+          next: () => {
+            this.toast.success('Thanh toán VIP thành công! Đơn hàng đã được xác nhận.');
+            this.toast.info('Vui lòng đăng xuất và đăng nhập lại để sử dụng đầy đủ tính năng VIP.');
+          },
+          error: () => {
+            this.toast.warning('Thanh toán thành công, nhưng không xác nhận được đơn hàng. Vui lòng liên hệ hỗ trợ.');
+          }
+        });
+      } else if (params['vnp_ResponseCode'] === '00') {
+        this.toast.success('Thanh toán VIP thành công! Chào mừng bạn trở thành thành viên VIP.');
+        this.toast.info('Vui lòng đăng xuất và đăng nhập lại để sử dụng đầy đủ tính năng VIP.');
+      }
+    });
+  }
+
+  // Đã dùng ToastService, không cần showToast
   currentBanner = 0;
   bannerSlides = [
     {
@@ -46,7 +73,9 @@ export class HomeComponent {
     private router: Router,
     private dialogManager: DialogManager,
     public jwtUserUtil: JwtUserUtilService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient,
+    private toast: ToastService
   ) {
     this.startBannerAutoSlide();
   }
@@ -73,18 +102,13 @@ export class HomeComponent {
   goToCareExpert() {
     const role = this.jwtUserUtil.getRoleFromToken();
     if (role && role.toLowerCase() === 'vip') {
-      this.router.navigate(['/vip/welcome']);
+      this.router.navigate(['/vip/welcome-vip']);
     } else {
       this.router.navigate(['/care-expert']);
     }
   }
 
   goToVipUpgrade() {
-    const role = this.jwtUserUtil.getRoleFromToken();
-    if (role && role.toLowerCase() === 'vip') {
-      this.router.navigate(['/vip/welcome']);
-    } else {
-      this.router.navigate(['/user/exper/vip-payment']);
-    }
+    this.router.navigate(['/user/exper/vip-payment']);
   }
 }

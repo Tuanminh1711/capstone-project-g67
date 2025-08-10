@@ -92,7 +92,10 @@ export class VipPaymentComponent {
     this.loading = true;
     const userId = this.jwtUtil.getUserIdFromToken() || 1;
     const amount = this.subscriptionDetails[this.selectedSubscriptionType].price;
-    const params = `userId=${encodeURIComponent(userId)}&amount=${encodeURIComponent(amount)}`;
+    const subscriptionType = this.selectedSubscriptionType;
+    // Tạo returnUrl: chuyển về trang home sau khi thanh toán
+    const returnUrl = encodeURIComponent(window.location.origin + '/home');
+    const params = `userId=${encodeURIComponent(userId)}&amount=${encodeURIComponent(amount)}&subscriptionType=${encodeURIComponent(subscriptionType)}&returnUrl=${returnUrl}`;
     const apiUrl = environment.apiUrl;
     const paymentUrl = `${apiUrl}/payment/vnpay/create?${params}`;
     this.http.post<any>(
@@ -101,7 +104,11 @@ export class VipPaymentComponent {
     ).subscribe({
       next: (res) => {
         if (res && res.paymentUrl) {
-          window.location.href = res.paymentUrl;
+          // Hiện toast báo trước khi chuyển hướng
+          this.showToast('Đang chuyển đến trang thanh toán. Sau khi thanh toán thành công, bạn sẽ được chuyển về trang chủ.');
+          setTimeout(() => {
+            window.location.href = res.paymentUrl;
+          }, 1200);
         } else {
           this.error = 'Không lấy được link thanh toán.';
         }
@@ -112,5 +119,10 @@ export class VipPaymentComponent {
         this.loading = false;
       }
     });
+  }
+
+  showToast(message: string) {
+    // Sử dụng toast đơn giản bằng alert, có thể thay bằng thư viện toast nếu cần
+    alert(message);
   }
 }

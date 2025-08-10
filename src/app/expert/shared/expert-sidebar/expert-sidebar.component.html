@@ -1,0 +1,52 @@
+<div class="expert-sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <img src="assets/image/logo.png" alt="Logo" class="logo-img">
+      <div class="logo-text">
+        <span class="main-text">Plant Care</span>
+        <span class="sub-text">Expert</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a [routerLink]="['/expert/welcome']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Trang chủ</span>
+        </a>
+      </li>
+      <li class="nav-item chat-nav" [class.opened]="isChatDropdownOpen">
+        <div class="nav-link chat-link" (click)="toggleChatDropdown()">
+          <span class="nav-icon">💬</span>
+          <span class="nav-text">Phòng Chat</span>
+          <span class="dropdown-arrow" [class.open]="isChatDropdownOpen">▼</span>
+        </div>
+        <ul *ngIf="isChatDropdownOpen" class="chat-dropdown-list">
+          <li class="chat-dropdown-item" (click)="navigateToCommunityChat()">Cộng đồng</li>
+          <li class="chat-dropdown-item" *ngFor="let user of recentUsers" (click)="navigateToUserChat(user)">
+            {{ user.username }}
+          </li>
+        </ul>
+      </li>
+  <!-- Đã xoá mục Tin nhắn riêng tư và Chức năng chuyên gia -->
+  <!-- Đã xoá các mục Tư vấn, Kiến thức, Lịch làm việc -->
+      <li class="nav-section">
+        <div class="nav-section-title">Quản lý bài viết</div>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/categories']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">🗂️</span>
+          <span class="nav-text">Danh mục bài viết</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/articles']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">Quản lý bài viết</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>

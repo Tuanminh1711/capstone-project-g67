@@ -56,8 +56,8 @@
       </div>
     </div>
 
-    <!-- Chat Interface -->
-    <div class="chat-interface" *ngIf="!showConversationList && selectedConversation">
+    <!-- Chat Interface Messenger Style -->
+    <div class="messenger-main" *ngIf="!showConversationList && selectedConversation">
       <!-- Chat Header -->
       <div class="chat-header">
         <button class="back-btn" (click)="backToConversations()">
@@ -65,22 +65,36 @@
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
           </svg>
         </button>
-        
-        <div class="chat-user-info">
-          <div class="user-avatar">
-            <img src="assets/image/default-avatar.png" [alt]="selectedConversation.otherUsername" />
+        <div class="header-left">
+          <div class="chat-avatar-header">
+            {{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}
           </div>
-          <div class="user-details">
-            <span class="user-name">{{ selectedConversation.otherUsername }}</span>
-            <span class="user-role" [class]="getRoleBadgeClass(selectedConversation.otherUserRole)">
-              {{ getRoleDisplayName(selectedConversation.otherUserRole) }}
-            </span>
+          <div class="header-info">
+            <div class="chat-title">
+              {{ selectedConversation.otherUsername }}
+            </div>
+            <div class="chat-status">
+              <span class="status-text">
+                {{ selectedConversation.otherUserRole === 'EXPERT' ? 'Chuyên gia' : 'Thành viên' }}
+              </span>
+            </div>
           </div>
+        </div>
+        <div class="header-actions">
+          <button class="header-btn" title="Cuộc gọi thoại">
+            <i class="fas fa-phone"></i>
+          </button>
+          <button class="header-btn" title="Cuộc gọi video">
+            <i class="fas fa-video"></i>
+          </button>
+          <button class="header-btn" title="Thông tin">
+            <i class="fas fa-info-circle"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Chat Messages -->
-      <div class="chat-messages">
+      <!-- Chat Messages Area -->
+      <div class="messages-container">
         <div *ngIf="loading" class="loading-state">
           <div class="loading-spinner"></div>
           <p>Đang tải tin nhắn...</p>
@@ -103,44 +117,33 @@
                class="message-wrapper"
                [class.own-message]="isOwnMessage(msg)"
                [class.other-message]="!isOwnMessage(msg)">
-            
             <!-- Tin nhắn của người khác (bên trái) -->
-            <div class="message-bubble" *ngIf="!isOwnMessage(msg)">
-              <div class="message-header">
-                <div class="sender-avatar">
-                  <img [src]="getAvatarUrl(msg)" [alt]="msg.senderRole || 'User'" />
-                </div>
-                <div class="message-main">
-                  <div class="message-top">
-                    <div class="role-badge" [class]="getRoleBadgeClass(msg.senderRole)">
-                      {{ getRoleDisplayName(msg.senderRole) }}
-                    </div>
-                    <span class="message-content">{{ msg.content }}</span>
-                  </div>
-                  <div class="message-footer">
-                    <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-                  </div>
+            <div class="message-row" *ngIf="!isOwnMessage(msg)">
+              <div class="sender-info">
+                <span class="sender-name">{{ msg.senderRole === 'EXPERT' ? 'Chuyên gia' : 'Thành viên' }}</span>
+                <div class="role-badge" [class]="getRoleBadgeClass(msg.senderRole)">
+                  {{ getRoleDisplayName(msg.senderRole) }}
                 </div>
               </div>
+              <div class="message-bubble">
+                <div class="message-content">{{ msg.content }}</div>
+              </div>
+              <div class="message-time-inline">
+                {{ formatTime(msg.timestamp) }}
+              </div>
             </div>
-
             <!-- Tin nhắn của mình (bên phải) -->
-            <div class="message-bubble own-bubble" *ngIf="isOwnMessage(msg)">
-              <div class="message-header">
-                <div class="message-main own-main">
-                  <div class="message-top own-top">
-                    <span class="message-content">{{ msg.content }}</span>
-                    <div class="role-badge expert-badge">EXPERT</div>
-                  </div>
-                  <div class="message-footer own-footer">
-                    <div class="message-status">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                      </svg>
-                    </div>
-                    <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-                  </div>
+            <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
+              <div class="message-time-inline own-time">
+                <div class="message-status">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
                 </div>
+                {{ formatTime(msg.timestamp) }}
+              </div>
+              <div class="message-bubble own-bubble">
+                <div class="message-content">{{ msg.content }}</div>
               </div>
             </div>
           </div>
@@ -151,18 +154,17 @@
       <div class="chat-input-container">
         <form class="chat-input-form" (ngSubmit)="sendMessage()" #chatForm="ngForm">
           <div class="input-actions">
+            <button type="button" class="input-action-btn" disabled title="Đính kèm hình ảnh">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+              </svg>
+            </button>
             <button type="button" class="input-action-btn" disabled title="Đính kèm file">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
               </svg>
             </button>
-            <button type="button" class="input-action-btn" disabled title="Emoji">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-              </svg>
-            </button>
           </div>
-          
           <div class="input-wrapper">
             <textarea 
               class="message-input" 
@@ -173,7 +175,6 @@
               maxlength="1000"
               (keydown.enter)="onEnterPress($event)"
               #messageInput></textarea>
-            
             <button 
               type="submit" 
               class="send-button"
@@ -185,7 +186,6 @@
             </button>
           </div>
         </form>
-        
         <div class="input-footer">
           <div class="char-counter" [class.warning]="newMessage.length > 800">
             {{ newMessage.length }}/1000

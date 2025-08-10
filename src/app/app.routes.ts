@@ -1,4 +1,4 @@
-// LAZY LOADING IMPORTS
+  
 import { Routes } from '@angular/router';
 import { VipAuthGuard } from './auth/vip-auth.guard';
 
@@ -17,6 +17,7 @@ export const routes: Routes = [
   { path: 'privacy-policy', loadComponent: () => import('./main/privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
   { path: 'terms-of-use', loadComponent: () => import('./main/terms-of-use/terms-of-use.component').then(m => m.TermsOfUseComponent) },
   { path: 'care-expert', loadComponent: () => import('./main/care-expert/care-expert.component').then(m => m.CareExpertComponent) },
+// LAZY LOADING IMPORTS 
 
   // USER - Convert to lazy loading
   { 
@@ -43,7 +44,7 @@ export const routes: Routes = [
   { path: 'user/chat-ai', loadComponent: () => import('./user/chat-ai/chat-ai.component').then(m => m.ChatAiComponent) },
   { path: 'huong-dan-nhac-nho', loadComponent: () => import('./user/plant/plant-care-reminder-guide/plant-care-reminder-guide.component').then(m => m.PlantCareReminderGuideComponent) },
   { path: 'user/my-garden', loadComponent: () => import('./user/plant/my-garden/my-garden.component').then(m => m.MyGardenComponent) },
-  { path: 'user/exper/vip-payment', loadComponent: () => import('./user/expert/vip-payment.component').then(m => m.VipPaymentComponent) },
+  { path: 'user/create-payment/vip-payment', loadComponent: () => import('./user/create-payment/vip-payment.component').then(m => m.VipPaymentComponent) },
   { path: 'user/create-new-plant', loadComponent: () => import('./user/plant/create-plants/create-new-plant.component').then(m => m.CreateNewPlantComponent) },
   { path: 'user/user-plant-detail/:id', loadComponent: () => import('./user/plant/view-user-plant-detail/view-user-plant-detail.component').then(m => m.ViewUserPlantDetailComponent) },
   { path: 'user/plant-care-reminder/:userPlantId', loadComponent: () => import('./user/plant/plant-care-reminder-setup/plant-care-reminder-setup.component').then(m => m.PlantCareReminderSetupComponent) },

@@ -24,8 +24,8 @@ export class CareExpertComponent implements OnInit {
     // Chỉ kiểm tra VIP để chuyển hướng nếu cần
     if (this.jwtUtil.isLoggedIn()) {
       const info = this.jwtUtil.getTokenInfo();
-      if (info && info.role && info.role.toLowerCase() === 'vip') {
-  this.router.navigate(['/vip/welcome']);
+      if (info && info.role === 'VIP') {
+        this.router.navigate(['/vip/welcome-vip']);
         return;
       }
     }
@@ -38,7 +38,7 @@ export class CareExpertComponent implements OnInit {
       return;
     }
     
-    // User đã đăng nhập -> chuyển đến trang payment
-    this.router.navigate(['/user/exper/vip-payment']);
+  // User đã đăng nhập -> chuyển đến trang payment
+  this.router.navigate(['/user/create-payment/vip-payment']);
   }
 }

@@ -24,5 +24,17 @@ export const expertRoutes: Routes = [
     loadComponent: () => import('./chat/expert-private-chat.component').then(c => c.ExpertPrivateChatComponent),
     title: 'Tin nhắn riêng tư - Chuyên gia',
     canActivate: [ExpertAuthGuard]
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./categories/categories.component').then(c => c.CategoriesComponent),
+    title: 'Quản lý danh mục bài viết',
+    canActivate: [ExpertAuthGuard]
+  },
+  {
+    path: 'articles',
+    loadComponent: () => import('./articles/articles.component').then(c => c.ArticlesComponent),
+    title: 'Quản lý bài viết chuyên gia',
+    canActivate: [ExpertAuthGuard]
   }
 ];
