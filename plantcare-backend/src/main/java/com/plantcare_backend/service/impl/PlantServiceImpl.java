@@ -1,6 +1,5 @@
 package com.plantcare_backend.service.impl;
 
-
 import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
 import com.plantcare_backend.dto.response.Plants.*;
 import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
@@ -42,7 +41,6 @@ public class PlantServiceImpl implements PlantService {
     @Autowired
     private final PlantReportRepository plantReportRepository;
 
-
     /**
      * search plants filter
      *
@@ -59,7 +57,7 @@ public class PlantServiceImpl implements PlantService {
                 sortBy);
 
         Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize(), sort);
-//        request.setStatus(Plants.PlantStatus.ACTIVE);
+        // request.setStatus(Plants.PlantStatus.ACTIVE);
 
         Page<Plants> plantsPage = plantRepository.searchPlants(
                 request.getKeyword(),
@@ -97,7 +95,8 @@ public class PlantServiceImpl implements PlantService {
         log.info("Creating new plant with scientific name: {}", request.getScientificName());
 
         PlantCategory category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
 
         if (plantRepository.existsByScientificNameIgnoreCase(request.getScientificName())) {
             throw new InvalidDataException("Plant with scientific name already exists: " + request.getScientificName());
@@ -193,7 +192,8 @@ public class PlantServiceImpl implements PlantService {
     }
 
     private String getStatusDisplay(Plants.PlantStatus status) {
-        if (status == null) return "";
+        if (status == null)
+            return "";
         switch (status) {
             case ACTIVE:
                 return "Đang hoạt động";
@@ -204,11 +204,11 @@ public class PlantServiceImpl implements PlantService {
         }
     }
 
-
     /**
      * Process a plant report from a user.
      *
-     * @param request    The DTO contains report information, including plant ID and reason.
+     * @param request    The DTO contains report information, including plant ID and
+     *                   reason.
      * @param reporterId User ID of the report.
      */
     @Override
@@ -250,20 +250,21 @@ public class PlantServiceImpl implements PlantService {
         }
 
         // 6. Gửi email cho staff và admin
-//        List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN", "STAFF"));
-//        for (Users user : staffAndAdmins) {
-//            emailService.sendEmail(
-//                    user.getEmail(),
-//                    "Có báo cáo mới về cây cảnh",
-//                    "Xin chào " + user.getUsername() + ",\n\n" +
-//                            "Cây: " + plant.getCommonName() + "\n" +
-//                            "Người báo cáo: " + reporter.getUsername() + "\n" +
-//                            "Lý do báo cáo:\n" +
-//                            request.getReason() + "\n\n" +
-//                            "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
-//                            "Trân trọng,\n" +
-//                            "Hệ thống PlantCare"
-//            );
+        // List<Users> staffAndAdmins = userRepository.findByRoleIn(List.of("ADMIN",
+        // "STAFF"));
+        // for (Users user : staffAndAdmins) {
+        // emailService.sendEmail(
+        // user.getEmail(),
+        // "Có báo cáo mới về cây cảnh",
+        // "Xin chào " + user.getUsername() + ",\n\n" +
+        // "Cây: " + plant.getCommonName() + "\n" +
+        // "Người báo cáo: " + reporter.getUsername() + "\n" +
+        // "Lý do báo cáo:\n" +
+        // request.getReason() + "\n\n" +
+        // "Vui lòng kiểm tra và xử lý báo cáo này sớm.\n\n" +
+        // "Trân trọng,\n" +
+        // "Hệ thống PlantCare"
+        // );
     }
 
     @Override
@@ -313,6 +314,26 @@ public class PlantServiceImpl implements PlantService {
         return convertToUserReportDTO(report);
     }
 
+    @Override
+    public List<UserPlantDetailResponseDTO> getAllActivePlants() {
+        log.info("Getting all active plants");
+        try {
+            // Lấy tất cả plants có trạng thái ACTIVE
+            List<Plants> activePlants = plantRepository.findByStatus(Plants.PlantStatus.ACTIVE);
+
+            // Chuyển đổi sang DTO
+            return activePlants.stream()
+                    .map(plant -> {
+                        PlantDetailResponseDTO fullDto = convertToPlantDetailDTO(plant);
+                        return toUserPlantDetailDTO(fullDto);
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Failed to get active plants", e);
+            throw new RuntimeException("Failed to get active plants: " + e.getMessage());
+        }
+    }
+
     private UserReportResponseDTO convertToUserReportDTO(PlantReport report) {
         UserReportResponseDTO dto = new UserReportResponseDTO();
         dto.setReportId(report.getReportId());
@@ -327,6 +348,35 @@ public class PlantServiceImpl implements PlantService {
 
         if (report.getHandledBy() != null) {
             dto.setHandledBy(report.getHandledBy().getUsername());
+        }
+
+        return dto;
+    }
+
+    /**
+     * Chuyển đổi Plants entity sang PlantDetailResponseDTO
+     */
+    private PlantDetailResponseDTO convertToPlantDetailDTO(Plants plant) {
+        PlantDetailResponseDTO dto = new PlantDetailResponseDTO();
+        dto.setId(plant.getId());
+        dto.setScientificName(plant.getScientificName());
+        dto.setCommonName(plant.getCommonName());
+        dto.setCategoryName(plant.getCategory() != null ? plant.getCategory().getName() : null);
+        dto.setDescription(plant.getDescription());
+        dto.setCareInstructions(plant.getCareInstructions());
+        dto.setLightRequirement(plant.getLightRequirement());
+        dto.setWaterRequirement(plant.getWaterRequirement());
+        dto.setCareDifficulty(plant.getCareDifficulty());
+        dto.setSuitableLocation(plant.getSuitableLocation());
+        dto.setCommonDiseases(plant.getCommonDiseases());
+        dto.setStatus(plant.getStatus().name());
+        dto.setCreatedAt(plant.getCreatedAt());
+
+        if (plant.getImages() != null && !plant.getImages().isEmpty()) {
+            List<String> imageUrls = plant.getImages().stream()
+                    .map(image -> image.getImageUrl())
+                    .collect(Collectors.toList());
+            dto.setImageUrls(imageUrls);
         }
 
         return dto;
