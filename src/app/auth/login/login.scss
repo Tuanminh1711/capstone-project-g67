@@ -1,6 +1,34 @@
 @use '../../../styles/variables' as *;
 @use 'sass:color';
 
+
+/* Forgot password code input style */
+.code-input-group {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0 16px 0;
+}
+.code-input-row {
+  display: flex;
+  gap: 16px;
+}
+.code-digit-input {
+  width: 48px;
+  height: 48px;
+  font-size: 2rem;
+  text-align: center;
+  border: 2px solid #2ecc71;
+  border-radius: 12px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.code-digit-input:focus {
+  border-color: #00b894;
+  box-shadow: 0 0 0 2px #00b89433;
+}
+
+
 // Fix z-index to ensure dialog appears above top navigation
 :host ::ng-deep {
   .cdk-overlay-container {
@@ -180,11 +208,41 @@ form {
   margin-top: 8px;
   margin-bottom: 4px;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
 
   &:hover {
     background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
     color: #178a4c;
     box-shadow: 0 4px 16px #38f9d733;
+  }
+
+  &:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  &.secondary-btn {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    box-shadow: none;
+    margin-top: 8px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffe066;
+      border-color: #ffe066;
+    }
+
+    &:disabled {
+      background: transparent;
+      color: #ccc;
+      border-color: #ccc;
+      cursor: not-allowed;
+    }
   }
 }
 

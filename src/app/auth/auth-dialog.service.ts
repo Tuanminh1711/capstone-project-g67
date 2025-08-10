@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { isPlatformBrowser } from '@angular/common';
 import { Subject, Observable } from 'rxjs';
 import { LoginDialogComponent } from '../auth/login/login-dialog';
+import { AuthService } from './auth.service';
 import { RegisterDialogComponent } from '../auth/register/register-dialog';
 import { ForgotPasswordDialogComponent } from '../auth/forgot-password/forgot-password-dialog';
 import { VerifyEmailDialogComponent } from '../auth/verify-email/verify-email-dialog';
@@ -12,13 +13,12 @@ import { VerifyEmailDialogComponent } from '../auth/verify-email/verify-email-di
 export class AuthDialogService {
   private dialogOpened = false;
   private loginSuccessSubject = new Subject<void>();
-  
   // Observable để các component khác có thể subscribe
   public loginSuccess$ = this.loginSuccessSubject.asObservable();
-
   constructor(
     private dialog: MatDialog,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    public authService: AuthService
   ) {}
 
   openLoginDialog(): void {

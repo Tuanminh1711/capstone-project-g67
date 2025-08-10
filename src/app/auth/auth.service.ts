@@ -49,28 +49,19 @@ export interface VerifyEmailResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  /**
-   * Xác thực mã OTP quên mật khẩu (dùng cho cả user và admin)
-   */
-  verifyResetCode(email: string, code: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/verify-reset-code`, null, {
-      params: { email, code }
-    });
-  }
-  /**
-   * Gửi email quên mật khẩu (dùng cho cả user và admin)
-   */
-  forgotPassword(email: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/forgot-password`, { email });
+  // Kiểm tra mã reset password
+  verifyResetCode(email: string, code: string): Observable<any> {
+    // Gửi qua query string cho đúng backend
+    return this.http.post(`${this.apiUrl}/auth/verify-reset-code?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`, {});
   }
 
-  /**
-   * Đặt lại mật khẩu với mã xác nhận (dùng cho cả user và admin)
-   */
-  resetPassword(email: string, code: string, newPassword: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/reset-password`, null, {
-      params: { email, code, newPassword }
-    });
+  // Đặt lại mật khẩu
+  resetPassword(email: string, code: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/reset-password?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}&newPassword=${encodeURIComponent(newPassword)}`, {});
+  }
+  // Gửi yêu cầu quên mật khẩu
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
   }
   private apiUrl = environment.apiUrl; // Direct to backend
 
@@ -114,13 +105,13 @@ export class AuthService {
   /**
    * Đăng xuất
    */
-  logout(redirect = true, forceAdminLogin = false): void {
+  logout(redirect = true): void {
     const token = this.cookieService.getCookie('auth_token');
+    const role = this.jwtUserUtil.getRoleFromToken();
     const doRedirect = () => {
-      this.cookieService.removeAuthToken();
       if (redirect) {
-        if (forceAdminLogin) {
-          window.location.href = '/login-admin';
+        if (role === 'admin' || role === 'staff' || role === 'expert') {
+          window.location.href = '/auth/login-admin';
         } else {
           window.location.href = '/home';
         }
@@ -131,13 +122,16 @@ export class AuthService {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: () => {
+          this.cookieService.removeAuthToken();
           doRedirect();
         },
         error: () => {
+          this.cookieService.removeAuthToken();
           doRedirect();
         }
       });
     } else {
+      this.cookieService.removeAuthToken();
       doRedirect();
     }
   }
