@@ -80,4 +80,23 @@ public class PlantController {
         UserPlantDetailResponseDTO userDto = plantService.toUserPlantDetailDTO(fullDto);
         return new ResponseData<>(HttpStatus.OK.value(), "Get plant detail successfully", userDto);
     }
+
+    /**
+     * Lấy danh sách tất cả cây trồng (chỉ những cây có trạng thái ACTIVE)
+     * 
+     * @return Danh sách cây trồng
+     */
+    @Operation(method = "GET", summary = "Get all active plants", description = "Get list of all active plants for public use")
+    @GetMapping
+    public ResponseData<List<UserPlantDetailResponseDTO>> getAllActivePlants() {
+        log.info("Request get all active plants");
+        try {
+            List<UserPlantDetailResponseDTO> plants = plantService.getAllActivePlants();
+            return new ResponseData<>(HttpStatus.OK.value(), "Get plants successfully", plants);
+        } catch (Exception e) {
+            log.error("Get all plants failed", e);
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to get plants: " + e.getMessage());
+        }
+    }
 }

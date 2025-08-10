@@ -14,6 +14,7 @@ import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.AIDiseaseDetectionService;
 import com.plantcare_backend.service.NotificationService;
 import com.plantcare_backend.service.PlantIdService;
+import com.plantcare_backend.service.SynonymService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,8 +41,10 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     private final NotificationService notificationService;
     private final TreatmentGuideRepository treatmentGuideRepository;
     private final PlantIdService plantIdService;
+    private final SynonymService synonymService;
 
-    // ==================== PUBLIC METHODS (Interface Implementation) ====================
+    // ==================== PUBLIC METHODS (Interface Implementation)
+    // ====================
 
     @Override
     public DiseaseDetectionResultDTO detectDiseaseFromImage(MultipartFile image, Long userId) {
@@ -49,7 +52,8 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
 
         validateImage(image);
 
-        DiseaseDetectionResultDTO result = simulateDiseaseDetection(image, userId);
+        // Gọi trực tiếp Plant.id API thay vì simulate
+        DiseaseDetectionResultDTO result = analyzeImageWithPlantId(image, userId);
 
         saveDetectionResult(result, userId, "IMAGE");
 
@@ -229,7 +233,8 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         return plantDiseaseRepository.findBySeverityAndIsActiveTrue(severity);
     }
 
-    // ==================== PRIVATE METHODS - AI DISEASE DETECTION ====================
+    // ==================== PRIVATE METHODS - AI DISEASE DETECTION
+    // ====================
 
     private DiseaseDetectionResultDTO simulateDiseaseDetection(MultipartFile image, Long userId) {
         return analyzeImageWithPlantId(image, userId);
@@ -237,44 +242,94 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
 
     private DiseaseDetectionResultDTO analyzeImageWithPlantId(MultipartFile image, Long userId) {
         try {
-            log.info("Analyzing image with Plant.id API for user: {}, plant: {}", userId);
+            log.info("Analyzing image with Plant.id API for user: {}", userId);
 
             PlantIdResponse plantIdResponse = plantIdService.analyzePlantDisease(image);
 
-            if (plantIdResponse == null || plantIdResponse.getResults() == null || plantIdResponse.getResults().isEmpty()) {
-                log.warn("No results from Plant.id API");
-                return createUnknownDiseaseResult();
+            if (plantIdResponse == null || plantIdResponse.getResults() == null
+                    || plantIdResponse.getResults().isEmpty()) {
+                log.warn("No results from Plant.id API - plant may be healthy or image unclear");
+                return createHealthyPlantResult();
             }
 
             PlantIdResponse.PlantIdResult bestResult = plantIdResponse.getResults().get(0);
 
             // Tìm bệnh có probability cao nhất
             PlantIdResponse.PlantIdDisease bestDisease = null;
+            double maxProbability = 0.0;
+
             if (bestResult.getDiseases() != null && !bestResult.getDiseases().isEmpty()) {
-                bestDisease = bestResult.getDiseases().stream()
-                        .max((d1, d2) -> Double.compare(d1.getProbability(), d2.getProbability()))
-                        .orElse(null);
+                for (PlantIdResponse.PlantIdDisease disease : bestResult.getDiseases()) {
+                    if (disease.getProbability() > maxProbability) {
+                        maxProbability = disease.getProbability();
+                        bestDisease = disease;
+                    }
+                }
             }
 
-            if (bestDisease != null) {
-                log.info("Detected disease: {} with confidence: {}", bestDisease.getName(), bestDisease.getProbability());
+            if (bestDisease != null && maxProbability > 0.3) { // Threshold 30% để đảm bảo độ tin cậy
+                log.info("Detected disease: {} with confidence: {}%", bestDisease.getName(),
+                        Math.round(maxProbability * 100));
 
-                return DiseaseDetectionResultDTO.builder()
-                        .detectedDisease(bestDisease.getName())
-                        .confidenceScore(bestDisease.getProbability())
-                        .severity(determineSeverity(bestDisease.getName()))
-                        .symptoms(bestDisease.getDescription())
-                        .recommendedTreatment(bestDisease.getTreatment())
-                        .detectionMethod("AI_PLANT_ID")
-                        .aiModelVersion("2.0.0")
-                        .build();
+                // Tìm thông tin bệnh trong database để có thông tin chi tiết
+                Optional<PlantDisease> dbDisease = plantDiseaseRepository
+                        .findByDiseaseNameAndIsActiveTrue(bestDisease.getName());
+
+                if (dbDisease.isPresent()) {
+                    PlantDisease disease = dbDisease.get();
+                    return DiseaseDetectionResultDTO.builder()
+                            .detectedDisease(disease.getDiseaseName())
+                            .confidenceScore(maxProbability * 100) // Chuyển về phần trăm
+                            .severity(disease.getSeverity())
+                            .symptoms(disease.getSymptoms())
+                            .recommendedTreatment(disease.getTreatment())
+                            .prevention(disease.getPrevention())
+                            .causes(disease.getCauses())
+                            .detectionMethod("AI_PLANT_ID")
+                            .aiModelVersion("2.0.0")
+                            .build();
+                } else {
+                    // Nếu không tìm thấy trong DB, sử dụng thông tin từ API
+                    return DiseaseDetectionResultDTO.builder()
+                            .detectedDisease(bestDisease.getName())
+                            .confidenceScore(maxProbability * 100)
+                            .severity(determineSeverity(bestDisease.getName()))
+                            .symptoms(bestDisease.getDescription() != null ? bestDisease.getDescription()
+                                    : "Triệu chứng từ AI phân tích")
+                            .recommendedTreatment(bestDisease.getTreatment() != null ? bestDisease.getTreatment()
+                                    : "Cần tham khảo chuyên gia")
+                            .detectionMethod("AI_PLANT_ID")
+                            .aiModelVersion("2.0.0")
+                            .build();
+                }
             } else {
-                log.info("No disease detected, plant appears healthy");
+                log.info("No disease detected or confidence too low ({}%), plant appears healthy",
+                        Math.round(maxProbability * 100));
                 return createHealthyPlantResult();
             }
 
         } catch (Exception e) {
-            log.error("Error analyzing image with Plant.id API", e);
+            log.error("Error analyzing image with Plant.id API: {}", e.getMessage(), e);
+
+            // Fallback: sử dụng database để tìm bệnh phổ biến
+            try {
+                List<PlantDisease> commonDiseases = plantDiseaseRepository.findByIsActiveTrue();
+                if (!commonDiseases.isEmpty()) {
+                    PlantDisease fallbackDisease = commonDiseases.get(0);
+                    return DiseaseDetectionResultDTO.builder()
+                            .detectedDisease("Không thể phân tích ảnh - " + fallbackDisease.getDiseaseName())
+                            .confidenceScore(25.0) // Độ tin cậy thấp
+                            .severity("MEDIUM")
+                            .symptoms("Vui lòng cung cấp ảnh rõ ràng hơn hoặc mô tả triệu chứng")
+                            .recommendedTreatment("Liên hệ chuyên gia để được tư vấn chi tiết")
+                            .detectionMethod("FALLBACK")
+                            .aiModelVersion("2.0.0")
+                            .build();
+                }
+            } catch (Exception fallbackError) {
+                log.error("Fallback analysis also failed", fallbackError);
+            }
+
             return createUnknownDiseaseResult();
         }
     }
@@ -282,73 +337,122 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     // ==================== PRIVATE METHODS - SYMPTOM ANALYSIS ====================
 
     private DiseaseDetectionResultDTO analyzeSymptoms(DiseaseDetectionRequestDTO request, Long userId) {
-        String description = request.getDescription().toLowerCase();
-
-        List<String> keywords = extractKeywords(description);
-
-        List<PlantDisease> diseases = plantDiseaseRepository.findByIsActiveTrue();
-        PlantDisease bestMatch = null;
-        double bestScore = 0.0;
-
-        for (PlantDisease disease : diseases) {
-            double score = calculateMatchScore(disease, keywords);
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = disease;
+        try {
+            String description = request.getDescription();
+            if (description == null || description.trim().isEmpty()) {
+                log.warn("Empty symptoms description for user: {}", userId);
+                return createUnknownDiseaseResult();
             }
-        }
 
-        if (bestMatch != null && bestScore > 0.3) {
+            log.info("Analyzing symptoms for user: {} - Description: {}", userId, description);
+
+            // Sử dụng SynonymService để extract keywords và tính toán score
+            List<String> keywords = synonymService.extractKeywords(description);
+            log.debug("Extracted keywords: {}", keywords);
+
+            if (keywords.isEmpty()) {
+                log.warn("No meaningful keywords extracted from description");
+                return createUnknownDiseaseResult();
+            }
+
+            List<PlantDisease> diseases = plantDiseaseRepository.findByIsActiveTrue();
+            if (diseases.isEmpty()) {
+                log.warn("No active diseases found in database");
+                return createUnknownDiseaseResult();
+            }
+
+            PlantDisease bestMatch = null;
+            double bestScore = 0.0;
+            List<PlantDisease> alternativeMatches = new ArrayList<>();
+
+            for (PlantDisease disease : diseases) {
+                try {
+                    double score = synonymService.calculateMatchScore(disease.getSymptoms(), keywords);
+                    log.debug("Disease: {} - Score: {}", disease.getDiseaseName(), score);
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = disease;
+                    }
+
+                    // Thu thập các bệnh có score cao (> 0.4) để làm alternative
+                    if (score > 0.4 && score < bestScore) {
+                        alternativeMatches.add(disease);
+                    }
+                } catch (Exception e) {
+                    log.warn("Error calculating score for disease: {} - {}", disease.getDiseaseName(), e.getMessage());
+                    continue;
+                }
+            }
+
+            // Sắp xếp alternative matches theo score
+            alternativeMatches.sort((a, b) -> {
+                try {
+                    double scoreA = synonymService.calculateMatchScore(a.getSymptoms(), keywords);
+                    double scoreB = synonymService.calculateMatchScore(b.getSymptoms(), keywords);
+                    return Double.compare(scoreB, scoreA); // Sắp xếp giảm dần
+                } catch (Exception e) {
+                    log.warn("Error sorting alternative matches", e);
+                    return 0;
+                }
+            });
+
+            // Lấy top 3 alternative matches
+            List<String> alternativeDiseases = alternativeMatches.stream()
+                    .limit(3)
+                    .map(PlantDisease::getDiseaseName)
+                    .collect(Collectors.toList());
+
+            // Sử dụng threshold từ config
+            double confidenceThreshold = 0.4; // Có thể lấy từ config sau
+            if (bestMatch != null && bestScore > confidenceThreshold) {
+                log.info("Best match found: {} with score: {}", bestMatch.getDiseaseName(), bestScore);
+
+                return DiseaseDetectionResultDTO.builder()
+                        .detectedDisease(bestMatch.getDiseaseName())
+                        .confidenceScore(bestScore * 100) // Chuyển về phần trăm
+                        .severity(bestMatch.getSeverity())
+                        .symptoms(bestMatch.getSymptoms())
+                        .recommendedTreatment(bestMatch.getTreatment())
+                        .prevention(bestMatch.getPrevention())
+                        .causes(bestMatch.getCauses())
+                        .detectionMethod("SYMPTOMS")
+                        .aiModelVersion("2.0.0")
+                        .alternativeDiseases(alternativeDiseases)
+                        .treatmentGuide(createTreatmentGuide(bestMatch))
+                        .build();
+            }
+
+            log.info("No confident match found. Best score: {}, threshold: {}", bestScore, confidenceThreshold);
+
+            // Trả về kết quả với gợi ý cải thiện
+            String suggestion = "Cần thêm thông tin chi tiết về triệu chứng. ";
+            if (bestScore > 0.2) {
+                suggestion += "Có thể liên quan đến: "
+                        + (bestMatch != null ? bestMatch.getDiseaseName() : "bệnh chưa xác định");
+            } else {
+                suggestion += "Vui lòng mô tả rõ hơn về: màu sắc lá, vị trí tổn thương, thời gian xuất hiện";
+            }
+
             return DiseaseDetectionResultDTO.builder()
-                    .detectedDisease(bestMatch.getDiseaseName())
-                    .confidenceScore(bestScore)
-                    .severity(bestMatch.getSeverity())
-                    .symptoms(bestMatch.getSymptoms())
-                    .recommendedTreatment(bestMatch.getTreatment()) // ← Sử dụng treatment thực tế
-                    .prevention(bestMatch.getPrevention()) // ← Sử dụng prevention thực tế
-                    .causes(bestMatch.getCauses()) // ← Sử dụng causes thực tế
+                    .detectedDisease("Không xác định được bệnh cụ thể")
+                    .confidenceScore(bestScore * 100)
+                    .severity("LOW")
+                    .symptoms(suggestion)
+                    .recommendedTreatment(
+                            "Vui lòng cung cấp thêm thông tin về triệu chứng để có hướng dẫn điều trị chính xác")
                     .detectionMethod("SYMPTOMS")
-                    .aiModelVersion("1.0.0")
-                    .treatmentGuide(createTreatmentGuide(bestMatch))
+                    .aiModelVersion("2.0.0")
+                    .alternativeDiseases(alternativeDiseases)
                     .build();
-        }
 
-        return DiseaseDetectionResultDTO.builder()
-                .detectedDisease("Không xác định được bệnh cụ thể")
-                .confidenceScore(0.2)
-                .severity("LOW")
-                .symptoms("Cần thêm thông tin chi tiết về triệu chứng")
-                .recommendedTreatment("Vui lòng cung cấp thêm thông tin về triệu chứng để có hướng dẫn điều trị chính xác")
-                .detectionMethod("SYMPTOMS")
-                .aiModelVersion("1.0.0")
-                .build();
+        } catch (Exception e) {
+            log.error("Error analyzing symptoms for user: {} - {}", userId, e.getMessage(), e);
+            return createUnknownDiseaseResult();
+        }
     }
 
-    private List<String> extractKeywords(String description) {
-        String[] words = description.split("\\s+");
-        List<String> keywords = new ArrayList<>();
-
-        for (String word : words) {
-            if (word.length() > 2) {
-                keywords.add(word.toLowerCase());
-            }
-        }
-
-        return keywords;
-    }
-
-    private double calculateMatchScore(PlantDisease disease, List<String> keywords) {
-        double score = 0.0;
-        String symptoms = disease.getSymptoms().toLowerCase();
-
-        for (String keyword : keywords) {
-            if (symptoms.contains(keyword)) {
-                score += 0.3;
-            }
-        }
-
-        return Math.min(score, 1.0); // Giới hạn tối đa 1.0
-    }
+    // Phương thức cũ đã được thay thế bằng SynonymService
 
     // ==================== PRIVATE METHODS - RESULT CREATION ====================
 
@@ -379,7 +483,8 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     // ==================== PRIVATE METHODS - UTILITY FUNCTIONS ====================
 
     private String determineSeverity(String diseaseName) {
-        if (diseaseName == null) return "LOW";
+        if (diseaseName == null)
+            return "LOW";
 
         String lowerDiseaseName = diseaseName.toLowerCase();
 
@@ -427,7 +532,8 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         }
     }
 
-    // ==================== PRIVATE METHODS - DATABASE OPERATIONS ====================
+    // ==================== PRIVATE METHODS - DATABASE OPERATIONS
+    // ====================
 
     private void saveDetectionResult(DiseaseDetectionResultDTO result, Long userId, String method) {
         Users user = userRepository.findById(Math.toIntExact(userId))
@@ -508,9 +614,11 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     // ==================== PRIVATE METHODS - NOTIFICATIONS ====================
 
     private void sendUrgentDiseaseAlert(Long userId, String diseaseName, String severity) {
-        String message = String.format("⚠️ CẢNH BÁO: Phát hiện bệnh %s (Mức độ: %s). Cần xử lý ngay!", diseaseName, severity);
+        String message = String.format("⚠️ CẢNH BÁO: Phát hiện bệnh %s (Mức độ: %s). Cần xử lý ngay!", diseaseName,
+                severity);
         // Tạm thời comment out nếu NotificationService chưa có method này
-        // notificationService.sendNotification(userId, "URGENT_DISEASE_ALERT", message);
+        // notificationService.sendNotification(userId, "URGENT_DISEASE_ALERT",
+        // message);
         log.info("Urgent disease alert sent: {}", message);
     }
 }

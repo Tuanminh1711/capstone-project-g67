@@ -65,4 +65,9 @@ public interface PlantRepository extends JpaRepository<Plants, Long> {
 
         List<Plants> findByScientificNameContainingIgnoreCaseOrCommonNameContainingIgnoreCase(
                         String scientificName, String commonName);
+
+        /**
+         * Tìm tất cả plants theo trạng thái
+         */
+        List<Plants> findByStatus(Plants.PlantStatus status);
 }

@@ -1,6 +1,5 @@
 package com.plantcare_backend.service;
 
-
 import com.plantcare_backend.dto.request.plantsManager.PlantReportRequestDTO;
 import com.plantcare_backend.dto.response.Plants.PlantSearchResponseDTO;
 import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
@@ -29,5 +28,11 @@ public interface PlantService {
     UserReportListResponseDTO getUserReports(Long userId, int page, int size, String status);
 
     UserReportResponseDTO getUserReportDetail(Long reportId, Long userId);
-}
 
+    /**
+     * Lấy danh sách tất cả cây trồng có trạng thái ACTIVE
+     * 
+     * @return Danh sách cây trồng
+     */
+    List<UserPlantDetailResponseDTO> getAllActivePlants();
+}
