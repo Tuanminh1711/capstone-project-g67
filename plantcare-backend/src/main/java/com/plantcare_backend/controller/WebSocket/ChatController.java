@@ -133,6 +133,8 @@ public class ChatController {
                                     .content(entity.getContent())
                                     .timestamp(entity.getSentAt() != null ? entity.getSentAt().toInstant().toString()
                                             : null)
+                                    .chatType(entity.getChatType() != null ? entity.getChatType().name() : null)
+                                    .conversationId(entity.getConversationId())
                                     .build();
 
                             log.debug("Converted to DTO: {}", dto);
@@ -245,6 +247,7 @@ public class ChatController {
                             .content(entity.getContent())
                             .timestamp(entity.getSentAt().toInstant().toString())
                             .conversationId(entity.getConversationId())
+                            .chatType(entity.getChatType() != null ? entity.getChatType().name() : null)
                             .build())
                     .collect(Collectors.toList());
 

@@ -52,8 +52,11 @@ public interface AIDiseaseDetectionService {
     Object analyzeDiseaseTrends(Long userId);
 
     // CRUD cho PlantDisease (admin functions)
-   PlantDisease getDiseaseById(Long diseaseId);
+    PlantDisease getDiseaseById(Long diseaseId);
+
     List<PlantDisease> searchDiseases(String keyword);
+
     List<PlantDisease> getDiseasesByCategory(String category);
+
     List<PlantDisease> getDiseasesBySeverity(String severity);
 }
