@@ -95,7 +95,7 @@ export class TopNavigatorComponent implements OnInit {
       this.authService.getProfile().subscribe({
         next: (user: any) => {
           const role = user?.role || this.jwtUtil.getRoleFromToken();
-          if (role && role.toUpperCase() === 'VIP') {
+          if (role && role.toLowerCase().includes('vip')) {
             this.router.navigate(['/vip/welcome']);
           } else {
             this.router.navigate(['/care-expert']);
@@ -104,7 +104,7 @@ export class TopNavigatorComponent implements OnInit {
         error: () => {
           // fallback nếu lỗi thì dùng token cũ
           const role = this.jwtUtil.getRoleFromToken();
-          if (role && role.toUpperCase() === 'VIP') {
+          if (role && role.toLowerCase().includes('vip')) {
             this.router.navigate(['/vip/welcome']);
           } else {
             this.router.navigate(['/care-expert']);

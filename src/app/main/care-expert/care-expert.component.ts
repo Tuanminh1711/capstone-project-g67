@@ -25,7 +25,7 @@ export class CareExpertComponent implements OnInit {
     if (this.jwtUtil.isLoggedIn()) {
       const info = this.jwtUtil.getTokenInfo();
       if (info && info.role === 'VIP') {
-        this.router.navigate(['/vip/welcome-vip']);
+  this.router.navigate(['/vip/welcome']);
         return;
       }
     }

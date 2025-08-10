@@ -102,7 +102,7 @@ export class HomeComponent implements OnInit {
   goToCareExpert() {
     const role = this.jwtUserUtil.getRoleFromToken();
     if (role && role.toLowerCase() === 'vip') {
-      this.router.navigate(['/vip/welcome-vip']);
+  this.router.navigate(['/vip/welcome']);
     } else {
       this.router.navigate(['/care-expert']);
     }
