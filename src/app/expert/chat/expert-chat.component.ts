@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,6 +8,8 @@ import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.com
 import { ExpertChatStompService, ChatMessage } from './expert-chat-stomp.service';
 import { Subscription } from 'rxjs';
 import { UrlService } from '../../shared/url.service';
+import { ChatService } from '../../shared/services/chat.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-expert-chat',
@@ -41,7 +43,9 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private ws: ExpertChatStompService,
     private http: HttpClient,
-    private urlService: UrlService
+    private urlService: UrlService,
+    private chatService: ChatService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +63,13 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     
     // Sau đó kết nối WebSocket để nhận tin nhắn mới
     this.connectToChat();
+
+    // Subscribe to chat API availability
+    this.chatService.chatApisAvailable$.subscribe(available => {
+      if (!available && this.urlService.isProduction()) {
+        this.toastService.warning('Chat APIs are temporarily unavailable. Some features may not work properly.', 8000);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -125,8 +136,8 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
   fetchHistory(): void {
     this.loading = true;
     this.error = '';
-    const chatHistoryUrl = this.urlService.getApiUrl('api/chat/history');
-    this.http.get<ChatMessage[]>(chatHistoryUrl).subscribe({
+    
+    this.chatService.getChatHistory().subscribe({
       next: (data: any) => {
         const messages = Array.isArray(data) ? data : (data?.data || []);
         // Chỉ hiển thị tin nhắn cộng đồng trong community chat

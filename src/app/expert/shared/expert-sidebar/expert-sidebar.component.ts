@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { UrlService } from '../../../shared/url.service';
+import { ChatService } from '../../../shared/services/chat.service';
 
 @Component({
   selector: 'app-expert-sidebar',
@@ -21,7 +22,8 @@ export class ExpertSidebarComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private http: HttpClient,
-    private urlService: UrlService
+    private urlService: UrlService,
+    private chatService: ChatService
   ) {}
 
   ngOnInit(): void {
@@ -30,8 +32,7 @@ export class ExpertSidebarComponent implements OnInit {
 
   loadRecentUsers() {
     // Lấy danh sách các cuộc trò chuyện giống trang tin nhắn riêng tư
-    const url = this.urlService.getApiUrl('api/chat/conversations');
-    this.http.get<any[]>(url).subscribe({
+    this.chatService.getConversations().subscribe({
       next: (conversations) => {
         this.recentUsers = conversations.map(c => ({
           username: c.otherUsername,

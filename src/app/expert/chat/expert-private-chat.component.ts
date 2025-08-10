@@ -8,6 +8,8 @@ import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.com
 import { ExpertChatStompService, ChatMessage } from './expert-chat-stomp.service';
 import { Subscription } from 'rxjs';
 import { UrlService } from '../../shared/url.service';
+import { ChatService } from '../../shared/services/chat.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 export interface PrivateConversation {
   conversationId: string;
@@ -55,7 +57,9 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private ws: ExpertChatStompService,
     private http: HttpClient,
-    private urlService: UrlService
+    private urlService: UrlService,
+    private chatService: ChatService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +70,14 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
       this.error = 'Không thể xác định người dùng. Vui lòng đăng nhập lại.';
       return;
     }
+
+    // Subscribe to chat API availability
+    this.chatService.chatApisAvailable$.subscribe(available => {
+      if (!available && this.urlService.isProduction()) {
+        this.toastService.warning('Chat APIs are temporarily unavailable. Some features may not work properly.', 8000);
+      }
+    });
+
     // Lấy conversationId từ queryParams nếu có
     this.route.queryParams.subscribe(params => {
       const conversationId = params['conversationId'];
@@ -78,10 +90,11 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
   // Load conversations và tự động chọn nếu có conversationId
   loadConversationsWithSelect(conversationId?: string) {
     this.loading = true;
-    const conversationsUrl = this.urlService.getApiUrl('api/chat/conversations');
-    this.http.get<PrivateConversation[]>(conversationsUrl).subscribe({
+    
+    this.chatService.getConversations().subscribe({
       next: (data) => {
-        this.conversations = data;
+        // Convert ConversationDTO[] to PrivateConversation[]
+        this.conversations = data.map(conv => this.convertToPrivateConversation(conv));
         this.loading = false;
         this.cdr.markForCheck();
         if (conversationId) {
@@ -147,11 +160,11 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
   // Load conversations for expert
   loadConversations() {
     this.loading = true;
-    const conversationsUrl = this.urlService.getApiUrl('api/chat/conversations');
     
-    this.http.get<PrivateConversation[]>(conversationsUrl).subscribe({
+    this.chatService.getConversations().subscribe({
       next: (data) => {
-        this.conversations = data;
+        // Convert ConversationDTO[] to PrivateConversation[]
+        this.conversations = data.map(conv => this.convertToPrivateConversation(conv));
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -174,9 +187,8 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
   // Load private messages for specific conversation
   loadPrivateMessages(otherUserId: number) {
     this.loading = true;
-    const privateMessagesUrl = this.urlService.getApiUrl(`api/chat/private/${otherUserId}`);
     
-    this.http.get<ChatMessage[]>(privateMessagesUrl).subscribe({
+    this.chatService.getPrivateMessages(otherUserId).subscribe({
       next: (data) => {
         // Chỉ hiển thị tin nhắn PRIVATE
         this.messages = (data || []).filter((m: any) => m.chatType === 'PRIVATE');
@@ -407,5 +419,20 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
         month: '2-digit'
       });
     }
+  }
+
+  /**
+   * Convert ConversationDTO to PrivateConversation
+   */
+  private convertToPrivateConversation(conv: any): PrivateConversation {
+    return {
+      conversationId: conv.conversationId || '',
+      otherUserId: conv.otherUserId || 0,
+      otherUsername: conv.otherUsername || '',
+      otherUserRole: conv.otherUserRole || '',
+      lastMessage: conv.lastMessage || '',
+      lastMessageTime: conv.lastMessageTime || '',
+      hasUnreadMessages: conv.hasUnreadMessages || false
+    };
   }
 }

@@ -25,6 +25,7 @@ import { environment } from '../../../environments/environment';
 import { UrlService } from '../../shared/url.service';
 import { ChatService, ExpertDTO } from '../../shared/services/chat.service';
 import { ConversationDTO } from './conversation.interface';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-vip-chat',
@@ -86,7 +87,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private zone: NgZone,
     private authService: AuthService,
     private urlService: UrlService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -113,6 +115,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!this.currentUserId) {
       console.warn('⚠️ No current user ID found! User might not be logged in properly.');
     }
+
+    // Subscribe to chat API availability
+    this.chatService.chatApisAvailable$.subscribe(available => {
+      if (!available && this.urlService.isProduction()) {
+        this.toastService.warning('Chat APIs are temporarily unavailable. Some features may not work properly.', 8000);
+      }
+    });
 
     // Luôn load danh sách chuyên gia và trò chuyện gần đây khi vào trang
     this.loadExperts();
