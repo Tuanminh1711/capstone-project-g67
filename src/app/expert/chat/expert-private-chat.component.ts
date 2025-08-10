@@ -178,7 +178,8 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
     
     this.http.get<ChatMessage[]>(privateMessagesUrl).subscribe({
       next: (data) => {
-        this.messages = data;
+        // Chỉ hiển thị tin nhắn PRIVATE
+        this.messages = (data || []).filter((m: any) => m.chatType === 'PRIVATE');
         this.loading = false;
         this.cdr.markForCheck();
         this.scrollToBottom();
@@ -310,6 +311,25 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
 
   getAvatarUrl(message: ChatMessage): string {
     return 'assets/image/default-avatar.png';
+  }
+
+  getAvatarInitial(message: ChatMessage): string {
+    const senderName = this.getSenderName(message);
+    if (senderName && senderName.length > 0) {
+      return senderName.charAt(0).toUpperCase();
+    }
+    return '?';
+  }
+
+  getSenderName(message: ChatMessage): string {
+    // Trả về tên người gửi dựa trên role
+    switch (message.senderRole) {
+      case 'EXPERT': return 'Chuyên gia';
+      case 'STAFF': return 'Nhân viên';
+      case 'ADMIN': return 'Quản trị viên';
+      case 'VIP': return 'Thành viên VIP';
+      default: return 'Thành viên';
+    }
   }
 
   getRoleBadgeClass(role?: string): string {

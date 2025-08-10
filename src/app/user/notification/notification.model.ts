@@ -1,12 +1,14 @@
 export interface Notification {
   id: number;
-  userId: number;
+  userId?: number;
   title: string;
   message: string;
-  type: NotificationType;
+  type: NotificationType | string;
   isRead: boolean;
-  createdAt: string;
-  updatedAt: string;
+  status?: 'READ' | 'UNREAD';
+  link?: string | null;
+  createdAt: string | number;
+  updatedAt?: string | number;
   relatedEntityId?: number;
   relatedEntityType?: string;
 }

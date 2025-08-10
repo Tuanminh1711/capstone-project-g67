@@ -161,7 +161,7 @@ export class NotificationService {
     return this.http.post<NotificationResponse>(`${this.apiUrl}/${notificationId}/mark-read`, {}, { headers })
       .pipe(
         tap(response => {
-          if (response.code === 200) {
+          if (response.code === 200 || (response.message && response.message.includes('marked as read successfully'))) {
             // Cập nhật trạng thái notification trong danh sách
             const notifications = this.notificationsSubject.value;
             const updatedNotifications = notifications.map(notif => 
@@ -175,7 +175,7 @@ export class NotificationService {
           }
         }),
         map(response => {
-          if (response.code === 200) {
+          if (response.code === 200 || (response.message && response.message.includes('marked as read successfully'))) {
             return response;
           } else {
             throw new Error(response.message);

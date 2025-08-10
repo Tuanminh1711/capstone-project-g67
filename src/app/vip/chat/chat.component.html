@@ -170,25 +170,21 @@
           <div class="loading-spinner"></div>
           <p>Đang tải tin nhắn...</p>
         </div>
-
         <div *ngIf="error && !loading" class="error-state">
           <div class="error-icon">⚠️</div>
           <p>{{ error }}</p>
           <button class="retry-btn" (click)="fetchHistory()">Thử lại</button>
         </div>
-
-        <div *ngIf="!loading && messages.length === 0" class="empty-state">
+        <div *ngIf="!loading && filteredMessages.length === 0" class="empty-state">
           <div class="empty-icon">💭</div>
           <h4>Chưa có tin nhắn nào</h4>
           <p>Hãy bắt đầu cuộc trò chuyện đầu tiên trong VIP Community!</p>
         </div>
-
         <div *ngIf="!loading && filteredMessages.length > 0" class="messages-list">
           <div *ngFor="let msg of filteredMessages; trackBy: trackMessage" 
                class="message-wrapper"
                [class.own-message]="isOwnMessage(msg)"
                [class.other-message]="!isOwnMessage(msg)">
-            
             <!-- Tin nhắn của người khác (bên trái) -->
             <div class="message-row" *ngIf="!isOwnMessage(msg)">
               <div class="sender-info">
@@ -204,8 +200,61 @@
                 {{ formatTime(msg.timestamp) }}
               </div>
             </div>
-
             <!-- Tin nhắn của mình (bên phải) -->
+            <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
+              <div class="message-time-inline own-time">
+                <div class="message-status">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                </div>
+                {{ formatTime(msg.timestamp) }}
+              </div>
+              <div class="message-bubble own-bubble">
+                <div class="message-content">{{ msg.content }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Private Chat Messages -->
+      <div *ngIf="showPrivateChat && selectedConversation" class="chat-messages" #messagesContainer>
+        <div *ngIf="loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Đang tải tin nhắn...</p>
+        </div>
+        <div *ngIf="error && !loading" class="error-state">
+          <div class="error-icon">⚠️</div>
+          <p>{{ error }}</p>
+          <button class="retry-btn" (click)="loadPrivateMessages(selectedConversation.otherUserId)">Thử lại</button>
+        </div>
+        <div *ngIf="!loading && filteredMessages.length === 0" class="empty-state">
+          <div class="empty-icon">💭</div>
+          <h4>Chưa có tin nhắn nào</h4>
+          <p>Bắt đầu trò chuyện với chuyên gia!</p>
+        </div>
+        <div *ngIf="!loading && filteredMessages.length > 0" class="messages-list">
+          <div *ngFor="let msg of filteredMessages; trackBy: trackMessage"
+               class="message-wrapper"
+               [class.own-message]="isOwnMessage(msg)"
+               [class.other-message]="!isOwnMessage(msg)">
+            <!-- Tin nhắn của người khác -->
+            <div class="message-row" *ngIf="!isOwnMessage(msg)">
+              <div class="sender-info">
+                <span class="sender-name">{{ getSenderName(msg) }}</span>
+                <div class="role-badge" [class]="getRoleBadgeClass(msg.senderRole)">
+                  {{ getRoleDisplayName(msg.senderRole) }}
+                </div>
+              </div>
+              <div class="message-bubble">
+                <div class="message-content">{{ msg.content }}</div>
+              </div>
+              <div class="message-time-inline">
+                {{ formatTime(msg.timestamp) }}
+              </div>
+            </div>
+            <!-- Tin nhắn của mình -->
             <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
               <div class="message-time-inline own-time">
                 <div class="message-status">

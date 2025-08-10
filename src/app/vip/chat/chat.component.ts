@@ -38,12 +38,21 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ...existing code...
   // Lọc tin nhắn theo loại chat để hiển thị đúng
   get filteredMessages(): ChatMessage[] {
-    if (this.showPrivateChat) {
-      // Chỉ hiển thị tin nhắn 1-1
-      return (this.messages || []).filter((m: any) => m.chatType === 'PRIVATE');
+    if (this.showPrivateChat && this.selectedConversation && this.currentUserId) {
+      // Hiển thị tin nhắn PRIVATE của conversation hiện tại
+      const otherUserId = this.selectedConversation.otherUserId;
+      const currentUserId = +this.currentUserId;
+      return (this.messages || []).filter(
+        (m: any) =>
+          m.chatType === 'PRIVATE' &&
+          ((m.senderId === otherUserId && m.receiverId === currentUserId) ||
+           (m.receiverId === otherUserId && m.senderId === currentUserId))
+      );
     } else {
-      // Chỉ hiển thị tin nhắn cộng đồng
-      return (this.messages || []).filter((m: any) => m.chatType === 'COMMUNITY');
+      // Hiển thị tin nhắn COMMUNITY
+      return (this.messages || []).filter(
+        (m: any) => m.chatType === 'COMMUNITY'
+      );
     }
   }
   @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef;
@@ -299,7 +308,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.getChatHistory().subscribe({
       next: (data: any) => {
         const messages = Array.isArray(data) ? data : data?.data || [];
-
+        // Lấy tất cả tin nhắn (cả COMMUNITY và PRIVATE)
         this.messages = messages;
         this.loading = false;
         this.checkIfShouldScroll();
@@ -337,15 +346,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   selectConversation(conversation: ConversationDTO) {
     this.selectedConversation = conversation;
+    this.showPrivateChat = true;
+    this.chatType = 'PRIVATE';
     this.loadPrivateMessages(conversation.otherUserId);
   }
 
   loadPrivateMessages(otherUserId: number) {
     this.loading = true;
-    
     this.chatService.getPrivateMessages(otherUserId).subscribe({
       next: (data) => {
-        this.messages = data;
+        // Lấy tất cả tin nhắn PRIVATE giữa 2 user, không cần filter theo conversationId
+        this.messages = (data || []).filter(
+          (m: any) => m.chatType === 'PRIVATE'
+        );
         this.loading = false;
         this.checkIfShouldScroll();
         this.cdr.markForCheck();
@@ -360,19 +373,22 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   switchToPrivateChat() {
-  this.showPrivateChat = true;
-  this.chatType = 'PRIVATE';
-  this.loadConversations();
-  this.loadExperts();
+    this.showPrivateChat = true;
+    this.chatType = 'PRIVATE';
+    this.selectedConversation = null;
+    this.messages = [];
+    this.loadConversations();
+    this.loadExperts();
   }
 
   switchToCommunityChat() {
-  this.showPrivateChat = false;
-  this.chatType = 'COMMUNITY';
-  this.selectedConversation = null;
-  this.loadExperts();
-  this.loadConversations();
-  this.fetchHistory();
+    this.showPrivateChat = false;
+    this.chatType = 'COMMUNITY';
+    this.selectedConversation = null;
+    this.messages = [];
+    this.loadExperts();
+    this.loadConversations();
+    this.fetchHistory();
   }
 
   loadExperts() {
@@ -455,25 +471,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       content: this.newMessage.trim(),
       senderRole: userRole,
       timestamp: new Date().toISOString(),
-      chatType: this.chatType
+      chatType: this.selectedConversation ? 'PRIVATE' : 'COMMUNITY'
     };
 
-    if (this.chatType === 'PRIVATE') {
-      if (!this.selectedConversation) {
-        this.error = 'Vui lòng chọn một cuộc trò chuyện';
-        this.cdr.markForCheck();
-        return;
-      }
-      
-      // Add conversationId for private messages
+    if (this.selectedConversation) {
+      // Private chat
       msg.conversationId = this.selectedConversation.conversationId;
       msg.receiverId = this.selectedConversation.otherUserId;
-      
       this.ws.sendPrivateMessage(msg).catch(err => {
         this.error = 'Không thể gửi tin nhắn: ' + err;
         this.cdr.markForCheck();
       });
     } else {
+      // Community chat
       this.ws.sendMessage(msg).catch(err => {
         this.error = 'Không thể gửi tin nhắn: ' + err;
         this.cdr.markForCheck();

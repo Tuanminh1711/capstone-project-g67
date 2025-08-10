@@ -11,11 +11,33 @@ import { FooterComponent } from '../../../shared/footer/footer.component';
 @Component({
   selector: 'app-notification-list',
   standalone: true,
-  imports: [CommonModule, TopNavigatorComponent, FooterComponent],
+  imports: [CommonModule, TopNavigatorComponent],
   templateUrl: './notification-list.component.html',
   styleUrls: ['./notification-list.component.scss']
 })
 export class NotificationListComponent implements OnInit, OnDestroy {
+  // Helper: convert type to NotificationType if possible
+  toNotificationType(type: any): NotificationType {
+    if (Object.values(NotificationType).includes(type)) {
+      return type as NotificationType;
+    }
+    // fallback: map string to enum
+    switch (type) {
+      case 'SYSTEM': return NotificationType.SYSTEM;
+      case 'PLANT_CARE': return NotificationType.PLANT_CARE;
+      case 'EXPERT_RESPONSE': return NotificationType.EXPERT_RESPONSE;
+      case 'TICKET_UPDATE': return NotificationType.TICKET_UPDATE;
+      case 'PROMOTION': return NotificationType.PROMOTION;
+      case 'REMINDER': return NotificationType.REMINDER;
+      default: return NotificationType.SYSTEM;
+    }
+  }
+
+  // Helper: format createdAt safely
+  formatCreatedAt(date: string | number | undefined): string {
+    if (!date) return '';
+    return this.formatTime(date.toString());
+  }
   notifications: Notification[] = [];
   currentPage = 0;
   pageSize = 10;
@@ -72,7 +94,11 @@ export class NotificationListComponent implements OnInit, OnDestroy {
           console.log('Notification response:', response);
           
           // Đảm bảo content luôn là array
-          this.notifications = response.content || [];
+          // Đồng bộ trạng thái đã đọc/chưa đọc từ API (status: 'READ'/'UNREAD')
+          this.notifications = (response.content || []).map(n => ({
+            ...n,
+            isRead: n.status === 'READ'
+          }));
           this.currentPage = response.number || 0;
           this.totalElements = response.totalElements || 0;
           this.totalPages = response.totalPages || 0;
@@ -116,17 +142,17 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     }
 
     console.log('Marking notification as read:', notification.id);
-    
     // Cập nhật UI ngay lập tức để tránh lag
     const originalState = notification.isRead;
     notification.isRead = true;
-    
+
     this.notificationService.markAsRead(notification.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           console.log('Successfully marked notification as read:', notification.id);
-          // Đã cập nhật UI rồi, không cần làm gì thêm
+          // Reload lại danh sách để hiển thị trạng thái đã đọc từ backend
+          this.loadNotifications(this.currentPage);
         },
         error: (error) => {
           console.error('Error marking notification as read:', error);
@@ -318,7 +344,14 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    * Format thời gian
    */
   formatTime(dateString: string): string {
-    const date = new Date(dateString);
+    // Xử lý cả trường hợp dateString là số (timestamp)
+    let date: Date;
+    if (!dateString) return '';
+    if (!isNaN(Number(dateString))) {
+      date = new Date(Number(dateString));
+    } else {
+      date = new Date(dateString);
+    }
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));

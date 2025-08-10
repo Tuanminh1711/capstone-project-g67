@@ -93,9 +93,8 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
             this.currentUserId &&
             (msg.senderId === +this.currentUserId || msg.receiverId === +this.currentUserId)) {
           console.log('📨 Expert received private message:', msg);
-          this.messages.push(msg);
-          this.cdr.markForCheck();
-          this.scrollToBottom();
+          // Không thêm private messages vào community chat
+          // Private messages sẽ được xử lý trong expert-private-chat component
         }
       });
     });
@@ -122,7 +121,7 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     return currentId === senderId;
   }
 
-  // Load lịch sử tin nhắn từ database - dùng UrlService giống VIP chat
+  // Load lịch sử tin nhắn từ database - chỉ lấy tin nhắn cộng đồng
   fetchHistory(): void {
     this.loading = true;
     this.error = '';
@@ -130,7 +129,8 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
     this.http.get<ChatMessage[]>(chatHistoryUrl).subscribe({
       next: (data: any) => {
         const messages = Array.isArray(data) ? data : (data?.data || []);
-        this.messages = messages;
+        // Chỉ hiển thị tin nhắn cộng đồng trong community chat
+        this.messages = messages.filter((m: any) => m.chatType === 'COMMUNITY');
         this.loading = false;
         this.cdr.markForCheck();
         this.scrollToBottom();
@@ -166,7 +166,8 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
       senderId: +userId, // Convert string to number
       content: this.newMessage.trim(),
       senderRole: userRole,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      chatType: 'COMMUNITY' // Đảm bảo tin nhắn được phân loại đúng
     };
     
     this.ws.sendMessage(msg);
@@ -199,8 +200,33 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
   }
 
   getAvatarUrl(message: ChatMessage): string {
-    // You can customize avatar based on role or user
+    // Fallback avatar cho expert chat
     return 'assets/image/default-avatar.png';
+  }
+
+  getAvatarInitial(message: ChatMessage): string {
+    const senderName = this.getSenderName(message);
+    if (senderName && senderName.length > 0) {
+      return senderName.charAt(0).toUpperCase();
+    }
+    return '?';
+  }
+
+  getSenderName(message: ChatMessage): string {
+    // Trả về tên người gửi dựa trên role
+    switch (message.senderRole) {
+      case 'EXPERT': return 'Chuyên gia';
+      case 'STAFF': return 'Nhân viên';
+      case 'ADMIN': return 'Quản trị viên';
+      case 'VIP': return 'Thành viên VIP';
+      default: return 'Thành viên';
+    }
+  }
+
+  getOnlineCount(): number {
+    // Tạm thời trả về số tin nhắn để demo
+    // Có thể thay bằng API call để lấy số người online thực tế
+    return Math.min(this.messages.length + 5, 25);
   }
 
   getRoleBadgeClass(role?: string): string {
