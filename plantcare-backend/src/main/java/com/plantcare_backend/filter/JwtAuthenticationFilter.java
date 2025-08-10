@@ -75,6 +75,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicEndpoint(String requestURI) {
+        if (requestURI.equals("/api/auth/change-password") || 
+            requestURI.equals("/api/auth/refresh-token")) {
+            return false;
+        }
+        
         return requestURI.startsWith("/api/auth/") ||
                 requestURI.startsWith("/api/plants/") ||
                 requestURI.startsWith("/api/swagger-ui/") ||
