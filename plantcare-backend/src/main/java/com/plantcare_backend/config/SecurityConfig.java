@@ -65,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/payment/vnpay/create").permitAll()
                         .requestMatchers("/api/vip/disease-detection/**").authenticated()
                         // Chat endpoints - authenticated for VIP/Expert access
-                        .requestMatchers("/chat/**").authenticated()
+                        .requestMatchers("/api/chat/mess/**").authenticated()
                         // WebSocket endpoints - permit all for WebSocket handshake
                         .requestMatchers("/ws/**", "/ws", "/ws/websocket")
                         .permitAll()
