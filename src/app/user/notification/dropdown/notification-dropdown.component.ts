@@ -15,6 +15,15 @@ import { NotificationBadgeComponent } from '../badge/notification-badge.componen
   styleUrls: ['./notification-dropdown.component.scss']
 })
 export class NotificationDropdownComponent implements OnInit, OnDestroy {
+  /**
+   * Chuyển đổi type về NotificationType (nếu hợp lệ), nếu không thì trả về default
+   */
+  toNotificationType(type: string): NotificationType {
+    if (Object.values(NotificationType).includes(type as NotificationType)) {
+      return type as NotificationType;
+    }
+    return NotificationType.SYSTEM;
+  }
   isOpen = false;
   notifications: Notification[] = [];
   isLoading = false;
