@@ -41,15 +41,13 @@ public class AIDiseaseDetectionController {
     @VIPOnly
     @Operation(summary = "Detect disease from image", description = "Upload plant image for AI disease detection")
     public ResponseEntity<DiseaseDetectionResultDTO> detectDiseaseFromImage(
-            @Parameter(description = "Plant image file") @RequestParam("image") MultipartFile image,
+            @Parameter(description = "Plant image file")
+            @RequestParam("image") MultipartFile image,
             @RequestAttribute("userId") Long userId) {
-
-        log.info("Disease detection request from image for user: {}, plant: {}", userId);
 
         try {
             DiseaseDetectionResultDTO result = aiDiseaseDetectionService.detectDiseaseFromImage(image, userId);
 
-            // Log activity
             activityLogService.logActivity(Math.toIntExact(userId), "DISEASE_DETECTION",
                     "Detected disease: " + result.getDetectedDisease() + " with confidence: " + result.getConfidenceScore());
 
@@ -87,7 +85,8 @@ public class AIDiseaseDetectionController {
     @VIPOnly
     @Operation(summary = "Get common diseases", description = "Get list of common diseases for plant type")
     public ResponseEntity<List<PlantDisease>> getCommonDiseases(
-            @Parameter(description = "Plant type") @RequestParam("plantType") String plantType) {
+            @Parameter(description = "Plant type")
+            @RequestParam("plantType") String plantType) {
 
         try {
             List<PlantDisease> diseases = aiDiseaseDetectionService.getCommonDiseases(plantType);

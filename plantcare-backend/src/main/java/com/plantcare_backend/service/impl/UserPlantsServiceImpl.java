@@ -245,7 +245,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                     continue;
                 }
 
-                if (image.getSize() > 5 * 1024 * 1024) {
+                if (image.getSize() > 20 * 1024 * 1024) {
                     log.warn("Skipping file too large: {} ({} bytes)", image.getOriginalFilename(), image.getSize());
                     continue;
                 }

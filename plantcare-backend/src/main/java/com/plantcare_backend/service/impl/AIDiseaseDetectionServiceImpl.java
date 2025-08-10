@@ -421,9 +421,9 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
             throw new IllegalArgumentException("Chỉ chấp nhận file JPG hoặc PNG");
         }
 
-        // Kiểm tra kích thước file (max 10MB)
-        if (image.getSize() > 10 * 1024 * 1024) {
-            throw new IllegalArgumentException("File quá lớn (tối đa 10MB)");
+        // Kiểm tra kích thước file (max 20MB)
+        if (image.getSize() > 20 * 1024 * 1024) {
+            throw new IllegalArgumentException("File quá lớn (tối đa 20MB)");
         }
     }
 
