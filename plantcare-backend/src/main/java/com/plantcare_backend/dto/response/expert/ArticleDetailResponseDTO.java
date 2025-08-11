@@ -3,6 +3,7 @@ package com.plantcare_backend.dto.response.expert;
 import com.plantcare_backend.model.Article;
 import lombok.Data;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -14,8 +15,8 @@ public class ArticleDetailResponseDTO {
     private String authorName;
     private Article.ArticleStatus status;
     private String createdBy;
-    private String createdAt;
-    private String updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
     private List<String> imageUrls;
     private List<ArticleImageDetailDTO> images;
 } 
