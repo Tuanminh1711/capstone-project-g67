@@ -1,0 +1,21 @@
+<app-expert-layout>
+  <div class="article-detail-page">
+    <div class="detail-header">
+      <h2><span class="icon">📄</span> Chi tiết bài viết</h2>
+  <!-- nút quay lại đã bị xoá -->
+    </div>
+    <div *ngIf="article">
+      <h3 class="title">{{ article.title }}</h3>
+      <div class="meta">
+        <span class="category">Chuyên mục: {{ article.categoryName }}</span>
+        <span class="date">Ngày tạo: {{ article.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    
+      <div *ngIf="article.imageUrls?.length" class="images">
+        <img *ngFor="let img of article.imageUrls" [src]="img" alt="Ảnh bài viết" />
+      </div>
+      <div class="content" [innerHTML]="article.content"></div>
+    </div>
+    <div *ngIf="!article" class="error">Không tìm thấy bài viết.</div>
+  </div>
+</app-expert-layout>

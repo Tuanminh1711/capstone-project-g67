@@ -35,5 +35,32 @@ export class ArticlesService {
     return this.http.get<any>(`${this.apiUrl}/get_article_detail/${articleId}`);
   }
 
-  // TODO: add create, update, delete, change status, upload image methods
+  // Lấy danh sách chuyên mục
+  listCategories(pageNo: number, pageSize: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/list_category`, {}, {
+      params: { pageNo, pageSize }
+    });
+  }
+
+  // Tạo bài viết mới
+  createArticle(data: { title: string; content: string; categoryId: number }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-article`, data);
+  }
+
+  // Cập nhật bài viết
+  updateArticle(articleId: number, data: { title: string; content: string; categoryId: number }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/update-article/${articleId}`, data);
+  }
+
+  // Xóa bài viết
+  deleteArticle(articleId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/delete-article/${articleId}`, {});
+  }
+
+  // Upload ảnh bài viết
+  uploadArticleImage(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post(`${this.apiUrl}/upload-article-image`, formData);
+  }
 }

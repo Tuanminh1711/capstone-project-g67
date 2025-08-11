@@ -42,9 +42,15 @@
         </a>
       </li>
       <li class="nav-item">
-        <a [routerLink]="['/expert/articles']" class="nav-link" routerLinkActive="active">
+        <a [routerLink]="['/expert/articles']" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <span class="nav-icon">📝</span>
-          <span class="nav-text">Quản lý bài viết</span>
+          <span class="nav-text">Danh sách bài viết</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/articles/add']" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text">Tạo bài viết mới</span>
         </a>
       </li>
     </ul>

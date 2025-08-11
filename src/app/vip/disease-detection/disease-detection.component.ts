@@ -265,8 +265,9 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     // this.detectionResult = null;
 
     if (tab === 'history') {
-      // Luôn gọi API lấy lịch sử khi chuyển tab
-      this.loadDetectionHistory();
+      // Reset về trang đầu khi chuyển sang tab lịch sử
+      this.historyPage = 0;
+      this.loadDetectionHistory(0);
     } else if (tab === 'diseases') {
       // Only load diseases if we don't have data or if there was an error
       if (this.diseaseLibrary.length === 0 || this.libraryError) {
@@ -285,14 +286,26 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
-      
-      // Create a preview
+      this.imageError = null;
+      // Create a preview immediately
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreviewUrl = reader.result as string;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
+    } else {
+      this.selectedFile = null;
+      this.imagePreviewUrl = null;
     }
+  }
+  /**
+   * Remove selected image and clear preview/error
+   */
+  clearImage() {
+    this.selectedFile = null;
+    this.imagePreviewUrl = null;
+    this.imageError = null;
   }
 
   /**
@@ -509,7 +522,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
               detectionMethod: item.detectionMethod ?? '',
               aiModelVersion: item.aiModelVersion ?? ''
             })).sort((a, b) => (b.detectedAt ?? 0) - (a.detectedAt ?? 0));
-            this.historyPage = result.currentPage ?? 0;
+            this.historyPage = result.currentPage ?? page;
             this.historyTotalPages = result.totalPages ?? 1;
             this.historyTotalElements = result.totalElements ?? result.content.length;
           } else if (Array.isArray(result)) {

@@ -33,8 +33,20 @@ export const expertRoutes: Routes = [
   },
   {
     path: 'articles',
-    loadComponent: () => import('./articles/articles.component').then(c => c.ArticlesComponent),
-    title: 'Quản lý bài viết chuyên gia',
+    loadComponent: () => import('./articles/list/articles.component').then(c => c.ArticlesComponent),
+    title: 'Danh sách bài viết',
+    canActivate: [ExpertAuthGuard]
+  },
+  {
+    path: 'articles-detail/:id',
+    loadComponent: () => import('./articles/detail/article-detail.component').then(c => c.ArticleDetailComponent),
+    title: 'Chi tiết bài viết',
+    canActivate: [ExpertAuthGuard]
+  },
+  {
+    path: 'articles/add',
+    loadComponent: () => import('./articles/create/create-article.component').then(c => c.CreateArticleComponent),
+    title: 'Tạo bài viết mới',
     canActivate: [ExpertAuthGuard]
   }
 ];

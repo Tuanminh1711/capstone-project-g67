@@ -1,0 +1,117 @@
+.article-detail-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.detail-header h2 {
+  font-size: 2rem;
+  color: #1976d2;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.icon {
+  font-size: 1.3em;
+  vertical-align: middle;
+}
+.btn-back {
+  background: #f5faff;
+  color: #1976d2;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-back:hover {
+  background: #e3f2fd;
+}
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+}
+.meta {
+  color: #888;
+  font-size: 1rem;
+  margin-bottom: 18px;
+  display: flex;
+  gap: 24px;
+}
+.images {
+  margin-bottom: 18px;
+  display: flex;
+  gap: 12px;
+}
+.images img {
+  max-width: 180px;
+  max-height: 120px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
+}
+.content {
+  font-size: 1.1rem;
+  color: #224229;
+  line-height: 1.7;
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.08);
+  font-family: 'Quicksand', sans-serif;
+  h2 {
+    color: #224229;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 6px;
+    margin-bottom: 2px;
+    font-family: 'Quicksand', sans-serif;
+  }
+  h3 {
+    color: #224229;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-top: 4px;
+    margin-bottom: 2px;
+    font-family: 'Quicksand', sans-serif;
+  }
+  h4 {
+    color: #224229;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 6px;
+    margin-bottom: 2px;
+    position: relative;
+    padding-left: 18px;
+    font-family: 'Quicksand', sans-serif;
+  }
+  h4::before {
+    content: '\2022';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #224229;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  p {
+    text-align: justify;
+    margin-bottom: 12px;
+    color: #224229;
+    font-weight: 400;
+    font-family: 'Quicksand', sans-serif;
+  }
+}
+.error {
+  color: #d32f2f;
+  margin-top: 32px;
+  text-align: center;
+}

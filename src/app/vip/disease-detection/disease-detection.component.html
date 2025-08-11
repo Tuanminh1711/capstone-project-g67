@@ -59,14 +59,15 @@
             <div class="image-upload-box" *ngIf="!imagePreviewUrl">
               <i class="fas fa-cloud-upload-alt"></i>
               <p>Kéo ảnh vào đây hoặc nhấn để chọn file</p>
-              <small>JPG, PNG, WebP (tối đa 10MB)</small>
+              <small>JPG, PNG, WebP (tối đa 20MB)</small>
             </div>
             <input 
               type="file" 
               id="fileUpload" 
               accept="image/*"
               (change)="onFileSelected($event)"
-              class="file-input">
+              class="file-input"
+              [attr.max-size]="20971520">
           </div>
 
           <div class="form-actions">
@@ -74,11 +75,11 @@
               type="button" 
               class="btn-secondary" 
               *ngIf="imagePreviewUrl"
-              (click)="imagePreviewUrl = null; selectedFile = null">
+              (click)="clearImage()">
               <i class="fas fa-times"></i>
               Xóa ảnh
             </button>
-            <button 
+            <button s
               type="submit" 
               class="btn-primary" 
               [disabled]="imageForm.invalid || !selectedFile || isImageUploading">
@@ -175,10 +176,6 @@
 
 
           <div class="result-actions">
-            <button class="btn-action" (click)="startTreatmentTracking(detectionResult.detectionId)" [disabled]="!detectionResult.detectionId">
-              <i class="fas fa-clipboard-check"></i>
-              Bắt đầu theo dõi điều trị
-            </button>
             <button class="btn-action btn-secondary" (click)="getTreatmentGuide(detectionResult.detectedDisease)" [disabled]="!detectionResult.detectedDisease">
               <i class="fas fa-book-medical"></i>
               Hướng dẫn điều trị chi tiết
@@ -314,8 +311,6 @@
                   </span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span *ngIf="!item.isConfirmed" class="expert-pending"><i class="fas fa-user-clock"></i> Chờ xác nhận</span>
-                  <span *ngIf="item.isConfirmed" class="expert-confirmed"><i class="fas fa-user-check"></i> Đã xác nhận</span>
                 </div>
               </div>
               <div class="row-body" style="margin-top: 6px; font-size: 1rem; font-family: 'Segoe UI', Arial, sans-serif;">
@@ -428,31 +423,6 @@
       </div>
     </div>
 
-    <!-- Error state for all tabs -->
-    <div class="error-container" *ngIf="error && !isLoading && activeTab !== 'history' && activeTab !== 'diseases'">
-      <div class="error-panel">
-        <i class="fas fa-exclamation-triangle"></i>
-        <h3>Đã xảy ra lỗi</h3>
-        <p>{{ error }}</p>
-        <button class="btn-retry" (click)="error = null">
-          <i class="fas fa-redo"></i>
-          Thử lại
-        </button>
-      </div>
-    </div>
-
-    <!-- Error state for upload and symptoms tabs -->
-    <div class="error-container" *ngIf="(imageError || symptomError) && !detectionResult">
-      <div class="error-panel">
-        <i class="fas fa-exclamation-triangle"></i>
-        <h3>Đã xảy ra lỗi</h3>
-        <p>{{ imageError || symptomError }}</p>
-        <button class="btn-retry" (click)="imageError = null; symptomError = null">
-          <i class="fas fa-redo"></i>
-          Thử lại
-        </button>
-      </div>
-    </div>
 
          <!-- Loading state for upload and symptoms tabs -->
      <div class="loading-container" *ngIf="(isImageUploading || isSymptomAnalyzing) && !detectionResult">

@@ -21,7 +21,7 @@ export class ExpertAuthGuard implements CanActivate, CanActivateChild {
     
     // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập admin
     if (!role) {
-      return this.router.createUrlTree(['/auth/login-admin']);
+      return this.router.createUrlTree(['/login-admin']);
     }
     
     // Chỉ cho phép Expert và Staff truy cập các route expert
@@ -34,7 +34,7 @@ export class ExpertAuthGuard implements CanActivate, CanActivateChild {
       return true;
     }
     
-    // Các role khác không được phép truy cập
-    return this.router.createUrlTree(['/auth/login-admin']);
+  // Các role khác không được phép truy cập
+  return this.router.createUrlTree(['/login-admin']);
   }
 }

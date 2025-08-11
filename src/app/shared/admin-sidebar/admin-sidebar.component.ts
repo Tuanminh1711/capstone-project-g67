@@ -30,7 +30,26 @@ export class AdminSidebarComponent {
       }
     } catch {}
 
-    if (role === 'STAFF') {
+    if (role === 'EXPERT') {
+      this.sidebarSections = [
+        {
+          title: 'Quản lý chuyên mục',
+          open: false,
+          items: [
+            { label: 'Danh sách chuyên mục', link: '/expert/categories' },
+            { label: 'Tạo chuyên mục', link: '/expert/categories/create' }
+          ]
+        },
+        {
+          title: 'Quản lý bài viết',
+          open: false,
+          items: [
+            { label: 'Danh sách bài viết', link: '/expert/articles' },
+            { label: 'Tạo bài viết', link: '/expert/articles/create' }
+          ]
+        }
+      ];
+    } else if (role === 'STAFF') {
       this.sidebarSections = [
         {
           title: 'Quản lý cây',
