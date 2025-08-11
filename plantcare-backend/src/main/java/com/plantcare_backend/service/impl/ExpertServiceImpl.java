@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -150,8 +151,8 @@ public class ExpertServiceImpl implements ExpertService {
         article.setAuthor(expert);
         article.setStatus(Article.ArticleStatus.PUBLISHED);
         article.setCreatedBy(expertId.toString());
-        article.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        article.setCreatedAt(Timestamp.valueOf(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+        article.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
 
         Article savedArticle = articleRepository.save(article);
         log.info("Article created successfully with ID: {}", savedArticle.getId());
@@ -194,7 +195,7 @@ public class ExpertServiceImpl implements ExpertService {
         }
 
         article.setStatus(status);
-        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        article.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
         articleRepository.save(article);
 
         log.info("Article status changed from {} to {} for article ID: {}", article.getStatus(), status, articleId);
@@ -268,7 +269,7 @@ public class ExpertServiceImpl implements ExpertService {
         article.setContent(updateRequest.getContent());
         article.setCategory(category);
         article.setStatus(Article.ArticleStatus.valueOf(updateRequest.getStatus()));
-        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        article.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
 
         // Cập nhật ảnh - Logic linh hoạt
         if (updateRequest.getImageUpdates() != null && !updateRequest.getImageUpdates().isEmpty()) {

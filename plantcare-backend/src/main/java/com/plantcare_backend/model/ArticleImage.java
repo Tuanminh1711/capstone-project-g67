@@ -31,4 +31,7 @@ public class ArticleImage {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
+
+    @Column(name = "is_primary")
+    private Boolean isPrimary = false;
 }
