@@ -41,11 +41,11 @@ export interface ChatEnvironmentConfig {
  */
 export const DEV_CHAT_CONFIG: ChatEnvironmentConfig = {
   endpoints: {
-    conversations: '/api/chat/conversations',
-    experts: '/api/chat/experts',
-    history: '/api/chat/history',
-    privateMessages: '/api/chat/private',
-    markRead: '/api/chat/mark-read'
+    conversations: '/api/chat/mess/conversations',
+    experts: '/api/chat/mess/experts',
+    history: '/api/chat/mess/history',
+    privateMessages: '/api/chat/mess/private',
+    markRead: '/api/chat/mess/mark-read'
   },
   
   websocket: {
@@ -73,11 +73,11 @@ export const DEV_CHAT_CONFIG: ChatEnvironmentConfig = {
  */
 export const PROD_CHAT_CONFIG: ChatEnvironmentConfig = {
   endpoints: {
-    conversations: '/api/chat/conversations',
-    experts: '/api/chat/experts',
-    history: '/api/chat/history',
-    privateMessages: '/api/chat/private',
-    markRead: '/api/chat/mark-read'
+    conversations: '/api/chat/mess/conversations',
+    experts: '/api/chat/mess/experts',
+    history: '/api/chat/mess/history',
+    privateMessages: '/api/chat/mess/private',
+    markRead: '/api/chat/mess/mark-read'
   },
   
   websocket: {
