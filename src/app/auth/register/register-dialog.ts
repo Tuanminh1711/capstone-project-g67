@@ -1,5 +1,6 @@
 // ...existing code...
 import { Component, Optional, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
@@ -10,11 +11,13 @@ import { ToastService } from '../../shared/toast/toast.service';
 @Component({
   selector: 'app-register-dialog',
   standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [FormsModule, CommonModule, NgIf],
   templateUrl: './register-dialog.html',
   styleUrls: ['./register.scss']
 })
 export class RegisterDialogComponent {
+  showPassword = false;
+  showConfirmPassword = false;
 
   username = '';
   email = '';

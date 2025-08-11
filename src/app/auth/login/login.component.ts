@@ -1,4 +1,5 @@
 import { Component, Optional, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ToastService } from '../../shared/toast/toast.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../auth.service';
@@ -10,11 +11,12 @@ import { jwtDecode } from 'jwt-decode';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   styleUrl: './login.scss',
   templateUrl: './login-dialog.html',
 })
 export class LoginComponent {
+  showPassword = false;
   // Dịch các message lỗi phổ biến sang tiếng Việt
   private translateErrorMessage(msg: string): string {
     if (!msg) return '';
@@ -191,4 +193,9 @@ export class LoginComponent {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
+
+  togglePassword(input: HTMLInputElement) {
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
 }
