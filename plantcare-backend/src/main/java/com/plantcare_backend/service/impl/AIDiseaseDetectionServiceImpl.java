@@ -51,13 +51,13 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         // Gọi trực tiếp Plant.id API thay vì simulate
         DiseaseDetectionResultDTO result = analyzeImageWithPlantId(image, userId);
 
-        saveDetectionResult(result, userId, "IMAGE");
+        DiseaseDetectionResultDTO savedResult = saveDetectionResult(result, userId, "IMAGE");
 
         if ("CRITICAL".equals(result.getSeverity()) || "HIGH".equals(result.getSeverity())) {
             sendUrgentDiseaseAlert(userId, result.getDetectedDisease(), result.getSeverity());
         }
 
-        return result;
+        return savedResult;
     }
 
     @Override
@@ -66,9 +66,9 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
 
         DiseaseDetectionResultDTO result = analyzeSymptoms(request, userId);
 
-        saveDetectionResult(result, userId, "SYMPTOMS");
+        DiseaseDetectionResultDTO savedResult = saveDetectionResult(result, userId, "SYMPTOMS");
 
-        return result;
+        return savedResult;
     }
 
     @Override
@@ -85,22 +85,62 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     }
 
     @Override
-    public TreatmentProgress trackTreatmentProgress(Long detectionId) {
+    public TreatmentProgressDTO trackTreatmentProgress(Long detectionId) {
         DiseaseDetection detection = diseaseDetectionRepository.findById(detectionId)
                 .orElseThrow(() -> new RuntimeException("Detection not found"));
 
-        Optional<TreatmentProgress> existing = treatmentProgressRepository.findByDiseaseDetectionId(detectionId);
+        Optional<TreatmentProgress> existing = treatmentProgressRepository
+                .findByDiseaseDetectionId(detectionId);
+
         if (existing.isPresent()) {
-            return existing.get();
+            // ✅ SỬA: Convert entity thành DTO
+            return convertToDTO(existing.get());
         }
 
+        // Tạo mới treatment progress
         TreatmentProgress progress = new TreatmentProgress();
         progress.setDiseaseDetection(detection);
         progress.setCurrentStage("DIAGNOSIS");
         progress.setProgressPercentage(0);
         progress.setTreatmentStartDate(new Timestamp(System.currentTimeMillis()));
 
-        return treatmentProgressRepository.save(progress);
+        TreatmentProgress savedProgress = treatmentProgressRepository.save(progress);
+
+        // Return DTO thay vì entity
+        return convertToDTO(savedProgress);
+    }
+
+    // Method convert entity thành DTO
+    private TreatmentProgressDTO convertToDTO(TreatmentProgress progress) {
+        // Parse photos từ JSON string thành List<String>
+        List<String> photosList = new ArrayList<>();
+        if (progress.getPhotos() != null && !progress.getPhotos().isEmpty()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                photosList = mapper.readValue(progress.getPhotos(),
+                        new TypeReference<List<String>>() {
+                        });
+            } catch (Exception e) {
+                // Nếu parse fail, coi như single string
+                photosList = Arrays.asList(progress.getPhotos());
+            }
+        }
+        return TreatmentProgressDTO.builder()
+                .id(progress.getId())
+                .detectionId(progress.getDiseaseDetection().getId())
+                .detectedDisease(progress.getDiseaseDetection().getDetectedDisease())
+                .severity(progress.getDiseaseDetection().getSeverity())
+                .currentStage(progress.getCurrentStage())
+                .progressPercentage(progress.getProgressPercentage())
+                .nextAction(progress.getNextAction())
+                .notes(progress.getNotes())
+                .photos(photosList) // ← SỬA: Sử dụng List<String> đã parse
+                .treatmentStartDate(progress.getTreatmentStartDate())
+                .lastUpdateDate(progress.getLastUpdateDate())
+                .isCompleted(progress.getIsCompleted())
+                .completionDate(progress.getCompletionDate())
+                .successRate(progress.getSuccessRate())
+                .build();
     }
 
     @Override
@@ -548,7 +588,7 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     // ==================== PRIVATE METHODS - DATABASE OPERATIONS
     // ====================
 
-    private void saveDetectionResult(DiseaseDetectionResultDTO result, Long userId, String method) {
+    private DiseaseDetectionResultDTO saveDetectionResult(DiseaseDetectionResultDTO result, Long userId, String method) {
         Users user = userRepository.findById(Math.toIntExact(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -564,7 +604,11 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         detection.setAiModelVersion(result.getAiModelVersion());
         detection.setStatus("DETECTED");
 
-        diseaseDetectionRepository.save(detection);
+        DiseaseDetection savedDetection = diseaseDetectionRepository.save(detection);
+
+        result.setDetectionId(savedDetection.getId());
+
+        return result;
     }
 
     // ==================== PRIVATE METHODS - TREATMENT GUIDE ====================
