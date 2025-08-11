@@ -20,28 +20,29 @@ export class LoginComponent {
   // Dịch các message lỗi phổ biến sang tiếng Việt
   private translateErrorMessage(msg: string): string {
     if (!msg) return '';
-    const map: { [key: string]: string } = {
-      'password must be at least 6 characters': 'Mật khẩu phải có ít nhất 6 ký tự',
-      'passwords do not match': 'Mật khẩu xác nhận không khớp',
-      'username already exists': 'Tên đăng nhập đã tồn tại',
-      'email already exists': 'Email đã được sử dụng',
-      'invalid email format': 'Định dạng email không hợp lệ',
-      'invalid payload': 'Dữ liệu gửi lên không hợp lệ',
-      'user not found': 'Không tìm thấy người dùng',
-      'invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng',
-      'account is not verified': 'Tài khoản chưa được xác thực',
-      'account is locked': 'Tài khoản đã bị khóa',
-      'phone number already exists': 'Số điện thoại đã được sử dụng',
-      'password wrong!': 'Mật khẩu không đúng!',
-      'username wrong!': 'Tên đăng nhập không đúng!',
-      // Thêm các lỗi khác nếu cần
-    };
+   const loginErrorMap: { [key: string]: string } = {
+  'username wrong!': 'Tên đăng nhập không đúng.',
+  'password wrong!': 'Mật khẩu không đúng.',
+  'password wrong': 'Mật khẩu không đúng.',
+  'tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.':
+    'Tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.',
+  'tài khoản đã bị khóa vĩnh viễn do vi phạm chính sách.':
+    'Tài khoản đã bị khóa vĩnh viễn do vi phạm chính sách.',
+  'chỉ tài khoản người dùng (user, vip) mới được phép đăng nhập ở đây.':
+    'Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập tại đây.',
+  'chỉ tài khoản admin hoặc staff mới được phép đăng nhập ở đây.':
+    'Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập tại đây.',
+  'chỉ tài khoản expert hoặc staff mới được phép đăng nhập ở đây.':
+    'Chỉ tài khoản EXPERT hoặc STAFF mới được phép đăng nhập tại đây.',
+  'tài khoản của bạn chưa xác thực, vui lòng kiểm tra email hoặc gửi lại mã xác minh.':
+    'Tài khoản của bạn chưa xác thực. Vui lòng kiểm tra email hoặc gửi lại mã xác minh.',
+};
     const msgNorm = msg.trim().toLowerCase();
     // Tìm lỗi khớp tuyệt đối
-    if (map[msgNorm]) return map[msgNorm];
+    if (loginErrorMap[msgNorm]) return loginErrorMap[msgNorm];
     // Tìm lỗi khớp một phần (chứa chuỗi, không phân biệt hoa thường)
-    for (const key of Object.keys(map)) {
-      if (msgNorm.includes(key)) return map[key];
+    for (const key of Object.keys(loginErrorMap)) {
+      if (msgNorm.includes(key)) return loginErrorMap[key];
     }
     return msg;
   }

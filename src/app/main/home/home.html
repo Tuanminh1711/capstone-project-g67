@@ -7,16 +7,14 @@
       <span>PlantCare - Nền tảng chăm sóc cây toàn diện</span>
     </h1>
     <p class="home-hero-desc">
-      Khám phá, quản lý, chăm sóc<br>
-      và kết nối cộng đồng yêu cây cảnh. Tất cả trên 1 nền tảng!
+      Khám phá, quản lý, chăm sóc và kết nối cộng đồng yêu cây cảnh. Tất cả trên 1 nền tảng!
     </p>
-
     <div class="home-hero-cta">
       @if (!jwtUserUtil.isLoggedIn()) {
         <button (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập</button>
       }
       @if (jwtUserUtil.isLoggedIn()) {
-        <button (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Tính năng nâng cao</button>
+        <button (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Chăm sóc cùng chuyên gia</button>
       }
     </div>
   </div>
@@ -50,18 +48,13 @@
 
 <!-- Features Section -->
 <section class="home-features">
-  <h2 class="features-title">Tính năng cơ bản</h2>
+  <h2 class="features-title">Tính năng nổi bật</h2>
   <div class="features-list">
     <div class="feature-item">
       <i class="fas fa-search feature-icon"></i>
       <h3>Tìm kiếm & Khám phá cây</h3>
       <p>Tra cứu thông tin, hình ảnh, đặc điểm và điều kiện sống của hàng trăm loại cây cảnh.</p>
     </div>
-      <div class="feature-item">
-        <i class="fas fa-robot feature-icon"></i>
-        <h3>Tìm kiếm cây bằng AI</h3>
-        <p>Sử dụng AI để tìm kiếm, nhận diện và tra cứu thông tin cây cảnh một cách nhanh chóng, chính xác.</p>
-      </div>
     <div class="feature-item">
       <i class="fas fa-seedling feature-icon"></i>
       <h3>Khu vườn của tôi</h3>
@@ -70,7 +63,22 @@
     <div class="feature-item">
       <i class="fas fa-bell feature-icon"></i>
       <h3>Nhắc nhở chăm sóc</h3>
-      <p>Thiết lập lịch tưới nước, bón phân, cắt tỉa... và nhận thông báo tự động.</p>
+      <p>Thiết lập lịch tưới nước, bón phân,<br>cắt tỉa... và nhận thông báo tự động.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-user-md feature-icon"></i>
+      <h3>Chuyên gia tư vấn</h3>
+      <p>Kết nối, trò chuyện và nhận lời khuyên từ các chuyên gia cây cảnh giàu kinh nghiệm.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-comments feature-icon"></i>
+      <h3>Cộng đồng & Hỏi đáp</h3>
+      <p>Tham gia diễn đàn, <br>chia sẻ kinh nghiệm, đặt câu hỏi<br> và nhận hỗ trợ từ cộng đồng.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-chart-line feature-icon"></i>
+      <h3>Hỗ trợ & Theo dõi</h3>
+      <p>Theo dõi quá trình chăm sóc cây <br>và tiến trình phát triển.</p>
     </div>
   </div>
 </section>
@@ -143,40 +151,29 @@
 <section class="home-vip-features">
   <div class="vip-banner">
     <div class="vip-badge">🌟 VIP</div>
-    <h2>Tính năng dành riêng cho VIP</h2>
-    <p>Chỉ thành viên VIP mới sử dụng được các tính năng sau:</p>
+    <h2>Tính năng độc quyền cho thành viên VIP</h2>
+    <p>Nâng cấp tài khoản để trải nghiệm các tính năng cao cấp</p>
+    
     <div class="vip-features-grid">
       <div class="vip-feature">
         <div class="vip-feature-icon">💬</div>
         <h4>Chat VIP riêng tư</h4>
         <p>Trò chuyện trực tiếp với chuyên gia trong phòng chat riêng biệt</p>
       </div>
-        <div class="vip-feature">
-          <div class="vip-feature-icon"><i class="fas fa-user-md"></i></div>
-          <h4>Chuyên gia tư vấn VIP</h4>
-          <p>Kết nối, trò chuyện và nhận lời khuyên từ các chuyên gia cây cảnh giàu kinh nghiệm.</p>
-        </div>
-        <div class="vip-feature">
-          <div class="vip-feature-icon"><i class="fas fa-comments"></i></div>
-          <h4>Cộng đồng & Hỏi đáp VIP</h4>
-          <p>Tham gia diễn đàn, chia sẻ kinh nghiệm, đặt câu hỏi và nhận hỗ trợ từ cộng đồng VIP.</p>
-        </div>
+      
       <div class="vip-feature">
         <div class="vip-feature-icon">🤖</div>
         <h4>AI Nhận diện cây</h4>
         <p>Sử dụng AI để nhận diện loại cây từ hình ảnh một cách chính xác</p>
       </div>
-        <div class="vip-feature">
-          <div class="vip-feature-icon">🩺</div>
-          <h4>Hỗ trợ quan sát & chữa bệnh cho cây</h4>
-          <p>Nhận diện, hỗ trợ quan sát và tư vấn chữa bệnh cho cây cảnh của bạn.</p>
-        </div>
+      
       <div class="vip-feature">
         <div class="vip-feature-icon">⚡</div>
         <h4>Hỗ trợ ưu tiên</h4>
         <p>Được ưu tiên hỗ trợ và phản hồi nhanh chóng từ đội ngũ chuyên gia</p>
       </div>
     </div>
+    
     @if (jwtUserUtil.isLoggedIn()) {
       <button class="vip-upgrade-btn" (click)="goToVipUpgrade()">
         Nâng cấp VIP ngay

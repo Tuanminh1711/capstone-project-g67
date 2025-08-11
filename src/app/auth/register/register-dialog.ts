@@ -30,30 +30,32 @@ export class RegisterDialogComponent {
   successMsg = '';
 
   // Dịch các message lỗi phổ biến sang tiếng Việt
-  private translateErrorMessage(msg: string): string {
-    if (!msg) return '';
-    const map: { [key: string]: string } = {
-      'Password must be at least 6 characters': 'Mật khẩu phải có ít nhất 6 ký tự',
-      'Passwords do not match': 'Mật khẩu xác nhận không khớp',
-      'Username already exists': 'Tên đăng nhập đã tồn tại',
-      'Email already exists': 'Email đã được sử dụng',
-      'Invalid email format': 'Định dạng email không hợp lệ',
-      'Invalid Payload': 'Dữ liệu gửi lên không hợp lệ',
-      'User not found': 'Không tìm thấy người dùng',
-      'Invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng',
-      'Account is not verified': 'Tài khoản chưa được xác thực',
-      'Account is locked': 'Tài khoản đã bị khóa',
-      'Phone number already exists': 'Số điện thoại đã được sử dụng',
-      // Thêm các lỗi khác nếu cần
-    };
-    // Tìm lỗi khớp tuyệt đối
-    if (map[msg]) return map[msg];
-    // Tìm lỗi khớp một phần (chứa chuỗi)
-    for (const key of Object.keys(map)) {
-      if (msg.includes(key)) return map[key];
-    }
-    return msg;
+ private translateErrorMessage(msg: string): string {
+  if (!msg) return '';
+
+  const map: { [key: string]: string } = {
+    'username already exists': 'Tên đăng nhập đã tồn tại.',
+    'email already exists': 'Email đã được sử dụng.',
+    'password and confirm password do not match': 'Mật khẩu và xác nhận mật khẩu không khớp.',
+    'default role not found': 'Không tìm thấy vai trò mặc định.',
+    'failed to create user profile': 'Tạo hồ sơ người dùng thất bại.',
+    'đăng ký thành công. vui lòng kiểm tra emailđể xác thực tài khoản':
+      'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.',
+    'error registering user': 'Đăng ký thất bại. Vui lòng thử lại.',
+  };
+
+  const msgNorm = msg.trim().toLowerCase();
+
+  // Khớp tuyệt đối
+  if (map[msgNorm]) return map[msgNorm];
+
+  // Khớp một phần
+  for (const key of Object.keys(map)) {
+    if (msgNorm.includes(key)) return map[key];
   }
+
+  return msg; // Không khớp thì trả nguyên bản
+}
 
   constructor(
     private authService: AuthService,

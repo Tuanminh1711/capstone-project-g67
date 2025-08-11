@@ -1,3 +1,19 @@
+export interface DiseaseDetectionHistoryItem {
+  id: number;
+  detectedDisease: string;
+  confidenceScore: number;
+  severity: string;
+  symptoms: string;
+  recommendedTreatment?: string | null;
+  status: string;
+  isConfirmed: boolean;
+  expertNotes?: string | null;
+  detectedAt: number;
+  treatedAt?: number | null;
+  treatmentResult?: string | null;
+  detectionMethod: string;
+  aiModelVersion: string;
+}
 export interface DiseaseDetectionRequest {
   plantId?: number;
   symptoms?: string[];
@@ -18,14 +34,26 @@ export interface DiseaseDetectionResult {
 }
 
 export interface TreatmentGuide {
-  diseaseId: number;
   diseaseName: string;
-  organicTreatments: string[];
-  chemicalTreatments: string[];
-  preventiveMeasures: string[];
-  estimatedRecoveryTime: string;
   severity: string;
+  steps: TreatmentStep[];
+  requiredProducts: string[];
+  estimatedDuration: string;
+  successRate: string;
+  precautions: string[];
+  followUpSchedule: string;
+  expertNotes: string;
+}
+
+export interface TreatmentStep {
+  stepNumber: number;
+  title: string;
   description: string;
+  duration: string;
+  frequency: string;
+  materials: string[];
+  notes: string | null;
+  isCompleted: boolean;
 }
 
 export interface TreatmentProgress {

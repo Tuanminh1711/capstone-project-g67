@@ -38,6 +38,34 @@ export class ChangePasswordComponent implements OnInit {
     private http: HttpClient
   ) {}
 
+
+  private translateErrorMessage(msg: string): string {
+  if (!msg) return '';
+
+  const map: { [key: string]: string } = {
+    'user not found': 'Không tìm thấy người dùng.',
+    'current password is incorrect': 'Mật khẩu hiện tại không đúng.',
+    'new password and confirm password do not match': 'Mật khẩu mới và xác nhận mật khẩu không khớp.',
+    'new password must be different from current password': 'Mật khẩu mới phải khác mật khẩu cũ.',
+    'password strength validation failed': 'Mật khẩu mới không đủ mạnh.',
+    'password changed successfully': 'Đổi mật khẩu thành công.',
+    'error changing password': 'Có lỗi xảy ra khi đổi mật khẩu.',
+  };
+
+  const msgNorm = msg.trim().toLowerCase();
+
+  // Khớp tuyệt đối
+  if (map[msgNorm]) return map[msgNorm];
+
+  // Khớp một phần
+  for (const key of Object.keys(map)) {
+    if (msgNorm.includes(key)) return map[key];
+  }
+
+  return msg; // Trả về nguyên bản nếu không khớp
+}
+
+
   ngOnInit() {
     // Không tự động hiển thị login dialog
     // Chỉ kiểm tra authentication khi user thực sự thực hiện action
@@ -159,31 +187,27 @@ export class ChangePasswordComponent implements OnInit {
         // Trigger change detection ngay lập tức
         setTimeout(() => this.cdr.detectChanges(), 0);
       }),
-      catchError(error => {
-        let errorMessage = 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.';
-        
-        // Xử lý lỗi theo status code
-        if (error.status === 400) {
-          errorMessage = 'Mật khẩu hiện tại không đúng.';
-        } else if (error.status === 401) {
-          errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-          this.showLoginDialog();
-        } else if (error.status === 403) {
-          errorMessage = 'Bạn không có quyền thực hiện hành động này.';
-        } else if (error.status === 0) {
-          errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
-        } else if (error.status === 500) {
-          errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
-        } else if (error.userMessage) {
-          errorMessage = error.userMessage;
-        }
-        
-        this.toastService.error(errorMessage);
-        this.error = errorMessage;
-        // Trigger change detection ngay lập tức
-        setTimeout(() => this.cdr.detectChanges(), 0);
-        return of(null);
-      }),
+     catchError(error => {
+      let errorMessage = 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.';
+
+      if (error?.error?.message) {
+    errorMessage = this.translateErrorMessage(error.error.message);
+      } else if (error.status === 0) {
+    errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+      }
+
+      if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+     this.showLoginDialog();
+    }
+
+  this.toastService.error(errorMessage);
+  this.error = errorMessage;
+  setTimeout(() => this.cdr.detectChanges(), 0);
+
+  return of(null);
+}),
+
       finalize(() => {
         this.loading = false;
         // Trigger change detection ngay lập tức

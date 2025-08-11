@@ -50,18 +50,7 @@
         <p>Tải lên hình ảnh cây của bạn để AI phân tích và phát hiện bệnh</p>
 
         <form [formGroup]="imageForm" (ngSubmit)="uploadImage()" class="upload-form">
-          <div class="form-group">
-            <label for="plantId">Mã cây (<a routerLink="/user/plant/my-garden">Chọn từ vườn của bạn</a>):</label>
-            <input 
-              type="number" 
-              id="plantId" 
-              formControlName="plantId" 
-              placeholder="Nhập mã cây..."
-              class="form-control">
-            <div class="form-error" *ngIf="imageForm.get('plantId')?.invalid && imageForm.get('plantId')?.touched">
-              Vui lòng nhập mã cây
-            </div>
-          </div>
+          <!-- Đã bỏ trường nhập mã cây, chỉ còn upload ảnh -->
 
           <div class="image-upload-container">
             <div class="image-preview" *ngIf="imagePreviewUrl">
@@ -92,9 +81,9 @@
             <button 
               type="submit" 
               class="btn-primary" 
-              [disabled]="imageForm.invalid || !selectedFile || isLoading">
-              <i class="fas fa-search" *ngIf="!isLoading"></i>
-              <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+              [disabled]="imageForm.invalid || !selectedFile || isImageUploading">
+              <i class="fas fa-search" *ngIf="!isImageUploading"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="isImageUploading"></i>
               Phân tích ảnh
             </button>
           </div>
@@ -124,9 +113,9 @@
             <button 
               type="submit" 
               class="btn-primary" 
-              [disabled]="symptomForm.get('description')?.invalid || isLoading">
-              <i class="fas fa-search" *ngIf="!isLoading"></i>
-              <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+              [disabled]="symptomForm.get('description')?.invalid || isSymptomAnalyzing">
+              <i class="fas fa-search" *ngIf="!isSymptomAnalyzing"></i>
+              <i class="fas fa-spinner fa-spin" *ngIf="isSymptomAnalyzing"></i>
               Phân tích triệu chứng
             </button>
           </div>
@@ -149,9 +138,18 @@
 </style>
         <div class="result-header">
           <h2>Kết quả phân tích</h2>
-          <span class="confidence-badge">
-            Độ tin cậy: {{ detectionResult.confidenceScore }}%
-          </span>
+                      <div class="result-header-actions">
+              <span class="confidence-badge">
+                Độ tin cậy: {{ (detectionResult.confidenceScore * 100) | number:'1.0-1' }}%
+              </span>
+              
+              <button 
+                class="btn-clear-result" 
+                (click)="clearDetectionResult()"
+                title="Xóa kết quả">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
         </div>
 
         <div class="result-content">
@@ -165,29 +163,110 @@
               {{ detectionResult.description }}
             </p>
 
-            <div class="recommendations">
-              <h4>Khuyến nghị điều trị:</h4>
-              <ul>
-                <li *ngFor="let rec of detectionResult.recommendations">
-                  {{ rec }}
-                </li>
-              </ul>
-            </div>
+                         <div class="recommendations">
+               <h4>Khuyến nghị điều trị:</h4>
+               <ul *ngIf="detectionResult.recommendations && detectionResult.recommendations.length > 0">
+                 <li *ngFor="let rec of detectionResult.recommendations; trackBy: trackByRecommendation">
+                   {{ rec }}
+                 </li>
+               </ul>
+             </div>
           </div>
 
+
           <div class="result-actions">
-            <button class="btn-action" [routerLink]="['/vip/disease-treatment', detectionResult.detectionId]">
+            <button class="btn-action" (click)="startTreatmentTracking(detectionResult.detectionId)" [disabled]="!detectionResult.detectionId">
               <i class="fas fa-clipboard-check"></i>
-              Theo dõi điều trị
+              Bắt đầu theo dõi điều trị
             </button>
-            <button class="btn-action btn-secondary">
-              <i class="fas fa-share-alt"></i>
-              Chia sẻ kết quả
+            <button class="btn-action btn-secondary" (click)="getTreatmentGuide(detectionResult.detectedDisease)" [disabled]="!detectionResult.detectedDisease">
+              <i class="fas fa-book-medical"></i>
+              Hướng dẫn điều trị chi tiết
             </button>
-            <button class="btn-action btn-outline">
-              <i class="fas fa-print"></i>
-              In kết quả
-            </button>
+          </div>
+
+          <!-- Inline Treatment Guide Section -->
+          <div class="treatment-guide-section" *ngIf="treatmentGuide">
+            <div class="treatment-guide-header">
+              <h3>Hướng dẫn điều trị chi tiết: {{ treatmentGuide.diseaseName }}</h3>
+            </div>
+            
+            <div class="treatment-overview">
+              <div class="overview-item">
+                <strong>Mức độ nghiêm trọng:</strong>
+                <span class="severity-badge" [ngClass]="getSeverityClass(treatmentGuide.severity)">
+                  {{ formatSeverity(treatmentGuide.severity) }}
+                </span>
+              </div>
+              <div class="overview-item">
+                <strong>Thời gian điều trị:</strong>
+                <span>{{ treatmentGuide.estimatedDuration }}</span>
+              </div>
+              <div class="overview-item">
+                <strong>Tỷ lệ thành công:</strong>
+                <span>{{ treatmentGuide.successRate }}</span>
+              </div>
+              <div class="overview-item">
+                <strong>Lịch theo dõi:</strong>
+                <span>{{ treatmentGuide.followUpSchedule }}</span>
+              </div>
+            </div>
+
+            <div class="treatment-steps">
+              <h4>Các bước điều trị:</h4>
+              <div *ngIf="treatmentGuide.steps && treatmentGuide.steps.length > 0; else noSteps">
+                <div class="step-list">
+                  <div class="step-item" *ngFor="let step of treatmentGuide.steps; trackBy: trackById">
+                    <div class="step-header">
+                      <span class="step-number">{{ step.stepNumber }}</span>
+                      <h5>{{ step.title }}</h5>
+                      <span class="step-duration">{{ step.duration }}</span>
+                    </div>
+                    <p class="step-description">{{ step.description }}</p>
+                    <div class="step-details">
+                      <div class="step-frequency">
+                        <strong>Tần suất:</strong> {{ step.frequency }}
+                      </div>
+                      <div class="step-materials" *ngIf="step.materials && step.materials.length > 0">
+                        <strong>Vật liệu cần thiết:</strong>
+                        <ul>
+                          <li *ngFor="let material of step.materials">{{ material }}</li>
+                        </ul>
+                      </div>
+                      <div class="step-notes" *ngIf="step.notes">
+                        <strong>Ghi chú:</strong> {{ step.notes }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noSteps>
+                <div class="no-steps-message">
+                  <i class="fas fa-info-circle"></i>
+                  Bệnh này chưa có các bước điều trị cụ thể. Vui lòng tham khảo chuyên gia hoặc các lưu ý bên dưới.
+                </div>
+              </ng-template>
+            </div>
+
+            <div class="treatment-requirements" *ngIf="treatmentGuide.requiredProducts && treatmentGuide.requiredProducts.length > 0">
+              <h4>Vật liệu cần thiết:</h4>
+              <div class="materials-list">
+                <span class="material-tag" *ngFor="let product of treatmentGuide.requiredProducts">{{ product }}</span>
+              </div>
+            </div>
+
+            <div class="treatment-precautions" *ngIf="treatmentGuide.precautions && treatmentGuide.precautions.length > 0">
+              <h4>Lưu ý quan trọng:</h4>
+              <ul>
+                <li *ngFor="let precaution of treatmentGuide.precautions">{{ precaution }}</li>
+              </ul>
+            </div>
+
+            <div class="expert-notes" *ngIf="treatmentGuide.expertNotes">
+          <!-- Không hiện popup lỗi nếu có dữ liệu hướng dẫn -->
+              <h4>Ghi chú từ chuyên gia:</h4>
+              <p>{{ treatmentGuide.expertNotes }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -198,21 +277,21 @@
       <div class="panel">
         <h2>Lịch sử phát hiện bệnh</h2>
 
-        <div class="loading-state" *ngIf="isLoading">
+        <div class="loading-state" *ngIf="isHistoryLoading">
           <div class="spinner"></div>
           <p>Đang tải lịch sử...</p>
         </div>
 
-        <div class="error-state" *ngIf="error && !isLoading">
+        <div class="error-state" *ngIf="historyError && !isHistoryLoading">
           <i class="fas fa-exclamation-triangle"></i>
-          <p>{{ error }}</p>
+          <p>{{ historyError }}</p>
           <button class="btn-retry" (click)="loadDetectionHistory()">
             <i class="fas fa-redo"></i>
             Thử lại
           </button>
         </div>
 
-        <div class="empty-state" *ngIf="!isLoading && !error && detectionHistory.length === 0">
+        <div class="empty-state" *ngIf="!isHistoryLoading && !historyError && detectionHistory.length === 0">
           <i class="fas fa-search"></i>
           <p>Bạn chưa có lịch sử phát hiện bệnh nào.</p>
           <button class="btn-primary" (click)="setActiveTab('upload')">
@@ -220,29 +299,34 @@
           </button>
         </div>
 
-        <div class="history-list" *ngIf="!isLoading && !error && detectionHistory.length > 0">
+        <div class="history-list" *ngIf="!isHistoryLoading && !historyError && detectionHistory.length > 0">
           <div 
-            class="history-item" 
-            *ngFor="let item of detectionHistory; trackBy: trackById"
-            [routerLink]="['/vip/disease-treatment', item.detectionId]">
-            
-            <div class="history-info">
-              <div class="history-plant">
-                <strong>{{ item.plantName }}</strong>
-                <span class="history-date">{{ formatDate(item.createdAt) }}</span>
+            class="history-row improved"
+            *ngFor="let item of detectionHistory; trackBy: trackById">
+            <span class="row-icon" [ngClass]="getSeverityClass(item.severity)"><i class="fas fa-virus"></i></span>
+            <div class="row-content">
+              <div class="row-header" style="display: flex; align-items: center; gap: 12px; font-size: 1.08rem; font-family: 'Segoe UI', Arial, sans-serif; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span class="row-disease" style="font-weight: 600;">{{ item.detectedDisease }}</span>
+                  <span class="row-confidence" style="background: #e0f2fe; color: #2563eb; border-radius: 6px; padding: 2px 10px; font-size: 0.98rem; font-weight: 500;">{{ (item.confidenceScore * 100) | number:'1.0-1' }}%</span>
+                  <span class="row-severity" [ngClass]="getSeverityClass(item.severity)" style="border-radius: 6px; padding: 2px 10px; font-size: 0.98rem; font-weight: 500; margin-left: 0;">
+                    {{ item.severity === 'CRITICAL' ? 'Nguy cấp' : formatSeverity(item.severity) }}
+                  </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span *ngIf="!item.isConfirmed" class="expert-pending"><i class="fas fa-user-clock"></i> Chờ xác nhận</span>
+                  <span *ngIf="item.isConfirmed" class="expert-confirmed"><i class="fas fa-user-check"></i> Đã xác nhận</span>
+                </div>
               </div>
-              <div class="history-disease">
-                <span class="disease-name">{{ item.detectedDisease }}</span>
-                <span 
-                  class="severity-badge small" 
-                  [ngClass]="getSeverityClass(item.severity)">
-                  {{ formatSeverity(item.severity) }}
-                </span>
+              <div class="row-body" style="margin-top: 6px; font-size: 1rem; font-family: 'Segoe UI', Arial, sans-serif;">
+                <div style="margin-bottom: 4px;"><strong>Phát hiện qua:</strong> {{ item.detectionMethod === 'IMAGE' ? 'Ảnh' : 'Triệu chứng' }}</div>
+                <div style="margin-bottom: 4px;"><strong>Triệu chứng:</strong> {{ item.symptoms }}</div>
+                <div *ngIf="item.recommendedTreatment" style="margin-bottom: 4px;"><strong>Khuyến nghị:</strong> {{ item.recommendedTreatment }}</div>
               </div>
-            </div>
-
-            <div class="history-actions">
-              <i class="fas fa-chevron-right"></i>
+              <div class="row-status" style="margin-top: 4px; font-size: 0.97rem; font-family: 'Segoe UI', Arial, sans-serif;">
+                <span *ngIf="item.status === 'TREATED'" [ngClass]="'status-treated'">Đã điều trị</span>
+              </div>
+              <div class="row-date" style="margin-top: 4px; font-size: 0.97rem; color: #2563eb; font-family: 'Segoe UI', Arial, sans-serif;"><strong>Ngày phát hiện:</strong> {{ formatDate(item.detectedAt) }}</div>
             </div>
           </div>
 
@@ -250,7 +334,7 @@
             <button 
               class="btn-page" 
               [disabled]="historyPage === 0"
-              (click)="loadDetectionHistory(historyPage - 1)">
+              (click)="changeHistoryPage(historyPage - 1)">
               <i class="fas fa-chevron-left"></i>
             </button>
             
@@ -261,7 +345,7 @@
             <button 
               class="btn-page" 
               [disabled]="historyPage === historyTotalPages - 1"
-              (click)="loadDetectionHistory(historyPage + 1)">
+              (click)="changeHistoryPage(historyPage + 1)">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -294,57 +378,46 @@
           </div>
         </div>
 
-        <div class="loading-state" *ngIf="isLoading">
+        <div class="loading-state" *ngIf="isLibraryLoading">
           <div class="spinner"></div>
           <p>Đang tải dữ liệu...</p>
         </div>
 
-        <div class="error-state" *ngIf="error && !isLoading">
+        <div class="error-state" *ngIf="libraryError && !isLibraryLoading">
           <i class="fas fa-exclamation-triangle"></i>
-          <p>{{ error }}</p>
+          <p>{{ libraryError }}</p>
           <button class="btn-retry" (click)="onPlantTypeChange(selectedPlantType)">
             <i class="fas fa-redo"></i>
             Thử lại
           </button>
         </div>
 
-        <div class="disease-library" *ngIf="!isLoading && !error && diseaseLibrary.length > 0">
+        <div class="disease-library" *ngIf="!isLibraryLoading && !libraryError && diseaseLibrary.length > 0">
           <div 
             class="disease-card" 
             *ngFor="let disease of diseaseLibrary; trackBy: trackById">
-            
             <div class="disease-image" *ngIf="disease.imageUrl">
               <img [src]="disease.imageUrl" [alt]="disease.name">
             </div>
             <div class="disease-image placeholder" *ngIf="!disease.imageUrl">
               <i class="fas fa-leaf"></i>
             </div>
-            
             <div class="disease-info">
               <h3>{{ disease.name }}</h3>
               <div class="disease-meta">
                 <span class="scientific-name">{{ disease.scientificName }}</span>
-                <span 
-                  class="severity-badge" 
-                  [ngClass]="getSeverityClass(disease.severity)">
-                  {{ formatSeverity(disease.severity) }}
-                </span>
+                <span class="severity-badge" [ngClass]="getSeverityClass(disease.severity)">{{ formatSeverity(disease.severity) }}</span>
               </div>
-              
               <p class="disease-description">{{ disease.description }}</p>
-              
               <div class="disease-symptoms">
                 <strong>Triệu chứng:</strong>
                 <ul>
-                  <li *ngFor="let symptom of disease.symptoms.slice(0, 3)">
-                    {{ symptom }}
-                  </li>
+                  <li *ngFor="let symptom of disease.symptoms.slice(0, 3)">{{ symptom }}</li>
                   <li *ngIf="disease.symptoms.length > 3">
                     <em>...và {{ disease.symptoms.length - 3 }} triệu chứng khác</em>
                   </li>
                 </ul>
               </div>
-              
               <button class="btn-detail" [routerLink]="['/vip/disease-library', disease.id]">
                 Chi tiết
                 <i class="fas fa-arrow-right"></i>
@@ -368,14 +441,26 @@
       </div>
     </div>
 
-    <!-- Loading state for upload and symptoms tabs -->
-    <div class="loading-container" *ngIf="isLoading && (activeTab === 'upload' || activeTab === 'symptoms') && !detectionResult">
-      <div class="loading-panel">
-        <div class="spinner"></div>
-        <h3>Đang phân tích</h3>
-        <p>Vui lòng chờ trong giây lát...</p>
+    <!-- Error state for upload and symptoms tabs -->
+    <div class="error-container" *ngIf="(imageError || symptomError) && !detectionResult">
+      <div class="error-panel">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Đã xảy ra lỗi</h3>
+        <p>{{ imageError || symptomError }}</p>
+        <button class="btn-retry" (click)="imageError = null; symptomError = null">
+          <i class="fas fa-redo"></i>
+          Thử lại
+        </button>
       </div>
     </div>
-  </div>
-</div>
 
+         <!-- Loading state for upload and symptoms tabs -->
+     <div class="loading-container" *ngIf="(isImageUploading || isSymptomAnalyzing) && !detectionResult">
+       <div class="loading-panel">
+         <div class="spinner"></div>
+         <h3>Đang phân tích</h3>
+         <p>Vui lòng chờ trong giây lát...</p>
+       </div>
+     </div>
+   </div>
+ </div>

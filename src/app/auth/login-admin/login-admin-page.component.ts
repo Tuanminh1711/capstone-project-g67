@@ -13,119 +13,46 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login-admin-page.scss']
 })
 export class LoginAdminPageComponent {
-  showNewPassword = false;
-
-  verifyResetCode() {
-    if (this.resetCode.length !== 6) {
-      this.toast.error('Mã xác nhận phải đủ 6 số.');
-      return;
-    }
-    this.authService.verifyResetCode(this.forgotEmail, this.resetCode).subscribe({
-      next: () => {
-        this.toast.success('Mã xác nhận hợp lệ! Nhập mật khẩu mới.');
-        this.showNewPassword = true;
-        this.cdr.detectChanges();
-      },
-      error: err => {
-        this.toast.error(err.error?.message || 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
-        this.showNewPassword = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-  pinDigits = Array(6).fill(0);
-  pinCode: string[] = ['', '', '', '', '', ''];
-
-  // Xử lý nhập mã pin từng ô
-  onPinInput(event: any, idx: number) {
-    const input = event.target;
-    const val = input.value.replace(/[^0-9]/g, '');
-    this.pinCode[idx] = val;
-    if (val && idx < this.pinDigits.length - 1) {
-      const next = input.parentElement.querySelectorAll('.pin-input')[idx + 1];
-      if (next) next.focus();
-    }
-    this.resetCode = this.pinCode.join('');
-  }
-
-  onPinKeydown(event: KeyboardEvent, idx: number) {
-    const input = event.target as HTMLInputElement;
-    if (event.key === 'Backspace' && !input.value && idx > 0) {
-      const prev = input.parentElement!.querySelectorAll('.pin-input')[idx - 1];
-      if (prev) (prev as HTMLInputElement).focus();
-    }
-  }
-  // Dịch các message lỗi phổ biến sang tiếng Việt
+  // Forgot password logic
   showForgotPassword = false;
-  forgotEmail = '';
-  resetCode = '';
-  newPassword = '';
   forgotStep = 1;
-  forgotMsg = '';
+  forgotEmail = '';
+  pinDigits = [0,1,2,3,4,5];
+  pinCode: string[] = ['', '', '', '', '', ''];
+  newPassword = '';
+  showNewPassword = false;
+  resetCode = '';
 
-  sendResetCode() {
-    if (!this.forgotEmail) {
-      this.forgotMsg = 'Vui lòng nhập email.';
-      return;
-    }
-    this.forgotMsg = '';
-    this.authService.forgotPassword(this.forgotEmail).subscribe({
-      next: () => {
-        this.forgotMsg = 'Đã gửi mã xác nhận tới email! Vui lòng nhập mã xác nhận.';
-        this.forgotStep = 2;
-        this.cdr.detectChanges();
-      },
-      error: err => {
-        this.forgotMsg = err.error?.message || 'Gửi mã thất bại';
-      }
-    });
-  }
-
-  resetPassword() {
-    if (!this.forgotEmail || !this.resetCode || !this.newPassword) {
-      this.toast.error('Vui lòng nhập đủ thông tin.');
-      return;
-    }
-    this.authService.resetPassword(this.forgotEmail, this.resetCode, this.newPassword).subscribe({
-      next: () => {
-        this.toast.success('Đặt lại mật khẩu thành công!');
-        this.forgotStep = 1;
-        this.showForgotPassword = false;
-        this.showNewPassword = false;
-        this.newPassword = '';
-        this.pinCode = ['', '', '', '', '', ''];
-        this.router.navigate(['/login-admin']);
-      },
-      error: err => {
-        this.toast.error(err.error?.message || 'Đặt lại mật khẩu thất bại');
-      }
-    });
-  }
-  // Thêm hàm gọi verify-reset-code API
-  // (đã dùng ở trên)
-
+  sendResetCode() {}
+  resetPassword() {}
+  verifyResetCode() {}
+  onPinInput(event: any, i: number) {}
+  onPinKeydown(event: any, i: number) {}
+  // Dịch các message lỗi phổ biến sang tiếng Việt
   private translateErrorMessage(msg: string): string {
     if (!msg) return '';
-    const map: { [key: string]: string } = {
-      'password must be at least 6 characters': 'Mật khẩu phải có ít nhất 6 ký tự',
-      'passwords do not match': 'Mật khẩu xác nhận không khớp',
-      'username already exists': 'Tên đăng nhập đã tồn tại',
-      'email already exists': 'Email đã được sử dụng',
-      'invalid email format': 'Định dạng email không hợp lệ',
-      'invalid payload': 'Dữ liệu gửi lên không hợp lệ',
-      'user not found': 'Không tìm thấy người dùng',
-      'invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng',
-      'account is not verified': 'Tài khoản chưa được xác thực',
-      'account is locked': 'Tài khoản đã bị khóa',
-      'phone number already exists': 'Số điện thoại đã được sử dụng',
-      'password wrong!': 'Mật khẩu không đúng!',
-      'username wrong!': 'Tên đăng nhập không đúng!',
-      // Thêm các lỗi khác nếu cần
-    };
+   const loginErrorMap: { [key: string]: string } = {
+  'username wrong!': 'Tên đăng nhập không đúng.',
+  'password wrong!': 'Mật khẩu không đúng.',
+  'password wrong': 'Mật khẩu không đúng.',
+  'tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.':
+    'Tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm chính sách.',
+  'tài khoản đã bị khóa vĩnh viễn do vi phạm chính sách.':
+    'Tài khoản đã bị khóa vĩnh viễn do vi phạm chính sách.',
+  'chỉ tài khoản người dùng (user, vip) mới được phép đăng nhập ở đây.':
+    'Chỉ tài khoản người dùng (USER, VIP) mới được phép đăng nhập tại đây.',
+  'chỉ tài khoản admin hoặc staff mới được phép đăng nhập ở đây.':
+    'Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập tại đây.',
+  'chỉ tài khoản expert hoặc staff mới được phép đăng nhập ở đây.':
+    'Chỉ tài khoản EXPERT hoặc STAFF mới được phép đăng nhập tại đây.',
+  'tài khoản của bạn chưa xác thực, vui lòng kiểm tra email hoặc gửi lại mã xác minh.':
+    'Tài khoản của bạn chưa xác thực. Vui lòng kiểm tra email hoặc gửi lại mã xác minh.',
+};
+
     const msgNorm = msg.trim().toLowerCase();
-    if (map[msgNorm]) return map[msgNorm];
-    for (const key of Object.keys(map)) {
-      if (msgNorm.includes(key)) return map[key];
+    if (loginErrorMap[msgNorm]) return loginErrorMap[msgNorm];
+    for (const key of Object.keys(loginErrorMap)) {
+      if (msgNorm.includes(key)) return loginErrorMap[key];
     }
     return msg;
   }

@@ -41,18 +41,16 @@ export class DiseaseDetectionService {
    * @param image Image file
    * @param plantId Plant ID
    */
-  detectDiseaseFromImage(image: File, plantId: number): Observable<DiseaseDetectionResult> {
+  detectDiseaseFromImage(image: File): Observable<DiseaseDetectionResult> {
     if (!this.isApiEnabled) {
       return throwError(() => new Error('API not available - using mock data'));
     }
-    
     const formData = new FormData();
     formData.append('image', image);
-    formData.append('plantId', plantId.toString());
-
     return this.http.post<DiseaseDetectionResult>(`${this.apiUrl}/detect-from-image`, formData)
       .pipe(
         timeout(30000), // 30 second timeout for image upload
+        retry(1), // Retry once on failure
         catchError(this.handleError<DiseaseDetectionResult>('detectDiseaseFromImage'))
       );
   }
@@ -69,6 +67,7 @@ export class DiseaseDetectionService {
     return this.http.post<DiseaseDetectionResult>(`${this.apiUrl}/detect-from-symptoms`, request)
       .pipe(
         timeout(15000), // 15 second timeout
+        retry(1), // Retry once on failure
         catchError(this.handleError<DiseaseDetectionResult>('detectDiseaseFromSymptoms'))
       );
   }
@@ -86,6 +85,7 @@ export class DiseaseDetectionService {
     return this.http.get<PlantDisease[]>(`${this.apiUrl}/common-diseases`, { params })
       .pipe(
         timeout(10000), // 10 second timeout
+        retry(1), // Retry once on failure
         catchError(this.handleError<PlantDisease[]>('getCommonDiseases'))
       );
   }
@@ -95,8 +95,25 @@ export class DiseaseDetectionService {
    * @param diseaseName Name of disease
    */
   getTreatmentGuide(diseaseName: string): Observable<TreatmentGuide> {
+    if (!this.isApiEnabled) {
+      return throwError(() => new Error('API not available - using mock data'));
+    }
+    
     const params = new HttpParams().set('diseaseName', diseaseName);
-    return this.http.get<TreatmentGuide>(`${this.apiUrl}/treatment-guide`, { params });
+    const url = `${this.apiUrl}/treatment-guide`;
+    
+    console.log(`[DiseaseDetectionService] Calling treatment guide API:`, {
+      url,
+      diseaseName,
+      fullUrl: `${this.apiUrl}/treatment-guide?diseaseName=${encodeURIComponent(diseaseName)}`
+    });
+    
+    return this.http.get<TreatmentGuide>(url, { params })
+      .pipe(
+        timeout(15000), // 15 second timeout
+        retry(1), // Retry once on failure
+        catchError(this.handleError<TreatmentGuide>('getTreatmentGuide'))
+      );
   }
 
   /**
@@ -151,6 +168,7 @@ export class DiseaseDetectionService {
     return this.http.get<DiseaseDetectionHistory>(`${this.apiUrl}/history`, { params })
       .pipe(
         timeout(10000), // 10 second timeout
+        retry(1), // Retry once on failure
         catchError(this.handleError<DiseaseDetectionHistory>('getDetectionHistory'))
       );
   }
@@ -238,6 +256,24 @@ export class DiseaseDetectionService {
       if (error.message && error.message.includes('JSON')) {
         console.log(`JSON parsing error in ${operation}, returning fallback error`);
         return throwError(() => new Error(`JSON parsing error in ${operation}`));
+      }
+      
+      // Check for network errors
+      if (error.status === 0 || error.status === 404) {
+        console.log(`Network error in ${operation}, returning fallback error`);
+        return throwError(() => new Error(`Network error in ${operation}`));
+      }
+      
+      // Check for server errors
+      if (error.status >= 500) {
+        console.log(`Server error in ${operation}, returning fallback error`);
+        return throwError(() => new Error(`Server error in ${operation}`));
+      }
+      
+      // Check for timeout errors
+      if (error.name === 'TimeoutError' || error.message?.includes('timeout')) {
+        console.log(`Timeout error in ${operation}, returning fallback error`);
+        return throwError(() => new Error(`Timeout error in ${operation}`));
       }
       
       // For other HTTP errors, pass them through
