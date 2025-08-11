@@ -14,6 +14,7 @@ import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.AdminNotificationService;
 import com.plantcare_backend.service.NotificationService;
 import com.plantcare_backend.service.SupportTicketService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     private final UserRepository userRepository;
     private final SupportTicketLogRepository supportTicketLogRepository;
     private final AdminNotificationService adminNotificationService;
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     @Override
     public Long createTicket(CreateTicketRequestDTO request, int userId) {
@@ -84,7 +84,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Kiểm tra user có quyền trả lời ticket này không
         if (ticket.getUser().getId() != userId) {
             throw new ResourceNotFoundException("Ticket not found");
         }
@@ -99,7 +98,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         ticketResponseRepository.save(response);
         try {
             notificationService.createNotification(
-                    1L, // admin ID - có thể thay đổi theo logic của bạn
+                    1L,
                     "User phản hồi ticket",
                     "User đã phản hồi ticket #" + ticket.getTicketId(),
                     Notification.NotificationType.INFO,
@@ -162,7 +161,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                     "Phản hồi ticket hỗ trợ",
                     "Ticket #" + ticket.getTicketId() + " đã được trả lời. Vui lòng kiểm tra.",
                     Notification.NotificationType.INFO,
-                    "/ticket/" + ticket.getTicketId() // link đến chi tiết ticket
+                    "/ticket/" + ticket.getTicketId()
             );
         } catch (Exception e) {
             log.warn("Failed to create notification for ticket response: {}", e.getMessage());
@@ -170,22 +169,20 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
+    @Transactional
     public void claimTicket(Long ticketId, ClaimTicketRequestDTO request, int adminId) {
+        int updatedRows = supportTicketRepository.claimTicketAtomic(
+                ticketId, adminId, new Timestamp(System.currentTimeMillis()));
+
+        if (updatedRows == 0) {
+            throw new RuntimeException("Ticket cannot be claimed. It may have been claimed by another user or status changed.");
+        }
+
         SupportTicket ticket = supportTicketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         Users admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
-
-        if (ticket.getStatus() != SupportTicket.TicketStatus.OPEN) {
-            throw new RuntimeException("Ticket cannot be claimed. Current status: " + ticket.getStatus());
-        }
-
-        // Claim ticket
-        ticket.setStatus(SupportTicket.TicketStatus.CLAIMED);
-        ticket.setClaimedBy(admin);
-        ticket.setClaimedAt(new Timestamp(System.currentTimeMillis()));
-        supportTicketRepository.save(ticket);
 
         SupportTicketLog log = SupportTicketLog.builder()
                 .ticket(ticket)

@@ -27,8 +27,6 @@ public interface UserActivityLogRepository extends JpaRepository<UserActivityLog
                         @Param("startDate") LocalDateTime startDate,
                         @Param("endDate") LocalDateTime endDate);
 
-        // Personal activity log queries
-        Page<UserActivityLog> findByUser_IdOrderByTimestampDesc(int userId, Pageable pageable);
 
         @Query("SELECT ual FROM UserActivityLog ual " +
                         "WHERE ual.user.id = :userId " +
