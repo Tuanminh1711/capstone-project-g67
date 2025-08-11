@@ -2,11 +2,8 @@ package com.plantcare_backend.controller.ai_disease;
 
 import com.plantcare_backend.annotation.VIPOnly;
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
-import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
 import com.plantcare_backend.dto.response.ai_disease.*;
-import com.plantcare_backend.model.DiseaseDetection;
 import com.plantcare_backend.model.PlantDisease;
-import com.plantcare_backend.model.TreatmentProgress;
 import com.plantcare_backend.service.AIDiseaseDetectionService;
 import com.plantcare_backend.service.ActivityLogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -110,54 +107,6 @@ public class AIDiseaseDetectionController {
         }
     }
 
-    @PostMapping("/track-treatment/{detectionId}")
-    @VIPOnly
-    @Operation(summary = "Track treatment progress", description = "Start tracking treatment progress for detection")
-    public ResponseEntity<TreatmentProgressDTO> trackTreatmentProgress(
-            @Parameter(description = "Detection ID") @PathVariable Long detectionId) {
-
-        try {
-            TreatmentProgressDTO progress = aiDiseaseDetectionService.trackTreatmentProgress(detectionId);
-            return ResponseEntity.ok(progress);
-        } catch (Exception e) {
-            log.error("Error tracking treatment progress", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PutMapping("/update-treatment/{detectionId}")
-    @VIPOnly
-    @Operation(summary = "Update treatment progress", description = "Update treatment progress for detection")
-    public ResponseEntity<TreatmentProgress> updateTreatmentProgress(
-            @Parameter(description = "Detection ID") @PathVariable Long detectionId,
-            @RequestBody TreatmentProgressUpdateDTO updateDTO) {
-
-        try {
-            TreatmentProgress progress = aiDiseaseDetectionService.updateTreatmentProgress(detectionId, updateDTO);
-            return ResponseEntity.ok(progress);
-        } catch (Exception e) {
-            log.error("Error updating treatment progress", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("/complete-treatment/{detectionId}")
-    @VIPOnly
-    @Operation(summary = "Complete treatment", description = "Mark treatment as completed")
-    public ResponseEntity<TreatmentProgress> completeTreatment(
-            @Parameter(description = "Detection ID") @PathVariable Long detectionId,
-            @Parameter(description = "Treatment result") @RequestParam("result") String result,
-            @Parameter(description = "Success rate") @RequestParam("successRate") Double successRate) {
-
-        try {
-            TreatmentProgress progress = aiDiseaseDetectionService.completeTreatment(detectionId, result, successRate);
-            return ResponseEntity.ok(progress);
-        } catch (Exception e) {
-            log.error("Error completing treatment", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     @GetMapping("/history")
     @VIPOnly
     @Operation(summary = "Get detection history", description = "Get paginated detection history for user")
@@ -172,37 +121,6 @@ public class AIDiseaseDetectionController {
             return ResponseEntity.ok(history);
         } catch (Exception e) {
             log.error("Error getting detection history", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/stats")
-    @VIPOnly
-    @Operation(summary = "Get disease statistics", description = "Get comprehensive disease statistics for user")
-    public ResponseEntity<DiseaseStatsDTO> getDiseaseStats(@RequestAttribute("userId") Long userId) {
-
-        try {
-            DiseaseStatsDTO stats = aiDiseaseDetectionService.getDiseaseStats(userId);
-            return ResponseEntity.ok(stats);
-        } catch (Exception e) {
-            log.error("Error getting disease stats", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("/confirm/{detectionId}")
-    @VIPOnly
-    @Operation(summary = "Confirm detection", description = "Expert confirms or rejects detection result")
-    public ResponseEntity<DiseaseDetection> confirmDetection(
-            @Parameter(description = "Detection ID") @PathVariable Long detectionId,
-            @Parameter(description = "Is confirmed") @RequestParam("isConfirmed") Boolean isConfirmed,
-            @Parameter(description = "Expert notes") @RequestParam(value = "expertNotes", required = false) String expertNotes) {
-
-        try {
-            DiseaseDetection detection = aiDiseaseDetectionService.confirmDetection(detectionId, isConfirmed, expertNotes);
-            return ResponseEntity.ok(detection);
-        } catch (Exception e) {
-            log.error("Error confirming detection", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

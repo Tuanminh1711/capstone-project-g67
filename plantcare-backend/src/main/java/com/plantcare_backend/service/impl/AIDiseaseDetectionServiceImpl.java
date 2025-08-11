@@ -3,9 +3,7 @@ package com.plantcare_backend.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
-import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
 import com.plantcare_backend.dto.response.ai_disease.*;
-import com.plantcare_backend.enums.PlantDiseaseType;
 import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.*;
 import com.plantcare_backend.service.AIDiseaseDetectionService;
@@ -31,7 +29,6 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     // ==================== DEPENDENCIES ====================
     private final PlantDiseaseRepository plantDiseaseRepository;
     private final DiseaseDetectionRepository diseaseDetectionRepository;
-    private final TreatmentProgressRepository treatmentProgressRepository;
     private final UserRepository userRepository;
     private final UserPlantRepository userPlantsRepository;
     private final NotificationService notificationService;
@@ -84,97 +81,6 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
         return createTreatmentGuide(disease);
     }
 
-    @Override
-    public TreatmentProgressDTO trackTreatmentProgress(Long detectionId) {
-        DiseaseDetection detection = diseaseDetectionRepository.findById(detectionId)
-                .orElseThrow(() -> new RuntimeException("Detection not found"));
-
-        Optional<TreatmentProgress> existing = treatmentProgressRepository
-                .findByDiseaseDetectionId(detectionId);
-
-        if (existing.isPresent()) {
-            // ✅ SỬA: Convert entity thành DTO
-            return convertToDTO(existing.get());
-        }
-
-        // Tạo mới treatment progress
-        TreatmentProgress progress = new TreatmentProgress();
-        progress.setDiseaseDetection(detection);
-        progress.setCurrentStage("DIAGNOSIS");
-        progress.setProgressPercentage(0);
-        progress.setTreatmentStartDate(new Timestamp(System.currentTimeMillis()));
-
-        TreatmentProgress savedProgress = treatmentProgressRepository.save(progress);
-
-        // Return DTO thay vì entity
-        return convertToDTO(savedProgress);
-    }
-
-    // Method convert entity thành DTO
-    private TreatmentProgressDTO convertToDTO(TreatmentProgress progress) {
-        // Parse photos từ JSON string thành List<String>
-        List<String> photosList = new ArrayList<>();
-        if (progress.getPhotos() != null && !progress.getPhotos().isEmpty()) {
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                photosList = mapper.readValue(progress.getPhotos(),
-                        new TypeReference<List<String>>() {
-                        });
-            } catch (Exception e) {
-                // Nếu parse fail, coi như single string
-                photosList = Arrays.asList(progress.getPhotos());
-            }
-        }
-        return TreatmentProgressDTO.builder()
-                .id(progress.getId())
-                .detectionId(progress.getDiseaseDetection().getId())
-                .detectedDisease(progress.getDiseaseDetection().getDetectedDisease())
-                .severity(progress.getDiseaseDetection().getSeverity())
-                .currentStage(progress.getCurrentStage())
-                .progressPercentage(progress.getProgressPercentage())
-                .nextAction(progress.getNextAction())
-                .notes(progress.getNotes())
-                .photos(photosList) // ← SỬA: Sử dụng List<String> đã parse
-                .treatmentStartDate(progress.getTreatmentStartDate())
-                .lastUpdateDate(progress.getLastUpdateDate())
-                .isCompleted(progress.getIsCompleted())
-                .completionDate(progress.getCompletionDate())
-                .successRate(progress.getSuccessRate())
-                .build();
-    }
-
-    @Override
-    public TreatmentProgress updateTreatmentProgress(Long detectionId, TreatmentProgressUpdateDTO updateDTO) {
-        TreatmentProgress progress = treatmentProgressRepository.findByDiseaseDetectionId(detectionId)
-                .orElseThrow(() -> new RuntimeException("Treatment progress not found"));
-
-        progress.setProgressPercentage(updateDTO.getProgressPercentage());
-        progress.setCurrentStage(updateDTO.getCurrentStage());
-        progress.setNextAction(updateDTO.getNextAction());
-        progress.setNotes(updateDTO.getNotes());
-        progress.setPhotos(updateDTO.getPhotos());
-        progress.setLastUpdateDate(new Timestamp(System.currentTimeMillis()));
-
-        return treatmentProgressRepository.save(progress);
-    }
-
-    @Override
-    public TreatmentProgress completeTreatment(Long detectionId, String result, Double successRate) {
-        TreatmentProgress progress = treatmentProgressRepository.findByDiseaseDetectionId(detectionId)
-                .orElseThrow(() -> new RuntimeException("Treatment progress not found"));
-
-        progress.setIsCompleted(true);
-        progress.setCompletionDate(new Timestamp(System.currentTimeMillis()));
-        progress.setSuccessRate(successRate);
-
-        DiseaseDetection detection = progress.getDiseaseDetection();
-        detection.setStatus("COMPLETED");
-        detection.setTreatmentResult(result);
-        detection.setTreatedAt(new Timestamp(System.currentTimeMillis()));
-        diseaseDetectionRepository.save(detection);
-
-        return treatmentProgressRepository.save(progress);
-    }
 
     @Override
     public Page<DiseaseDetectionHistoryDTO> getDetectionHistory(Long userId, Pageable pageable) {
@@ -198,72 +104,6 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
                 .build());
     }
 
-    @Override
-    public DiseaseStatsDTO getDiseaseStats(Long userId) {
-        List<DiseaseDetection> detections = diseaseDetectionRepository.findByUserIdOrderByDetectedAtDesc(userId);
-
-        long totalDetections = detections.size();
-        long confirmedDetections = detections.stream().filter(DiseaseDetection::getIsConfirmed).count();
-        long criticalDetections = detections.stream()
-                .filter(d -> "CRITICAL".equals(d.getSeverity()) || "HIGH".equals(d.getSeverity()))
-                .count();
-
-        double averageConfidence = detections.stream()
-                .mapToDouble(DiseaseDetection::getConfidenceScore)
-                .average()
-                .orElse(0.0);
-
-        Map<String, Long> diseaseCounts = detections.stream()
-                .collect(Collectors.groupingBy(DiseaseDetection::getDetectedDisease, Collectors.counting()));
-
-        Map<String, Long> severityCounts = detections.stream()
-                .collect(Collectors.groupingBy(DiseaseDetection::getSeverity, Collectors.counting()));
-
-        List<String> recentDiseases = detections.stream()
-                .limit(5)
-                .map(DiseaseDetection::getDetectedDisease)
-                .distinct()
-                .collect(Collectors.toList());
-
-        Double treatmentSuccessRate = treatmentProgressRepository.getAverageSuccessRateByUserId(userId);
-
-        return DiseaseStatsDTO.builder()
-                .totalDetections(totalDetections)
-                .confirmedDetections(confirmedDetections)
-                .criticalDetections(criticalDetections)
-                .averageConfidenceScore(averageConfidence)
-                .diseaseCounts(diseaseCounts)
-                .severityCounts(severityCounts)
-                .recentDiseases(recentDiseases)
-                .treatmentSuccessRate(treatmentSuccessRate != null ? treatmentSuccessRate : 0.0)
-                .build();
-    }
-
-    @Override
-    public DiseaseDetection confirmDetection(Long detectionId, Boolean isConfirmed, String expertNotes) {
-        DiseaseDetection detection = diseaseDetectionRepository.findById(detectionId)
-                .orElseThrow(() -> new RuntimeException("Detection not found"));
-
-        detection.setIsConfirmed(isConfirmed);
-        detection.setExpertNotes(expertNotes);
-        detection.setStatus(isConfirmed ? "CONFIRMED" : "REJECTED");
-
-        return diseaseDetectionRepository.save(detection);
-    }
-
-    @Override
-    public void sendDiseaseAlert(Long userId, String diseaseName, String severity) {
-        String message = String.format("Phát hiện bệnh nghiêm trọng: %s (Mức độ: %s)", diseaseName, severity);
-        // Tạm thời comment out nếu NotificationService chưa có method này
-        // notificationService.sendNotification(userId, "DISEASE_ALERT", message);
-        log.info("Disease alert sent: {}", message);
-    }
-
-    @Override
-    public Object analyzeDiseaseTrends(Long userId) {
-        // Implement disease trend analysis
-        return Map.of("trend", "increasing", "period", "last_30_days");
-    }
 
     @Override
     public PlantDisease getDiseaseById(Long diseaseId) {
