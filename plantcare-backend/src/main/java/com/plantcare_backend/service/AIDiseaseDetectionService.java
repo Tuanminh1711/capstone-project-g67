@@ -1,11 +1,9 @@
 package com.plantcare_backend.service;
 
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
-import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
 import com.plantcare_backend.dto.response.ai_disease.*;
 import com.plantcare_backend.model.DiseaseDetection;
 import com.plantcare_backend.model.PlantDisease;
-import com.plantcare_backend.model.TreatmentProgress;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,29 +23,8 @@ public interface AIDiseaseDetectionService {
     // Lấy hướng dẫn điều trị cho bệnh cụ thể
     TreatmentGuideDTO getTreatmentGuide(String diseaseName);
 
-    // Bắt đầu theo dõi tiến độ điều trị
-    TreatmentProgressDTO trackTreatmentProgress(Long detectionId);
-
-    // Cập nhật tiến độ điều trị
-    TreatmentProgress updateTreatmentProgress(Long detectionId, TreatmentProgressUpdateDTO updateDTO);
-
-    // Hoàn thành điều trị
-    TreatmentProgress completeTreatment(Long detectionId, String result, Double successRate);
-
     // Lấy lịch sử phát hiện bệnh
     Page<DiseaseDetectionHistoryDTO> getDetectionHistory(Long userId, Pageable pageable);
-
-    // Lấy thống kê bệnh
-    DiseaseStatsDTO getDiseaseStats(Long userId);
-
-    // Xác nhận kết quả phát hiện (bởi expert)
-    DiseaseDetection confirmDetection(Long detectionId, Boolean isConfirmed, String expertNotes);
-
-    // Gửi cảnh báo bệnh nghiêm trọng
-    void sendDiseaseAlert(Long userId, String diseaseName, String severity);
-
-    // Phân tích xu hướng bệnh
-    Object analyzeDiseaseTrends(Long userId);
 
     // CRUD cho PlantDisease (admin functions)
     PlantDisease getDiseaseById(Long diseaseId);
