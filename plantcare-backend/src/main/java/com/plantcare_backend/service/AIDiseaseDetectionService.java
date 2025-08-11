@@ -2,10 +2,7 @@ package com.plantcare_backend.service;
 
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
 import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionHistoryDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionResultDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseStatsDTO;
-import com.plantcare_backend.dto.response.ai_disease.TreatmentGuideDTO;
+import com.plantcare_backend.dto.response.ai_disease.*;
 import com.plantcare_backend.model.DiseaseDetection;
 import com.plantcare_backend.model.PlantDisease;
 import com.plantcare_backend.model.TreatmentProgress;
@@ -29,7 +26,7 @@ public interface AIDiseaseDetectionService {
     TreatmentGuideDTO getTreatmentGuide(String diseaseName);
 
     // Bắt đầu theo dõi tiến độ điều trị
-    TreatmentProgress trackTreatmentProgress(Long detectionId);
+    TreatmentProgressDTO trackTreatmentProgress(Long detectionId);
 
     // Cập nhật tiến độ điều trị
     TreatmentProgress updateTreatmentProgress(Long detectionId, TreatmentProgressUpdateDTO updateDTO);
