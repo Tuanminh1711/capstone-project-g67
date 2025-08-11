@@ -2,6 +2,7 @@ package com.plantcare_backend.service;
 
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
 import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
+import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionHistoryDTO;
 import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionResultDTO;
 import com.plantcare_backend.dto.response.ai_disease.DiseaseStatsDTO;
 import com.plantcare_backend.dto.response.ai_disease.TreatmentGuideDTO;
@@ -37,7 +38,7 @@ public interface AIDiseaseDetectionService {
     TreatmentProgress completeTreatment(Long detectionId, String result, Double successRate);
 
     // Lấy lịch sử phát hiện bệnh
-    Page<DiseaseDetection> getDetectionHistory(Long userId, Pageable pageable);
+    Page<DiseaseDetectionHistoryDTO> getDetectionHistory(Long userId, Pageable pageable);
 
     // Lấy thống kê bệnh
     DiseaseStatsDTO getDiseaseStats(Long userId);

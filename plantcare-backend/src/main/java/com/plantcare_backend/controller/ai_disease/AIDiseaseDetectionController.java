@@ -3,6 +3,7 @@ package com.plantcare_backend.controller.ai_disease;
 import com.plantcare_backend.annotation.VIPOnly;
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
 import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
+import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionHistoryDTO;
 import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionResultDTO;
 import com.plantcare_backend.dto.response.ai_disease.DiseaseStatsDTO;
 import com.plantcare_backend.dto.response.ai_disease.TreatmentGuideDTO;
@@ -163,14 +164,14 @@ public class AIDiseaseDetectionController {
     @GetMapping("/history")
     @VIPOnly
     @Operation(summary = "Get detection history", description = "Get paginated detection history for user")
-    public ResponseEntity<Page<DiseaseDetection>> getDetectionHistory(
+    public ResponseEntity<Page<DiseaseDetectionHistoryDTO>> getDetectionHistory(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             @RequestAttribute("userId") Long userId) {
 
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<DiseaseDetection> history = aiDiseaseDetectionService.getDetectionHistory(userId, pageable);
+            Page<DiseaseDetectionHistoryDTO> history = aiDiseaseDetectionService.getDetectionHistory(userId, pageable);
             return ResponseEntity.ok(history);
         } catch (Exception e) {
             log.error("Error getting detection history", e);
