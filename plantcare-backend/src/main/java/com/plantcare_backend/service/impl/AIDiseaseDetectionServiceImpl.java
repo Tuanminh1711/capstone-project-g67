@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
 import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionResultDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseStatsDTO;
-import com.plantcare_backend.dto.response.ai_disease.TreatmentGuideDTO;
-import com.plantcare_backend.dto.response.ai_disease.TreatmentStepDTO;
+import com.plantcare_backend.dto.response.ai_disease.*;
 import com.plantcare_backend.enums.PlantDiseaseType;
 import com.plantcare_backend.model.*;
 import com.plantcare_backend.repository.*;
@@ -21,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.plantcare_backend.dto.response.ai_disease.PlantIdResponse;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -141,8 +137,25 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
     }
 
     @Override
-    public Page<DiseaseDetection> getDetectionHistory(Long userId, Pageable pageable) {
-        return diseaseDetectionRepository.findByUserId(userId, pageable);
+    public Page<DiseaseDetectionHistoryDTO> getDetectionHistory(Long userId, Pageable pageable) {
+        Page<DiseaseDetection> detections = diseaseDetectionRepository.findByUserId(userId, pageable);
+
+        return detections.map(detection -> DiseaseDetectionHistoryDTO.builder()
+                .id(detection.getId())
+                .detectedDisease(detection.getDetectedDisease())
+                .confidenceScore(detection.getConfidenceScore())
+                .severity(detection.getSeverity())
+                .symptoms(detection.getSymptoms())
+                .recommendedTreatment(detection.getRecommendedTreatment())
+                .status(detection.getStatus())
+                .isConfirmed(detection.getIsConfirmed())
+                .expertNotes(detection.getExpertNotes())
+                .detectedAt(detection.getDetectedAt())
+                .treatedAt(detection.getTreatedAt())
+                .treatmentResult(detection.getTreatmentResult())
+                .detectionMethod(detection.getDetectionMethod())
+                .aiModelVersion(detection.getAiModelVersion())
+                .build());
     }
 
     @Override
