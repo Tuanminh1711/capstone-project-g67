@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
-@RequestMapping("/api/chat")
+@RequestMapping("/api/chat/mess")
 public class ChatController {
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
