@@ -3,10 +3,7 @@ package com.plantcare_backend.controller.ai_disease;
 import com.plantcare_backend.annotation.VIPOnly;
 import com.plantcare_backend.dto.request.ai_disease.DiseaseDetectionRequestDTO;
 import com.plantcare_backend.dto.request.ai_disease.TreatmentProgressUpdateDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionHistoryDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseDetectionResultDTO;
-import com.plantcare_backend.dto.response.ai_disease.DiseaseStatsDTO;
-import com.plantcare_backend.dto.response.ai_disease.TreatmentGuideDTO;
+import com.plantcare_backend.dto.response.ai_disease.*;
 import com.plantcare_backend.model.DiseaseDetection;
 import com.plantcare_backend.model.PlantDisease;
 import com.plantcare_backend.model.TreatmentProgress;
@@ -116,11 +113,11 @@ public class AIDiseaseDetectionController {
     @PostMapping("/track-treatment/{detectionId}")
     @VIPOnly
     @Operation(summary = "Track treatment progress", description = "Start tracking treatment progress for detection")
-    public ResponseEntity<TreatmentProgress> trackTreatmentProgress(
+    public ResponseEntity<TreatmentProgressDTO> trackTreatmentProgress(
             @Parameter(description = "Detection ID") @PathVariable Long detectionId) {
 
         try {
-            TreatmentProgress progress = aiDiseaseDetectionService.trackTreatmentProgress(detectionId);
+            TreatmentProgressDTO progress = aiDiseaseDetectionService.trackTreatmentProgress(detectionId);
             return ResponseEntity.ok(progress);
         } catch (Exception e) {
             log.error("Error tracking treatment progress", e);
