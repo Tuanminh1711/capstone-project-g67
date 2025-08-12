@@ -38,4 +38,7 @@ public interface PlantDiseaseRepository extends JpaRepository<PlantDisease, Long
     // Lấy tất cả severities
     @Query("SELECT DISTINCT p.severity FROM PlantDisease p WHERE p.isActive = true")
     List<String> findAllSeverities();
+
+    // Kiểm tra bệnh có tồn tại theo tên (không phân biệt hoa thường)
+    boolean existsByDiseaseNameIgnoreCase(String diseaseName);
 }

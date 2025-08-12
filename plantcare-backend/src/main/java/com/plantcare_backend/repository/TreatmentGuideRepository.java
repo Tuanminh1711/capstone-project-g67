@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface TreatmentGuideRepository extends JpaRepository<TreatmentGuide, Long> {
     List<TreatmentGuide> findByDiseaseIdOrderByStepNumber(Long diseaseId);
+
+    // Kiểm tra bước điều trị có tồn tại theo diseaseId và stepNumber
+    boolean existsByDiseaseIdAndStepNumber(Long diseaseId, Integer stepNumber);
 }
