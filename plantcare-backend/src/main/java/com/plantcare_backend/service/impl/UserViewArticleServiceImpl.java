@@ -10,6 +10,7 @@ import com.plantcare_backend.service.UserViewArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +29,21 @@ public class UserViewArticleServiceImpl implements UserViewArticleService {
 
     @Override
     public Page<ArticleResponseDTO> getAllArticles(int page, int size) {
+        // Get published articles
         Page<Article> articlePage = articleRepository.findByStatus(Article.ArticleStatus.PUBLISHED, PageRequest.of(page, size));
-        return articlePage.map(this::toDTO);
+        
+        // Process images within transaction context to avoid lazy loading issues
+        List<ArticleResponseDTO> articleDTOs = new ArrayList<>();
+        for (Article article : articlePage.getContent()) {
+            articleDTOs.add(toDTO(article));
+        }
+        
+        // Create a new Page with the processed DTOs
+        return new PageImpl<>(
+            articleDTOs, 
+            articlePage.getPageable(), 
+            articlePage.getTotalElements()
+        );
     }
 
     @Override
@@ -95,25 +109,19 @@ public class UserViewArticleServiceImpl implements UserViewArticleService {
         dto.setCategoryName(article.getCategory() != null ? article.getCategory().getName() : null);
         dto.setContent(article.getContent());
 
+        // Lấy tất cả ảnh của article
         List<String> imageUrls = new ArrayList<>();
         try {
             if (article.getImages() != null && !article.getImages().isEmpty()) {
-                Optional<ArticleImage> primary = article.getImages().stream()
-                        .filter(img -> img != null && Boolean.TRUE.equals(img.getIsPrimary()))
-                        .findFirst();
-
-                if (primary.isPresent()) {
-                    imageUrls.add(primary.get().getImageUrl());
-                } else {
-                    // Nếu không có ảnh primary, lấy ảnh đầu tiên
-                    article.getImages().stream()
-                            .filter(img -> img != null && img.getImageUrl() != null)
-                            .findFirst()
-                            .ifPresent(img -> imageUrls.add(img.getImageUrl()));
+                // Lấy tất cả ảnh có sẵn
+                for (ArticleImage img : article.getImages()) {
+                    if (img != null && img.getImageUrl() != null) {
+                        imageUrls.add(img.getImageUrl());
+                    }
                 }
             }
         } catch (Exception e) {
-            log.error("Error loading images for article {}: {}", article.getId(), e.getMessage());
+            log.error("Error loading images for article {}: {}", article.getId(), e.getMessage(), e);
         }
 
         dto.setImageUrls(imageUrls);
