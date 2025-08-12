@@ -37,7 +37,7 @@ export class UserViewArticleService {
 
   getAllArticles(page = 0, size = 10): Observable<any> {
     const url = this.configService.getFullUrl(`${this.API_PATH}/get_list_articles?page=${page}&size=${size}`);
-    return this.http.get<any>(url);
+    return this.http.get<any>(url, { withCredentials: true });
   }
 
   getArticleDetail(articleId: number): Observable<any> {

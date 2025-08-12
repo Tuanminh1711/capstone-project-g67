@@ -40,8 +40,7 @@ export class UserProfileService {
 
   getUserProfile(): Observable<UserProfile> {
     // Use configService to build the correct URL based on environment
-    const userId = this.jwtUserUtil.getUserIdFromToken();
-    const url = this.configService.getUserProfileUrl(Number(userId));
+    const url = this.configService.getFullUrl('/api/user/profile');
     return this.http.get<UserProfile>(url, {
       withCredentials: true
     }).pipe(
@@ -54,14 +53,7 @@ export class UserProfileService {
   }
 
   updateUserProfile(updateData: UpdateUserProfileRequest): Observable<any> {
-    const userId = this.jwtUserUtil.getUserIdFromToken();
-    if (userId) {
-      updateData.id = parseInt(userId, 10);
-    } else {
-      return throwError(() => new Error('User ID not found in token'));
-    }
-
-    const url = this.configService.getUserProfileUpdateUrl();
+    const url = this.configService.getFullUrl('/api/user/updateprofile');
     return this.http.put<any>(url, updateData, {
       withCredentials: true,
       headers: {
