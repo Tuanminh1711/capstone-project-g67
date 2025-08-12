@@ -84,7 +84,7 @@ export class TopNavigatorComponent implements OnInit {
         return this.userAvatarFilename;
       }
       // Nếu là tên file, trả về endpoint backend đúng
-      return `${this.authService['apiUrl'].replace(/\/api$/, '')}/api/user/avatars/${encodeURIComponent(this.userAvatarFilename)}`;
+      return `${this.authService['apiUrl'].replace(/\/api$/, '')}/api/user_articles/avatars/${encodeURIComponent(this.userAvatarFilename)}`;
     }
     // Không có avatar hoặc lỗi thì trả về chuỗi rỗng để hiện icon user
     return '';

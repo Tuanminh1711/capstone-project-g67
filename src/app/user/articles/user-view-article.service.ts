@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Article {
   id: number;
@@ -27,15 +28,13 @@ export interface ArticleDetail {
 
 @Injectable({ providedIn: 'root' })
 export class UserViewArticleService {
-  private apiUrl = '/api/user_articles';
-
   constructor(private http: HttpClient) {}
 
   getAllArticles(page = 0, size = 10): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/get_list_articles?page=${page}&size=${size}`);
+    return this.http.get<any>(`${environment.baseUrl}/api/user_articles/get_list_articles?page=${page}&size=${size}`);
   }
 
   getArticleDetail(articleId: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/detail/${articleId}`);
+    return this.http.get<any>(`${environment.baseUrl}/api/user_articles/detail/${articleId}`);
   }
 }

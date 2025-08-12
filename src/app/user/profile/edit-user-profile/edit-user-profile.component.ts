@@ -218,7 +218,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
     const formData = new FormData();
     formData.append('avatar', this.selectedAvatarFile);
     // Gửi PUT đúng contract backend, nhận về ResponseData<UpdateAvatarResponseDTO>
-    this.http.put<any>(`/api/user/update-avatar`, formData, { withCredentials: true }).subscribe({
+    this.http.put<any>(`/api/user_articles/update-avatar`, formData, { withCredentials: true }).subscribe({
       next: (res) => {
         // res: { code, message, data: { avatar: 'filename' } }
         if (res?.data?.avatar) {

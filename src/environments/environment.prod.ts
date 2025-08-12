@@ -5,7 +5,7 @@ export const environment = {
   endpoints: {
     auth: '/api/auth',
     user: {
-      profile: '/api/user/profile',
+      profile: '/api/user_articles/profile',
       updateProfile: '/api/user/updateprofile',
       changePassword: '/api/user/change-password'
     },

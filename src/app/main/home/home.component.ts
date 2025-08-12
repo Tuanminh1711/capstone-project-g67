@@ -1,6 +1,7 @@
 
 import { Component, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { ToastService } from '../../shared/toast/toast.service';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogManager } from '../../shared/dialog-manager.service';
@@ -71,7 +72,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Load articles from API
   loadArticles() {
     console.log('Loading articles...');
-    this.http.get('/api/user_articles/get_list_articles?page=0&size=6').subscribe({
+    this.http.get(`${environment.baseUrl}/api/user_articles/get_list_articles?page=0&size=6`).subscribe({
       next: (res: any) => {
         console.log('API response:', res);
         if (res.data && res.data.content) {
