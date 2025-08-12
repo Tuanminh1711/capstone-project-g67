@@ -84,67 +84,16 @@ export class HomeComponent implements OnInit, OnDestroy {
             createdDate: article.createdDate || article.createdAt || new Date()
           }));
           console.log('Articles loaded from API:', this.articles);
-          this.currentArticle = 0; // Đảm bảo slide đầu tiên được hiển thị
-          this.startArticlesAutoSlide();
+          this.currentArticle = 0;
+          if (this.articles.length > 0) {
+            this.startArticlesAutoSlide();
+          }
           this.cdr.detectChanges();
         }
       },
       error: (err) => {
         console.error('Error loading articles:', err);
-        // Fallback to mock data
-        this.articles = [
-          {
-            id: 1,
-            title: 'Top 10 cây phong thủy hợp mệnh Kim giúp kích hoạt vượng khí và mang lại may mắn.',
-            excerpt: 'Trong phong thủy, mỗi người đều có một mệnh theo ngày sinh và mỗi mệnh...',
-            imageUrl: 'assets/image/banner_blog.jpg',
-            categoryName: 'PHONG THỦY',
-            createdDate: new Date('2025-01-15')
-          },
-          {
-            id: 2,
-            title: 'Hướng dẫn lựa chọn cây phong thủy trong nhà để tăng vượng khí',
-            excerpt: 'Theo quan niệm phong thủy, vượng khí là yếu tố quan trọng giúp cho ngôi...',
-            imageUrl: 'assets/image/banner2.jpg',
-            categoryName: 'PHONG THỦY',
-            createdDate: new Date('2025-01-12')
-          },
-          {
-            id: 3,
-            title: 'Cây hạnh phúc là cây gì? Hướng dẫn cách chăm sóc cây hạnh phúc trong nhà',
-            excerpt: 'Có một loại cây cảnh trong nhà mà tên gọi của nó chính là điều...',
-            imageUrl: 'assets/image/banner3.jpg',
-            categoryName: 'KIẾN THỨC VÀ CÁCH CHĂM SÓC THÔNG TIN VỀ CÂY',
-            createdDate: new Date('2025-01-10')
-          },
-          {
-            id: 4,
-            title: 'Cách chăm sóc cây cảnh trong mùa mưa - Những lưu ý quan trọng',
-            excerpt: 'Mùa mưa là thời điểm cây cảnh cần được chăm sóc đặc biệt để tránh...',
-            imageUrl: 'assets/image/banner_blog.jpg',
-            categoryName: 'CHĂM SÓC CÂY',
-            createdDate: new Date('2025-01-08')
-          },
-          {
-            id: 5,
-            title: 'Những loại cây cảnh phù hợp cho người mới bắt đầu',
-            excerpt: 'Bạn mới bắt đầu chơi cây cảnh? Hãy chọn những loại cây dễ chăm sóc...',
-            imageUrl: 'assets/image/banner2.jpg',
-            categoryName: 'HƯỚNG DẪN',
-            createdDate: new Date('2025-01-05')
-          },
-          {
-            id: 6,
-            title: 'Tác dụng của cây cảnh đối với sức khỏe và tinh thần',
-            excerpt: 'Cây cảnh không chỉ làm đẹp không gian mà còn mang lại nhiều lợi ích...',
-            imageUrl: 'assets/image/banner3.jpg',
-            categoryName: 'SỨC KHỎE',
-            createdDate: new Date('2025-01-03')
-          }
-        ];
-        console.log('Articles loaded from mock data:', this.articles);
-        this.currentArticle = 0; // Đảm bảo slide đầu tiên được hiển thị
-        this.startArticlesAutoSlide();
+        this.articles = [];
         this.cdr.detectChanges();
       }
     });
