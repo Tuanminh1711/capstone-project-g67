@@ -39,9 +39,10 @@ export class UserProfileService {
   ) {}
 
   getUserProfile(): Observable<UserProfile> {
-    // Sử dụng endpoint mới với JWT Authorization header
-    // Backend sẽ lấy userId từ JWT token trong request attribute
-    return this.http.get<UserProfile>('/api/user/profile', {
+    // Use configService to build the correct URL based on environment
+    const userId = this.jwtUserUtil.getUserIdFromToken();
+    const url = this.configService.getUserProfileUrl(Number(userId));
+    return this.http.get<UserProfile>(url, {
       withCredentials: true
     }).pipe(
       tap(profile => {
@@ -60,7 +61,8 @@ export class UserProfileService {
       return throwError(() => new Error('User ID not found in token'));
     }
 
-    return this.http.put<any>('/api/user/updateprofile', updateData, {
+    const url = this.configService.getUserProfileUpdateUrl();
+    return this.http.put<any>(url, updateData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
