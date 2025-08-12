@@ -41,7 +41,7 @@ export class UserProfileService {
   getUserProfile(): Observable<UserProfile> {
     // Sử dụng endpoint mới với JWT Authorization header
     // Backend sẽ lấy userId từ JWT token trong request attribute
-    return this.http.get<UserProfile>('/api/user_articles/profile', {
+    return this.http.get<UserProfile>('/api/user/profile', {
       withCredentials: true
     }).pipe(
       tap(profile => {
