@@ -1,10 +1,11 @@
-<app-top-navigator></app-top-navigator>
+<app-top-navigator> </app-top-navigator>
 
 <!-- Hero Section -->
 <section class="home-hero">
   <div class="home-hero-content">
     <h1 class="home-hero-title">
-      <span>PlantCare - Nền tảng chăm sóc cây toàn diện</span>
+      <span class="brand-name">PLANTCARE</span>
+      <span class="hero-subtitle">Nền tảng hỗ trợ chăm sóc cây</span>
     </h1>
     <p class="home-hero-desc">
       Khám phá, quản lý, chăm sóc và kết nối cộng đồng yêu cây cảnh. Tất cả trên 1 nền tảng!
@@ -15,7 +16,7 @@
     </div>
   </div>
   <div class="home-hero-image">
-    <img [ngSrc]="'assets/image/img-hero-section.png'" width="520" height="294" alt="PlantCare Hero" />
+    <img [ngSrc]="'assets/image/1.png'" width="520" height="294" alt="PlantCare Hero" />
   </div>
 </section>
 
@@ -43,7 +44,7 @@
     <div class="feature-item">
       <i class="fas fa-search feature-icon"></i>
       <h3>Tìm kiếm & Khám phá cây</h3>
-      <p>Tra cứu thông tin, hình ảnh, đặc điểm và điều kiện sống của hàng trăm loại cây cảnh.</p>
+      <p>Tra cứu thông tin, hình ảnh, đặc điểm và điều kiện sống của trăm loại cây cảnh.</p>
     </div>
     <div class="feature-item">
       <i class="fas fa-seedling feature-icon"></i>
@@ -53,22 +54,17 @@
     <div class="feature-item">
       <i class="fas fa-bell feature-icon"></i>
       <h3>Nhắc nhở chăm sóc</h3>
-      <p>Thiết lập lịch tưới nước, bón phân,<br>cắt tỉa... và nhận thông báo tự động.</p>
+      <p>Thiết lập lịch tưới nước, bón phân, cắt tỉa... <br>và nhận thông báo tự động.</p>
     </div>
     <div class="feature-item">
       <i class="fas fa-user-md feature-icon"></i>
       <h3>Chuyên gia tư vấn</h3>
-      <p>Kết nối, trò chuyện và nhận lời khuyên từ các chuyên gia cây cảnh giàu kinh nghiệm.</p>
+      <p>Kết nối, trò chuyện và nhận lời khuyên từ chuyên gia cây cảnh giàu kinh nghiệm.</p>
     </div>
     <div class="feature-item">
       <i class="fas fa-comments feature-icon"></i>
       <h3>Cộng đồng & Hỏi đáp</h3>
-      <p>Tham gia diễn đàn, <br>chia sẻ kinh nghiệm, đặt câu hỏi<br> và nhận hỗ trợ từ cộng đồng.</p>
-    </div>
-    <div class="feature-item">
-      <i class="fas fa-chart-line feature-icon"></i>
-      <h3>Hỗ trợ & Theo dõi</h3>
-      <p>Theo dõi quá trình chăm sóc cây <br>và tiến trình phát triển.</p>
+      <p>Tham gia diễn đàn, <br>chia sẻ kinh nghiệm, và nhận hỗ trợ từ cộng đồng.</p>
     </div>
   </div>
 </section>
@@ -95,7 +91,7 @@
       <span class="how-step-number">3</span>
       <div>
         <h4>Thiết lập nhắc nhở</h4>
-        <p>Cài đặt lịch chăm sóc phù hợp cho từng loại cây.</p>
+        <p>Cài đặt lịch chăm sóc phù hợp cho từng cây.</p>
       </div>
     </div>
     <div class="how-step">
@@ -113,21 +109,18 @@
   <h2 class="testimonials-title">Cảm nhận từ người dùng</h2>
   <div class="testimonials-list">
     <div class="testimonial-item">
-      <div class="testimonial-avatar"><img src="assets/image/default-avatar.png" alt="User 1" /></div>
       <div class="testimonial-content">
         <p>"PlantCare giúp tôi chăm sóc khu vườn nhỏ của mình dễ dàng hơn rất nhiều. Nhắc nhở tưới nước cực kỳ tiện lợi!"</p>
         <span class="testimonial-user">- Minh, Hà Nội</span>
       </div>
     </div>
     <div class="testimonial-item">
-      <div class="testimonial-avatar"><img src="assets/image/default-avatar.png" alt="User 2" /></div>
       <div class="testimonial-content">
         <p>"Tôi rất thích tính năng hỏi đáp với chuyên gia, mọi thắc mắc về cây đều được giải đáp nhanh chóng."</p>
         <span class="testimonial-user">- Lan, TP.HCM</span>
       </div>
     </div>
     <div class="testimonial-item">
-      <div class="testimonial-avatar"><img src="assets/image/default-avatar.png" alt="User 3" /></div>
       <div class="testimonial-content">
         <p>"Giao diện đẹp, dễ dùng, cộng đồng thân thiện. Tôi đã học hỏi được rất nhiều kinh nghiệm chăm cây."</p>
         <span class="testimonial-user">- Hùng, Đà Nẵng</span>
@@ -281,15 +274,11 @@
     </div>
   </div>
 </section>
-
 <!-- Partners/Sponsors Section -->
 <section class="home-partners">
   <h2 class="partners-title">Đối tác & Nhà tài trợ</h2>
   <div class="partners-list">
-    <img src="assets/image/logo.png" alt="PlantCare" title="PlantCare" />
-    <img src="assets/image/logo-remove.png" alt="GreenWorld" title="GreenWorld" />
-    <img src="assets/image/logo.png" alt="EcoGrow" title="EcoGrow" />
-    <img src="assets/image/logo-remove.png" alt="GardenPro" title="GardenPro" />
+    <img src="assets/image/FPTU.png" alt="FPT University" title="FPT University" width="200" height="200" />
   </div>
 </section>
 

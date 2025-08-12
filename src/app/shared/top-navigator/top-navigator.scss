@@ -67,25 +67,25 @@ body {
 
 /* Global fix cho tất cả page có top navigator */
 app-top-navigator + * {
-  padding-top: 60px !important;
+  margin-top: 60px !important;
 }
 
 /* Responsive cho global fix */
 @media (max-width: 900px) {
   app-top-navigator + * {
-    padding-top: 50px !important;
+    margin-top: 50px !important;
   }
 }
 
 @media (max-width: 480px) {
   app-top-navigator + * {
-    padding-top: 45px !important;
+    margin-top: 45px !important;
   }
 }
 
 @media (max-width: 360px) {
   app-top-navigator + * {
-    padding-top: 42px !important;
+    margin-top: 42px !important;
   }
 }
 

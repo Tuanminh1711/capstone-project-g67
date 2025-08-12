@@ -34,15 +34,30 @@ export class RegisterDialogComponent {
   if (!msg) return '';
 
   const map: { [key: string]: string } = {
-    'username already exists': 'Tên đăng nhập đã tồn tại.',
-    'email already exists': 'Email đã được sử dụng.',
-    'password and confirm password do not match': 'Mật khẩu và xác nhận mật khẩu không khớp.',
-    'default role not found': 'Không tìm thấy vai trò mặc định.',
-    'failed to create user profile': 'Tạo hồ sơ người dùng thất bại.',
-    'đăng ký thành công. vui lòng kiểm tra emailđể xác thực tài khoản':
-      'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.',
-    'error registering user': 'Đăng ký thất bại. Vui lòng thử lại.',
-  };
+  // Lỗi từ backend logic
+  'username already exists': 'Tên đăng nhập đã tồn tại.',
+  'email already exists': 'Email đã được sử dụng.',
+  'password and confirm password do not match': 'Mật khẩu và xác nhận mật khẩu không khớp.',
+  'default role not found': 'Không tìm thấy vai trò mặc định.',
+  'failed to create user profile': 'Tạo hồ sơ người dùng thất bại.',
+  'đăng ký thành công. vui lòng kiểm tra emailđể xác thực tài khoản':
+    'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.',
+  'error registering user': 'Đăng ký thất bại. Vui lòng thử lại.',
+
+  // Lỗi validation từ DTO
+  'Username is required': 'Vui lòng nhập tên đăng nhập.',
+  'Username must be between 3 and 50 characters': 'Tên đăng nhập phải từ 3 đến 50 ký tự.',
+  'Password is required': 'Vui lòng nhập mật khẩu.',
+  'password must be at least 8 characters': 'Mật khẩu phải có ít nhất 8 ký tự.',
+  'Password must contain at least 8 characters, including uppercase, lowercase, number and special character':
+    'Mật khẩu phải bao gồm ít nhất 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.',
+  'Confirm password is required': 'Vui lòng nhập xác nhận mật khẩu.',
+  'Full name is required': 'Vui lòng nhập họ và tên.',
+  'Full name must not exceed 100 characters': 'Họ và tên không được vượt quá 100 ký tự.',
+  'phone invalid format': 'Số điện thoại không đúng định dạng.',
+  'email invalid format': 'Email không đúng định dạng.'
+};
+
 
   const msgNorm = msg.trim().toLowerCase();
 
