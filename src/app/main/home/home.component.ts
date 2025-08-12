@@ -71,7 +71,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Load articles from API
   loadArticles() {
     console.log('Loading articles...');
-    this.http.get('/api/user/get_list_articles?page=0&size=6').subscribe({
+    this.http.get('/api/user_articles/get_list_articles?page=0&size=6').subscribe({
       next: (res: any) => {
         console.log('API response:', res);
         if (res.data && res.data.content) {

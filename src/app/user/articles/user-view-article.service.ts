@@ -27,7 +27,7 @@ export interface ArticleDetail {
 
 @Injectable({ providedIn: 'root' })
 export class UserViewArticleService {
-  private apiUrl = '/api/user';
+  private apiUrl = '/api/user_articles';
 
   constructor(private http: HttpClient) {}
 
