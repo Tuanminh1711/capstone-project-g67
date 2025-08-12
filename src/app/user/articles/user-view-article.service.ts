@@ -31,10 +31,10 @@ export class UserViewArticleService {
   constructor(private http: HttpClient) {}
 
   getAllArticles(page = 0, size = 10): Observable<any> {
-    return this.http.get<any>(`${environment.baseUrl}/api/user_articles/get_list_articles?page=${page}&size=${size}`);
+    return this.http.get<any>(`${environment.baseUrl}/user_articles/get_list_articles?page=${page}&size=${size}`);
   }
 
   getArticleDetail(articleId: number): Observable<any> {
-    return this.http.get<any>(`${environment.baseUrl}/api/user_articles/detail/${articleId}`);
+    return this.http.get<any>(`${environment.baseUrl}/user_articles/detail/${articleId}`);
   }
 }
