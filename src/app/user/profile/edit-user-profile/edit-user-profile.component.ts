@@ -226,7 +226,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
           this.avatarPreview = null;
           this.selectedAvatarFile = null;
         }
-        this.toastService.success(res?.message || 'Cập nhật ảnh đại diện thành công!');
+        this.toastService.success('Cập nhật ảnh đại diện thành công!');
         this.avatarUploading = false;
         this.cdr.markForCheck();
       },
