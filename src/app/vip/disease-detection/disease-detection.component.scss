@@ -1,64 +1,75 @@
 // History Section Modern UI
+// History Section Modern UI
 .history-list {
   padding: 0 0 32px 0;
-.history-list {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding-bottom: 32px;
-}
-
-.history-row {
-  display: flex;
-  align-items: flex-start;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
   padding: 18px 24px;
   border: 1.5px solid #f3f4f6;
-  transition: box-shadow 0.2s;
-  position: relative;
+  .disease-card {
+    background: #f9fafb;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    padding: 28px 32px 24px 32px;
+    margin-bottom: 24px;
+    min-height: 180px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    &:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    i, em {
+      color: #888;
+      font-size: 1.02rem;
+    }
+  }
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 18px;
+    font-size: 1.08rem;
+    color: #444;
+  }
 }
-.history-row:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-  border-color: #e0e7ff;
-}
-.row-icon {
-  font-size: 22px;
-  border-radius: 50%;
-  padding: 6px;
-  background: #f3f4f6;
-  color: #6b7280;
-  margin-right: 18px;
-  margin-top: 2px;
-}
-.row-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-// Severity badge color intensity
-// Severity badge color intensity: LOW=green, MEDIUM=yellow, HIGH=orange, CRITICAL=red
-.row-severity {
-  background: #d1fae5;
-  color: #059669;
-}
-.row-severity.CRITICAL {
-  background: #fee2e2;
-  color: #dc2626;
-  font-weight: 700;
-}
-.row-severity.HIGH {
-  background: #fef3c7;
-  color: #ea580c;
+  .meta-badge {
+    background: #fff7f0;
+    color: #ff8800;
+    border-radius: 16px;
+    padding: 5px 18px;
+    font-weight: 600;
+    font-size: 1.08rem;
+    margin-right: 8px;
+    box-shadow: 0 1px 4px rgba(255,136,0,0.08);
+  }
+.meta-category {
+  color: #1a7f37;
   font-weight: 600;
+  font-size: 1.08rem;
 }
-.row-severity.MEDIUM {
-  background: #fef9c3;
-  color: #eab308;
-  font-weight: 500;
+.disease-section {
+  margin-bottom: 14px;
 }
+.disease-section-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #1a7f37;
+  font-size: 1.07rem;
+  letter-spacing: 0.01em;
+}
+  .disease-section-content {
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+  .disease-list {
+    margin-left: 24px;
+    margin-bottom: 10px;
+    font-size: 1.04rem;
+    color: #444;
+  }
 .row-severity.LOW {
   background: #d1fae5;
   color: #059669;
@@ -273,7 +284,6 @@
     color: #059669;
     font-weight: 500;
   }
-}
 .history-details {
   margin-top: 6px;
   font-size: 0.97rem;
@@ -1084,25 +1094,26 @@
   margin-top: 30px;
 }
 
+// Hiển thị các thẻ bệnh theo dạng lưới ngang
+.disease-library {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px 24px;
+}
 .disease-card {
-  background: white;
-  border-radius: 12px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 0;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-  height: 100%;
+  transition: box-shadow 0.2s;
   display: flex;
   flex-direction: column;
-}
-
-.disease-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.disease-image {
-  height: 180px;
-  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  min-height: 180px;
+  height: auto;
 }
 
 .disease-image img {
@@ -1138,10 +1149,37 @@
 }
 
 .disease-meta {
+  margin-bottom: 16px;
+}
+.meta-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 16px;
+  width: 100%;
+}
+.scientific-name {
+  flex: 1;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+.severity-badge {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  border-radius: 16px;
+  padding: 6px 18px;
+  font-weight: 600;
+  background: #fff7ed;
+  color: #ea580c;
+  text-align: center;
+}
+.category-badge {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  color: #1f2937;
+  font-weight: 500;
+  text-align: right;
 }
 
 .scientific-name {

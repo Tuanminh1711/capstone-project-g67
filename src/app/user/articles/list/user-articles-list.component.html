@@ -1,0 +1,70 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="articles-list-page">
+  <div class="page-header">
+    <h1>BÀI VIẾT KIẾN THỨC</h1>
+    <p>Khám phá những bài viết hữu ích về chăm sóc cây trồng từ các chuyên gia</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Đang tải bài viết...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="articles-grid">
+    <div *ngFor="let article of articles" class="article-card" [routerLink]="['/user/articles', article.id]">
+      <div class="article-image">
+        <img 
+          [src]="article.imageUrl" 
+          [alt]="article.title"
+          (error)="onImageError($event)"
+          class="article-img" />
+      </div>
+      <div class="article-content">
+        <div class="article-category">{{ article.categoryName }}</div>
+        <h3 class="article-title">{{ article.title }}</h3>
+        <div class="article-meta">
+          <span class="article-date">{{ article.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && totalPages > 1" class="pagination">
+    <button 
+      class="page-btn" 
+      [disabled]="currentPage === 0"
+      (click)="onPageChange(currentPage - 1)">
+      ← Trước
+    </button>
+    
+    <div class="page-numbers">
+      <button 
+        *ngFor="let page of getPageNumbers()" 
+        class="page-btn" 
+        [class.active]="page === currentPage"
+        (click)="onPageChange(page)">
+        {{ page + 1 }}
+      </button>
+    </div>
+    
+    <button 
+      class="page-btn" 
+      [disabled]="currentPage === totalPages - 1"
+      (click)="onPageChange(currentPage + 1)">
+      Sau →
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading && !error && articles.length === 0" class="no-articles">
+    <span class="no-articles-icon">📚</span>
+    <p>Chưa có bài viết nào.</p>
+  </div>
+</div>
+
+

@@ -1,5 +1,7 @@
 // ...existing code from previous create-article.component.ts...
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ToastService } from '../../../shared/toast/toast.service';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ArticlesService } from '../articles.service';
@@ -94,30 +96,56 @@ export class CreateArticleComponent implements OnInit {
 			});
 		}
 
-	submitArticle(): void {
-		if (this.articleForm.invalid) return;
-		this.isLoading = true;
-			const payload = {
-				...this.articleForm.value,
-				imageUrls: this.uploadedImageUrl ? [this.uploadedImageUrl] : []
-			};
-			this.articlesService.createArticle(payload).subscribe({
-			next: () => {
-				this.success = 'Tạo bài viết thành công!';
-				this.error = null;
-				this.isLoading = false;
-				this.articleForm.reset();
-				this.imageFile = null;
-				this.imagePreview = null;
-				this.uploadedImageUrl = null;
-			},
-			error: () => {
-				this.error = 'Tạo bài viết thất bại.';
-				this.success = null;
-				this.isLoading = false;
+		submitArticle(): void {
+			if (this.articleForm.invalid) return;
+			this.isLoading = true;
+			// Nếu có file ảnh nhưng chưa upload, upload trước
+			if (this.imageFile && !this.uploadedImageUrl) {
+				this.articlesService.uploadArticleImage(this.imageFile).subscribe({
+					next: (res) => {
+						this.uploadedImageUrl = res.data;
+						this.cdr.detectChanges();
+						this.createArticleWithImage();
+					},
+					error: () => {
+						this.error = 'Upload ảnh thất bại.';
+						this.isLoading = false;
+						this.cdr.detectChanges();
+					}
+				});
+			} else {
+				this.createArticleWithImage();
 			}
-		});
-	}
+		}
+
+			createArticleWithImage(): void {
+				const { title, content, categoryId } = this.articleForm.value;
+				const payload: any = {
+					title,
+					content,
+					categoryId,
+					imageUrls: this.uploadedImageUrl ? [this.uploadedImageUrl] : []
+				};
+				// Không gửi createdAt, backend sẽ tự sinh
+				this.articlesService.createArticle(payload).subscribe({
+					next: () => {
+						this.success = 'Tạo bài viết thành công!';
+						this.error = null;
+						this.isLoading = false;
+						this.articleForm.reset();
+						this.imageFile = null;
+						this.imagePreview = null;
+						this.uploadedImageUrl = null;
+						this.cdr.detectChanges();
+					},
+					error: () => {
+						this.error = 'Tạo bài viết thất bại.';
+						this.success = null;
+						this.isLoading = false;
+						this.cdr.detectChanges();
+					}
+				});
+			}
 
 		toggleCategoryForm(): void {
 			if (!this.showCategoryForm) {

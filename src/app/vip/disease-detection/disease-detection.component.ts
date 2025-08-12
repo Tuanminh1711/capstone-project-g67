@@ -30,6 +30,15 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./disease-detection.component.scss']
 })
 export class DiseaseDetectionComponent implements OnInit, OnDestroy {
+  /**
+   * Helper to get symptoms as array (handles string or array)
+   */
+  getSymptomsArray(disease: any): string[] {
+  if (!disease || !disease.symptoms) return [];
+  if (Array.isArray(disease.symptoms)) return disease.symptoms;
+  if (typeof disease.symptoms === 'string') return disease.symptoms.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+  return [];
+  }
   activeTab: 'upload' | 'symptoms' | 'history' | 'diseases' = 'upload';
   imageForm!: FormGroup;
   symptomForm!: FormGroup;

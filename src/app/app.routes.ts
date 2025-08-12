@@ -65,6 +65,10 @@ export const routes: Routes = [
   { path: 'user/notification', loadComponent: () => import('./user/notification/list/notification-list.component').then(m => m.NotificationListComponent) },
   { path: 'user/report', loadComponent: () => import('./user/report/list/report-list.component').then(m => m.ReportListComponent) },
   { path: 'user/report/:id', loadComponent: () => import('./user/report/detail/report-detail.component').then(m => m.ReportDetailComponent) },
+  { path: 'user/articles', redirectTo: 'user/articles/list', pathMatch: 'full' },
+  { path: 'user/articles/list', loadComponent: () => import('./user/articles/list/user-articles-list.component').then(m => m.UserArticlesListComponent) },
+  { path: 'user/articles/:id', loadComponent: () => import('./user/articles/detail/user-article-detail.component').then(m => m.UserArticleDetailComponent) },
+  { path: 'articles', redirectTo: 'user/articles/list', pathMatch: 'full' },
 
 
   // PROFILE & AUTH - Convert to lazy loading

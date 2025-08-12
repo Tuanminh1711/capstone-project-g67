@@ -17,6 +17,18 @@ export class ArticleDetailComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
+  // Hàm chèn ảnh vào sau h2 đầu tiên trong nội dung
+  getContentWithImages(content: string, imageUrls: string[]): string {
+    if (!content) return '';
+    let html = content;
+    if (imageUrls && imageUrls.length) {
+      const imagesHtml = `<div class='images'>${imageUrls.map((url, i) => `<img id='article-image-${i}' src='${url}' alt='Ảnh bài viết' />`).join('')}</div>`;
+      // Chèn sau h2 đầu tiên
+      html = html.replace(/(<h2[^>]*>.*?<\/h2>)/i, `$1${imagesHtml}`);
+    }
+    return html;
+  }
+
   // Hàm chuyển markdown đơn giản sang HTML cho nội dung bài viết
   formatMarkdown(raw: string): string {
     if (!raw) return '';
@@ -45,7 +57,7 @@ export class ArticleDetailComponent implements OnInit {
     if (id && !isNaN(+id) && id !== 'new') {
       this.isLoading = true;
       this.articlesService.getArticleDetail(+id).subscribe({
-        next: (res) => {
+        next: (res: any) => {
           this.article = res.data;
           // Format markdown nếu có
           if (this.article && this.article.content) {

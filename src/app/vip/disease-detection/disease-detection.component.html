@@ -387,7 +387,43 @@
           </button>
         </div>
 
-        <div class="disease-library" *ngIf="!isLibraryLoading && !libraryError && diseaseLibrary.length > 0">
+        <!-- Show search results if present -->
+        <div class="disease-library" *ngIf="!isLibraryLoading && !libraryError && symptomSearchDiseases.length > 0">
+          <div 
+            class="disease-card" 
+            *ngFor="let disease of symptomSearchDiseases; trackBy: trackById">
+            <div class="disease-image" *ngIf="disease.imageUrl">
+              <img [src]="disease.imageUrl" [alt]="disease.name">
+            </div>
+            <div class="disease-image placeholder" *ngIf="!disease.imageUrl">
+              <i class="fas fa-leaf"></i>
+            </div>
+              <div class="disease-info">
+                <h3>{{ disease.name }}</h3>
+                <div class="disease-meta">
+                  <div class="meta-row">
+                    <span class="scientific-name" *ngIf="disease.scientificName">{{ disease.scientificName }}</span>
+                    <span class="severity-badge" *ngIf="disease.severity" [ngClass]="getSeverityClass(disease.severity)">{{ formatSeverity(disease.severity) }}</span>
+                    <span class="category-badge" *ngIf="disease.category">{{ disease.category }}</span>
+                  </div>
+                </div>
+                <div *ngIf="disease['affectedPlantTypes']"><strong>Loại cây ảnh hưởng:</strong> {{ disease['affectedPlantTypes'] }}</div>
+                <div *ngIf="disease.description"><strong>Mô tả:</strong> {{ disease.description }}</div>
+                <div *ngIf="getSymptomsArray(disease).length > 0">
+                  <strong>Triệu chứng:</strong>
+                  <ul>
+                    <li *ngFor="let symptom of getSymptomsArray(disease)">{{ symptom }}</li>
+                  </ul>
+                </div>
+                <div *ngIf="disease.causes"><strong>Nguyên nhân:</strong> {{ disease.causes }}</div>
+                <div *ngIf="disease['prevention']"><strong>Phòng ngừa:</strong> {{ disease['prevention'] }}</div>
+                <div *ngIf="disease['treatment']"><strong>Điều trị:</strong> {{ disease['treatment'] }}</div>
+                <!-- Removed Chi tiết button -->
+          </div>
+        </div>
+
+        <!-- Show default library if no search results -->
+        <div class="disease-library" *ngIf="!isLibraryLoading && !libraryError && symptomSearchDiseases.length === 0 && diseaseLibrary.length > 0">
           <div 
             class="disease-card" 
             *ngFor="let disease of diseaseLibrary; trackBy: trackById">
@@ -397,28 +433,32 @@
             <div class="disease-image placeholder" *ngIf="!disease.imageUrl">
               <i class="fas fa-leaf"></i>
             </div>
-            <div class="disease-info">
-              <h3>{{ disease.name }}</h3>
-              <div class="disease-meta">
-                <span class="scientific-name">{{ disease.scientificName }}</span>
-                <span class="severity-badge" [ngClass]="getSeverityClass(disease.severity)">{{ formatSeverity(disease.severity) }}</span>
-              </div>
-              <p class="disease-description">{{ disease.description }}</p>
-              <div class="disease-symptoms">
-                <strong>Triệu chứng:</strong>
-                <ul>
-                  <li *ngFor="let symptom of disease.symptoms.slice(0, 3)">{{ symptom }}</li>
-                  <li *ngIf="disease.symptoms.length > 3">
-                    <em>...và {{ disease.symptoms.length - 3 }} triệu chứng khác</em>
-                  </li>
-                </ul>
-              </div>
-              <button class="btn-detail" [routerLink]="['/vip/disease-library', disease.id]">
-                Chi tiết
-                <i class="fas fa-arrow-right"></i>
-              </button>
-            </div>
+              <div class="disease-info">
+                <h3>{{ disease.name }}</h3>
+                <div class="disease-meta">
+                  <span class="scientific-name" *ngIf="disease.scientificName">{{ disease.scientificName }}</span>
+                  <span class="severity-badge" *ngIf="disease.severity" [ngClass]="getSeverityClass(disease.severity)">{{ formatSeverity(disease.severity) }}</span>
+                  <span class="category-badge" *ngIf="disease.category">{{ disease.category }}</span>
+                </div>
+                <div *ngIf="disease['affectedPlantTypes']"><strong>Loại cây ảnh hưởng:</strong> {{ disease['affectedPlantTypes'] }}</div>
+                <div *ngIf="disease.description"><strong>Mô tả:</strong> {{ disease.description }}</div>
+                <div *ngIf="getSymptomsArray(disease).length > 0">
+                  <strong>Triệu chứng:</strong>
+                  <ul>
+                    <li *ngFor="let symptom of getSymptomsArray(disease)">{{ symptom }}</li>
+                  </ul>
+                </div>
+                <div *ngIf="disease.causes"><strong>Nguyên nhân:</strong> {{ disease.causes }}</div>
+                <div *ngIf="disease['prevention']"><strong>Phòng ngừa:</strong> {{ disease['prevention'] }}</div>
+                <div *ngIf="disease['treatment']"><strong>Điều trị:</strong> {{ disease['treatment'] }}</div>
+                <!-- Removed Chi tiết button -->
           </div>
+        </div>
+
+        <!-- Show empty state if no results at all -->
+        <div class="empty-state" *ngIf="!isLibraryLoading && !libraryError && symptomSearchDiseases.length === 0 && diseaseLibrary.length === 0">
+          <i class="fas fa-search"></i>
+          <p>Không tìm thấy bệnh nào phù hợp.</p>
         </div>
       </div>
     </div>

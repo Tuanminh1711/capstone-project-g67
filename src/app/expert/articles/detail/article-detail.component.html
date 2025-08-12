@@ -1,21 +1,29 @@
 <app-expert-layout>
   <div class="article-detail-page">
-    <div class="detail-header">
-      <h2><span class="icon">📄</span> Chi tiết bài viết</h2>
-  <!-- nút quay lại đã bị xoá -->
-    </div>
-    <div *ngIf="article">
-      <h3 class="title">{{ article.title }}</h3>
-      <div class="meta">
-        <span class="category">Chuyên mục: {{ article.categoryName }}</span>
-        <span class="date">Ngày tạo: {{ article.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+    <div class="banner-blog" style="background-image: url('assets/image/banner_blog.jpg');">
+      <div class="banner-overlay"></div>
+      <div class="banner-content">
+        <div class="banner-category">{{ article?.categoryName || 'KIẾN THỨC VÀ CÁCH CHĂM SÓC, THÔNG TIN VỀ CÂY' }}</div>
+        <h1 class="banner-title">{{ article?.title }}</h1>
+        <div class="banner-meta">
+          <span class="banner-date">POSTED ON {{ article?.createdAt | date:'dd/MM/yyyy' }} BY {{ article?.authorUsername || 'Expert' }}</span>
+        </div>
       </div>
+    </div>
     
-      <div *ngIf="article.imageUrls?.length" class="images">
-        <img *ngFor="let img of article.imageUrls" [src]="img" alt="Ảnh bài viết" />
-      </div>
-      <div class="content" [innerHTML]="article.content"></div>
+    <div *ngIf="article?.imageUrls?.length" class="images images-right">
+      <img *ngFor="let img of article.imageUrls" [src]="img" alt="Ảnh bài viết" />
     </div>
-    <div *ngIf="!article" class="error">Không tìm thấy bài viết.</div>
+    
+    <div *ngIf="article" class="content">
+      <ng-container *ngIf="article.content">
+        <div class="article-content" [innerHTML]="article.content"></div>
+      </ng-container>
+    </div>
+    
+    <div *ngIf="!article" class="error">
+      <span class="error-icon">⚠️</span>
+      Không tìm thấy bài viết.
+    </div>
   </div>
 </app-expert-layout>

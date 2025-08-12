@@ -2,42 +2,71 @@
   <div class="expert-articles-list-page">
     <div class="page-header">
       <h2><span class="icon">📝</span> Quản lý bài viết chuyên gia</h2>
-      <a routerLink="/expert/articles/create" class="btn-main create-btn">+ Tạo bài viết mới</a>
+      <a routerLink="/expert/articles/add" class="btn-main create-btn">+ Tạo bài viết mới</a>
     </div>
-    <div *ngIf="error" class="error">{{ error }}</div>
-    <div *ngIf="isLoading" class="loading">Đang tải...</div>
-    <table *ngIf="articles.length" class="articles-table">
-      <thead>
-        <tr>
-          <th>Tiêu đề</th>
-          <th>Chuyên mục</th>
-          <th>Ảnh</th>
-          <th>Ngày tạo</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let article of articles">
-          <td class="title-cell">
-            <a (click)="viewDetail(article)" class="article-link">{{ article.title }}</a>
-          </td>
-          <td>{{ article.categoryName }}</td>
-          <td>
-            <img *ngIf="article.imageUrl" [src]="article.imageUrl" alt="Ảnh bài viết" class="article-img" />
-          </td>
-          <td>{{ article.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>
-            <button class="btn-edit" (click)="editArticle(article)">Sửa</button>
-            <button class="btn-delete" (click)="deleteArticle(article.id)">Xóa</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="no-articles" *ngIf="!articles.length && !isLoading">Chưa có bài viết nào.</div>
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button (click)="changePage(pageNo - 1)" [disabled]="pageNo === 0">Trước</button>
-      <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
-      <button (click)="changePage(pageNo + 1)" [disabled]="pageNo + 1 >= totalPages">Sau</button>
+    
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+    
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Đang tải danh sách bài viết...</p>
+    </div>
+    
+    <div *ngIf="!isLoading && articles.length" class="articles-container">
+      <table class="articles-table">
+        <thead>
+          <tr>
+            <th>Tiêu đề</th>
+            <th>Chuyên mục</th>
+            <th>Ngày tạo</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let article of articles">
+            <td class="title-cell">
+              <span class="article-title">{{ article.title }}</span>
+            </td>
+            <td>{{ article.categoryName }}</td>
+            <td>{{ article.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="actions-cell">
+              <button class="btn-view" (click)="viewDetail(article)" title="Xem chi tiết bài viết">
+                <span class="icon">👁️</span> Xem
+              </button>
+              <button class="btn-edit" (click)="editArticle(article)" title="Chỉnh sửa bài viết">
+                <span class="icon">✏️</span> Sửa
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          (click)="changePage(pageNo - 1)" 
+          [disabled]="pageNo === 0" 
+          class="btn-page">
+          ← Trước
+        </button>
+        <span class="page-info">Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
+        <button 
+          (click)="changePage(pageNo + 1)" 
+          [disabled]="pageNo + 1 >= totalPages" 
+          class="btn-page">
+          Sau →
+        </button>
+      </div>
+    </div>
+    
+    <div class="no-articles" *ngIf="!articles.length && !isLoading">
+      <div class="empty-state">
+        <span class="icon">📝</span>
+        <h3>Chưa có bài viết nào</h3>
+        <p>Bắt đầu tạo bài viết đầu tiên của bạn để chia sẻ kiến thức với cộng đồng.</p>
+        <a routerLink="/expert/articles/add" class="btn-main">Tạo bài viết mới</a>
+      </div>
     </div>
   </div>
 </app-expert-layout>

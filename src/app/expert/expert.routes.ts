@@ -48,5 +48,11 @@ export const expertRoutes: Routes = [
     loadComponent: () => import('./articles/create/create-article.component').then(c => c.CreateArticleComponent),
     title: 'Tạo bài viết mới',
     canActivate: [ExpertAuthGuard]
+  },
+  {
+    path: 'articles/edit/:id',
+    loadComponent: () => import('./articles/edit/edit-article.component').then(c => c.EditArticleComponent),
+    title: 'Chỉnh sửa bài viết',
+    canActivate: [ExpertAuthGuard]
   }
 ];

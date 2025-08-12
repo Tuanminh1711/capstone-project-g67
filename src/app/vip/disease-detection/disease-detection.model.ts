@@ -88,11 +88,20 @@ export interface PlantDisease {
   name: string;
   scientificName: string;
   description: string;
-  symptoms: string[];
-  causes: string[];
+  symptoms: string[] | string;
+  causes: string[] | string;
   category: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
   imageUrl?: string;
+  // Các trường tuỳ chọn từ backend
+  diseaseName?: string;
+  affectedPlantTypes?: string;
+  prevention?: string;
+  treatment?: string;
+  confidenceLevel?: number | null;
+  isActive?: boolean;
+  createdAt?: number | null;
+  updatedAt?: number | null;
 }
 
 export interface DiseaseDetectionHistory {

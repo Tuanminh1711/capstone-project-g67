@@ -15,10 +15,35 @@ export interface ArticleDetail {
   id: number;
   title: string;
   content: string;
+  categoryId?: number; // Optional since some APIs might not return it
   categoryName: string;
   status: string;
   createdAt: string;
   imageUrl?: string;
+}
+
+export interface CreateArticleRequest {
+  title: string;
+  content: string;
+  categoryId: number;
+}
+
+export interface ImageUpdate {
+  imageUrl: string;  // Đổi từ url thành imageUrl cho khớp với backend
+  action: 'ADD' | 'REMOVE' | 'KEEP';
+}
+
+export interface UpdateArticleRequest {
+  title: string;
+  content: string;
+  categoryId: number;
+  status: string;
+  imageUpdates?: ImageUpdate[];
+  imageUrls?: string[];
+}
+
+export interface ChangeArticleStatusRequest {
+  status: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,18 +68,27 @@ export class ArticlesService {
   }
 
   // Tạo bài viết mới
-  createArticle(data: { title: string; content: string; categoryId: number }): Observable<any> {
+  createArticle(data: CreateArticleRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/create-article`, data);
   }
 
   // Cập nhật bài viết
-  updateArticle(articleId: number, data: { title: string; content: string; categoryId: number }): Observable<any> {
+  updateArticle(articleId: number, data: UpdateArticleRequest): Observable<any> {
     return this.http.put(`${this.apiUrl}/update-article/${articleId}`, data);
   }
 
-  // Xóa bài viết
-  deleteArticle(articleId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/delete-article/${articleId}`, {});
+  // Thay đổi trạng thái bài viết
+  changeArticleStatus(articleId: number, status: string): Observable<any> {
+    const data: ChangeArticleStatusRequest = { status };
+    const url = `${this.apiUrl}/change-article-status/${articleId}`;
+    console.log('ChangeArticleStatus API call:', {
+      url: url,
+      method: 'PATCH',
+      data: data,
+      articleId: articleId,
+      status: status
+    });
+    return this.http.patch(url, data);
   }
 
   // Upload ảnh bài viết

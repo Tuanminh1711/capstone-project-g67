@@ -1,0 +1,125 @@
+<app-expert-layout>
+  <div class="edit-article-page">
+    <div class="page-header">
+      <h2><span class="icon">✏️</span> Chỉnh sửa bài viết</h2>
+      <button class="btn-secondary" (click)="onCancel()">← Quay lại</button>
+    </div>
+
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Đang tải thông tin bài viết...</p>
+    </div>
+
+    <div *ngIf="!isLoading && article" class="edit-form-container">
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <div *ngIf="success" class="success-message">
+        {{ success }}
+      </div>
+
+      <form [formGroup]="articleForm" (ngSubmit)="onSubmit()" class="article-form">
+        <div class="form-group">
+          <label for="title">Tiêu đề bài viết *</label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            class="form-control"
+            placeholder="Nhập tiêu đề bài viết"
+            [class.error]="articleForm.get('title')?.invalid && articleForm.get('title')?.touched"
+          />
+          <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched" class="error-text">
+            Tiêu đề là bắt buộc
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="categoryId">Chuyên mục *</label>
+          <select
+            id="categoryId"
+            formControlName="categoryId"
+            class="form-control"
+            [class.error]="articleForm.get('categoryId')?.invalid && articleForm.get('categoryId')?.touched"
+          >
+            <option value="">Chọn chuyên mục</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.categoryName }}
+            </option>
+          </select>
+          <div *ngIf="articleForm.get('categoryId')?.invalid && articleForm.get('categoryId')?.touched" class="error-text">
+            Chuyên mục là bắt buộc
+          </div>
+          <div *ngIf="categories.length === 0" class="warning-text">
+            ⚠️ Đang tải danh sách chuyên mục...
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Trạng thái *</label>
+          <select
+            id="status"
+            formControlName="status"
+            class="form-control"
+            [class.error]="articleForm.get('status')?.invalid && articleForm.get('status')?.touched"
+          >
+            <option value="">Chọn trạng thái</option>
+            <option value="PUBLISHED">Xuất bản</option>
+            <option value="DELETED">Đã xóa</option>
+          </select>
+          <div *ngIf="articleForm.get('status')?.invalid && articleForm.get('status')?.touched" class="error-text">
+            Trạng thái là bắt buộc
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="content">Nội dung bài viết *</label>
+          <textarea
+            id="content"
+            formControlName="content"
+            class="form-control content-textarea"
+            rows="15"
+            placeholder="Nhập nội dung bài viết..."
+            [class.error]="articleForm.get('content')?.invalid && articleForm.get('content')?.touched"
+          ></textarea>
+          <div *ngIf="articleForm.get('content')?.invalid && articleForm.get('content')?.touched" class="error-text">
+            Nội dung là bắt buộc
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Ảnh bài viết</label>
+          <input type="file" id="image" (change)="onImageSelected($event)" accept="image/*" />
+          
+          <!-- Image List -->
+          <div class="image-list" style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 12px;">
+            <div *ngFor="let image of images" class="image-item" [class.removed]="image.status === 'REMOVED'" style="position: relative;">
+              <img [src]="image.url" alt="Article image" class="preview-img" style="max-width: 180px; border-radius: 8px;" />
+              <button type="button" (click)="removeImage(image.url)" class="remove-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(255,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                ×
+              </button>
+            </div>
+          </div>
+          
+          <div *ngIf="uploadError" class="error-text">{{ uploadError }}</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="isSubmitting">
+            Hủy
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="articleForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-small"></span>
+            {{ isSubmitting ? 'Đang cập nhật...' : 'Cập nhật bài viết' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div *ngIf="!isLoading && !article" class="no-article">
+      <p>Không tìm thấy bài viết</p>
+      <button class="btn-primary" (click)="onCancel()">Quay lại danh sách</button>
+    </div>
+  </div>
+</app-expert-layout>
