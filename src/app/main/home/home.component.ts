@@ -1,7 +1,6 @@
 
 import { Component, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { ToastService } from '../../shared/toast/toast.service';
-import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogManager } from '../../shared/dialog-manager.service';
@@ -10,6 +9,7 @@ import { RegisterDialogComponent } from '../../auth/register/register-dialog';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
