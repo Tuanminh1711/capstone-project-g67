@@ -1,9 +1,8 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.admin;
 
 import com.plantcare_backend.model.SupportTicket;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.model.Users;
-import com.plantcare_backend.model.Role;
 import com.plantcare_backend.service.AdminNotificationService;
 import com.plantcare_backend.service.EmailService;
 import lombok.RequiredArgsConstructor;

@@ -222,9 +222,18 @@ public class AdminController {
 
     @PostMapping("/statistics/registered-users")
     // @PreAuthorize("hasRole('ADMIN')") // Nếu bạn dùng Spring Security annotation
-    public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(
-            @RequestBody UserRegisterStatisticRequestDTO requestDTO) {
-        return adminService.getUserRegisterStatistics(requestDTO);
+    public ResponseData<List<UserRegisterStatisticResponseDTO>> getUserRegisterStatistics(
+           @Valid @RequestBody UserRegisterStatisticRequestDTO requestDTO) {
+        try {
+            if (requestDTO.getStartDate().isAfter(requestDTO.getEndDate())) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(),"Start date cannot be after end date");
+            }
+
+            List<UserRegisterStatisticResponseDTO> statistic = adminService.getUserRegisterStatistics(requestDTO);
+            return new ResponseData<>(HttpStatus.OK.value(), "Statistic retrieved successfully", statistic);
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid date range" + e.getMessage());
+        }
     }
 
     /**

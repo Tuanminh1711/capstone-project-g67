@@ -1,27 +1,19 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.plant;
 
-import com.plantcare_backend.exception.ResourceNotFoundException;
-import com.plantcare_backend.model.CareLog;
 import com.plantcare_backend.model.CareSchedule;
-import com.plantcare_backend.model.UserPlants;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.CareLogRepository;
 import com.plantcare_backend.repository.CareScheduleRepository;
-import com.plantcare_backend.repository.UserPlantRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.PlantCareNotificationService;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 @Service
 @Slf4j

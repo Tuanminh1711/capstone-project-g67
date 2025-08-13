@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.user;
 
 import com.plantcare_backend.dto.request.auth.UserProfileRequestDTO;
 import com.plantcare_backend.dto.response.auth.UpdateAvatarResponseDTO;

@@ -1,12 +1,11 @@
 package com.plantcare_backend.controller.ai;
 
 import com.plantcare_backend.annotation.VIPOnly;
-import com.plantcare_backend.dto.request.ai.PlantIdentificationRequestDTO;
 import com.plantcare_backend.dto.response.ai.PlantIdentificationResponseDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.service.AIPlantService;
-import com.plantcare_backend.service.impl.AIPlantServiceImpl;
+import com.plantcare_backend.service.impl.ai.AIPlantServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
