@@ -280,9 +280,23 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
   updateUser() {
     if (this.updating || !this.user) return;
 
-    // Validate form (username is readonly, no need to validate)
-    if (!this.formData.email || !this.formData.fullName) {
-      this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+    // Validate form data
+    if (!this.formData.email || !this.formData.fullName || !this.formData.phoneNumber) {
+      this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc (Email, Họ tên, Số điện thoại)');
+      return;
+    }
+
+    // Validate email format
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailPattern.test(this.formData.email)) {
+      this.toastService.error('Email không đúng định dạng');
+      return;
+    }
+
+    // Validate phone number format (Vietnam)
+    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})\b/;
+    if (!phonePattern.test(this.formData.phoneNumber)) {
+      this.toastService.error('Số điện thoại không đúng định dạng');
       return;
     }
 
@@ -291,17 +305,43 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     this.setSuccess('');
     this.cdr.detectChanges();
 
-    // Chỉ gửi đúng các trường backend yêu cầu
-    const updateData: any = {
-      email: this.formData.email,
-      fullName: this.formData.fullName,
-      phoneNumber: this.formData.phoneNumber,
-      gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
-      roleId: this.formData.roleId,
-      status: this.formData.status
-    };
-    const apiUrl = `/api/admin/updateuser/${this.userId}`;
-    this.http.put<any>(apiUrl, updateData).subscribe({
+    const currentUserId = this.authService.getCurrentUserId();
+    const isUpdatingSelf = currentUserId && this.userId === Number(currentUserId);
+
+    // Prepare request data based on endpoint
+    let updateData: any;
+    let apiUrl: string;
+
+    if (isUpdatingSelf) {
+      // Nếu update chính mình, dùng endpoint updateProfile với data format phù hợp
+      updateData = {
+        id: this.userId,
+        fullName: this.formData.fullName,
+        phoneNumber: this.formData.phoneNumber,
+        livingEnvironment: this.user?.livingEnvironment || '',
+        avatar: this.user?.avatarUrl || '',
+        gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male'
+      };
+      apiUrl = `/api/user/updateprofile`;
+    } else {
+      // Nếu admin update user khác, dùng endpoint admin với data format khác
+      updateData = {
+        email: this.formData.email,
+        fullName: this.formData.fullName,
+        phoneNumber: this.formData.phoneNumber,
+        gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
+        roleId: this.formData.roleId,
+        status: this.formData.status,
+        livingEnvironment: this.user?.livingEnvironment || ''
+      };
+      apiUrl = `/api/admin/updateuser/${this.userId}`;
+    }
+
+    // Log request data để debug
+    console.log('Updating user with data:', updateData);
+    console.log('Using API endpoint:', apiUrl);
+
+    this.http.put<any>(apiUrl, updateData, { withCredentials: true }).subscribe({
       next: (response: any) => {
         console.log('Update user response:', response);
         this.toastService.success('Cập nhật thông tin người dùng thành công!');

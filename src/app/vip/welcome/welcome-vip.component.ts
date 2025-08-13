@@ -28,4 +28,18 @@ export class WelcomeVipComponent {
   goToChatPrivate() {
     this.router.navigate(['/vip/chat/chat-private']);
   }
+
+  shareOnFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent('Tôi vừa nâng cấp VIP trên PlantCare! Khám phá các tính năng AI tuyệt vời ngay thôi! 🌱✨');
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
+    window.open(facebookUrl, '_blank', 'width=600,height=400');
+  }
+
+  shareOnZalo() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent('Tôi vừa nâng cấp VIP trên PlantCare! Khám phá các tính năng AI tuyệt vời ngay thôi! 🌱✨');
+    const zaloUrl = `https://zalo.me/share?u=${url}&t=${text}`;
+    window.open(zaloUrl, '_blank', 'width=600,height=400');
+  }
 }

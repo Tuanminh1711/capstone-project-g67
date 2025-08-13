@@ -27,9 +27,12 @@ export class VipPaymentComponent {
       price: 100000,
       duration: '1 tháng',
       features: [
-        'Tư vấn chuyên gia không giới hạn',
-        'Ưu tiên hỗ trợ',
-        'Truy cập tài liệu VIP'
+        'Truy cập không giới hạn AI nhận diện cây',
+        'Phát hiện và điều trị bệnh cây',
+        'Chat VIP cộng đồng với chuyên gia',
+        'Lưu trữ lịch sử không giới hạn',
+        'Hỗ trợ kỹ thuật ưu tiên',
+        'Không quảng cáo và giới hạn sử dụng'
       ]
     },
     YEARLY: {
@@ -38,10 +41,14 @@ export class VipPaymentComponent {
       originalPrice: 1200000,
       duration: '12 tháng',
       features: [
-        'Tư vấn chuyên gia không giới hạn',
-        'Ưu tiên hỗ trợ',
-        'Truy cập tài liệu VIP',
-        'Tặng thêm 1 tháng miễn phí'
+        'Truy cập không giới hạn AI nhận diện cây',
+        'Phát hiện và điều trị bệnh cây',
+        'Chat VIP cộng đồng với chuyên gia',
+        'Lưu trữ lịch sử không giới hạn',
+        'Hỗ trợ kỹ thuật ưu tiên',
+        'Không quảng cáo và giới hạn sử dụng',
+        'Tặng thêm 1 tháng miễn phí',
+        'Cập nhật tính năng mới sớm nhất'
       ]
     }
   };

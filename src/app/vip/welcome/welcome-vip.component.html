@@ -15,20 +15,19 @@
         <div class="feature-icon chat-icon">
           <i class="fas fa-comments"></i>
         </div>
-        <h3>Chat VIP</h3>
-        <p>Kết nối với cộng đồng VIP và chuyên gia hàng đầu về cây cảnh</p>
+        <h3>Chat VIP Cộng đồng</h3>
+        <p>Tham gia phòng chat VIP với cộng đồng thành viên cao cấp và chuyên gia hàng đầu về cây cảnh</p>
         <button class="btn-feature" (click)="goToChat()">
           Vào phòng chat <i class="fas fa-arrow-right"></i>
         </button>
       </div>
-  <!-- Đã xóa phần chat riêng với chuyên gia -->
       
       <div class="feature-card">
         <div class="feature-icon plant-icon">
           <i class="fas fa-seedling"></i>
         </div>
-        <h3>Nhận diện cây</h3>
-        <p>Công nghệ AI giúp nhận diện các loại cây cảnh chỉ từ một hình ảnh</p>
+        <h3>AI Nhận diện cây</h3>
+        <p>Công nghệ AI tiên tiến giúp nhận diện chính xác các loại cây cảnh chỉ từ một hình ảnh</p>
         <button class="btn-feature" (click)="goToAiPlant()">
           Nhận diện cây <i class="fas fa-arrow-right"></i>
         </button>
@@ -38,8 +37,8 @@
         <div class="feature-icon disease-icon">
           <i class="fas fa-microscope"></i>
         </div>
-        <h3>Phát hiện bệnh</h3>
-        <p>Phân tích và chẩn đoán bệnh cây với độ chính xác cao từ AI</p>
+        <h3>Phát hiện bệnh cây</h3>
+        <p>Phân tích và chẩn đoán bệnh cây với độ chính xác cao từ AI, kèm hướng dẫn điều trị chi tiết</p>
         <button class="btn-feature" (click)="goToDiseaseDetection()">
           Kiểm tra bệnh <i class="fas fa-arrow-right"></i>
         </button>
@@ -51,27 +50,52 @@
       <div class="benefits-grid">
         <div class="benefit-item">
           <i class="fas fa-check-circle"></i>
-          <span>Tư vấn ưu tiên từ chuyên gia</span>
+          <span>Truy cập không giới hạn các tính năng AI</span>
         </div>
         <div class="benefit-item">
           <i class="fas fa-check-circle"></i>
-          <span>Công cụ AI độc quyền</span>
+          <span>Chat cộng đồng VIP với chuyên gia</span>
         </div>
         <div class="benefit-item">
           <i class="fas fa-check-circle"></i>
-          <span>Báo cáo chi tiết về cây trồng</span>
+          <span>Nhận diện cây với độ chính xác cao</span>
         </div>
         <div class="benefit-item">
           <i class="fas fa-check-circle"></i>
-          <span>Hỗ trợ 24/7</span>
+          <span>Phát hiện và điều trị bệnh cây</span>
         </div>
         <div class="benefit-item">
           <i class="fas fa-check-circle"></i>
-          <span>Theo dõi tiến trình điều trị bệnh</span>
+          <span>Lưu trữ lịch sử kiểm tra không giới hạn</span>
         </div>
         <div class="benefit-item">
           <i class="fas fa-check-circle"></i>
-          <span>Nhận thông báo ưu tiên</span>
+          <span>Hỗ trợ kỹ thuật ưu tiên</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Cập nhật tính năng mới sớm nhất</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Không quảng cáo và giới hạn sử dụng</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="vip-upgrade-section">
+      <div class="upgrade-content">
+        <h3>Chia sẻ với bạn bè</h3>
+        <p>Giới thiệu bạn bè sử dụng PlantCare và cùng nhau trải nghiệm các tính năng tuyệt vời</p>
+        <div class="social-share">
+          <button class="share-btn facebook" (click)="shareOnFacebook()">
+            <i class="fab fa-facebook-f"></i>
+            Chia sẻ Facebook
+          </button>
+          <button class="share-btn zalo" (click)="shareOnZalo()">
+            <i class="fas fa-share"></i>
+            Chia sẻ Zalo
+          </button>
         </div>
       </div>
     </div>

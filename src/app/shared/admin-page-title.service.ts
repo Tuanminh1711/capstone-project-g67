@@ -7,6 +7,8 @@ export class AdminPageTitleService {
   title$ = this.titleSubject.asObservable();
 
   setTitle(title: string) {
-    this.titleSubject.next(title);
+    setTimeout(() => {
+      this.titleSubject.next(title);
+    });
   }
 }
