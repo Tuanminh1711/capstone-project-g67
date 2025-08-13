@@ -23,6 +23,12 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendResetCodeEmail(String to, String resetCode) {
         try {
+            if (to == null || to.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email address cannot be null or empty");
+            }
+            if (resetCode == null || resetCode.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email address cannot be null or empty");
+            }
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
             message.setSubject("Reset Password Code");
@@ -32,9 +38,12 @@ public class EmailServiceImpl implements EmailService {
 
             emailSender.send(message);
             log.info("Reset code email sent successfully to: {}", to);
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to send reset code email to: {}", to, e);
+            throw e;
         } catch (Exception e) {
             log.error("Failed to send reset code email to: {}", to, e);
-            throw new RuntimeException("Failed to send email: " + e.getMessage());
+            throw new RuntimeException("Failed to send email: "+e.getMessage());
         }
     }
 
@@ -43,6 +52,12 @@ public class EmailServiceImpl implements EmailService {
         try {
             if (to == null || to.trim().isEmpty()) {
                 throw new IllegalArgumentException("Email address cannot be null or empty");
+            }
+            if (subject == null || subject.trim().isEmpty()) {
+                throw new IllegalArgumentException("Subject cannot be null or empty");
+            }
+            if (content == null || content.trim().isEmpty()) {
+                throw new IllegalArgumentException("Content cannot be null or empty");
             }
 
             SimpleMailMessage message = new SimpleMailMessage();
@@ -53,11 +68,11 @@ public class EmailServiceImpl implements EmailService {
             emailSender.send(message);
             log.info("Email sent successfully to: {}", to);
         } catch (IllegalArgumentException e) {
-            log.error("Invalid email parameters: {}", e.getMessage() );
+            log.error("Invalid email parameters: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("failed to send email to: {}", to, e);
-            throw new RuntimeException("Failed to send email:"+ e.getMessage());
+            throw new RuntimeException("Failed to send email:" + e.getMessage());
         }
     }
 
