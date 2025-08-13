@@ -199,6 +199,10 @@ public class AuthServiceImpl implements AuthService {
                 return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Email already exists");
             }
 
+            if(userProfileRepository.existsByPhone(registerRequestDTO.getPhone())) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Phone already exists");
+            }
+
             if (!registerRequestDTO.getPassword().equals(registerRequestDTO.getConfirmPassword())) {
                 return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Password and confirm password do not match");
             }
