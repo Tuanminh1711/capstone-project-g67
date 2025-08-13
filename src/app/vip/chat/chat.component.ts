@@ -230,8 +230,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   getSenderName(msg: ChatMessage): string {
-    // Tạm thời dùng senderId, sau này có thể map với tên thật
-    return `User ${msg.senderId}`;
+    if (this.isOwnMessage(msg)) {
+      // For own messages, use a simple label
+      return 'Bạn';
+    } else {
+      // For other messages in private chat, use the other user's username
+      if (this.selectedConversation && this.showPrivateChat) {
+        return this.selectedConversation.otherUsername;
+      }
+      // For community chat, try to get username from message or fallback
+      return `User ${msg.senderId}`;
+    }
   }
 
   // Thêm dummy messages để test layout

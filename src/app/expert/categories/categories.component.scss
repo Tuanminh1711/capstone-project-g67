@@ -15,19 +15,66 @@
     .categories-header {
       text-align: left;
       margin-bottom: 24px;
-    }
-    .categories-header h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1976d2;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .categories-header .desc {
-      color: #666;
-      font-size: 1rem;
-      margin-top: 4px;
+      
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      
+      .header-text {
+        flex: 1;
+      }
+      
+      .header-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      
+      h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1976d2;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 8px 0;
+      }
+      
+             .desc {
+         color: #666;
+         font-size: 1rem;
+         margin: 0;
+       }
+       
+       .btn-refresh {
+         background: #4caf50;
+         color: white;
+         border: none;
+         border-radius: 6px;
+         padding: 10px 20px;
+         font-weight: 600;
+         cursor: pointer;
+         transition: all 0.2s;
+         white-space: nowrap;
+         
+         &:hover:not(:disabled) {
+           background: #45a049;
+           transform: translateY(-1px);
+         }
+         
+         &:disabled {
+           background: #b0b0b0;
+           cursor: not-allowed;
+           transform: none;
+         }
+       }
+       
+       
+      
+      
     }
     .categories-card {
       background: #fff;
@@ -156,10 +203,12 @@
       gap: 8px;
       justify-content: center;
     }
-    .icon {
-      font-size: 1.2em;
-      vertical-align: middle;
-    }
+         .icon {
+       font-size: 1.2em;
+       vertical-align: middle;
+     }
+     
+     
     @media (max-width: 600px) {
       .categories-page {
         padding: 8px;

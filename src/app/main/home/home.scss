@@ -3,12 +3,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 50px 4vw 35px 4vw;
+  gap: 20px; // Giảm từ 24px xuống 20px
+  padding: 30px 3vw 25px 3vw; // Giảm padding từ 50px 4vw 35px 4vw xuống 30px 3vw 25px 3vw
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   position: relative;
   overflow: hidden;
-  min-height: 80vh;
+  min-height: 70vh; // Giảm từ 80vh xuống 70vh
   
   &::before {
     content: '';
@@ -34,38 +34,41 @@
   font-size: 2.6rem;
   font-weight: 700;
   color: #0f4c3a;
-  margin-bottom: 18px;
+  margin-bottom: 14px; // Giảm từ 18px xuống 14px
   line-height: 1.2;
   letter-spacing: 0.5px;
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px; // Giảm từ 8px xuống 6px
   
   .brand-name {
     font-size: 3.2rem;
     font-weight: 900;
     letter-spacing: 4px;
     color: #1b5e20;
-    margin-bottom: 8px;
+    margin-bottom: 6px; // Giảm từ 8px xuống 6px
     display: block;
   }
   
   .hero-subtitle {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
     display: block;
     color: #2e7d32;
+    line-height: 1.3;
+    word-wrap: break-word;
+    max-width: 100%;
   }
 }
 
 .home-hero-desc {
   font-size: 1.05rem;
   color: #475569;
-  margin-bottom: 32px;
+  margin-bottom: 24px; // Giảm từ 32px xuống 24px
   line-height: 1.6;
   font-weight: 500;
 }
@@ -137,9 +140,9 @@
 // Responsive Hero - Large Desktop
 @media (min-width: 1400px) {
   .home-hero {
-    padding: 60px 6vw 40px 6vw;
-    gap: 32px;
-    min-height: 85vh;
+    padding: 40px 5vw 30px 5vw; // Giảm padding
+    gap: 28px; // Giảm gap
+    min-height: 75vh; // Giảm min-height
   }
   
   .home-hero-title {
@@ -151,7 +154,12 @@
     }
     
     .hero-subtitle {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
@@ -172,9 +180,9 @@
 // Responsive Hero - Desktop
 @media (max-width: 1399px) and (min-width: 1201px) {
   .home-hero {
-    padding: 50px 4vw 35px 4vw;
-    gap: 24px;
-    min-height: 80vh;
+    padding: 35px 3.5vw 28px 3.5vw; // Giảm padding
+    gap: 20px; // Giảm gap
+    min-height: 70vh; // Giảm min-height
   }
   
   .home-hero-title {
@@ -186,7 +194,12 @@
     }
     
     .hero-subtitle {
-      font-size: 1.8rem;
+      font-size: 1.1rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
 }
@@ -194,9 +207,9 @@
 // Responsive Hero - Small Desktop
 @media (max-width: 1200px) and (min-width: 1025px) {
   .home-hero {
-    padding: 45px 3.5vw 32px 3.5vw;
-    gap: 22px;
-    min-height: 75vh;
+    padding: 32px 3vw 25px 3vw; // Giảm padding
+    gap: 18px; // Giảm gap
+    min-height: 65vh; // Giảm min-height
   }
   
   .home-hero-title {
@@ -208,7 +221,12 @@
     }
     
     .hero-subtitle {
-      font-size: 1.7rem;
+      font-size: 1.4rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
@@ -224,9 +242,9 @@
 // Responsive Hero - Tablet Landscape
 @media (max-width: 1024px) and (min-width: 901px) {
   .home-hero {
-    padding: 40px 3vw 28px 3vw;
-    gap: 20px;
-    min-height: 70vh;
+    padding: 28px 2.5vw 22px 2.5vw; // Giảm padding
+    gap: 16px; // Giảm gap
+    min-height: 60vh; // Giảm min-height
   }
   
   .home-hero-title {
@@ -238,13 +256,18 @@
     }
     
     .hero-subtitle {
-      font-size: 1.6rem;
+      font-size: 1.3rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
   .home-hero-desc {
     font-size: 1.05rem;
-    margin-bottom: 28px;
+    margin-bottom: 24px; // Giảm margin
   }
   
   .cta-btn {
@@ -263,9 +286,9 @@
     flex-direction: column;
     text-align: center;
     justify-content: center;
-    padding: 35px 3vw 25px 3vw;
-    gap: 20px;
-    min-height: 65vh;
+    padding: 25px 2.5vw 18px 2.5vw; // Giảm padding
+    gap: 16px; // Giảm gap
+    min-height: 55vh; // Giảm min-height
   }
   
   .home-hero-content {
@@ -283,13 +306,18 @@
     }
     
     .hero-subtitle {
-      font-size: 1.5rem;
+      font-size: 1.2rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
   .home-hero-desc {
     font-size: 1.1rem;
-    margin-bottom: 28px;
+    margin-bottom: 22px; // Giảm margin
   }
   
   .home-hero-cta {
@@ -298,7 +326,7 @@
   
   .home-hero-image {
     order: 1;
-    margin-bottom: 18px;
+    margin-bottom: 14px; // Giảm margin
     
     img {
       max-width: 380px;
@@ -312,9 +340,9 @@
     flex-direction: column;
     text-align: center;
     justify-content: center;
-    padding: 30px 2.5vw 20px 2.5vw;
-    gap: 18px;
-    min-height: 60vh;
+    padding: 20px 2vw 15px 2vw; // Giảm padding
+    gap: 14px; // Giảm gap
+    min-height: 50vh; // Giảm min-height
   }
   
   .home-hero-content {
@@ -332,13 +360,18 @@
     }
     
     .hero-subtitle {
-      font-size: 1.4rem;
+      font-size: 1.1rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
   .home-hero-desc {
     font-size: 1.05rem;
-    margin-bottom: 24px;
+    margin-bottom: 20px; // Giảm margin
   }
   
   .home-hero-cta {
@@ -353,7 +386,7 @@
   
   .home-hero-image {
     order: 1;
-    margin-bottom: 16px;
+    margin-bottom: 12px; // Giảm margin
     
     img {
       max-width: 320px;
@@ -367,9 +400,9 @@
     flex-direction: column;
     text-align: center;
     justify-content: center;
-    padding: 25px 2vw 18px 2vw;
-    gap: 16px;
-    min-height: 55vh;
+    padding: 18px 1.5vw 12px 1.5vw; // Giảm padding
+    gap: 12px; // Giảm gap
+    min-height: 45vh; // Giảm min-height
   }
   
   .home-hero-content {
@@ -387,19 +420,24 @@
     }
     
     .hero-subtitle {
-      font-size: 1.2rem;
+      font-size: 1rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
   .home-hero-desc {
     font-size: 1rem;
-    margin-bottom: 20px;
+    margin-bottom: 16px; // Giảm margin
     line-height: 1.5;
   }
   
   .home-hero-cta {
     justify-content: center;
-    gap: 10px;
+    gap: 8px; // Giảm gap
     flex-direction: column;
     align-items: center;
   }
@@ -413,7 +451,7 @@
   
   .home-hero-image {
     order: 1;
-    margin-bottom: 14px;
+    margin-bottom: 10px; // Giảm margin
     
     img {
       max-width: 280px;
@@ -425,9 +463,9 @@
 // Responsive Hero - Small Mobile
 @media (max-width: 360px) {
   .home-hero {
-    padding: 20px 1.5vw 15px 1.5vw;
-    gap: 14px;
-    min-height: 50vh;
+    padding: 15px 1vw 10px 1vw; // Giảm padding
+    gap: 10px; // Giảm gap
+    min-height: 40vh; // Giảm min-height
   }
   
   .home-hero-title {
@@ -439,13 +477,18 @@
     }
     
     .hero-subtitle {
-      font-size: 1.1rem;
+      font-size: 0.9rem;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
   }
   
   .home-hero-desc {
     font-size: 0.95rem;
-    margin-bottom: 18px;
+    margin-bottom: 14px; // Giảm margin
   }
   
   .cta-btn {

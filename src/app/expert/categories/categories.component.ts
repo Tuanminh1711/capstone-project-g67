@@ -1,10 +1,32 @@
 
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { filter, takeUntil, switchMap } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
 import { ExpertService } from './categories.service';
 import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
+
+// Define interfaces for type safety
+interface Category {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface ApiCategory {
+  id: number;
+  categoryName: string;
+  categoryDescription: string;
+}
+
+interface ApiResponse {
+  status: number;
+  message: string;
+  data: ApiCategory[];
+}
 
 @Component({
   selector: 'app-categories',
@@ -13,8 +35,8 @@ import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.com
   templateUrl: './categories.component.html',
   styleUrls: ['./categories.component.scss']
 })
-export class CategoriesComponent implements OnInit {
-  categories: any[] = [];
+export class CategoriesComponent implements OnInit, OnDestroy {
+  categories: Category[] = [];
   pageNo = 0;
   pageSize = 10;
   totalPages = 1;
@@ -24,8 +46,16 @@ export class CategoriesComponent implements OnInit {
   categoryForm: FormGroup;
   editMode = false;
   editingCategoryId: number | null = null;
+  
+  private destroy$ = new Subject<void>();
 
-  constructor(private fb: FormBuilder, private expertService: ExpertService) {
+  constructor(
+    private fb: FormBuilder, 
+    private expertService: ExpertService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
+  ) {
     this.categoryForm = this.fb.group({
       name: ['', Validators.required],
       description: ['']
@@ -33,20 +63,76 @@ export class CategoriesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Load categories immediately when component initializes
     this.loadCategories();
+    
+    // Listen for route changes to reload data when navigating to this component
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: NavigationEnd) => {
+      // Only reload if we're navigating to the categories route
+      if (event.url.includes('/expert/categories') || event.url.includes('/categories')) {
+        // Check if we need to reload (only if data is empty or there's an error)
+        if (this.categories.length === 0 || this.error) {
+          this.loadCategories();
+        }
+      }
+    });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // Force reload data when needed
+  forceReload(): void {
+    this.categories = []; // Clear current data
+    this.isLoading = false; // Reset loading state
+    this.error = null; // Clear any errors
+    this.loadCategories(); // Load fresh data
+  }
+
+
+
   loadCategories(): void {
+    // Don't reload if already loading
+    if (this.isLoading) return;
+    
     this.isLoading = true;
+    this.error = null;
+    
     this.expertService.listCategories(this.pageNo, this.pageSize).subscribe({
-      next: (res) => {
-        this.categories = res.data || [];
-        this.totalPages = Math.ceil((res.data?.length || 0) / this.pageSize);
+      next: (res: any) => {
+        if (res && res.data && Array.isArray(res.data)) {
+          // Map API response fields to component fields
+          this.categories = res.data.map((category: ApiCategory) => ({
+            id: category.id,
+            name: category.categoryName,
+            description: category.categoryDescription
+          }));
+        } else {
+          this.categories = [];
+        }
         this.isLoading = false;
+        
+        // Force change detection to update UI
+        this.cdr.detectChanges();
+        
+        // Also try setTimeout approach as backup
+        setTimeout(() => {
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (err) => {
+        console.error('Error loading categories:', err);
         this.error = 'Không thể tải danh sách chuyên mục.';
         this.isLoading = false;
+        this.categories = [];
+        
+        // Force change detection on error too
+        this.cdr.detectChanges();
       }
     });
   }
@@ -80,7 +166,7 @@ export class CategoriesComponent implements OnInit {
     }
   }
 
-  editCategory(category: any): void {
+  editCategory(category: Category): void {
     this.editMode = true;
     this.editingCategoryId = category.id;
     this.categoryForm.patchValue({
@@ -108,6 +194,13 @@ export class CategoriesComponent implements OnInit {
     this.editMode = false;
     this.editingCategoryId = null;
     this.error = null;
+  }
+
+
+
+  // TrackBy function for ngFor performance
+  trackByCategory(index: number, category: Category): number {
+    return category?.id || index;
   }
 
   changePage(page: number): void {

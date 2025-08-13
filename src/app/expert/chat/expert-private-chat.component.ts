@@ -334,14 +334,16 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
   }
 
   getSenderName(message: ChatMessage): string {
-    // Trả về tên người gửi dựa trên role
-    switch (message.senderRole) {
-      case 'EXPERT': return 'Chuyên gia';
-      case 'STAFF': return 'Nhân viên';
-      case 'ADMIN': return 'Quản trị viên';
-      case 'VIP': return 'Thành viên VIP';
-      default: return 'Thành viên';
+    // For own messages, use a simple label
+    if (this.isOwnMessage(message)) {
+      return 'Bạn';
     }
+    // For other messages in private chat, use the other user's username
+    if (this.selectedConversation) {
+      return this.selectedConversation.otherUsername;
+    }
+    // Fallback
+    return 'Thành viên';
   }
 
   getRoleBadgeClass(role?: string): string {

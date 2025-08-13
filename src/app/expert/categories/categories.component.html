@@ -2,8 +2,18 @@
 <app-expert-layout>
   <div class="categories-page">
     <div class="categories-header">
-      <h2><span class="icon">🗂️</span> Quản lý chuyên mục</h2>
-      <p class="desc">Tạo, chỉnh sửa, xóa các chuyên mục bài viết cho chuyên gia.</p>
+      <div class="header-content">
+        <div class="header-text">
+          <h2><span class="icon">🗂️</span> Quản lý chuyên mục</h2>
+          <p class="desc">Tạo, chỉnh sửa, xóa các chuyên mục bài viết cho chuyên gia.</p>
+        </div>
+        <div class="header-actions">
+          <button (click)="forceReload()" class="btn-refresh" [disabled]="isLoading">
+            Làm mới
+          </button>
+        </div>
+
+      </div>
     </div>
     <div class="categories-card">
       <form [formGroup]="categoryForm" (ngSubmit)="submitCategory()">
@@ -25,7 +35,10 @@
       <div *ngIf="error" class="error">{{ error }}</div>
       <div *ngIf="isLoading" class="loading">Đang tải...</div>
     </div>
-    <div class="categories-list-card" *ngIf="categories.length">
+
+
+    <!-- Categories Table -->
+    <div class="categories-list-card" *ngIf="!isLoading && categories && categories.length > 0">
       <table class="categories-table">
         <thead>
           <tr>
@@ -35,9 +48,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let category of categories">
-            <td>{{ category.name }}</td>
-            <td>{{ category.description }}</td>
+          <tr *ngFor="let category of categories; trackBy: trackByCategory">
+            <td>{{ category?.name || 'N/A' }}</td>
+            <td>{{ category?.description || 'N/A' }}</td>
             <td>
               <button (click)="editCategory(category)" class="btn-edit">Sửa</button>
               <button (click)="deleteCategory(category.id)" class="btn-delete">Xóa</button>
@@ -45,14 +58,13 @@
           </tr>
         </tbody>
       </table>
-      <div class="pagination" *ngIf="totalPages > 1">
-        <button (click)="changePage(pageNo - 1)" [disabled]="pageNo === 0">Trước</button>
-        <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
-        <button (click)="changePage(pageNo + 1)" [disabled]="pageNo + 1 >= totalPages">Sau</button>
-      </div>
     </div>
-    <div *ngIf="!categories.length && !isLoading" class="empty-list">
-      <span class="icon">📭</span> Chưa có chuyên mục nào.
-    </div>
-  </div>
-</app-expert-layout>
+
+         <!-- Empty State -->
+     <div *ngIf="!isLoading && (!categories || categories.length === 0)" class="empty-list">
+       <span class="icon">📭</span> Chưa có chuyên mục nào.
+     </div>
+
+
+   </div>
+ </app-expert-layout>

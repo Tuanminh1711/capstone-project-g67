@@ -224,14 +224,13 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
   }
 
   getSenderName(message: ChatMessage): string {
-    // Trả về tên người gửi dựa trên role
-    switch (message.senderRole) {
-      case 'EXPERT': return 'Chuyên gia';
-      case 'STAFF': return 'Nhân viên';
-      case 'ADMIN': return 'Quản trị viên';
-      case 'VIP': return 'Thành viên VIP';
-      default: return 'Thành viên';
+    // For own messages, use a simple label
+    if (this.isOwnMessage(message)) {
+      return 'Bạn';
     }
+    // For other messages, try to get username or use a generic label
+    // Since we don't have username in the message, use a generic label
+    return 'Thành viên';
   }
 
   getOnlineCount(): number {
