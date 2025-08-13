@@ -43,10 +43,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserActivityLogRepository userActivityLogRepository;
     private final IpLocationService ipLocationService;
     private final OtpService otpService;
-    @Autowired
-    private PasswordStrengthValidator passwordStrengthValidator;
-    @Autowired
-    private NotificationService notificationService;
+    private final PasswordStrengthValidator passwordStrengthValidator;
+    private final NotificationService notificationService;
 
     @Override
     public LoginResponse loginForUser(LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
@@ -108,7 +106,7 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("Password wrong!");
         }
-        // Chỉ cho phép ADMIN hoặc STAFF
+
         if (user.getRole() == null ||
                 !(user.getRole().getRoleName() == Role.RoleName.ADMIN ||
                         user.getRole().getRoleName() == Role.RoleName.STAFF ||
@@ -116,7 +114,6 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Chỉ tài khoản ADMIN hoặc STAFF mới được phép đăng nhập ở đây.");
         }
 
-        // Log the admin/staff login activity
         String ipAddress = getClientIp(request);
         String location = ipLocationService.getLocationFromIp(ipAddress);
 
@@ -149,14 +146,13 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("Password wrong!");
         }
-        // Chỉ cho phép EXPERT hoặc STAFF
+
         if (user.getRole() == null ||
                 !(user.getRole().getRoleName() == Role.RoleName.EXPERT ||
                         user.getRole().getRoleName() == Role.RoleName.STAFF)) {
             throw new RuntimeException("Chỉ tài khoản EXPERT hoặc STAFF mới được phép đăng nhập ở đây.");
         }
 
-        // Log the expert login activity
         String ipAddress = getClientIp(request);
         String location = ipLocationService.getLocationFromIp(ipAddress);
 
@@ -179,7 +175,6 @@ public class AuthServiceImpl implements AuthService {
         return loginResponse;
     }
 
-    // hàm lấy IP
     private String getClientIp(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader == null) {
@@ -292,7 +287,6 @@ public class AuthServiceImpl implements AuthService {
             user.setPassword(passwordEncoder.encode(requestDTO.getNewPassword()));
             userRepository.save(user);
 
-            // Log the password change activity
             UserActivityLog activityLog = UserActivityLog.builder()
                     .user(user)
                     .action("CHANGE_PASSWORD")
@@ -311,7 +305,6 @@ public class AuthServiceImpl implements AuthService {
                 );
             } catch (Exception e) {
                 log.warn("Failed to create notification for password change: {}", e.getMessage());
-                // Không fail request nếu tạo notification thất bại
             }
 
             return new ResponseData<>(HttpStatus.OK.value(),

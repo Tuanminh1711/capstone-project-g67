@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.ai;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 

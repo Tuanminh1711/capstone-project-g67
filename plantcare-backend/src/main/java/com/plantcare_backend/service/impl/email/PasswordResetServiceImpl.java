@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.email;
 
 import com.plantcare_backend.dto.request.auth.ResetPasswordRequestDTO;
 import com.plantcare_backend.model.Users;

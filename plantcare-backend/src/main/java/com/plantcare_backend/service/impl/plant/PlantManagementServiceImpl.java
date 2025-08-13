@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.plant;
 
 import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.*;

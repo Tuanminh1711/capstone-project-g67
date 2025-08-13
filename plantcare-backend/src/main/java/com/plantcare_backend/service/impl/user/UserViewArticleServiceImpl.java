@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.user;
 
 import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
 import com.plantcare_backend.dto.response.expert.ArticleResponseDTO;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

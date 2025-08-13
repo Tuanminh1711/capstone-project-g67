@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.email;
 
 import com.plantcare_backend.model.SupportTicket;
 import com.plantcare_backend.service.EmailService;
@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,12 +40,25 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendEmail(String to, String subject, String content) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(content);
-        message.setFrom("nguyentahoang15012003@gmail.com");
-        emailSender.send(message);
+        try {
+            if (to == null || to.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email address cannot be null or empty");
+            }
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(content);
+            message.setFrom("nguyentahoang15012003@gmail.com");
+            emailSender.send(message);
+            log.info("Email sent successfully to: {}", to);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid email parameters: {}", e.getMessage() );
+            throw e;
+        } catch (Exception e) {
+            log.error("failed to send email to: {}", to, e);
+            throw new RuntimeException("Failed to send email:"+ e.getMessage());
+        }
     }
 
     @Override
@@ -55,6 +69,9 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendWelcomeEmail(String email, String username, String password) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
         String subject = "Welcome to PlantCare - Your Account Has Been Created";
         String content = String.format(
                 "Xin Chào %s,\n\n" +
@@ -72,6 +89,13 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendTicketNotificationEmail(List<String> adminEmails, SupportTicket ticket, String adminPanelUrl) {
+        if (adminEmails == null || adminEmails.isEmpty()) {
+            log.warn("Admin emails list is null or empty");
+            return;
+        }
+
+        List<String> validEmails = adminEmails.stream().filter(email -> email != null && !email.trim().isEmpty())
+                .collect(Collectors.toList());
         String subject = "🔔 Ticket mới: " + ticket.getTitle();
         String content = String.format(
                 "Chào Admin/Staff,\n\n" +
@@ -90,7 +114,7 @@ public class EmailServiceImpl implements EmailService {
                 ticket.getTicketId()
         );
 
-        for (String email : adminEmails) {
+        for (String email : validEmails) {
             sendEmailAsync(email, subject, content);
         }
     }

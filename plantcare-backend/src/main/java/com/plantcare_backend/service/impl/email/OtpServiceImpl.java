@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.email;
 
 import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.OtpService;

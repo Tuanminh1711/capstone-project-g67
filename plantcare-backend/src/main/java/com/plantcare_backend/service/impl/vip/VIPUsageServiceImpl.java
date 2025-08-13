@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.vip;
 
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.service.vip.VIPUsageService;
