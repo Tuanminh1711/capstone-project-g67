@@ -38,6 +38,12 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public void createPasswordResetToken(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
         if (!userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email not found in system");
         }
@@ -62,6 +68,15 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public boolean validateResetCode(String email, String code) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        if (code == null || code.trim().isEmpty()) {
+            throw new IllegalArgumentException("Reset code cannot be null or empty");
+        }
         ResetPasswordRequestDTO data = resetPasswordCache.getIfPresent(email);
         if (data == null || data.isUsed() ||
                 LocalDateTime.now().isAfter(data.getExpiryTime())) {
