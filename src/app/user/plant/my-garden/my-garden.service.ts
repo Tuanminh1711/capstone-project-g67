@@ -11,6 +11,11 @@ export interface UserPlant {
   nickname: string;
   plantLocation: string;
   reminderEnabled: boolean;
+  plantingDate?: string; // Thêm field cho planting date
+  imageUrls?: string[]; // Thêm field cho multiple images
+  images?: any[]; // Thêm field cho image objects
+  userId?: number; // Thêm field optional
+  createdAt?: string; // Thêm field optional
 }
 
 export interface Pageable {

@@ -381,7 +381,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       userPlantId: apiData.userPlantId,
       nickname: apiData.nickname || apiData.commonName || '',
       imageUrls: apiData.imageUrls || apiData.images?.map((img: any) => img.imageUrl) || [],
-      plantingDate: apiData.plantingDate || '',
+      plantingDate: apiData.plantingDate || '', // Thêm field này
       plantLocation: apiData.locationInHouse || '',
       reminderEnabled: apiData.reminderEnabled ?? false,
       images: apiData.images || [],
@@ -432,12 +432,29 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   private populateForm(): void {
     if (!this.currentPlant) return;
 
-    // Set current date as default planting date since we don't have it from API
-    const currentDate = new Date().toISOString().split('T')[0];
+    // Format planting date for HTML date input (YYYY-MM-DD)
+    let plantingDateFormatted = '';
+    if (this.currentPlant.plantingDate) {
+      try {
+        const date = new Date(this.currentPlant.plantingDate);
+        if (!isNaN(date.getTime())) {
+          plantingDateFormatted = date.toISOString().split('T')[0];
+        } else {
+          console.warn('Invalid planting date from API:', this.currentPlant.plantingDate);
+          plantingDateFormatted = new Date().toISOString().split('T')[0];
+        }
+      } catch (error) {
+        console.warn('Error parsing planting date:', error);
+        plantingDateFormatted = new Date().toISOString().split('T')[0];
+      }
+    } else {
+      // Default to today if no planting date provided
+      plantingDateFormatted = new Date().toISOString().split('T')[0];
+    }
 
     this.updateForm.patchValue({
       nickname: this.currentPlant.nickname || '',
-      plantingDate: currentDate, // Default to today since API doesn't provide planting date
+      plantingDate: plantingDateFormatted,
       locationInHouse: this.currentPlant.plantLocation || '',
       reminderEnabled: this.currentPlant.reminderEnabled || false
     });
@@ -470,13 +487,13 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private processFormData(formValues: any): UpdatePlantRequest {
-    // Convert date to 'YYYY-MM-DD 00:00:00' format
+    // Convert date to ISO 8601 format for backend
     let plantingDateFormatted: string;
     if (formValues.plantingDate) {
       const dateValue = formValues.plantingDate;
       let dateObj: Date;
       if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        // YYYY-MM-DD format
+        // YYYY-MM-DD format from HTML date input
         dateObj = new Date(dateValue + 'T00:00:00');
       } else {
         dateObj = new Date(dateValue);
@@ -485,24 +502,18 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         console.warn('Invalid date provided, using current date');
         dateObj = new Date();
       }
-      // Format: YYYY-MM-DD 00:00:00
-      const yyyy = dateObj.getFullYear();
-      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const dd = String(dateObj.getDate()).padStart(2, '0');
-      plantingDateFormatted = `${yyyy}-${mm}-${dd} 00:00:00`;
+      // Format: ISO 8601 (yyyy-MM-ddTHH:mm:ss.SSSX)
+      plantingDateFormatted = dateObj.toISOString();
     } else {
       const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      plantingDateFormatted = `${yyyy}-${mm}-${dd} 00:00:00`;
+      plantingDateFormatted = now.toISOString();
     }
 
     const processedData: UpdatePlantRequest = {
       userPlantId: this.userPlantId!.toString().trim(),
       nickname: (formValues.nickname || '').toString().trim(),
       locationInHouse: (formValues.locationInHouse || '').toString().trim(),
-      plantingDate: plantingDateFormatted, // 'YYYY-MM-DD 00:00:00'
+      plantingDate: plantingDateFormatted, // ISO 8601 format for backend
       reminderEnabled: Boolean(formValues.reminderEnabled)
     };
 
@@ -558,12 +569,14 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     
     this.toastService.success('Cập nhật thông tin cây thành công!');
     
-    // Refresh plant data to show updated info
-    this.loadPlantData();
-    
-    // Optionally navigate back
+    // Navigate to plant detail page after successful update
     setTimeout(() => {
-      this.router.navigate(['/my-garden']);
+      if (this.userPlantId) {
+        this.router.navigate(['/user/user-plant-detail', this.userPlantId]);
+      } else {
+        // Fallback to my-garden if no plant ID
+        this.router.navigate(['/my-garden']);
+      }
     }, 1500);
   }
 

@@ -55,6 +55,11 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     'Khác'
   ];
 
+  // Warning popup state
+  showLocationWarning = false;
+  locationWarningMessage = '';
+  pendingSubmit = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -151,11 +156,29 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    console.log('onSubmit called, pendingSubmit:', this.pendingSubmit);
+    
     // Validate form before processing
     if (!this.isFormValid()) {
       this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
+
+    // Check location compatibility before submitting
+    console.log('Checking location compatibility...');
+    console.log('Plant suitable location:', this.plant?.suitableLocation);
+    console.log('Selected location:', this.formData.locationInHouse);
+    
+    const shouldWarn = this.shouldShowLocationWarning();
+    console.log('Should show warning:', shouldWarn);
+    
+    if (!this.pendingSubmit && shouldWarn) {
+      console.log('Showing location warning popup - blocking submit');
+      this.showLocationWarningPopup();
+      return; // Stop form submission
+    }
+
+    console.log('Proceeding with form submission...');
 
     // Check authentication
     const token = this.cookieService.getAuthToken();
@@ -167,6 +190,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.error = '';
+    this.pendingSubmit = false; // Reset pending state
 
     // Prepare request data
     const requestData = this.prepareRequestData();
@@ -217,30 +241,40 @@ export class AddPlantComponent implements OnInit, OnDestroy {
 
   private handleAddPlantSuccess(response: any): void {
     console.log('Add plant success:', response);
-    this.loading = false;
-    this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
     
-    // Navigate to my garden
-    this.router.navigate(['/user/my-garden']);
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.loading = false;
+      this.toastService.success('Đã thêm cây vào bộ sưu tập thành công!');
+      
+      // Navigate to my garden
+      setTimeout(() => {
+        this.router.navigate(['/user/my-garden']);
+      }, 1500);
+    }, 0);
   }
 
   private handleAddPlantError(error: any): void {
     console.error('Add plant error:', error);
-    this.loading = false;
     
-    // Handle specific error cases
-    if (error.status === 401 || error.status === 403) {
-      this.toastService.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-      this.router.navigate(['/login']);
-    } else if (error.status === 409) {
-      this.toastService.error('Cây này đã có trong bộ sưu tập của bạn');
-    } else if (error.status === 404) {
-      this.toastService.error('Không tìm thấy thông tin cây. Vui lòng chọn cây khác.');
-    } else if (error.error?.message) {
-      this.toastService.error(`Lỗi: ${error.error.message}`);
-    } else {
-      this.toastService.error('Không thể thêm cây vào bộ sưu tập. Vui lòng thử lại.');
-    }
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.loading = false;
+      
+      // Handle specific error cases
+      if (error.status === 401 || error.status === 403) {
+        this.toastService.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        this.router.navigate(['/login']);
+      } else if (error.status === 409) {
+        this.toastService.error('Cây này đã có trong bộ sưu tập của bạn');
+      } else if (error.status === 404) {
+        this.toastService.error('Không tìm thấy thông tin cây. Vui lòng chọn cây khác.');
+      } else if (error.error?.message) {
+        this.toastService.error(`Lỗi: ${error.error.message}`);
+      } else {
+        this.toastService.error('Không thể thêm cây vào bộ sưu tập. Vui lòng thử lại.');
+      }
+    }, 0);
   }
 
   // Lưu trữ file ảnh người dùng chọn
@@ -405,5 +439,102 @@ export class AddPlantComponent implements OnInit, OnDestroy {
       'DIFFICULT': 'Khó chăm sóc'
     };
     return translations[value?.toUpperCase()] || value || 'Chưa có thông tin';
+  }
+
+  // Location warning methods
+  private shouldShowLocationWarning(): boolean {
+    if (!this.plant || !this.plant.suitableLocation || !this.formData.locationInHouse) {
+      console.log('No plant data or location info');
+      return false;
+    }
+
+    const suitableLocation = this.plant.suitableLocation.toLowerCase();
+    const selectedLocation = this.formData.locationInHouse.toLowerCase();
+    
+    console.log('Checking compatibility:', { suitableLocation, selectedLocation });
+
+    // Simple and effective check: if suitable location doesn't contain selected location
+    const suitableLocations = suitableLocation.split(',').map(loc => loc.trim());
+    const isLocationSuitable = suitableLocations.some(loc => 
+      loc.includes(selectedLocation) || selectedLocation.includes(loc.replace(/góc\s*/g, ''))
+    );
+
+    console.log('Suitable locations list:', suitableLocations);
+    console.log('Is location suitable:', isLocationSuitable);
+
+    if (!isLocationSuitable) {
+      console.log('Location not suitable based on direct match');
+      return true;
+    }
+
+    // Additional specific incompatibility checks
+    const incompatibleMappings: { [key: string]: string[] } = {
+      // Indoor plants shouldn't go to outdoor locations
+      'phòng': ['sân vườn', 'ban công'],
+      'trong nhà': ['sân vườn', 'ban công'],
+      'indoor': ['sân vườn', 'ban công'],
+      
+      // Outdoor plants shouldn't go indoors
+      'sân vườn': ['phòng khách', 'phòng ngủ', 'phòng bếp', 'phòng làm việc', 'phòng tắm'],
+      'ngoài trời': ['phòng khách', 'phòng ngủ', 'phòng bếp', 'phòng làm việc', 'phòng tắm'],
+      'outdoor': ['phòng khách', 'phòng ngủ', 'phòng bếp', 'phòng làm việc', 'phòng tắm'],
+      
+      // Low light plants shouldn't go to bright locations
+      'ít sáng': ['ban công', 'sân vườn'],
+      'bóng râm': ['ban công', 'sân vườn'],
+      'low light': ['ban công', 'sân vườn'],
+      
+      // Bright light plants shouldn't go to dark locations
+      'ánh sáng mạnh': ['phòng tắm', 'hành lang'],
+      'nhiều ánh sáng': ['phòng tắm', 'hành lang'],
+      'bright': ['phòng tắm', 'hành lang']
+    };
+
+    // Check for specific incompatibilities
+    for (const [suitableKeyword, incompatibleLocations] of Object.entries(incompatibleMappings)) {
+      if (suitableLocation.includes(suitableKeyword)) {
+        if (incompatibleLocations.some(loc => selectedLocation.includes(loc))) {
+          console.log(`Found incompatibility: ${suitableKeyword} with ${selectedLocation}`);
+          return true;
+        }
+      }
+    }
+
+    console.log('No incompatibility found');
+    return false;
+  }
+
+  showLocationWarningPopup(): void {
+    const suitableLocation = this.plant?.suitableLocation || 'không xác định';
+    const selectedLocation = this.formData.locationInHouse || 'không xác định';
+    
+    this.locationWarningMessage = `Lưu ý: Vị trí bạn chọn "${selectedLocation}" có thể không phù hợp với khuyến nghị cho loại cây này "${suitableLocation}". Bạn có muốn tiếp tục không?`;
+    this.showLocationWarning = true;
+    
+    console.log('Warning popup should be visible now:', this.showLocationWarning);
+    console.log('Warning message:', this.locationWarningMessage);
+    
+    // Force change detection to ensure popup appears immediately
+    this.cdr.markForCheck();
+  }
+
+  confirmLocationWarning(): void {
+    this.showLocationWarning = false;
+    this.pendingSubmit = true;
+    
+    // Use setTimeout to ensure state changes are processed
+    setTimeout(() => {
+      this.onSubmit(); // Continue with submit
+    }, 0);
+  }
+
+  cancelLocationWarning(): void {
+    this.showLocationWarning = false;
+    this.pendingSubmit = false;
+  }
+
+  // Helper method to determine if submit button should be disabled
+  isSubmitDisabled(): boolean {
+    return this.loading || !this.isFormValid();
   }
 }
