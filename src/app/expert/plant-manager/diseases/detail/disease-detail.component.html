@@ -36,9 +36,14 @@
         </span>
       </div>
 
-      <div class="info-section">
+      <div class="info-section" *ngIf="disease.description">
         <h3>Mô tả</h3>
         <p>{{disease.description}}</p>
+      </div>
+
+      <div class="info-section" *ngIf="!disease.description && disease.symptoms">
+        <h3>Mô tả</h3>
+        <p>{{disease.symptoms}}</p>
       </div>
 
       <div class="info-section">
@@ -56,26 +61,38 @@
         <p>{{disease.causes}}</p>
       </div>
 
-      <div class="info-section">
+      <div class="info-section" *ngIf="disease.preventionMethods || disease.prevention">
         <h3>Biện pháp phòng ngừa</h3>
-        <p>{{disease.preventionMethods}}</p>
+        <p>{{disease.preventionMethods || disease.prevention}}</p>
       </div>
 
-      <div class="info-section" *ngIf="disease.plants?.length">
+      <div class="info-section" *ngIf="disease.plants && disease.plants.length > 0">
         <h3>Cây trồng bị ảnh hưởng</h3>
         <div class="plants-list">
           <div class="plant-item" *ngFor="let plant of disease.plants">
-            <mat-icon class="plant-icon">yard</mat-icon>
-            <span>{{plant.name}}</span>
+            <span class="plant-icon">🌱</span>
+            <span>{{plant.name || plant.plantName || 'Tên cây không có'}}</span>
             <span class="scientific-name" *ngIf="plant.scientificName">({{plant.scientificName}})</span>
           </div>
         </div>
       </div>
 
-      <div class="info-section" *ngIf="disease.images?.length">
+      <div class="info-section" *ngIf="disease.affectedPlantTypes">
+        <h3>Loại cây bị ảnh hưởng</h3>
+        <p>{{disease.affectedPlantTypes}}</p>
+      </div>
+
+      <div class="info-section" *ngIf="disease.images && disease.images.length > 0">
         <h3>Hình ảnh</h3>
         <div class="images-grid">
           <img *ngFor="let image of disease.images" [src]="image" [alt]="disease.diseaseName">
+        </div>
+      </div>
+
+      <div class="info-section" *ngIf="disease.imageUrl && !disease.images">
+        <h3>Hình ảnh</h3>
+        <div class="images-grid">
+          <img [src]="disease.imageUrl" [alt]="disease.diseaseName">
         </div>
       </div>
     </mat-card-content>
