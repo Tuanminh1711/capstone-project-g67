@@ -18,7 +18,7 @@ import { CookieService } from '../../auth/cookie.service';
   providedIn: 'root'
 })
 export class DiseaseDetectionService {
-  private apiUrl = `${environment.apiUrl}/api/vip/disease-detection`;
+  private apiUrl = `${environment.apiUrl}/vip/disease-detection`;
   private isApiEnabled = true; // Enable API calls now that backend is configured
 
   constructor(private http: HttpClient, private cookieService: CookieService) { }

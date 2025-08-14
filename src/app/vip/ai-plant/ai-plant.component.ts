@@ -155,7 +155,7 @@ export class AiPlantComponent implements OnInit {
       console.log('Validation timeout - clearing loading state');
     }, 3000); // 3 second timeout - much shorter
 
-    this.http.post<any>(`${this.configService.apiUrl}/api/ai/validate-plant-image`, formData, { 
+    this.http.post<any>(`${this.configService.apiUrl}/ai/validate-plant-image`, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -206,13 +206,13 @@ export class AiPlantComponent implements OnInit {
     // Debug: Log token and headers
     const token = this.cookieService.getCookie('auth_token');
     console.log('🔍 [AI Plant] Making request with:', {
-      endpoint: `${this.configService.apiUrl}/api/ai/identify-plant`,
+      endpoint: `${this.configService.apiUrl}/ai/identify-plant`,
       userId,
       hasToken: !!token,
       tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
     });
 
-    this.http.post<any>(`${this.configService.apiUrl}/api/ai/identify-plant`, formData, { 
+    this.http.post<any>(`${this.configService.apiUrl}/ai/identify-plant`, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -262,7 +262,7 @@ export class AiPlantComponent implements OnInit {
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted search
 
-    this.http.get<any>(`${this.configService.apiUrl}/api/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
+    this.http.get<any>(`${this.configService.apiUrl}/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
       headers: this.getAuthHeaders() 
     })
       .subscribe({
