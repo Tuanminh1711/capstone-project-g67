@@ -165,6 +165,21 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
     @Override
     public void addUserPlant(AddUserPlantRequestDTO requestDTO, List<MultipartFile> images, Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("User ID cannot be null or invalid");
+        }
+
+        if (requestDTO.getPlantId() == null) {
+            throw new IllegalArgumentException("Plant ID cannot be null");
+        }
+
+        if (requestDTO.getNickname() == null || requestDTO.getNickname().trim().isEmpty()) {
+            throw new IllegalArgumentException("Nickname cannot be null or empty");
+        }
+
+        if (requestDTO.getLocationInHouse() == null || requestDTO.getLocationInHouse().trim().isEmpty()) {
+            throw new IllegalArgumentException("Location cannot be null or empty");
+        }
         log.info("=== DEBUG SERVICE ADD USER PLANT ===");
         log.info("Request DTO: {}", requestDTO);
         log.info("Plant ID from request: {}", requestDTO.getPlantId());
@@ -314,6 +329,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     @Override
     @Transactional
     public void updateUserPlant(UpdateUserPlantRequestDTO requestDTO, Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("User ID cannot be null or invalid");
+        }
         log.info("Updating user plant: {} for user: {}", requestDTO.getUserPlantId(), userId);
 
         validateUpdateUserPlantRequest(requestDTO);

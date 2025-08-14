@@ -53,8 +53,15 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         UserProfile userProfile = userProfileRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Profile not found for user ID: " + userId));
+
         if (userProfileDTO.getFullName() == null || userProfileDTO.getFullName().isBlank()) {
             throw new IllegalArgumentException("Full name cannot be empty");
+        }
+        if (userProfileDTO.getGender() == null || userProfileDTO.getGender().trim().isEmpty()) {
+            throw new IllegalArgumentException("Gender cannot be null or empty");
+        }
+        if (userProfileDTO.getLivingEnvironment() == null || userProfileDTO.getLivingEnvironment().trim().isEmpty()) {
+            throw new IllegalArgumentException("Living environment cannot be null or empty");
         }
         userProfile.setFullName(userProfileDTO.getFullName());
         userProfile.setPhone(userProfileDTO.getPhoneNumber());
