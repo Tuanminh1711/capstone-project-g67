@@ -10,7 +10,7 @@ export interface Account {
   email: string;
   phone: string;
   role: string;
-  status: string;
+  status: string | null; // Allow null status from API
 }
 
 export interface AccountListResponse {

@@ -94,12 +94,14 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     if (this.isSubmitting) return;
     
     this.isSubmitting = true;
+    this.setLoading(true); // Set loading state
     this.setError('');
     this.setSuccess('');
     const errMsg = this.validateForm();
     if (errMsg) {
       this.toastService.error(this.translateErrorMessage(errMsg));
       this.isSubmitting = false;
+      this.setLoading(false); // Reset loading state
       return;
     }
     const body = {
@@ -114,11 +116,17 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     this.createAccountService.addUser(body).subscribe({
       next: (res) => {
         this.isSubmitting = false;
-        // Nếu có message từ backend thì coi là lỗi, không có message thì coi là thành công
-        if (res && res.message) {
+        this.setLoading(false); // Reset loading state
+        console.log('Create account response:', res);
+        
+        // Check response để xác định thành công hay thất bại
+        // Nếu có code và code !== 200/201, hoặc có error = true thì là lỗi
+        if (res && ((res.code && res.code !== 200 && res.code !== 201) || res.error === true)) {
           let msg = res.message || 'Tạo tài khoản thất bại!';
           this.toastService.error(this.translateErrorMessage(msg));
+          this.setError(this.translateErrorMessage(msg));
         } else {
+          // Thành công
           this.toastService.success('Tạo tài khoản thành công!');
           this.setSuccess('Tạo tài khoản thành công!');
           this.setError('');
@@ -131,12 +139,15 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
           this.roleId = 2; // Reset về Staff
           this.cdr.detectChanges();
           setTimeout(() => {
-            this.router.navigate(['/admin/accounts'], { queryParams: { successMsg: this.successMsg } });
+            this.router.navigate(['/admin/accounts']);
           }, 800);
         }
       },
       error: (err) => {
         this.isSubmitting = false;
+        this.setLoading(false); // Reset loading state
+        console.error('Create account error:', err);
+        
         let msg = '';
         // Ưu tiên lấy message từ backend
         if (err?.error?.message) {
@@ -149,6 +160,8 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
           msg = 'Tạo tài khoản thất bại!';
         }
         this.toastService.error(this.translateErrorMessage(msg));
+        this.setError(this.translateErrorMessage(msg));
+        this.cdr.detectChanges();
       }
     });
   }

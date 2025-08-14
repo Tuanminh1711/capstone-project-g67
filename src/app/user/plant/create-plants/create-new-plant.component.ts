@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -26,6 +26,57 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
   isUploadingImages = false;
   private subscriptions: Subscription = new Subscription();
   @ViewChild('imageUpload') imageUpload!: ElementRef<HTMLInputElement>;
+
+  // Custom validators theo backend DTO requirements
+  static scientificNameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    
+    if (value.length < 3 || value.length > 100) {
+      return { scientificName: 'Tên khoa học phải từ 3 đến 100 ký tự' };
+    }
+    return null;
+  }
+
+  static commonNameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    
+    if (value.length < 2 || value.length > 100) {
+      return { commonName: 'Tên thông thường phải từ 2 đến 100 ký tự' };
+    }
+    return null;
+  }
+
+  static descriptionValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    
+    if (value.length < 25 || value.length > 2000) {
+      return { description: 'Mô tả phải từ 25 đến 2000 ký tự' };
+    }
+    return null;
+  }
+
+  static suitableLocationValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    
+    if (value.length > 500) {
+      return { suitableLocation: 'Vị trí phù hợp không được vượt quá 500 ký tự' };
+    }
+    return null;
+  }
+
+  static commonDiseasesValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    
+    if (value.length > 1000) {
+      return { commonDiseases: 'Bệnh thường gặp không được vượt quá 1000 ký tự' };
+    }
+    return null;
+  }
 
   // Options cho dropdowns
   lightRequirements = [
@@ -66,16 +117,31 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
 
   private initializeForm(): FormGroup {
     return this.fb.group({
-      scientificName: ['', [Validators.required, Validators.minLength(3)]],
-      commonName: ['', [Validators.required, Validators.minLength(2)]],
+      scientificName: ['', [
+        Validators.required, 
+        CreateNewPlantComponent.scientificNameValidator
+      ]],
+      commonName: ['', [
+        Validators.required, 
+        CreateNewPlantComponent.commonNameValidator
+      ]],
       categoryId: [{value: '', disabled: false}, Validators.required],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      careInstructions: ['', [Validators.required, Validators.minLength(10)]],
+      description: ['', [
+        Validators.required, 
+        CreateNewPlantComponent.descriptionValidator
+      ]],
+      careInstructions: ['', [Validators.required]],
       lightRequirement: ['', Validators.required],
       waterRequirement: ['', Validators.required],
       careDifficulty: ['', Validators.required],
-      suitableLocation: ['', [Validators.required, Validators.minLength(5)]],
-      commonDiseases: ['', [Validators.required, Validators.minLength(5)]]
+      suitableLocation: ['', [
+        Validators.required, 
+        CreateNewPlantComponent.suitableLocationValidator
+      ]],
+      commonDiseases: ['', [
+        Validators.required, 
+        CreateNewPlantComponent.commonDiseasesValidator
+      ]]
     });
   }
 
@@ -184,12 +250,12 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.createPlantForm.invalid) {
       this.markFormGroupTouched();
-      this.toastService.error('Vui lòng điền đầy đủ thông tin');
+      this.toastService.error('Vui lòng kiểm tra và sửa các lỗi trong form');
       return;
     }
 
     if (this.imageUrls.length === 0) {
-      this.toastService.error('Vui lòng thêm ít nhất 1 ảnh');
+      this.toastService.error('Vui lòng thêm ít nhất 1 ảnh cho cây');
       return;
     }
 
@@ -254,8 +320,33 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     const field = this.createPlantForm.get(fieldName);
     
     if (field?.errors) {
-      if (field.errors['required']) return `${this.getFieldLabel(fieldName)} là bắt buộc`;
-      if (field.errors['minlength']) return `${this.getFieldLabel(fieldName)} quá ngắn`;
+      if (field.errors['required']) {
+        return `${this.getFieldLabel(fieldName)} không được để trống`;
+      }
+      if (field.errors['minlength']) {
+        const required = field.errors['minlength'].requiredLength;
+        return `${this.getFieldLabel(fieldName)} phải có ít nhất ${required} ký tự`;
+      }
+      if (field.errors['maxlength']) {
+        const max = field.errors['maxlength'].requiredLength;
+        return `${this.getFieldLabel(fieldName)} không được vượt quá ${max} ký tự`;
+      }
+      // Custom validation errors
+      if (field.errors['scientificName']) {
+        return field.errors['scientificName'];
+      }
+      if (field.errors['commonName']) {
+        return field.errors['commonName'];
+      }
+      if (field.errors['description']) {
+        return field.errors['description'];
+      }
+      if (field.errors['suitableLocation']) {
+        return field.errors['suitableLocation'];
+      }
+      if (field.errors['commonDiseases']) {
+        return field.errors['commonDiseases'];
+      }
     }
     
     return '';

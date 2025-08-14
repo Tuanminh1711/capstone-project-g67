@@ -53,6 +53,153 @@
   gap: 8px;
 }
 
+.self-edit-warning {
+  margin: 20px 0;
+  padding: 16px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ff9800;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.1);
+}
+
+.warning-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.warning-content i {
+  color: #f57c00;
+  font-size: 1.5rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.warning-text h4 {
+  color: #e65100;
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.warning-text p {
+  color: #bf360c;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.self-edit-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff8e1;
+  border: 1px solid #ffcc02;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #f57c00;
+}
+
+.self-edit-notice i {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.self-edit-info {
+  margin: 20px 0;
+  padding: 16px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+}
+
+.info-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.info-content i {
+  color: #2e7d32;
+  font-size: 1.5rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.info-text h4 {
+  color: #1b5e20;
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.info-text p {
+  color: #2e7d32;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.current-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.current-info span {
+  color: #1b5e20;
+  font-size: 0.9rem;
+  
+  strong {
+    font-weight: 600;
+  }
+}
+
+.alternative-action {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #c8e6c9;
+}
+
+.alternative-action p {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: #2e7d32;
+  
+  i {
+    color: #ff9800;
+    margin-right: 4px;
+  }
+}
+
+.profile-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  }
+  
+  i {
+    font-size: 1rem;
+  }
+}
+
 .retry-btn {
   background: #d32f2f;
   color: #fff;

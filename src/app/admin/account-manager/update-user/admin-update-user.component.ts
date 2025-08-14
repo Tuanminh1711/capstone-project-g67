@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { AuthService } from '../../../auth/auth.service';
+import { UserProfileService, UpdateUserProfileRequest } from '../../../user/profile/view-user-profile/user-profile.service';
 
 interface UserDetail {
   id: number;
@@ -61,28 +62,76 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
   isVip: boolean = false;
   canEditRoleOnly: boolean = false;
   canEditAll: boolean = false;
+  canEditEmail: boolean = false; // Flag để kiểm soát việc chỉnh sửa email
   currentUserRole: string = '';
+  isSelfEdit: boolean = false; // Flag để xác định có phải đang chỉnh sửa tài khoản của chính mình
+  currentUserId: string | null = null;
 
   private setEditPermissions() {
     // ADMIN, STAFF, EXPERT, VIP có thể chỉnh sửa tất cả
     if (['ADMIN', 'STAFF', 'EXPERT', 'VIP'].includes(this.currentUserRole)) {
       this.canEditAll = true;
+      this.canEditEmail = !this.isSelfEdit; // Nếu self-edit thì không cho edit email qua admin endpoint
       this.isVip = this.currentUserRole === 'VIP';
       this.canEditRoleOnly = false;
       this.canEditNone = false;
     } else if (['USER', 'GUEST'].includes(this.currentUserRole)) {
       // USER và GUEST chỉ chỉnh sửa thông tin cơ bản
       this.canEditAll = false;
+      this.canEditEmail = false; // User/Guest không được chỉnh sửa email trong admin panel
       this.canEditRoleOnly = true;
       this.canEditNone = false;
       this.isVip = false;
     } else {
       // Không xác định role hoặc không có quyền
       this.canEditAll = false;
+      this.canEditEmail = false;
       this.canEditRoleOnly = false;
       this.canEditNone = true;
       this.isVip = false;
     }
+  }
+
+  private checkIfSelfEdit() {
+    // Kiểm tra xem userId hiện tại có trùng với userId đang chỉnh sửa không
+    if (this.currentUserId && this.userId) {
+      this.isSelfEdit = (this.currentUserId + '') === (this.userId + '');
+      
+      // Cập nhật lại permissions sau khi xác định self-edit
+      this.setEditPermissions();
+    }
+  }
+
+  private getRoleId(roleName: string): number {
+    // Map role name to role ID
+    const roleMap: {[key: string]: number} = {
+      'ADMIN': 1,
+      'USER': 2, 
+      'VIP': 3,
+      'EXPERT': 4,
+      'STAFF': 5
+    };
+    return roleMap[roleName.toUpperCase()] || 2; // Default to USER
+  }
+
+  getRoleText(role: string): string {
+    const roleMap: {[key: string]: string} = {
+      'ADMIN': 'Quản trị viên',
+      'USER': 'Người dùng', 
+      'VIP': 'VIP',
+      'EXPERT': 'Chuyên gia',
+      'STAFF': 'Nhân viên'
+    };
+    return roleMap[role?.toUpperCase()] || 'Người dùng';
+  }
+
+  getStatusText(status: string): string {
+    const statusMap: {[key: string]: string} = {
+      'ACTIVE': 'Hoạt động',
+      'INACTIVE': 'Đã khóa',
+      'BANNED': 'Cấm'
+    };
+    return statusMap[status?.toUpperCase()] || 'Hoạt động';
   }
   
   // Form data
@@ -105,15 +154,22 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
   private http: HttpClient,
   private cdr: ChangeDetectorRef,
   private toastService: ToastService,
-  private authService: AuthService
+  private authService: AuthService,
+  private userProfileService: UserProfileService
   ) {
     super();
   }
 
   ngOnInit() {
-    // Lấy role người đăng nhập
+    // Lấy role và userId người đăng nhập
     this.currentUserRole = this.authService.getCurrentUserRole()?.toUpperCase() || '';
+    this.currentUserId = this.authService.getCurrentUserId();
     this.setEditPermissions();
+
+    // Kiểm tra query params để xác định self-edit
+    this.route.queryParams.subscribe(params => {
+      this.isSelfEdit = params['selfEdit'] === 'true';
+    });
 
     // Load user detail immediately on component init
     this.loadUserDetailFromRoute();
@@ -125,6 +181,10 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         this.userId = newUserId;
         this.dataLoaded = false;
         this.user = null; // Clear previous data
+        
+        // Kiểm tra lại xem có phải self-edit không
+        this.checkIfSelfEdit();
+        
         this.loadUserDetail();
       }
     });
@@ -261,18 +321,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     }
   }
 
-  private getRoleId(role: string): number {
-    const roleMap: { [key: string]: number } = {
-      'ADMIN': 1,
-      'STAFF': 2,
-      'USER': 3,
-      'GUEST': 4,
-      'EXPERT': 5,
-      'VIP': 6
-    };
-    return roleMap[role?.toUpperCase()] || 3;
-  }
-
   goBack() {
     this.router.navigate(['/admin/accounts']);
   }
@@ -280,20 +328,32 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
   updateUser() {
     if (this.updating || !this.user) return;
 
-    // Validate form data
-    if (!this.formData.email || !this.formData.fullName || !this.formData.phoneNumber) {
-      this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc (Email, Họ tên, Số điện thoại)');
-      return;
+    const currentUserId = this.authService.getCurrentUserId();
+    const isUpdatingSelf = currentUserId && this.userId === Number(currentUserId);
+
+    // Validate form data based on update type
+    if (isUpdatingSelf || this.isSelfEdit) {
+      // Self-edit: chỉ validate thông tin cơ bản (không cần email)
+      if (!this.formData.fullName || !this.formData.phoneNumber) {
+        this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại)');
+        return;
+      }
+    } else {
+      // Admin-edit: validate tất cả thông tin bắt buộc
+      if (!this.formData.email || !this.formData.fullName || !this.formData.phoneNumber) {
+        this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc (Email, Họ tên, Số điện thoại)');
+        return;
+      }
+
+      // Validate email format only for admin-edit
+      const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+      if (!emailPattern.test(this.formData.email)) {
+        this.toastService.error('Email không đúng định dạng');
+        return;
+      }
     }
 
-    // Validate email format
-    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    if (!emailPattern.test(this.formData.email)) {
-      this.toastService.error('Email không đúng định dạng');
-      return;
-    }
-
-    // Validate phone number format (Vietnam)
+    // Validate phone number format (Vietnam) - common for both cases
     const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})\b/;
     if (!phonePattern.test(this.formData.phoneNumber)) {
       this.toastService.error('Số điện thoại không đúng định dạng');
@@ -304,47 +364,120 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     this.setError('');
     this.setSuccess('');
     this.cdr.detectChanges();
-
-    const currentUserId = this.authService.getCurrentUserId();
-    const isUpdatingSelf = currentUserId && this.userId === Number(currentUserId);
-
-    // Prepare request data based on endpoint
-    let updateData: any;
-    let apiUrl: string;
-
-    if (isUpdatingSelf) {
-      // Nếu update chính mình, dùng endpoint updateProfile với data format phù hợp
-      updateData = {
-        id: this.userId,
-        fullName: this.formData.fullName,
-        phoneNumber: this.formData.phoneNumber,
-        livingEnvironment: this.user?.livingEnvironment || '',
-        avatar: this.user?.avatarUrl || '',
-        gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male'
-      };
-      apiUrl = `/api/user/updateprofile`;
-    } else {
-      // Nếu admin update user khác, dùng endpoint admin với data format khác
-      updateData = {
-        email: this.formData.email,
-        fullName: this.formData.fullName,
-        phoneNumber: this.formData.phoneNumber,
-        gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
-        roleId: this.formData.roleId,
-        status: this.formData.status,
-        livingEnvironment: this.user?.livingEnvironment || ''
-      };
-      apiUrl = `/api/admin/updateuser/${this.userId}`;
+    
+    // Enhanced validation for self-edit scenarios
+    if (isUpdatingSelf || this.isSelfEdit) {
+      // Additional validation for self-edit safety
+      if (!this.user?.email) {
+        this.toastService.error('Không thể xác định email hiện tại của tài khoản. Vui lòng thử lại sau.');
+        this.updating = false;
+        return;
+      }
+      
+      // Đảm bảo role và status không thay đổi (chỉ hiển thị trong UI, không gửi API)
+      this.formData.roleId = this.getRoleId(this.user?.role || 'USER');
+      this.formData.status = this.user?.status || 'ACTIVE';
+      
+      // Bỏ các toast notifications không cần thiết để tránh spam
     }
+
+    // Prepare request data - phân biệt rõ ràng giữa self-edit và admin-edit
+
+    if (isUpdatingSelf || this.isSelfEdit) {
+      // Nếu admin update chính mình -> THỬ USER PROFILE SERVICE TRƯỚC, FALLBACK VỀ ADMIN ENDPOINT
+      // Giống như user bình thường update profile
+      const updateProfileData: UpdateUserProfileRequest = {
+        id: this.user.id,
+        fullName: this.formData.fullName.trim(),
+        phoneNumber: this.formData.phoneNumber.trim(),
+        livingEnvironment: this.user?.livingEnvironment?.trim() || 'Không xác định',
+        avatar: this.user?.avatarUrl || this.user?.profileImage || '',
+        gender: this.formData.gender ? this.formData.gender.toUpperCase() : 'MALE'
+      };
+      
+      console.log('Self-edit mode: Trying UserProfileService first with data:', updateProfileData);
+      console.log('Current user ID:', this.userId, 'User object:', this.user);
+      
+      // Thử UserProfileService trước, nếu lỗi thì fallback về admin endpoint
+      this.userProfileService.updateUserProfile(updateProfileData).subscribe({
+        next: (response: any) => {
+          console.log('Update profile response:', response);
+          
+          // Backend trả về ResponseData wrapper, cần extract data
+          let profileData = response;
+          if (response && response.data) {
+            profileData = response.data;
+            console.log('Extracted profile data from ResponseData wrapper:', profileData);
+          }
+          
+          this.toastService.success('✅ Cập nhật thông tin cá nhân thành công!');
+          
+          this.updating = false;
+          this.cdr.detectChanges();
+          
+          // Reload user data to show updated info
+          setTimeout(() => {
+            this.loadUserDetail();
+          }, 1000);
+        },
+        error: (error: any) => {
+          console.error('Error updating profile via UserProfileService:', error);
+          console.error('Error details:', {
+            status: error.status,
+            message: error.message,
+            error: error.error
+          });
+          
+          // Nếu lỗi 404 (Profile not found) hoặc endpoint không tồn tại, fallback về admin endpoint
+          if (error.status === 404 || error.status === 0 || error.status === 500) {
+            console.log('Profile endpoint not available or user profile not found, falling back to admin endpoint...');
+            // Bỏ warning toast để tránh spam user với quá nhiều thông báo
+            
+            this.performFallbackUpdate();
+          } else if (error.status === 400) {
+            // Lỗi validation từ backend (ví dụ: livingEnvironment không hợp lệ)
+            console.log('Backend validation error, falling back to admin endpoint...');
+            // Bỏ warning toast để tránh spam user với quá nhiều thông báo
+            
+            this.performFallbackUpdate();
+          } else {
+            // Xử lý lỗi khác từ UserProfileService
+            this.handleProfileUpdateError(error);
+          }
+        }
+      });
+      
+      return; // Exit early for self-edit
+    }
+    
+    // CODE DƯỚI ĐÂY CHỈ CHẠY CHO ADMIN-EDIT (không phải self-edit)
+    // Nếu admin update user khác -> SỬ DỤNG ADMIN ENDPOINT
+    const updateData = {
+      email: this.formData.email,
+      fullName: this.formData.fullName,
+      phoneNumber: this.formData.phoneNumber,
+      gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
+      roleId: this.formData.roleId,
+      status: this.formData.status,
+      livingEnvironment: this.user?.livingEnvironment?.trim() || 'Không xác định'
+    };
+    const apiUrl = `/api/admin/updateuser/${this.userId}`;
+    
+    console.log('Admin-edit mode: Using admin endpoint with data:', updateData);
 
     // Log request data để debug
     console.log('Updating user with data:', updateData);
     console.log('Using API endpoint:', apiUrl);
 
+    // Xử lý API call cho admin-edit
+    console.log('API Strategy: Admin User Update');
+    
     this.http.put<any>(apiUrl, updateData, { withCredentials: true }).subscribe({
       next: (response: any) => {
         console.log('Update user response:', response);
-        this.toastService.success('Cập nhật thông tin người dùng thành công!');
+        
+        this.toastService.success('✅ Cập nhật thông tin người dùng thành công!');
+        
         this.updating = false;
         this.cdr.detectChanges();
         // Reload user data to show updated info
@@ -354,28 +487,141 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
       },
       error: (error: any) => {
         console.error('Error updating user:', error);
-        let errorMessage = '';
-        // Ưu tiên hiện err.message nếu có (lỗi CORS, lỗi không phải JSON)
-        if (error && typeof error.message === 'string' && error.message.trim()) {
-          errorMessage = error.message;
-        } else if (error.status === 0) {
-          errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
-        } else if (error.status === 401) {
-          errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-        } else if (error.status === 403) {
-          errorMessage = 'Bạn không có quyền cập nhật thông tin này.';
-        } else if (error.status === 404) {
-          errorMessage = 'Không tìm thấy người dùng.';
-        } else if (error.status === 400) {
-          errorMessage = error?.error?.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
-        } else if (error.status === 500) {
-          errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
-        } else {
-          errorMessage = error?.error?.message || 'Không thể cập nhật thông tin. Vui lòng thử lại.';
-        }
-        this.toastService.error(errorMessage);
+        this.handleUpdateError(error);
+      }
+    });
+  }
+
+  private handleUpdateError(error: any) {
+    let errorMessage = '';
+    let showRetryOption = false;
+    
+    // Xử lý lỗi đặc biệt cho self-edit (sử dụng user profile endpoint)
+    if (this.isSelfEdit && error.status === 400) {
+      errorMessage = 'Không thể cập nhật thông tin. Vui lòng kiểm tra lại dữ liệu nhập vào. ';
+    } else if (this.isSelfEdit && error.status === 403) {
+      errorMessage = 'Bạn không có quyền cập nhật thông tin này. ';
+    } else if (this.isSelfEdit && error.status === 500) {
+      errorMessage = 'Lỗi server khi cập nhật profile. Vui lòng thử lại sau. ';
+    } else if (error && typeof error.message === 'string' && error.message.trim()) {
+      errorMessage = error.message;
+    } else if (error.status === 0) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 403) {
+      errorMessage = 'Bạn không có quyền cập nhật thông tin này.';
+    } else if (error.status === 404) {
+      errorMessage = 'Không tìm thấy người dùng.';
+    } else if (error.status === 400) {
+      errorMessage = error?.error?.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+    } else if (error.status === 500) {
+      errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+    } else {
+      errorMessage = error?.error?.message || error?.userMessage || 'Không thể cập nhật thông tin. Vui lòng thử lại.';
+    }
+    
+    this.toastService.error(errorMessage);
+    this.updating = false;
+    this.cdr.detectChanges();
+    
+    // Chỉ suggest alternative nếu thực sự cần thiết
+    if (this.isSelfEdit && error.status >= 400 && error.status < 500) {
+      setTimeout(() => {
+        this.toastService.info('💡 Nếu vẫn gặp lỗi, bạn có thể thử chỉnh sửa từ trang Profile cá nhân.', 4000);
+      }, 2000);
+    }
+  }
+
+  private handleProfileUpdateError(error: any) {
+    let errorMessage = '';
+    
+    console.error('Profile update error details:', {
+      status: error.status,
+      message: error.message,
+      error: error.error,
+      fullError: error
+    });
+    
+    // Xử lý lỗi đặc biệt cho profile update (sử dụng UserProfileService)
+    if (error.status === 0) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 403) {
+      errorMessage = 'Bạn không có quyền cập nhật thông tin này.';
+    } else if (error.status === 404) {
+      // Backend trả về "Profile not found for user ID: X"
+      if (error.error && error.error.message) {
+        errorMessage = `Không tìm thấy profile: ${error.error.message}`;
+      } else {
+        errorMessage = 'Không tìm thấy thông tin profile của người dùng.';
+      }
+    } else if (error.status === 400) {
+      if (error.error && error.error.message) {
+        errorMessage = `Dữ liệu không hợp lệ: ${error.error.message}`;
+      } else {
+        errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+      }
+    } else if (error.status === 500) {
+      if (error.error && error.error.message) {
+        errorMessage = `Lỗi server: ${error.error.message}`;
+      } else {
+        errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+      }
+    } else {
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      } else if (error.userMessage) {
+        errorMessage = error.userMessage;
+      } else {
+        errorMessage = 'Không thể cập nhật thông tin. Vui lòng thử lại.';
+      }
+    }
+    
+    this.toastService.error(errorMessage);
+    this.updating = false;
+    this.cdr.detectChanges();
+    
+    // Suggest alternative for profile update errors
+    if (error.status >= 400 && error.status < 500) {
+      setTimeout(() => {
+        this.toastService.info('💡 Nếu vẫn gặp lỗi, bạn có thể thử chỉnh sửa từ trang Profile cá nhân.', 4000);
+      }, 2000);
+    }
+  }
+
+  private performFallbackUpdate() {
+    const fallbackData = {
+      email: this.user?.email || '',
+      fullName: this.formData.fullName.trim(),
+      phoneNumber: this.formData.phoneNumber.trim(),
+      gender: this.formData.gender ? this.formData.gender.toLowerCase() : 'male',
+      roleId: this.getRoleId(this.user?.role || 'USER'),
+      status: this.user?.status || 'ACTIVE',
+      livingEnvironment: this.user?.livingEnvironment?.trim() || 'Không xác định'
+    };
+    
+    const fallbackUrl = `/api/admin/updateuser/${this.userId}`;
+    console.log('Fallback: Using admin endpoint with data:', fallbackData);
+    
+    this.http.put<any>(fallbackUrl, fallbackData, { withCredentials: true }).subscribe({
+      next: (fallbackResponse: any) => {
+        console.log('Fallback update response:', fallbackResponse);
+        
+        this.toastService.success('✅ Cập nhật thông tin cá nhân thành công!');
+        
         this.updating = false;
         this.cdr.detectChanges();
+        
+        // Reload user data to show updated info
+        setTimeout(() => {
+          this.loadUserDetail();
+        }, 1000);
+      },
+      error: (fallbackError: any) => {
+        console.error('Fallback update also failed:', fallbackError);
+        this.handleUpdateError(fallbackError);
       }
     });
   }
@@ -394,27 +640,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
 
   getStatusClass(status: string): string {
     return status === 'ACTIVE' ? 'status-active' : 'status-inactive';
-  }
-
-  getStatusText(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'ACTIVE': 'Hoạt động',
-      'INACTIVE': 'Đã khóa',
-      'BANNED': 'Cấm'
-    };
-    return statusMap[status?.toUpperCase()] || status;
-  }
-
-  getRoleText(role: string): string {
-    const roleMap: { [key: string]: string } = {
-      'ADMIN': 'Administrator with full access',
-      'STAFF': 'Staff member with limited access',
-      'USER': 'Regular user with basic access',
-      'GUEST': 'Guest user with minimal access',
-      'EXPERT': 'Expert',
-      'VIP': 'VIP user with premium access'
-    };
-    return roleMap[role?.toUpperCase()] || role;
   }
 
   getGenderText(gender: string): string {

@@ -4,18 +4,18 @@ import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
-// Interface cho request tạo plant mới
+// Interface cho request tạo plant mới - match với CreateUserPlantRequestDTO
 export interface CreatePlantRequest {
-  scientificName: string;
-  commonName: string;
-  categoryId: string;
-  description: string;
-  careInstructions: string;
+  scientificName: string;        // @Size(min = 3, max = 100)
+  commonName: string;            // @Size(min = 2, max = 100)
+  categoryId: string;            // @NotNull
+  description: string;           // @Size(min = 25, max = 2000)
+  careInstructions: string;      // @NotNull
   lightRequirement: 'LOW' | 'MEDIUM' | 'HIGH';
   waterRequirement: 'LOW' | 'MEDIUM' | 'HIGH';
-  careDifficulty: 'EASY' | 'MEDIUM' | 'HARD';
-  suitableLocation: string;
-  commonDiseases: string;
+  careDifficulty: 'EASY' | 'MODERATE' | 'DIFFICULT';  // Match với backend enum
+  suitableLocation: string;      // @Size(max = 500)
+  commonDiseases: string;        // @Size(max = 1000)
   imageUrls: string[];
 }
 

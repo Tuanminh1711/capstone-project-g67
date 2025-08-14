@@ -18,7 +18,7 @@
       
       <!-- Row 2: Person in charge, Created time -->
       <div class="ticket-header-row-2">
-        <div class="ticket-person-section">
+        <div class="ticket-person-section" *ngIf="ticket?.status !== 'OPEN'">
           <span class="info-label">Người phụ trách:</span>
           <span class="info-value">{{ getPersonInCharge() }}</span>
         </div>

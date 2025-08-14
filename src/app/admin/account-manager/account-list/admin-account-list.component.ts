@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { AuthService } from '../../../auth/auth.service';
 import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-admin-account-list',
@@ -42,7 +43,8 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     private router: Router,
     private confirmationDialog: ConfirmationDialogService,
     private authService: AuthService,
-    private pageTitleService: AdminPageTitleService
+    private pageTitleService: AdminPageTitleService,
+    private toastService: ToastService
   ) {
     super();
   }
@@ -52,11 +54,6 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     this.pageTitleService.setTitle('Quản lý tài khoản');
     // Lấy userId hiện tại
     this.currentUserId = this.authService.getCurrentUserId();
-    this.route.queryParams.subscribe(params => {
-      if (params['successMsg']) {
-        this.setSuccess(params['successMsg']);
-      }
-    });
     setTimeout(() => {
       this.fetchAllAccounts('');
     }, 0);
@@ -129,7 +126,8 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
   }
 
   lockUnlock(account: Account) {
-    const newStatus = account.status === 'active' ? 'locked' : 'active';
+    const currentStatus = (account.status || 'active').toLowerCase();
+    const newStatus = currentStatus === 'active' ? 'locked' : 'active';
     this.accountService.changeStatus(account.id, newStatus).subscribe({
       next: () => {
         account.status = newStatus;
@@ -146,10 +144,10 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     // Không cho phép thay đổi trạng thái của chính mình
     if ((account.id + '') === (this.currentUserId + '')) {
       this.setError('Bạn không thể thay đổi trạng thái của chính mình!');
-      select.value = account.status.toUpperCase(); // revert selection
+      select.value = (account.status || 'ACTIVE').toUpperCase(); // revert selection, handle null
       return;
     }
-    if (account.status.toUpperCase() === newStatus) return;
+    if ((account.status || 'ACTIVE').toUpperCase() === newStatus) return; // handle null status
     this.confirmationDialog.showDialog({
       title: 'Xác nhận thay đổi trạng thái',
       message: `Bạn có chắc chắn muốn chuyển trạng thái tài khoản "${account.username}" sang "${newStatus}"?`,
@@ -158,16 +156,13 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
       type: 'warning'
     }).subscribe(confirmed => {
       if (!confirmed) {
-        select.value = account.status.toUpperCase(); // revert selection
+        select.value = (account.status || 'ACTIVE').toUpperCase(); // revert selection, handle null
         return;
       }
       this.accountService.changeStatus(account.id, newStatus).subscribe({
         next: () => {
           account.status = newStatus;
-          // Show toast only, do not display success message bar
-          if (typeof window !== 'undefined' && (window as any).showToast) {
-            (window as any).showToast('Thay đổi trạng thái thành công!', 'success');
-          }
+          this.toastService.success('Cập nhật trạng thái tài khoản thành công!');
           this.setSuccess('');
           this.reloadAccounts(); // reload the account list after status change
         },
@@ -183,12 +178,34 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
   }
 
   editUser(account: Account) {
+    // Kiểm tra nếu đây là tài khoản VIP
     if (account.role && account.role.toUpperCase() === 'VIP') {
-      if (typeof window !== 'undefined' && (window as any).showToast) {
-        (window as any).showToast('Không thể chỉnh sửa thông tin tài khoản VIP!', 'error');
-      }
+      this.toastService.warning('Không thể chỉnh sửa thông tin tài khoản VIP!');
       return;
     }
+    
+    // Kiểm tra nếu đây là tài khoản của chính mình
+    if ((account.id + '') === (this.currentUserId + '')) {
+      // Hiển thị cảnh báo và xác nhận
+      this.confirmationDialog.showDialog({
+        title: 'Chỉnh sửa tài khoản của bạn',
+        message: 'Bạn đang chỉnh sửa tài khoản của chính mình. Việc thay đổi thông tin có thể ảnh hưởng đến phiên đăng nhập hiện tại. Bạn có muốn tiếp tục?',
+        confirmText: 'Tiếp tục',
+        cancelText: 'Hủy',
+        icon: 'user-edit',
+        type: 'warning'
+      }).subscribe(confirmed => {
+        if (confirmed) {
+          // Navigate đến trang chỉnh sửa với flag đặc biệt cho self-edit
+          this.router.navigate(['/admin/accounts/update', account.id], { 
+            queryParams: { selfEdit: 'true' } 
+          });
+        }
+      });
+      return;
+    }
+    
+    // Chỉnh sửa tài khoản khác bình thường
     this.router.navigate(['/admin/accounts/update', account.id]);
   }
 
@@ -204,7 +221,8 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     if (!confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) return;
     this.accountService.deleteUser(account.id).subscribe({
       next: (res) => {
-        this.setSuccess(res?.message || 'Xóa tài khoản thành công!');
+        this.toastService.success('Xóa tài khoản thành công!');
+        this.setSuccess('');
         this.setError('');
         this.fetchAllAccounts(this.currentKeyword);
       },
@@ -248,7 +266,7 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
       this.setSuccess('');
       this.accountService.resetPassword(account.id).subscribe({
         next: (res) => {
-          this.setSuccess(res?.message || 'Đặt lại mật khẩu thành công!');
+          this.toastService.success('Đặt lại mật khẩu thành công!');
           this.setLoading(false);
         },
         error: (err) => {

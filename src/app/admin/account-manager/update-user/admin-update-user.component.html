@@ -21,6 +21,19 @@
   }
 
   @if (user && !loading && !errorMsg) {
+    <!-- Self-Edit Warning -->
+    @if (isSelfEdit) {
+      <div class="self-edit-warning">
+        <div class="warning-content">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div class="warning-text">
+            <h4>Chỉnh sửa tài khoản của bạn</h4>
+            <p>Bạn đang chỉnh sửa thông tin tài khoản của chính mình. Vui lòng thận trọng khi thay đổi thông tin quan trọng.</p>
+          </div>
+        </div>
+      </div>
+    }
+    
     <div class="update-user-card">
       <!-- Current User Info -->
       <div class="current-user-info">
@@ -137,7 +150,7 @@
                     <option value="other">Khác</option>
                   </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" *ngIf="!isSelfEdit">
                   <label for="roleId">Vai trò</label>
                   <select 
                     id="roleId" 
@@ -151,7 +164,7 @@
                     <option value="5">Chuyên gia</option>
                   </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" *ngIf="!isSelfEdit">
                   <label for="status">Trạng thái</label>
                   <select 
                     id="status" 
@@ -164,6 +177,23 @@
                     <option value="BANNED">Cấm</option>
                   </select>
                 </div>
+                
+                <!-- Self-edit note -->
+                @if (isSelfEdit) {
+                  <div class="self-edit-info">
+                    <div class="info-content">
+                      <i class="fas fa-info-circle"></i>
+                      <div class="info-text">
+                        <h4>Chỉnh sửa tài khoản cá nhân</h4>
+                        <p>Bạn đang chỉnh sửa tài khoản của chính mình. Vai trò và trạng thái tài khoản không thể thay đổi và sẽ được giữ nguyên.</p>
+                        <div class="current-info">
+                          <span><strong>Vai trò hiện tại:</strong> {{ getRoleText(user.role) }}</span>
+                          <span><strong>Trạng thái:</strong> {{ getStatusText(user.status) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
                 @if (showPasswordField) {
                   <div class="form-group">
                     <label for="password">Mật khẩu mới</label>

@@ -34,10 +34,10 @@
               <td>{{ acc.role | titlecase }}</td>
               <td>
                 <select class="status-dropdown" [ngClass]="{
-                  'active': acc.status.toLowerCase() === 'active',
-                  'inactive': acc.status.toLowerCase() === 'inactive',
-                  'banned': acc.status.toLowerCase() === 'banned'
-                }" [value]="acc.status.toUpperCase()" (change)="changeStatus(acc, $event)" [disabled]="(acc.id + '') === (currentUserId + '')"
+                  'active': (acc.status || '').toLowerCase() === 'active',
+                  'inactive': (acc.status || '').toLowerCase() === 'inactive',
+                  'banned': (acc.status || '').toLowerCase() === 'banned'
+                }" [value]="(acc.status || 'ACTIVE').toUpperCase()" (change)="changeStatus(acc, $event)" [disabled]="(acc.id + '') === (currentUserId + '')"
                   [title]="(acc.id + '') === (currentUserId + '') ? 'Bạn không thể thay đổi trạng thái của chính mình' : ''">
                   <option value="ACTIVE">Hoạt động</option>
                   <option value="INACTIVE">Đã khóa</option>
