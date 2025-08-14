@@ -93,7 +93,13 @@ export class AiPlantComponent implements OnInit {
 
   private getAuthHeadersForFormData(): HttpHeaders {
     const token = this.cookieService.getCookie('auth_token');
-    console.log('Token from cookie:', token); // Debug log
+    console.log('🔑 Creating FormData headers with token:', token ? 'Present' : 'Missing');
+    
+    if (!token) {
+      console.error('No auth token found in cookies!');
+      return new HttpHeaders();
+    }
+    
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`
       // Don't set Content-Type for FormData, let browser set it with boundary
@@ -149,7 +155,7 @@ export class AiPlantComponent implements OnInit {
       console.log('Validation timeout - clearing loading state');
     }, 3000); // 3 second timeout - much shorter
 
-    this.http.post<any>(`${this.configService.apiUrl}/ai/validate-plant-image`, formData, { 
+    this.http.post<any>(`${this.configService.apiUrl}/api/ai/validate-plant-image`, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -197,7 +203,16 @@ export class AiPlantComponent implements OnInit {
       return;
     }
 
-    this.http.post<any>(`${this.configService.apiUrl}/ai/identify-plant`, formData, { 
+    // Debug: Log token and headers
+    const token = this.cookieService.getCookie('auth_token');
+    console.log('🔍 [AI Plant] Making request with:', {
+      endpoint: `${this.configService.apiUrl}/api/ai/identify-plant`,
+      userId,
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+    });
+
+    this.http.post<any>(`${this.configService.apiUrl}/api/ai/identify-plant`, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -222,13 +237,16 @@ export class AiPlantComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
+          console.error('Error identifying plant:', error);
+          
           setTimeout(() => {
             if (error.status === 403) {
               this.toastService.show('Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP', 'error');
+            } else if (error.status === 404) {
+              this.toastService.show('API endpoint không tìm thấy', 'error');
             } else {
               this.toastService.show('Có lỗi xảy ra khi nhận diện cây', 'error');
             }
-            console.error('Error identifying plant:', error);
             this.cdr.detectChanges();
           }, 0);
         }
@@ -244,7 +262,7 @@ export class AiPlantComponent implements OnInit {
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted search
 
-    this.http.get<any>(`${this.configService.apiUrl}/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
+    this.http.get<any>(`${this.configService.apiUrl}/api/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
       headers: this.getAuthHeaders() 
     })
       .subscribe({
