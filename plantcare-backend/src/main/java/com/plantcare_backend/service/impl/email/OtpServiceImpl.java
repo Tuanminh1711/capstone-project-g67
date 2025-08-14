@@ -30,6 +30,15 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public void generateAndSendOtp(String email, String type) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        if (type == null || type.trim().isEmpty()) {
+            throw new IllegalArgumentException("OTP type cannot be null or empty");
+        }
         String otp = generateRandomOtp();
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(10);
         OtpData otpData = OtpData.builder()

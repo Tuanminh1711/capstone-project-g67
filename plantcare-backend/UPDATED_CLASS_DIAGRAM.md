@@ -624,3 +624,4 @@ classDiagram
 - **Self-Referencing**: Users (claimed_by, handled_by relationships)
 
 The updated class diagram now provides a complete and accurate representation of your PlantCare backend system, with all models fully compliant with your database schema.
+
