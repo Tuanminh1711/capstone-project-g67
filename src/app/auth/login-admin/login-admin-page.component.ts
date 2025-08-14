@@ -109,13 +109,14 @@ export class LoginAdminPageComponent {
               this.cdr.detectChanges();
               
               // Kiểm tra role để chuyển hướng đến trang welcome tương ứng
-              if (role === 'expert' ) {
+              if (role === 'expert') {
                 this.router.navigate(['/expert/welcome']);
-              } else if (role === 'admin'|| role === 'staff') {
+              } else if (role === 'admin' || role === 'staff') {
                 this.router.navigate(['/admin']);
               } else {
-                // Default fallback cho các role khác
-                this.router.navigate(['/admin']);
+                // Không cho phép đăng nhập nếu không có role hợp lệ
+                this.toast.error('Tài khoản không có quyền truy cập!');
+                this.authService.logout(false);
               }
             }, 150);
           });
@@ -134,12 +135,14 @@ export class LoginAdminPageComponent {
             role = res.user.role.toLowerCase();
           }
           
-          if (role === 'expert' || role === 'staff') {
+          if (role === 'expert') {
             this.router.navigate(['/expert/welcome']);
-          } else if (role === 'admin') {
+          } else if (role === 'admin' || role === 'staff') {
             this.router.navigate(['/admin']);
           } else {
-            this.router.navigate(['/admin']);
+            // Không cho phép đăng nhập nếu không có role hợp lệ
+            this.toast.error('Tài khoản không có quyền truy cập!');
+            this.authService.logout(false);
           }
         }
       },

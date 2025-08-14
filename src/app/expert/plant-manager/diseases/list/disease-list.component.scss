@@ -1,0 +1,406 @@
+.disease-list-container {
+  padding: 24px;
+  background-color: white;
+  min-height: calc(100vh - 64px);
+  width: 100%;
+
+  .header-card {
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    border: none;
+    box-shadow: none;
+
+    .mat-mdc-card-header {
+      padding: 20px 24px;
+      border-bottom: none;
+
+      .mat-mdc-card-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+
+      .mat-mdc-card-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin: 4px 0 0;
+      }
+    }
+
+    .mat-mdc-card-actions {
+      padding: 0 24px 16px;
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      button.add-button {
+        background-color: #00a76f;
+        color: white;
+        border-radius: 8px;
+        padding: 0 16px;
+        height: 36px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        &:hover {
+          background-color: #009664; // Pre-calculated darker shade of #00a76f
+        }
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+
+  .content-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+
+    .loading-shade {
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 2;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mat-mdc-card-content {
+      padding: 0;
+    }
+  }
+
+  .disease-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+
+    .mat-mdc-header-row {
+      background-color: #f4f6f8;
+      height: 48px;
+    }
+
+    .mat-mdc-header-cell {
+      color: #637381;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mat-mdc-cell {
+      padding: 16px;
+      font-size: 14px;
+      color: #212b36;
+      border-bottom: 1px solid #e0e0e0;
+      height: 64px;
+    }
+
+    .mat-mdc-row {
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #f9fafb;
+      }
+    }
+
+    // Disease info column
+    .disease-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+
+      .disease-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .disease-icon {
+          width: 32px;
+          height: 32px;
+          font-size: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
+          color: white;
+
+          &.nấm { background-color: #8b5cf6; }
+          &.côn.trùng { background-color: #f59e0b; }
+          &.vi.khuẩn { background-color: #ef4444; }
+          &.virus { background-color: #ec4899; }
+          &.sinh.lý { background-color: #10b981; }
+        }
+
+        .name-details {
+          display: flex;
+          flex-direction: column;
+
+          .primary-name {
+            font-weight: 500;
+            color: #1a1a1a;
+          }
+
+          .scientific-name {
+            font-size: 12px;
+            color: #637381;
+            font-style: italic;
+          }
+        }
+      }
+
+      .category-tag {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background-color: #f4f6f8;
+        color: #637381;
+      }
+    }
+
+    // Symptoms column
+    .symptoms-cell {
+      .symptoms-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .symptoms, .treatment {
+          font-size: 13px;
+          color: #637381;
+          line-height: 1.5;
+
+          strong {
+            color: #212b36;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+
+    // Plants column
+    .plants-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #637381;
+
+      .plant-icon {
+        color: #00a76f;
+        font-size: 20px;
+      }
+    }
+
+    // Severity badges
+    .severity-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      &.low {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      &.medium {
+        background-color: #fff3e0;
+        color: #ef6c00;
+      }
+
+      &.high {
+        background-color: #fbe9e7;
+        color: #d84315;
+      }
+
+      &.critical {
+        background-color: #ffebee;
+        color: #c62828;
+      }
+
+      &::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      &.low::before { background-color: #2e7d32; }
+      &.medium::before { background-color: #ef6c00; }
+      &.high::before { background-color: #d84315; }
+      &.critical::before { background-color: #c62828; }
+    }
+  }
+
+  // Paginator
+  .mat-mdc-paginator {
+    border-top: 1px solid #e0e0e0;
+    background-color: white;
+
+    ::ng-deep {
+      .mat-mdc-paginator-container {
+        min-height: 52px;
+        background-color: white;
+        color: #212b36;
+      }
+
+      .mat-mdc-paginator-page-size {
+        color: #212b36;
+      }
+
+      .mat-mdc-paginator-page-size-label {
+        color: #212b36;
+      }
+
+      .mat-mdc-form-field {
+        .mat-mdc-select-value {
+          color: #212b36;
+        }
+
+        .mat-mdc-select-arrow {
+          color: #212b36;
+        }
+      }
+
+      .mat-mdc-paginator-range-label {
+        color: #212b36;
+      }
+
+      .mat-mdc-paginator-range-actions {
+        button {
+          .mat-mdc-paginator-icon {
+            fill: #212b36;
+          }
+        }
+
+        .mat-mdc-icon-button.mat-mdc-button-disabled {
+          .mat-mdc-paginator-icon {
+            fill: rgba(0, 0, 0, 0.26);
+          }
+        }
+
+        .mat-mdc-icon-button:hover:not(.mat-mdc-button-disabled) {
+          background-color: rgba(0, 0, 0, 0.04);
+        }
+      }
+
+      .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+      .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+      .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+        border-color: rgba(0, 0, 0, 0.12);
+      }
+
+      .mat-mdc-select-panel {
+        background: white;
+
+        .mat-mdc-option {
+          color: #212b36;
+          
+          &.mat-mdc-option-active {
+            background: rgba(0, 0, 0, 0.04);
+          }
+        }
+      }
+    }
+  }
+
+  // Empty state
+  .no-data {
+    padding: 80px 0;
+    text-align: center;
+
+    .empty-icon {
+      font-size: 48px;
+      color: #919eab;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #212b36;
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 14px;
+      color: #637381;
+      margin-bottom: 24px;
+    }
+  }
+
+  // Actions menu styling
+  .action-button {
+    color: #212b36;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .mat-icon {
+      color: #212b36;
+    }
+  }
+
+  ::ng-deep {
+    .mat-mdc-menu-panel {
+      min-width: 180px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+      background: #212b36;
+      color: white;
+
+      .mat-mdc-menu-content {
+        padding: 0;
+      }
+    }
+
+    .mat-mdc-menu-item {
+      font-size: 14px;
+      height: 48px;
+      line-height: 48px;
+      color: white;
+      
+      .mat-icon {
+        margin-right: 12px;
+        font-size: 20px;
+        height: 20px;
+        width: 20px;
+        color: white;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      &.mat-mdc-menu-item {
+        .mdc-list-item__primary-text {
+          color: white;
+        }
+      }
+    }
+  }
+}

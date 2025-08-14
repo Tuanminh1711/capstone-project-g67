@@ -39,18 +39,22 @@ export class ToastService {
   }
 
   success(message: string, duration: number = 3000) {
+    console.log('Toast SUCCESS:', message); // Debug log
     this.show(message, 'success', duration);
   }
 
   error(message: string, duration: number = 5000) {
+    console.log('Toast ERROR:', message); // Debug log
     this.show(message, 'error', duration);
   }
 
   warning(message: string, duration: number = 4000) {
+    console.log('Toast WARNING:', message); // Debug log
     this.show(message, 'warning', duration);
   }
 
   info(message: string, duration: number = 3000) {
+    console.log('Toast INFO:', message); // Debug log
     this.show(message, 'info', duration);
   }
 

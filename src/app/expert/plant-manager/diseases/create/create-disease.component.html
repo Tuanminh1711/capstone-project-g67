@@ -1,0 +1,174 @@
+<div class="create-disease-container">
+  <div class="form-header">
+    <h2>🌿 Tạo bệnh cây mới</h2>
+    <p>Thêm thông tin chi tiết về bệnh cây và phương pháp điều trị</p>
+  </div>
+
+  <div class="progress-bar" *ngIf="loading">
+    <div class="progress-fill"></div>
+  </div>
+
+  <form [formGroup]="diseaseForm" (ngSubmit)="onSubmit()" class="disease-form">
+    
+    <!-- Tên bệnh -->
+    <div class="form-group">
+      <label for="diseaseName" class="form-label">🦠 Tên bệnh *</label>
+      <input 
+        type="text" 
+        id="diseaseName"
+        formControlName="diseaseName"
+        class="form-input"
+        [class.error]="isFieldInvalid('diseaseName')"
+        placeholder="Ví dụ: Bệnh đốm lá nâu"
+        autocomplete="off">
+      <div class="error-message" *ngIf="isFieldInvalid('diseaseName')">
+        ⚠️ {{ getFieldError('diseaseName') }}
+      </div>
+    </div>
+
+    <!-- Tên khoa học -->
+    <div class="form-group">
+      <label for="scientificName" class="form-label">🔬 Tên khoa học</label>
+      <input 
+        type="text" 
+        id="scientificName"
+        formControlName="scientificName"
+        class="form-input"
+        placeholder="Ví dụ: Alternaria alternata"
+        autocomplete="off">
+    </div>
+
+    <!-- Loại bệnh -->
+    <div class="form-group">
+      <label for="category" class="form-label">📂 Loại bệnh *</label>
+      <select 
+        id="category"
+        formControlName="category"
+        class="form-input"
+        [class.error]="isFieldInvalid('category')">
+        <option value="Nấm">🍄 Bệnh do nấm</option>
+        <option value="Vi khuẩn">🦠 Bệnh do vi khuẩn</option>
+        <option value="Virus">🧬 Bệnh do virus</option>
+        <option value="Sinh lý">🌡️ Bệnh sinh lý</option>
+        <option value="Côn trùng">🐛 Sâu bệnh côn trùng</option>
+      </select>
+      <div class="error-message" *ngIf="isFieldInvalid('category')">
+        ⚠️ {{ getFieldError('category') }}
+      </div>
+    </div>
+
+    <!-- Mức độ nghiêm trọng -->
+    <div class="form-group">
+      <label for="severity" class="form-label">⚠️ Mức độ nghiêm trọng *</label>
+      <select 
+        id="severity"
+        formControlName="severity"
+        class="form-input"
+        [class.error]="isFieldInvalid('severity')">
+        <option value="LOW">🟢 Thấp</option>
+        <option value="MEDIUM">🟡 Trung bình</option>
+        <option value="HIGH">🟠 Cao</option>
+        <option value="CRITICAL">🔴 Rất cao</option>
+      </select>
+      <div class="error-message" *ngIf="isFieldInvalid('severity')">
+        ⚠️ {{ getFieldError('severity') }}
+      </div>
+    </div>
+
+    <!-- Triệu chứng -->
+    <div class="form-group">
+      <label for="symptoms" class="form-label">🔍 Triệu chứng *</label>
+      <textarea 
+        id="symptoms"
+        formControlName="symptoms"
+        class="form-textarea"
+        [class.error]="isFieldInvalid('symptoms')"
+        placeholder="Mô tả chi tiết các triệu chứng của bệnh..."
+        rows="4"></textarea>
+      <div class="error-message" *ngIf="isFieldInvalid('symptoms')">
+        ⚠️ {{ getFieldError('symptoms') }}
+      </div>
+    </div>
+
+    <!-- Nguyên nhân -->
+    <div class="form-group">
+      <label for="causes" class="form-label">🔬 Nguyên nhân *</label>
+      <textarea 
+        id="causes"
+        formControlName="causes"
+        class="form-textarea"
+        [class.error]="isFieldInvalid('causes')"
+        placeholder="Mô tả nguyên nhân gây ra bệnh..."
+        rows="4"></textarea>
+      <div class="error-message" *ngIf="isFieldInvalid('causes')">
+        ⚠️ {{ getFieldError('causes') }}
+      </div>
+    </div>
+
+    <!-- Phương pháp điều trị -->
+    <div class="form-group">
+      <label for="treatment" class="form-label">💊 Phương pháp điều trị</label>
+      <textarea 
+        id="treatment"
+        formControlName="treatment"
+        class="form-textarea"
+        placeholder="Mô tả các phương pháp điều trị..."
+        rows="4"></textarea>
+    </div>
+
+    <!-- Phương pháp phòng ngừa -->
+    <div class="form-group">
+      <label for="prevention" class="form-label">🛡️ Phương pháp phòng ngừa *</label>
+      <textarea 
+        id="prevention"
+        formControlName="prevention"
+        class="form-textarea"
+        [class.error]="isFieldInvalid('prevention')"
+        placeholder="Mô tả các biện pháp phòng ngừa..."
+        rows="4"></textarea>
+      <div class="error-message" *ngIf="isFieldInvalid('prevention')">
+        ⚠️ {{ getFieldError('prevention') }}
+      </div>
+    </div>
+
+    <!-- Loại cây bị ảnh hưởng -->
+    <div class="form-group">
+      <label for="affectedPlantTypes" class="form-label">🌱 Loại cây bị ảnh hưởng</label>
+      <input 
+        type="text" 
+        id="affectedPlantTypes"
+        formControlName="affectedPlantTypes"
+        class="form-input"
+        placeholder="Ví dụ: Cây ăn quả, cây lá kim..."
+        autocomplete="off">
+    </div>
+
+    <!-- Mức độ tin cậy -->
+    <div class="form-group">
+      <label for="confidenceLevel" class="form-label">📊 Mức độ tin cậy</label>
+      <input 
+        type="text" 
+        id="confidenceLevel"
+        formControlName="confidenceLevel"
+        class="form-input"
+        placeholder="Ví dụ: 95%, Cao, Trung bình..."
+        autocomplete="off">
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">
+        <span class="button-icon">❌</span>
+        Hủy
+      </button>
+      <button type="button" class="btn-secondary" (click)="resetForm()">
+        <span class="button-icon">🔄</span>
+        Reset
+      </button>
+      <button type="submit" class="btn-primary" [disabled]="diseaseForm.invalid || loading">
+        <span class="button-icon">💾</span>
+        <span *ngIf="!loading">Tạo mới</span>
+        <span *ngIf="loading">Đang tạo...</span>
+      </button>
+    </div>
+  </form>
+</div>

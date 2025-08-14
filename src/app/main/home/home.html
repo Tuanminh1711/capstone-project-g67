@@ -24,7 +24,7 @@
 <section class="home-promo-banner" style="width:100%; background:#f5f5f5; display:flex; justify-content:center; align-items:center; padding:0; margin:0;">
   <div class="banner-slider">
   <div *ngFor="let slide of bannerSlides; let i = index" class="banner-slide" [class.active]="currentBanner === i" [style.zIndex]="currentBanner === i ? 2 : 1">
-      <img src="assets/image/banner3.jpg" alt="PlantCare Banner" />
+      <img [src]="slide.image" alt="PlantCare Banner" />
       <div class="banner-content">
         <h2 class="banner-title" [class.animate-in]="currentBanner === i">{{slide.title}}</h2>
         <p class="banner-desc" [class.animate-in]="currentBanner === i">{{slide.desc}}</p>

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ExpertSidebarComponent } from '../expert-sidebar/expert-sidebar.component';
 import { ExpertFooterComponent } from '../expert-footer/expert-footer.component';
 
@@ -8,6 +9,7 @@ import { ExpertFooterComponent } from '../expert-footer/expert-footer.component'
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     ExpertSidebarComponent,
     ExpertFooterComponent
   ],
@@ -17,7 +19,7 @@ import { ExpertFooterComponent } from '../expert-footer/expert-footer.component'
       
       <div class="expert-main-content">
         <main class="expert-content">
-          <ng-content></ng-content>
+          <router-outlet></router-outlet>
         </main>
         
         <app-expert-footer></app-expert-footer>

@@ -1,5 +1,4 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
-import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +13,9 @@ import { ToastService } from '../../../shared/toast/toast.service';
   templateUrl: './admin-create-account.component.html',
   styleUrls: ['./admin-create-account.component.scss']
 })
+
 export class AdminCreateAccountComponent extends BaseAdminListComponent {
+  isSubmitting = false;
 
   private translateErrorMessage(msg: string): string {
     const map: { [key: string]: string } = {
@@ -58,14 +59,9 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     private createAccountService: AdminCreateAccountService,
     private router: Router,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef,
-    private pageTitleService: AdminPageTitleService
+    private cdr: ChangeDetectorRef
   ) {
     super();
-  }
-
-  ngOnInit(): void {
-    this.pageTitleService.setTitle('TẠO TÀI KHOẢN');
   }
 
   validateForm(): string | null {
@@ -95,11 +91,15 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
   }
 
   onSubmit() {
+    if (this.isSubmitting) return;
+    
+    this.isSubmitting = true;
     this.setError('');
     this.setSuccess('');
     const errMsg = this.validateForm();
     if (errMsg) {
       this.toastService.error(this.translateErrorMessage(errMsg));
+      this.isSubmitting = false;
       return;
     }
     const body = {
@@ -113,6 +113,7 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     };
     this.createAccountService.addUser(body).subscribe({
       next: (res) => {
+        this.isSubmitting = false;
         // Nếu có message từ backend thì coi là lỗi, không có message thì coi là thành công
         if (res && res.message) {
           let msg = res.message || 'Tạo tài khoản thất bại!';
@@ -135,6 +136,7 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
         }
       },
       error: (err) => {
+        this.isSubmitting = false;
         let msg = '';
         // Ưu tiên lấy message từ backend
         if (err?.error?.message) {

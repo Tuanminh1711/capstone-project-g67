@@ -1,0 +1,49 @@
+<div class="page-header">
+  <h1>Chỉnh sửa hướng dẫn điều trị</h1>
+  <p class="subtitle">Cập nhật thông tin hướng dẫn điều trị</p>
+</div>
+
+<div class="content-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Chỉnh sửa hướng dẫn điều trị</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form class="treatment-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tiêu đề hướng dẫn</mat-label>
+            <input matInput [(ngModel)]="treatmentGuide.title" name="title" required>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mô tả</mat-label>
+            <textarea matInput [(ngModel)]="treatmentGuide.description" name="description" rows="4" required></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nội dung chi tiết</mat-label>
+            <textarea matInput [(ngModel)]="treatmentGuide.content" name="content" rows="8" required></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Ghi chú</mat-label>
+            <textarea matInput [(ngModel)]="treatmentGuide.notes" name="notes" rows="3"></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-button type="button" routerLink="../list">Hủy</button>
+          <button mat-raised-button color="primary" type="submit" (click)="onSubmit()">Cập nhật</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

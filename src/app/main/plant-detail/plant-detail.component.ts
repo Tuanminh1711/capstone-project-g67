@@ -221,21 +221,14 @@ export class PlantDetailComponent implements OnInit {
     return new Date(dateString).toLocaleDateString('vi-VN');
   }
 
-
-  onReportPlant(): void {
+    onReportPlant(): void {
     if (!this.plant) return;
-    if (this.plant.status === 'INACTIVE') {
-      this.toast.error('Cây này đã bị khóa do bị báo cáo quá nhiều. Bạn không thể báo cáo thêm.');
-      return;
-    }
     const token = this.cookieService.getAuthToken();
     if (!token) {
       this.openLoginDialog();
       this.toast.error('Vui lòng đăng nhập để báo cáo thông tin cây!');
       return;
     }
-    // Đồng bộ: set selected plant trước khi chuyển trang
-    this.plantDataService.setSelectedPlant(this.plant);
     this.router.navigate(['/user/report-plant', this.plant.id]);
   }
 

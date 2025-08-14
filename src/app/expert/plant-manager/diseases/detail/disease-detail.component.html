@@ -1,0 +1,83 @@
+<div class="disease-detail-container">
+  <!-- Header Card -->
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-card-title>Chi tiết bệnh cây</mat-card-title>
+      <mat-card-subtitle>Xem thông tin chi tiết về bệnh cây</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-actions>
+      <button mat-stroked-button color="primary" [routerLink]="['/expert/plant-manager/diseases/list']">
+        <mat-icon>arrow_back</mat-icon>
+        Quay lại
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Loading Indicator -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Content Section -->
+  <mat-card class="content-card" *ngIf="!loading && disease">
+    <mat-card-content>
+      <div class="disease-header">
+        <div class="disease-name">
+          <div [class]="'disease-icon ' + disease.category.toLowerCase()">
+            <mat-icon>{{getCategoryIcon(disease.category)}}</mat-icon>
+          </div>
+          <div class="name-details">
+            <h2>{{disease.diseaseName}}</h2>
+            <p class="scientific-name" *ngIf="disease.scientificName">{{disease.scientificName}}</p>
+          </div>
+        </div>
+        <span [class]="'severity-badge ' + disease.severity.toLowerCase()">
+          {{getSeverityLabel(disease.severity)}}
+        </span>
+      </div>
+
+      <div class="info-section">
+        <h3>Mô tả</h3>
+        <p>{{disease.description}}</p>
+      </div>
+
+      <div class="info-section">
+        <h3>Triệu chứng</h3>
+        <p>{{disease.symptoms}}</p>
+      </div>
+
+      <div class="info-section" *ngIf="disease.treatment">
+        <h3>Phương pháp điều trị</h3>
+        <p>{{disease.treatment}}</p>
+      </div>
+
+      <div class="info-section">
+        <h3>Nguyên nhân</h3>
+        <p>{{disease.causes}}</p>
+      </div>
+
+      <div class="info-section">
+        <h3>Biện pháp phòng ngừa</h3>
+        <p>{{disease.preventionMethods}}</p>
+      </div>
+
+      <div class="info-section" *ngIf="disease.plants?.length">
+        <h3>Cây trồng bị ảnh hưởng</h3>
+        <div class="plants-list">
+          <div class="plant-item" *ngFor="let plant of disease.plants">
+            <mat-icon class="plant-icon">yard</mat-icon>
+            <span>{{plant.name}}</span>
+            <span class="scientific-name" *ngIf="plant.scientificName">({{plant.scientificName}})</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section" *ngIf="disease.images?.length">
+        <h3>Hình ảnh</h3>
+        <div class="images-grid">
+          <img *ngFor="let image of disease.images" [src]="image" [alt]="disease.diseaseName">
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

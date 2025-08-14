@@ -4,12 +4,12 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/auth.service';
 import { environment } from '../../../environments/environment';
-import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
+
 
 @Component({
   selector: 'app-vip-payment',
   standalone: true,
-  imports: [CommonModule, TopNavigatorComponent],
+  imports: [CommonModule],
   templateUrl: './vip-payment.component.html',
   styleUrls: ['./vip-payment.component.scss']
 })

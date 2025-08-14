@@ -1,0 +1,210 @@
+<div class="disease-edit-container">
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon style="vertical-align: middle; margin-right: 12px">healing</mat-icon>
+        Chỉnh sửa bệnh cây
+      </mat-card-title>
+      <mat-card-subtitle>{{disease?.diseaseName || 'Thông tin chi tiết về bệnh'}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-actions align="end">
+      <!-- Đã bỏ nút quay lại danh sách theo yêu cầu -->
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="content-card">
+    <mat-progress-bar *ngIf="loading" mode="indeterminate" color="primary"></mat-progress-bar>
+    <mat-card-content>
+      <form [formGroup]="diseaseForm" (ngSubmit)="onSubmit()" class="disease-form">
+        <!-- Thông tin cơ bản -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <mat-icon>info</mat-icon>
+            Thông tin cơ bản
+          </h3>
+          
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Tên bệnh</mat-label>
+              <input matInput formControlName="diseaseName" placeholder="VD: Bệnh phấn trắng">
+              <mat-icon matSuffix>local_hospital</mat-icon>
+              <mat-error *ngIf="diseaseForm.get('diseaseName')?.hasError('required')">
+                Vui lòng nhập tên bệnh
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Tên khoa học</mat-label>
+              <input matInput formControlName="scientificName" placeholder="VD: Erysiphe cichoracearum">
+              <mat-icon matSuffix>science</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Loại bệnh</mat-label>
+              <input matInput formControlName="category" placeholder="VD: Nấm">
+              <mat-icon matSuffix>category</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Mức độ nghiêm trọng</mat-label>
+              <mat-select formControlName="severity">
+                <mat-option value="LOW">Thấp</mat-option>
+                <mat-option value="MEDIUM">Trung bình</mat-option>
+                <mat-option value="HIGH">Cao</mat-option>
+              </mat-select>
+              <mat-icon matSuffix>warning</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Loại cây bị ảnh hưởng</mat-label>
+            <input matInput formControlName="affectedPlantTypes" 
+              placeholder="VD: Hoa hồng, Cúc, Dạ yến thảo">
+            <mat-icon matSuffix>grass</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Triệu chứng và nguyên nhân -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <mat-icon>coronavirus</mat-icon>
+            Triệu chứng và nguyên nhân
+          </h3>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Triệu chứng</mat-label>
+            <textarea matInput formControlName="symptoms" rows="4"
+              placeholder="VD: Lá xuất hiện lớp phấn trắng, lá vàng và rụng"></textarea>
+            <mat-icon matSuffix>report_problem</mat-icon>
+            <mat-error *ngIf="diseaseForm.get('symptoms')?.hasError('required')">
+              Vui lòng nhập triệu chứng
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nguyên nhân</mat-label>
+            <textarea matInput formControlName="causes" rows="4"
+              placeholder="VD: Độ ẩm cao, thiếu ánh sáng"></textarea>
+            <mat-icon matSuffix>bug_report</mat-icon>
+            <mat-error *ngIf="diseaseForm.get('causes')?.hasError('required')">
+              Vui lòng nhập nguyên nhân
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Phòng ngừa và điều trị -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <mat-icon>healing</mat-icon>
+            Phòng ngừa và điều trị
+          </h3>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Cách điều trị</mat-label>
+            <textarea matInput formControlName="treatment" rows="4"
+              placeholder="VD: Phun thuốc trừ nấm, cắt tỉa lá bệnh"></textarea>
+            <mat-icon matSuffix>medical_services</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Biện pháp phòng ngừa</mat-label>
+            <textarea matInput formControlName="prevention" rows="4"
+              placeholder="VD: Tăng ánh sáng, giảm độ ẩm"></textarea>
+            <mat-icon matSuffix>security</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Hướng dẫn điều trị chi tiết -->
+        <div class="form-section" formArrayName="treatmentGuides">
+          <div class="section-header">
+            <h3 class="section-title">
+              <mat-icon>list_alt</mat-icon>
+              Hướng dẫn điều trị chi tiết
+            </h3>
+            <button type="button" mat-mini-fab color="primary" (click)="addTreatmentGuide()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="treatment-guide" *ngFor="let guide of treatmentGuides.controls; let i = index" [formGroupName]="i">
+            <div class="guide-header">
+              <h4>Bước {{i + 1}}</h4>
+              <button type="button" mat-icon-button color="warn" (click)="removeTreatmentGuide(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+
+            <div class="guide-content">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tiêu đề</mat-label>
+                  <input matInput formControlName="title" placeholder="VD: Chuẩn bị">
+                  <mat-icon matSuffix>title</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Thời gian thực hiện</mat-label>
+                  <input matInput formControlName="duration" placeholder="VD: 30 phút">
+                  <mat-icon matSuffix>timer</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tần suất thực hiện</mat-label>
+                  <input matInput formControlName="frequency" placeholder="VD: Mỗi tuần">
+                  <mat-icon matSuffix>update</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Mô tả</mat-label>
+                <textarea matInput formControlName="description" rows="3"
+                  placeholder="Mô tả chi tiết các bước thực hiện"></textarea>
+                <mat-icon matSuffix>description</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Dụng cụ cần thiết</mat-label>
+                <mat-chip-grid #chipGrid>
+                  <mat-chip-row *ngFor="let material of guide.get('materials')?.value"
+                    (removed)="removeMaterial(i, material)">
+                    {{material}}
+                    <button matChipRemove>
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </mat-chip-row>
+                </mat-chip-grid>
+                <input placeholder="Thêm dụng cụ..." [matChipInputFor]="chipGrid"
+                  [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                  (matChipInputTokenEnd)="addMaterial(i, $event)">
+                <mat-icon matSuffix>build</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Ghi chú</mat-label>
+                <textarea matInput formControlName="notes" rows="2"
+                  placeholder="Thêm ghi chú nếu cần"></textarea>
+                <mat-icon matSuffix>note</mat-icon>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button mat-stroked-button type="button" [routerLink]="['/expert/plant-manager/diseases/list']">
+            <mat-icon>cancel</mat-icon>
+            Hủy
+          </button>
+          <button mat-raised-button color="primary" type="submit" 
+            [disabled]="diseaseForm.invalid || loading">
+            <mat-icon>save</mat-icon>
+            Lưu thay đổi
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -12,15 +12,38 @@ import {
   DiseaseDetectionHistory
 } from './disease-detection.model';
 import { environment } from '../../../environments/environment';
+import { CookieService } from '../../auth/cookie.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DiseaseDetectionService {
-  private apiUrl = `${environment.apiUrl}/vip/disease-detection`;
+  private apiUrl = `${environment.apiUrl}/api/vip/disease-detection`;
   private isApiEnabled = true; // Enable API calls now that backend is configured
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private cookieService: CookieService) { }
+
+  /**
+   * Get authentication headers
+   */
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.cookieService.getCookie('auth_token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  /**
+   * Get authentication headers for FormData
+   */
+  private getAuthHeadersForFormData(): HttpHeaders {
+    const token = this.cookieService.getCookie('auth_token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+      // Don't set Content-Type for FormData
+    });
+  }
 
   /**
    * Enable API calls when backend is ready
@@ -47,7 +70,9 @@ export class DiseaseDetectionService {
     }
     const formData = new FormData();
     formData.append('image', image);
-    return this.http.post<DiseaseDetectionResult>(`${this.apiUrl}/detect-from-image`, formData)
+    return this.http.post<DiseaseDetectionResult>(`${this.apiUrl}/detect-from-image`, formData, {
+      headers: this.getAuthHeadersForFormData()
+    })
       .pipe(
         timeout(30000), // 30 second timeout for image upload
         retry(1), // Retry once on failure
@@ -64,7 +89,9 @@ export class DiseaseDetectionService {
       return throwError(() => new Error('API not available - using mock data'));
     }
     
-    return this.http.post<DiseaseDetectionResult>(`${this.apiUrl}/detect-from-symptoms`, request)
+    return this.http.post<DiseaseDetectionResult>(`${this.apiUrl}/detect-from-symptoms`, request, {
+      headers: this.getAuthHeaders()
+    })
       .pipe(
         timeout(15000), // 15 second timeout
         retry(1), // Retry once on failure
@@ -82,7 +109,10 @@ export class DiseaseDetectionService {
     }
     
     const params = new HttpParams().set('plantType', plantType);
-    return this.http.get<PlantDisease[]>(`${this.apiUrl}/common-diseases`, { params })
+    return this.http.get<PlantDisease[]>(`${this.apiUrl}/common-diseases`, { 
+      params,
+      headers: this.getAuthHeaders()
+    })
       .pipe(
         timeout(10000), // 10 second timeout
         retry(1), // Retry once on failure
@@ -108,7 +138,10 @@ export class DiseaseDetectionService {
       fullUrl: `${this.apiUrl}/treatment-guide?diseaseName=${encodeURIComponent(diseaseName)}`
     });
     
-    return this.http.get<TreatmentGuide>(url, { params })
+    return this.http.get<TreatmentGuide>(url, { 
+      params,
+      headers: this.getAuthHeaders()
+    })
       .pipe(
         timeout(15000), // 15 second timeout
         retry(1), // Retry once on failure
@@ -165,7 +198,10 @@ export class DiseaseDetectionService {
       .set('page', page.toString())
       .set('size', size.toString());
     
-    return this.http.get<DiseaseDetectionHistory>(`${this.apiUrl}/history`, { params })
+    return this.http.get<DiseaseDetectionHistory>(`${this.apiUrl}/history`, { 
+      params,
+      headers: this.getAuthHeaders()
+    })
       .pipe(
         timeout(10000), // 10 second timeout
         retry(1), // Retry once on failure
@@ -202,7 +238,10 @@ export class DiseaseDetectionService {
    */
   searchDiseases(keyword: string): Observable<PlantDisease[]> {
     const params = new HttpParams().set('keyword', keyword);
-    return this.http.get<PlantDisease[]>(`${this.apiUrl}/search`, { params });
+    return this.http.get<PlantDisease[]>(`${this.apiUrl}/search`, { 
+      params,
+      headers: this.getAuthHeaders()
+    });
   }
 
   /**
@@ -211,7 +250,10 @@ export class DiseaseDetectionService {
    */
   getDiseasesByCategory(category: string): Observable<PlantDisease[]> {
     const params = new HttpParams().set('category', category);
-    return this.http.get<PlantDisease[]>(`${this.apiUrl}/by-category`, { params });
+    return this.http.get<PlantDisease[]>(`${this.apiUrl}/by-category`, { 
+      params,
+      headers: this.getAuthHeaders()
+    });
   }
 
   /**
@@ -220,7 +262,10 @@ export class DiseaseDetectionService {
    */
   getDiseasesBySeverity(severity: string): Observable<PlantDisease[]> {
     const params = new HttpParams().set('severity', severity);
-    return this.http.get<PlantDisease[]>(`${this.apiUrl}/by-severity`, { params });
+    return this.http.get<PlantDisease[]>(`${this.apiUrl}/by-severity`, { 
+      params,
+      headers: this.getAuthHeaders()
+    });
   }
 
   /**
@@ -228,7 +273,9 @@ export class DiseaseDetectionService {
    * @param diseaseId Disease ID
    */
   getDiseaseById(diseaseId: number): Observable<PlantDisease> {
-    return this.http.get<PlantDisease>(`${this.apiUrl}/${diseaseId}`);
+    return this.http.get<PlantDisease>(`${this.apiUrl}/${diseaseId}`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   /**
@@ -309,7 +356,10 @@ export class DiseaseDetectionService {
    * @param keyword Description or keyword to search
    */
   searchDiseasesByDescription(keyword: string): Observable<PlantDisease[]> {
-    return this.http.get<PlantDisease[]>(`${this.apiUrl}/search`, { params: { keyword } })
+    return this.http.get<PlantDisease[]>(`${this.apiUrl}/search`, { 
+      params: { keyword },
+      headers: this.getAuthHeaders()
+    })
       .pipe(
         timeout(10000),
         catchError(this.handleError<PlantDisease[]>('searchDiseasesByDescription'))

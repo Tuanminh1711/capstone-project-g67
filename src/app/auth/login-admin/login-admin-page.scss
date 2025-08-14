@@ -1,20 +1,5 @@
-// Forgot password link style
 @use '../../../styles/variables' as *;
 @use 'sass:color';
-
-.forgot-link-wrap {
-  text-align: right;
-  width: 100%;
-  margin-top: 2px;
-}
-.forgot-link {
-  color: #178a4c;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 0.98rem;
-  font-weight: 500;
-  /* Không hiệu ứng hover */
-}
 
 .login-admin-page-bg {
   min-height: 100vh;

@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
-import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
 import { ExpertChatStompService, ChatMessage } from './expert-chat-stomp.service';
 import { Subscription } from 'rxjs';
 import { UrlService } from '../../shared/url.service';
@@ -14,7 +13,7 @@ import { ToastService } from '../../shared/toast/toast.service';
 @Component({
   selector: 'app-expert-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExpertLayoutComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './expert-chat.component.html',
   styleUrls: ['./expert-chat.component.scss']
 })

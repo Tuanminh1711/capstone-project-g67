@@ -1,0 +1,252 @@
+// Reset và base styles
+* {
+  box-sizing: border-box;
+}
+
+.create-disease-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #f0f4f8;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+// Header
+.form-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+  h2 {
+    margin: 0 0 10px 0;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+  }
+}
+
+// Progress bar
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e0e7ff;
+  border-radius: 3px;
+  margin-bottom: 25px;
+  overflow: hidden;
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 3px;
+    animation: loading 2s infinite;
+  }
+}
+
+@keyframes loading {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+// Main form
+.disease-form {
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+// Form groups
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-label {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #1a202c;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+// Input styles
+.form-input,
+.form-textarea,
+select.form-input {
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a202c;
+  background-color: #ffffff;
+  border: 3px solid #cbd5e0;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #718096;
+    font-weight: normal;
+  }
+
+  &:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 4px rgba(49, 130, 206, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:hover {
+    border-color: #a0aec0;
+  }
+
+  &.error {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.1);
+  }
+}
+
+// Select specific styles
+select.form-input {
+  cursor: pointer;
+  
+  option {
+    padding: 10px;
+    background-color: #ffffff;
+    color: #1a202c;
+    font-weight: 500;
+  }
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+// Error messages
+.error-message {
+  margin-top: 8px;
+  color: #e53e3e;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+// Form actions
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+
+  .button-icon {
+    font-size: 16px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e0;
+
+  &:hover {
+    background: #e2e8f0;
+    border-color: #a0aec0;
+    transform: translateY(-1px);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .create-disease-container {
+    padding: 15px;
+  }
+
+  .disease-form {
+    padding: 25px;
+  }
+
+  .form-header h2 {
+    font-size: 24px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+    }
+  }
+
+  .image-upload-section .selected-images {
+    justify-content: center;
+  }
+}
+
+// Animation cho form
+.disease-form {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

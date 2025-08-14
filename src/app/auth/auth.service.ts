@@ -107,32 +107,35 @@ export class AuthService {
    */
   logout(redirect = true): void {
     const token = this.cookieService.getCookie('auth_token');
-    const role = this.jwtUserUtil.getRoleFromToken();
-    const doRedirect = () => {
+    const role = this.jwtUserUtil.getRoleFromToken()?.toLowerCase(); // Chuyển về chữ thường để so sánh
+    
+    const doLogout = () => {
+      // Xóa token trước khi chuyển hướng để tránh flash của trang home
+      this.cookieService.removeAuthToken();
+      this.cookieService.removeAccessToken();
+
       if (redirect) {
+        // Sử dụng session storage để đánh dấu rằng đây là một logout
+        sessionStorage.setItem('isLogout', 'true');
+        
+        // Sử dụng reload để đảm bảo state được reset hoàn toàn
         if (role === 'admin' || role === 'staff' || role === 'expert') {
-          window.location.href = '/auth/login-admin';
+          window.location.href = '/login/admin';
         } else {
           window.location.href = '/home';
         }
       }
     };
+
     if (token) {
       this.http.post(`${this.apiUrl}/auth/logout`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
-        next: () => {
-          this.cookieService.removeAuthToken();
-          doRedirect();
-        },
-        error: () => {
-          this.cookieService.removeAuthToken();
-          doRedirect();
-        }
+        next: () => doLogout(),
+        error: () => doLogout()
       });
     } else {
-      this.cookieService.removeAuthToken();
-      doRedirect();
+      doLogout();
     }
   }
 

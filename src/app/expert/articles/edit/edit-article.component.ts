@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ArticlesService, ArticleDetail, UpdateArticleRequest } from '../articles.service';
-import { ExpertLayoutComponent } from '../../shared/expert-layout/expert-layout.component';
 import { ChangeDetectorRef } from '@angular/core';
 import { ToastService } from '../../../shared/toast/toast.service';
 
@@ -12,7 +11,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
   templateUrl: './edit-article.component.html',
   styleUrls: ['./edit-article.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ExpertLayoutComponent]
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class EditArticleComponent implements OnInit {
   images: { url: string; status: 'EXISTING' | 'NEW' | 'REMOVED' }[] = [];

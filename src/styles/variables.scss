@@ -1,3 +1,6 @@
+// Import form field styles
+@use './form-fields' as *;
+
 // Biến màu sắc dùng chung cho toàn bộ project
 $auth-bg: #178a4c;
 $auth-green: #C2FFC7;

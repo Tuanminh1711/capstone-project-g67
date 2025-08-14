@@ -13,7 +13,7 @@
         <div class="title-section">
           <h1 class="page-title">Chi tiết cây cảnh</h1>
           <div class="navigation-controls">
-            <!-- Bỏ hiển thị ID ở header -->
+            <span class="plant-id">ID: {{plantId}}</span>
             <div class="nav-buttons">
               <button class="nav-button prev" 
                       (click)="goToPrevious()" 
@@ -112,9 +112,9 @@
                 <i class="fas fa-edit"></i>
                 Chỉnh sửa
               </button>
-              <button class="btn btn-secondary" (click)="lockUnlockPlant(plant)">
-                <i class="fas" [ngClass]="plant.status === 'INACTIVE' ? 'fa-lock-open' : 'fa-lock'"></i>
-                {{ plant.status === 'INACTIVE' ? 'Mở khóa' : 'Khóa' }}
+              <button class="btn btn-secondary" (click)="deletePlant()">
+                <i class="fas fa-trash"></i>
+                Xóa
               </button>
             </div>
           </div>
@@ -172,7 +172,10 @@
             </div>
             <div class="section-content">
               <div class="info-rows">
-                <!-- Bỏ hiển thị ID ở Thông tin hệ thống -->
+                <div class="info-row">
+                  <span class="label">ID:</span>
+                  <span class="value">{{plant.id}}</span>
+                </div>
                 <div class="info-row">
                   <span class="label">Tên thông thường:</span>
                   <span class="value">{{plant.commonName}}</span>

@@ -20,7 +20,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "paths": {
-      "environments/*": [ "environments/*" ]
+      "@env/*": ["environments/*"],
+      "@shared/*": ["app/shared/*"],
+      "@auth/*": ["app/auth/*"],
+      "@expert/*": ["app/expert/*"]
     },
     "preserveWatchOutput": true,
     "pretty": false

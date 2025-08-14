@@ -23,9 +23,9 @@
           <span class="nav-text">Phòng Chat</span>
           <span class="dropdown-arrow" [class.open]="isChatDropdownOpen">▼</span>
         </div>
-        <ul *ngIf="isChatDropdownOpen" class="chat-dropdown-list">
+        <ul class="chat-dropdown-list" [class.opened]="isChatDropdownOpen">
           <li class="chat-dropdown-item" (click)="navigateToCommunityChat()">Cộng đồng</li>
-          <li class="chat-dropdown-item" *ngFor="let user of recentUsers" (click)="navigateToUserChat(user)">
+          <li class="chat-dropdown-item" *ngFor="let user of recentUsers$ | async" (click)="navigateToUserChat(user)">
             {{ user.username }}
           </li>
         </ul>
@@ -53,6 +53,45 @@
           <span class="nav-text">Tạo bài viết mới</span>
         </a>
       </li>
+
+      <li class="nav-section">
+        <div class="nav-section-title">Quản lý bệnh cây</div>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/plant-manager/diseases']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">🌿</span>
+          <span class="nav-text">Danh sách bệnh cây</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/plant-manager/diseases/create']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text">Tạo bệnh mới</span>
+        </a>
+      </li>
+
+      <li class="nav-section">
+        <div class="nav-section-title">Hướng dẫn điều trị</div>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/plant-manager/treatment-guides/list']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Danh sách hướng dẫn</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/plant-manager/treatment-guides/create']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text">Tạo hướng dẫn mới</span>
+        </a>
+      </li>
     </ul>
   </nav>
+
+  <div class="sidebar-footer">
+    <button class="logout-button" (click)="logout()">
+      <span class="nav-icon">🚪</span>
+      <span class="nav-text">Đăng xuất</span>
+    </button>
+  </div>
 </div>

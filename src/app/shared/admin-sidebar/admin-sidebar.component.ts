@@ -47,6 +47,14 @@ export class AdminSidebarComponent {
             { label: 'Danh sách bài viết', link: '/expert/articles' },
             { label: 'Tạo bài viết', link: '/expert/articles/create' }
           ]
+        },
+        {
+          title: 'Quản lý bệnh cây',
+          open: false,
+          items: [
+            { label: 'Danh sách bệnh cây', link: '/expert/plant-manager/diseases/list' },
+            { label: 'Tạo bệnh mới', link: '/expert/plant-manager/diseases/create' }
+          ]
         }
       ];
     } else if (role === 'STAFF') {

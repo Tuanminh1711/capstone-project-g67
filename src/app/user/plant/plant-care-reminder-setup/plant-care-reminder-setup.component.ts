@@ -73,8 +73,8 @@ export class PlantCareReminderSetupComponent {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     };
     this.http.post(
-      `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
-      { schedules: [payload] },
+      `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminder`,
+      payload,
       options
     ).subscribe({
       next: (res: any) => {

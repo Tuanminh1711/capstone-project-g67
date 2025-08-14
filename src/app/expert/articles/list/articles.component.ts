@@ -4,15 +4,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ArticlesService, Article } from '../articles.service';
 import { ChangeDetectorRef } from '@angular/core';
-import { ExpertLayoutComponent } from '../../shared/expert-layout/expert-layout.component';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-expert-articles',
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss'],
   standalone: true,
-  imports: [CommonModule, ExpertLayoutComponent]
+  imports: [CommonModule, RouterModule]
 })
 export class ArticlesComponent implements OnInit {
   articles: Article[] = [];

@@ -1,5 +1,4 @@
-<app-expert-layout>
-  <div class="expert-private-chat-container">
+<div class="expert-private-chat-container">
     <!-- Conversation List -->
     <div class="conversation-list" *ngIf="showConversationList">
       <div class="conversation-header">
@@ -111,12 +110,7 @@
                 <div class="message-text">
                   {{ msg.content }}
                 </div>
-              </div>
-            </div>
-            
-            <!-- Avatar cho tin nhắn của mình (bên phải) -->
-            <div class="message-avatar own-avatar" *ngIf="isOwnMessage(msg)">
-              <span>{{ getAvatarInitial(msg) }}</span>
+              </div> 
             </div>
           </div>
         </div>
@@ -153,4 +147,3 @@
       </div>
     </div>
   </div>
-</app-expert-layout>

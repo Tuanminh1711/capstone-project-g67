@@ -133,4 +133,8 @@ export class CookieService {
   removeAuthToken(): void {
     this.deleteCookie('auth_token');
   }
+
+  removeAccessToken(): void {
+    this.deleteCookie('access_token');
+  }
 }

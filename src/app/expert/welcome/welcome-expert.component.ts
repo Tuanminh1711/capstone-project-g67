@@ -2,12 +2,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
-import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-welcome-expert',
   standalone: true,
-  imports: [CommonModule, ExpertLayoutComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, RouterModule],
   templateUrl: './welcome-expert.component.html',
   styleUrls: ['./welcome-expert.component.scss']
 })

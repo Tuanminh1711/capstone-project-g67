@@ -1,0 +1,33 @@
+// Custom form field styles
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    --mat-form-field-input-text: black;
+  }
+
+  input, textarea {
+    color: black !important;
+  }
+
+  ::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input {
+    color: black;
+  }
+  
+  // Đảm bảo label cũng có màu đen khi focus
+  .mdc-floating-label--float-above {
+    color: black;
+  }
+}
+
+// Đảm bảo text hiển thị đúng trong mat-select
+.mat-mdc-select-value-text {
+  color: black !important;
+}
+
+// Đảm bảo text trong các option của select cũng có màu đen
+.mat-mdc-option {
+  color: black !important;
+}

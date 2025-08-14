@@ -1,0 +1,418 @@
+.disease-edit-container {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  background-color: #f5f5f5;
+  min-height: calc(100vh - 64px);
+}
+
+.header-card {
+  background: #fff;
+  border-radius: 12px;  mat-icon {
+    opacity: 0.9;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #1976d2;
+  }-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  .mat-mdc-card-header {
+    padding: 24px 24px 16px;
+  }
+
+  .mat-mdc-card-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+
+    mat-icon {
+      color: #1976d2;
+    }
+  }
+
+  .mat-mdc-card-subtitle {
+    margin: 8px 0 0;
+    font-size: 16px;
+    color: #5e6d7e;
+  }
+
+  .mat-mdc-card-actions {
+    padding: 16px 24px 24px;
+    margin: 0;
+
+    button {
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-1px);
+      }
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+.content-card {
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .mat-mdc-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .mat-mdc-card-content {
+    padding: 32px;
+  }
+}
+
+.disease-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.form-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .section-title {
+    color: #2c3e50;
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    mat-icon {
+      color: #1976d2;
+    }
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+
+  .mat-mdc-form-field {
+    flex: 1;
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  button {
+    transform: scale(0.9);
+  }
+}
+
+.treatment-guide {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .guide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0;
+      color: #1976d2;
+      font-size: 18px;
+      font-weight: 500;
+    }
+  }
+
+  .guide-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+  
+  &.mat-mdc-form-field-appearance-outline {
+    .mat-mdc-form-field-wrapper {
+      background-color: #ffffff;
+      border-radius: 8px;
+    }
+
+    .mat-mdc-form-field-flex {
+      padding: 6px 14px;
+    }
+
+    .mat-mdc-form-field-outline {
+      color: #6b7280;
+      border-width: 1.5px;
+      opacity: 1;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding: 14px 0;
+    }
+
+    &.mat-focused {
+      .mat-mdc-form-field-outline {
+        color: #059669;
+        border-width: 2px;
+        opacity: 1;
+      }
+    }
+
+    mat-icon {
+      color: #374151;
+      opacity: 1;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+mat-label {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+input, textarea {
+  color: #1f2937 !important;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+// Enhanced select/dropdown styles
+::ng-deep {
+  .mat-mdc-select-panel {
+    background: #ffffff !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e5e7eb !important;
+    overflow: hidden;
+    opacity: 1 !important;
+  }
+
+  .mat-mdc-select-value-text {
+    color: #000000 !important;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .mat-mdc-select {
+    background: white;
+  }
+
+  .mat-mdc-option {
+    font-size: 16px !important;
+    min-height: 50px !important;
+    background-color: #ffffff !important;
+    margin: 0;
+    border: none !important;
+    padding: 12px 16px !important;
+    opacity: 1 !important;
+    
+    &:hover {
+      background-color: #ffffff !important;
+      opacity: 1 !important;
+      .mat-mdc-option-text {
+        color: #16a34a !important;
+        font-weight: 700 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    &.mat-mdc-option-active {
+      background-color: #ffffff !important;
+      opacity: 1 !important;
+      .mat-mdc-option-text {
+        color: #16a34a !important;
+        font-weight: 700 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    .mat-mdc-option-text {
+      color: #000000 !important;
+      font-weight: 600 !important;
+      font-size: 16px !important;
+      opacity: 1 !important;
+    }
+
+    &.mat-mdc-selected {
+      background-color: #ffffff !important;
+      opacity: 1 !important;
+      .mat-mdc-option-text {
+        color: #000000 !important;
+        font-weight: 700 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    // Checkmark icon color
+    .mdc-list-item__end {
+      color: #16a34a !important;
+      opacity: 1 !important;
+    }
+  }
+
+  // Enhanced dropdown indicators
+  .mat-mdc-select-arrow {
+    color: #374151;
+    opacity: 1;
+    width: 14px;
+    height: 14px;
+  }
+
+  // Remove any opacity or transparency effects
+  .mat-mdc-select-panel,
+  .mat-mdc-option,
+  .mat-mdc-option-text {
+    filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+mat-error {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #ef4444;
+}
+
+mat-chip-grid {
+  display: block;
+  margin-top: 8px;
+}
+
+.mat-mdc-chip-row {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-size: 14px;
+
+  .mat-icon {
+    opacity: 0.7;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+
+  button {
+    min-width: 120px;
+    padding: 8px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &[type="submit"] {
+      background-color: #1976d2;
+      
+      &:not([disabled]):hover {
+        background-color: #1565c0;
+        transform: translateY(-1px);
+      }
+
+      &[disabled] {
+        opacity: 0.7;
+      }
+    }
+
+    &[type="button"] {
+      &:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-1px);
+      }
+    }
+
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Styles cho toast messages
+::ng-deep {
+  .success-snackbar {
+    background: #4caf50;
+    color: white;
+    
+    .mat-simple-snackbar-action {
+      color: white;
+    }
+  }
+
+  .error-snackbar {
+    background: #f44336;
+    color: white;
+
+    .mat-simple-snackbar-action {
+      color: white;
+    }
+  }
+
+  .mat-mdc-snack-bar-container {
+    &.success-snackbar, &.error-snackbar {
+      .mdc-snackbar__surface {
+        padding: 14px 16px;
+        border-radius: 8px;
+      }
+
+      .mat-mdc-snack-bar-label {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .mat-mdc-snack-bar-actions {
+        padding-inline-start: 16px;
+      }
+    }
+  }
+}

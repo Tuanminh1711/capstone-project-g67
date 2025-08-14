@@ -137,16 +137,6 @@
                         </span>
                         <span class="plant-scientific" title="{{ plant.scientificName }}">
                           ({{ plant.scientificName.length > 32 ? (plant.scientificName | slice:0:32) + '…' : plant.scientificName }})
-                          @if (plant.status === 'INACTIVE') {
-                            <span class="plant-warning-icon tooltip-container" title="Cây này đang được xác thực thông tin bởi hệ thống">
-                              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-                                <circle cx="10" cy="10" r="10" fill="#ffe066"/>
-                                <path d="M10 5v5.5" stroke="#bfa100" stroke-width="1.6" stroke-linecap="round"/>
-                                <circle cx="10" cy="14.2" r="1.1" fill="#bfa100"/>
-                              </svg>
-                              <span class="plant-warning-tooltip">Cây này đang được xác thực thông tin bởi hệ thống</span>
-                            </span>
-                          }
                           @if (plant.reportCount && plant.reportCount > 0) {
                             <span class="plant-warning-icon tooltip-container">
                               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
@@ -183,7 +173,7 @@
                         <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">
                           Xem chi tiết
                         </button>
-                        <button class="report-btn" (click)="onReportPlant(plant.id, $event)" title="Báo cáo thông tin sai" [disabled]="plant.status === 'INACTIVE'">
+                        <button class="report-btn" (click)="onReportPlant(plant.id, $event)" title="Báo cáo thông tin sai">
                           Báo cáo
                         </button>
                       </div>

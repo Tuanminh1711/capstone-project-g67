@@ -1,15 +1,24 @@
-<div class="admin-create-account-container">
+<div class="admin-create-account-container" [class.loading]="isSubmitting">
+  <!-- Loading Overlay -->
+  <div *ngIf="isSubmitting" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p>Đang tạo tài khoản...</p>
+      <small>Vui lòng chờ trong giây lát</small>
+    </div>
+  </div>
+  
   <form (ngSubmit)="onSubmit()" autocomplete="off">
     <div class="form-group">
       <label>Tên đăng nhập</label>
-      <input type="text" [(ngModel)]="username" name="username" required />
+      <input type="text" [(ngModel)]="username" name="username" required [disabled]="isSubmitting" />
     </div>
     <div class="form-group password-group">
       <label>Mật khẩu</label>
       <div class="password-input-wrapper">
-        <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required />
+        <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required [disabled]="isSubmitting" />
         @if (password) {
-          <button type="button" (click)="showPassword = !showPassword" class="toggle-password-icon no-border" tabindex="-1" [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
+          <button type="button" (click)="showPassword = !showPassword" class="toggle-password-icon no-border" tabindex="-1" [disabled]="isSubmitting" [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
             @if (!showPassword) {
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" style="opacity:0.6;">
                 <path stroke="#888" stroke-width="2" d="M12 5c-7 0-9 7-9 7s2 7 9 7 9-7 9-7-2-7-9-7Z"/>
@@ -29,19 +38,19 @@
     </div>
     <div class="form-group">
       <label>Họ tên</label>
-      <input type="text" [(ngModel)]="fullName" name="fullName" required />
+      <input type="text" [(ngModel)]="fullName" name="fullName" required [disabled]="isSubmitting" />
     </div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email" [(ngModel)]="email" name="email" required />
+      <input type="email" [(ngModel)]="email" name="email" required [disabled]="isSubmitting" />
     </div>
     <div class="form-group">
       <label>Số điện thoại</label>
-      <input type="text" [(ngModel)]="phoneNumber" name="phoneNumber" required />
+      <input type="text" [(ngModel)]="phoneNumber" name="phoneNumber" required [disabled]="isSubmitting" />
     </div>
     <div class="form-group">
       <label>Giới tính</label>
-      <select [(ngModel)]="gender" name="gender" required>
+      <select [(ngModel)]="gender" name="gender" required [disabled]="isSubmitting">
         <option value="male">Nam</option>
         <option value="female">Nữ</option>
         <option value="other">Khác</option>
@@ -49,13 +58,32 @@
     </div>
     <div class="form-group">
       <label>Vai trò</label>
-      <select [(ngModel)]="roleId" name="roleId" required>
+      <select [(ngModel)]="roleId" name="roleId" required [disabled]="isSubmitting">
         <option [ngValue]="2">Staff</option>
         <option [ngValue]="5">Expert</option>
       </select>
     </div>
-    <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
-    <div *ngIf="successMsg" class="success-msg">{{ successMsg }}</div>
-    <button type="submit">Tạo tài khoản</button>
+
+    
+    <!-- Progress Bar khi đang submit -->
+    <div *ngIf="isSubmitting" class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <p class="progress-text">Đang xử lý yêu cầu tạo tài khoản...</p>
+    </div>
+    
+    <button type="submit" [disabled]="isSubmitting" [class.loading]="isSubmitting">
+      <span *ngIf="!isSubmitting">Tạo tài khoản</span>
+      <span *ngIf="isSubmitting" class="loading-text">
+        <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+            <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+            <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        Đang tạo tài khoản...
+      </span>
+    </button>
   </form>
 </div>

@@ -2,8 +2,7 @@ import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { CookieService } from '../../auth/cookie.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-top-navigator',
@@ -14,16 +13,14 @@ import { CookieService } from '../../auth/cookie.service';
 })
 export class AdminTopNavigatorComponent {
   @Input() sidebarOpen = true;
-  @Input() pageTitle: string = 'Dashboard';
   @Output() sidebarToggle = new EventEmitter<void>();
 
   username: string = '';
 
   constructor(
     private router: Router,
-    private jwtUserUtil: JwtUserUtilService,
-    private http: HttpClient,
-    private cookieService: CookieService
+    private authService: AuthService,
+    private jwtUserUtil: JwtUserUtilService
   ) {}
   ngOnInit() {
     const info = this.jwtUserUtil.getTokenInfo();
@@ -35,24 +32,9 @@ export class AdminTopNavigatorComponent {
   }
 
   logout() {
-    // Gọi API logout và chuyển về /login-admin, không phụ thuộc AuthService
-    const token = this.cookieService.getCookie('auth_token');
-    if (token) {
-      this.http.post('/api/auth/logout', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).subscribe({
-        next: () => {
-          this.cookieService.removeAuthToken();
-          window.location.href = '/login-admin';
-        },
-        error: () => {
-          this.cookieService.removeAuthToken();
-          window.location.href = '/login-admin';
-        }
-      });
-    } else {
-      this.cookieService.removeAuthToken();
-      window.location.href = '/login-admin';
-    }
+    // Sử dụng AuthService để logout đúng cách
+    this.authService.logout();
+    // Sau khi logout, chuyển hướng về trang đăng nhập admin
+    this.router.navigate(['/login-admin']);
   }
 }

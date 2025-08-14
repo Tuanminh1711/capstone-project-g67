@@ -1,5 +1,6 @@
 <div class="admin-account-detail-container">
   <div class="detail-header">
+    <h2>Chi tiết tài khoản</h2>
     <div class="header-actions">
       <button class="btn btn-secondary" (click)="viewActivityLogs()">
         <i class="fas fa-history"></i>
@@ -56,104 +57,86 @@
             </span>
           </div>
         </div>
-        
       </div>
 
-      <!-- Only show username and role -->
-      @if (showOnlyUsernameAndRole) {
-        <div class="user-details">
-          <div class="detail-section">
-            <h4>Thông tin tài khoản</h4>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="label">Tên đăng nhập:</span>
-                <span class="value">{{ user.username }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Vai trò:</span>
-                <span class="value">{{ getRoleText(user.role) }}</span>
-              </div>
+      <!-- Detailed Information -->
+      <div class="user-details">
+        <div class="detail-section">
+          <h4>Thông tin liên hệ</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ user.email }}</span>
             </div>
+            <div class="detail-item">
+              <span class="label">Số điện thoại:</span>
+              <span class="value">{{ user.phone || 'Chưa có thông tin' }}</span>
+            </div>
+            @if (user.address) {
+              <div class="detail-item">
+                <span class="label">Địa chỉ:</span>
+                <span class="value">{{ user.address }}</span>
+              </div>
+            }
+            @if (user.birthDate) {
+              <div class="detail-item">
+                <span class="label">Ngày sinh:</span>
+                <span class="value">{{ formatDate(user.birthDate) }}</span>
+              </div>
+            }
           </div>
-          <div class="detail-section">
-            <h4>Thông tin liên hệ & cá nhân</h4>
-            <div class="hidden-info-box">
-              Nội dung đã được ẩn vì lý do bảo mật.
+        </div>
+
+        <div class="detail-section">
+          <h4>Thông tin cá nhân</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Giới tính:</span>
+              <span class="value">{{ getGenderText(user.gender || '') }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Môi trường sống:</span>
+              <span class="value">{{ getLivingEnvironmentText(user.livingEnvironment || '') }}</span>
             </div>
           </div>
         </div>
-      }
 
-      <!-- Show all info -->
-      @if (showAllInfo) {
-        <div class="user-details">
-          <div class="detail-section">
-            <h4>Thông tin liên hệ</h4>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="label">Email:</span>
-                <span class="value">{{ user.email }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Số điện thoại:</span>
-                <span class="value">{{ user.phone || 'Chưa có thông tin' }}</span>
-              </div>
-              @if (user.address) {
-                <div class="detail-item">
-                  <span class="label">Địa chỉ:</span>
-                  <span class="value">{{ user.address }}</span>
-                </div>
-              }
-              @if (user.birthDate) {
-                <div class="detail-item">
-                  <span class="label">Ngày sinh:</span>
-                  <span class="value">{{ formatDate(user.birthDate) }}</span>
-                </div>
-              }
+        <div class="detail-section">
+          <h4>Thông tin hệ thống</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">ID:</span>
+              <span class="value">#{{ user.id }}</span>
             </div>
-          </div>
-
-          <div class="detail-section">
-            <h4>Thông tin cá nhân</h4>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="label">Giới tính:</span>
-                <span class="value">{{ getGenderText(user.gender || '') }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Môi trường sống:</span>
-                <span class="value">{{ getLivingEnvironmentText(user.livingEnvironment || '') }}</span>
-              </div>
+            <div class="detail-item">
+              <span class="label">Vai trò:</span>
+              <span class="value">{{ getRoleText(user.role) }}</span>
             </div>
-          </div>
-
-          <div class="detail-section">
-            <h4>Thông tin hệ thống</h4>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="label">ID:</span>
-                <span class="value">#{{ user.id }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Ngày tạo:</span>
-                <span class="value">{{ formatDate(user.createdAt) }}</span>
-              </div>
-              @if (user.updatedAt) {
-                <div class="detail-item">
-                  <span class="label">Cập nhật lần cuối:</span>
-                  <span class="value">{{ formatDate(user.updatedAt) }}</span>
-                </div>
-              }
-              @if (user.lastLoginAt) {
-                <div class="detail-item">
-                  <span class="label">Đăng nhập lần cuối:</span>
-                  <span class="value">{{ formatDate(user.lastLoginAt) }}</span>
-                </div>
-              }
+            <div class="detail-item">
+              <span class="label">Trạng thái:</span>
+              <span class="value" [ngClass]="getStatusClass(user.status)">
+                {{ getStatusText(user.status) }}
+              </span>
             </div>
+            <div class="detail-item">
+              <span class="label">Ngày tạo:</span>
+              <span class="value">{{ formatDate(user.createdAt) }}</span>
+            </div>
+            @if (user.updatedAt) {
+              <div class="detail-item">
+                <span class="label">Cập nhật lần cuối:</span>
+                <span class="value">{{ formatDate(user.updatedAt) }}</span>
+              </div>
+            }
+            @if (user.lastLoginAt) {
+              <div class="detail-item">
+                <span class="label">Đăng nhập lần cuối:</span>
+                <span class="value">{{ formatDate(user.lastLoginAt) }}</span>
+              </div>
+            }
           </div>
         </div>
-      }
+      </div>
     </div>
   }
 </div>

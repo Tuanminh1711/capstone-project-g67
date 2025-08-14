@@ -65,6 +65,22 @@ export class AiPlantComponent implements OnInit {
       this.toastService.show('Vui lòng đăng nhập để sử dụng tính năng này', 'error');
       return;
     }
+
+    // Debug: Check user role and token
+    const role = this.authService.getCurrentUserRole();
+    const userId = this.authService.getCurrentUserId();
+    const token = this.cookieService.getCookie('auth_token');
+    
+    console.log('🔍 [VIP AI Plant] Debug info:', {
+      role,
+      userId,
+      hasToken: !!token,
+      tokenLength: token ? token.length : 0
+    });
+
+    if (role !== 'VIP' && role !== 'EXPERT') {
+      this.toastService.show(`Tính năng này chỉ dành cho VIP. Quyền hiện tại: ${role}`, 'error');
+    }
   }
 
   private getAuthHeaders(): HttpHeaders {

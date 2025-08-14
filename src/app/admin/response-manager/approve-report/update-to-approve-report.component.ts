@@ -3,7 +3,6 @@ import { NgForm } from '@angular/forms';
 
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
-import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -121,32 +120,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     { value: 'INACTIVE', label: 'Không hoạt động' }
   ];
 
-
-  // Thay thế ảnh cũ bằng ảnh mới tại vị trí index
-  onReplaceImage(event: Event, index: number): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0 && this.plant && this.plantId) {
-      const file = input.files[0];
-      // Lấy tên file cũ để xóa
-      const url = this.plant.imageUrls[index];
-      let filename = url.split('/').pop() || '';
-      if (filename.includes('?')) filename = filename.split('?')[0];
-      const formData = new FormData();
-      formData.append('deleteImageFilenames', filename);
-      formData.append('images', file);
-      this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plantId}`, formData)
-        .subscribe({
-          next: (res) => {
-            this.toast.success('Thay ảnh thành công!');
-            this.loadPlantData();
-          },
-          error: () => {
-            this.toast.error('Thay ảnh thất bại!');
-          }
-        });
-    }
-  }
-
   private toast = inject(ToastService);
   private authService = inject(AuthService);
 
@@ -155,11 +128,9 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone = inject(NgZone),
-    private pageTitleService: AdminPageTitleService
+    private zone: NgZone = inject(NgZone)
   ) {
     super();
-    this.pageTitleService.setTitle('DUYỆT BÁO CÁO');
   }
 
   ngOnInit(): void {
@@ -180,90 +151,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     this.destroy$.next();
     this.destroy$.complete();
     this.cleanupSubscriptions();
-  }
-
-    // Image management for plant
-  previewUrls: string[] = [];
-  selectedFiles: File[] = [];
-
-  onImageFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFiles = Array.from(input.files);
-      this.uploadSelectedImages(); // Tự động upload ngay khi chọn
-    }
-  }
-
-  triggerImageUpload(): void {
-    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"][multiple][accept="image/*"]');
-    if (fileInput) fileInput.click();
-  }
-
-  uploadSelectedImages(): void {
-    if (!this.selectedFiles.length || !this.plantId) return;
-    const formData = new FormData();
-    this.selectedFiles.forEach(file => formData.append('images', file));
-    this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plantId}`, formData)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Tải ảnh lên thành công!');
-          this.loadPlantData();
-          this.selectedFiles = [];
-        },
-        error: () => {
-          this.toast.error('Tải ảnh lên thất bại!');
-        }
-      });
-  }
-
-  deleteImage(index: number): void {
-    if (!this.plant || !this.plant.imageUrls || index < 0 || index >= this.plant.imageUrls.length) return;
-    // Lấy tên file từ url (bỏ mọi query string)
-    const url = this.plant.imageUrls[index];
-    let filename = url.split('/').pop() || '';
-    if (filename.includes('?')) filename = filename.split('?')[0];
-    if (!filename) return;
-    const formData = new FormData();
-    formData.append('deleteImageFilenames', filename);
-    this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plantId}`, formData)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Đã xóa ảnh!');
-          this.loadPlantData();
-        },
-        error: () => {
-          this.toast.error('Xóa ảnh thất bại!');
-        }
-      });
-  }
-
-  setPrimaryImage(index: number): void {
-    if (!this.plant || !this.plant.imageUrls || index < 0 || index >= this.plant.imageUrls.length) return;
-    const url = this.plant.imageUrls[index];
-    const filename = url.split('/').pop();
-    if (!filename) return;
-    const formData = new FormData();
-    formData.append('setPrimaryImageFilename', filename);
-    this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plantId}`, formData)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Đã đặt ảnh chính!');
-          this.loadPlantData();
-        },
-        error: () => {
-          this.toast.error('Đặt ảnh chính thất bại!');
-        }
-      });
-  }
-
-  getPlantImageUrl(filename: string): string {
-    if (!filename) return '';
-    if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
-    if (filename.startsWith('/api/manager/plants') || filename.startsWith('api/manager/plants')) {
-      return filename.startsWith('/') ? filename : '/' + filename;
-    }
-    if (!filename.startsWith('/')) return `/api/manager/plants/${filename}`;
-    return filename;
   }
 
   // Add method to redirect to working edit page if API doesn't work
@@ -637,10 +524,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       this.setError('Vui lòng kiểm tra lại các trường dữ liệu!');
       return;
     }
-    if (!this.adminNotes.trim()) {
-      this.setError('Vui lòng nhập ghi chú của admin trước khi lưu thông tin cây!');
-      return;
-    }
     this.isUpdating = true;
     this.setError('');
     this.setSuccess('');
@@ -709,8 +592,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       this.validationErrors.push('Invalid status');
     }
 
-    // KHÔNG kiểm tra adminNotes khi lưu thông tin cây
-
     if (this.validationErrors.length > 0) {
       this.setError('Please fix the validation errors below');
       return false;
@@ -766,11 +647,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   // Helper method to check if approve button should be enabled
   canApprove(): boolean {
     return this.hasPlantBeenSaved && this.adminNotes.trim().length > 0 && !this.isApproving;
-  }
-
-  // Helper method to check if save button should be enabled (for clarity, not strictly needed)
-  canSave(): boolean {
-  return !!this.plantForm?.valid && !this.isUpdating && !this.isApproving;
   }
 
   // Get tooltip text for approve button

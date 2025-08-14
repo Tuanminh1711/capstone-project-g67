@@ -24,7 +24,7 @@ export interface PrivateConversation {
 @Component({
   selector: 'app-expert-private-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExpertLayoutComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './expert-private-chat.component.html',
   styleUrls: ['./expert-private-chat.component.scss']
 })

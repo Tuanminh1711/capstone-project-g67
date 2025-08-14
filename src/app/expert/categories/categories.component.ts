@@ -7,8 +7,6 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { filter, takeUntil, switchMap } from 'rxjs/operators';
 import { Subject, of } from 'rxjs';
 import { ExpertService } from './categories.service';
-import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
-
 // Define interfaces for type safety
 interface Category {
   id: number;
@@ -31,7 +29,7 @@ interface ApiResponse {
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ExpertLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './categories.component.html',
   styleUrls: ['./categories.component.scss']
 })

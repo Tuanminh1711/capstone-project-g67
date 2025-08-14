@@ -2,13 +2,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ExpertLayoutComponent } from '../../shared/expert-layout/expert-layout.component';
 import { ArticlesService } from '../articles.service';
 
 @Component({
   selector: 'app-article-detail',
   standalone: true,
-  imports: [CommonModule, ExpertLayoutComponent],
+  imports: [CommonModule],
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.scss']
 })

@@ -1,0 +1,231 @@
+.disease-detail-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: calc(100vh - 64px);
+  width: 100%;
+  background-color: white;
+
+  .header-card {
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    border: none;
+    box-shadow: none;
+
+    .mat-mdc-card-header {
+      padding: 20px 24px;
+      border-bottom: none;
+
+      .mat-mdc-card-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+
+      .mat-mdc-card-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin: 4px 0 0;
+      }
+    }
+
+    .mat-mdc-card-actions {
+      padding: 0 24px 16px;
+      margin: 0;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
+
+  .content-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    min-height: 200px;
+
+    &.loading {
+      .mat-mdc-card-content {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+    }
+
+    .mat-mdc-card-content {
+      padding: 24px;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-shade {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .disease-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e0e0e0;
+
+    .disease-name {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .disease-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: white;
+
+        &.nấm { background-color: #8b5cf6; }
+        &.côn.trùng { background-color: #f59e0b; }
+        &.vi.khuẩn { background-color: #ef4444; }
+        &.virus { background-color: #ec4899; }
+        &.sinh.lý { background-color: #10b981; }
+      }
+
+      .name-details {
+        h2 {
+          font-size: 24px;
+          font-weight: 600;
+          color: #1a1a1a;
+          margin: 0;
+        }
+
+        .scientific-name {
+          font-size: 14px;
+          color: #637381;
+          font-style: italic;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+
+  .severity-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: fit-content;
+
+    &.low {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    &.medium {
+      background-color: #fff3e0;
+      color: #ef6c00;
+    }
+
+    &.high {
+      background-color: #fbe9e7;
+      color: #d84315;
+    }
+
+    &.critical {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    &.low::before { background-color: #2e7d32; }
+    &.medium::before { background-color: #ef6c00; }
+    &.high::before { background-color: #d84315; }
+    &.critical::before { background-color: #c62828; }
+  }
+
+  .info-section {
+    margin-bottom: 24px;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0 0 12px;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #637381;
+      margin: 0;
+      white-space: pre-line;
+    }
+  }
+
+  .plants-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+
+    .plant-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f4f6f8;
+      border-radius: 8px;
+
+      .plant-icon {
+        color: #00a76f;
+      }
+
+      .scientific-name {
+        font-size: 12px;
+        color: #637381;
+        font-style: italic;
+      }
+    }
+  }
+
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+
+    img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+}

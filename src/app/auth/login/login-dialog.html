@@ -8,11 +8,23 @@
     <form (ngSubmit)="onSubmit()" autocomplete="on">
       <input class="auth-input" type="text" name="username" [(ngModel)]="username" placeholder="Tên đăng nhập hoặc Email" required />
       <div class="auth-input-group password-group">
-        <input class="auth-input password-input" [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="password" placeholder="Mật khẩu" required />
-        <button *ngIf="password && password.length > 0" type="button" class="toggle-password-btn" (click)="showPassword = !showPassword" tabindex="-1">
-          <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-        </button>
-      </div>
+    <input #passwordInput
+         class="auth-input password-input"
+         type="password"
+         name="password"
+         [(ngModel)]="password"
+         placeholder="Mật khẩu"
+         required />
+         
+  <button *ngIf="password?.length"
+          type="button"
+          class="toggle-password-btn"
+          (click)="togglePassword(passwordInput)"
+          tabindex="-1">
+    <i class="fa" [ngClass]="passwordInput.type === 'password' ? 'fa-eye' : 'fa-eye-slash'"></i>
+  </button>
+</div>
+
       <button class="auth-btn" type="submit">Đăng nhập</button>
     </form>
     <div class="auth-link">

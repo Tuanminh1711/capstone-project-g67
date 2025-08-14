@@ -1,5 +1,4 @@
 
-
 import { environment } from '../../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -61,23 +60,6 @@ interface ApiResponse<T = any> {
   styleUrls: ['./update-plant.scss']
 })
 export class UpdatePlantComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
-  // Preview URL cho ảnh upload demo
-  previewUrls: string[] = [];
-
-  onImageFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      // Giải phóng preview cũ
-      this.previewUrls.forEach(url => URL.revokeObjectURL(url));
-      this.selectedFiles = Array.from(input.files);
-      this.previewUrls = this.selectedFiles.map(file => URL.createObjectURL(file));
-    }
-  }
-  // Cho phép click vào ảnh cũ để chọn ảnh mới
-  triggerImageUpload(): void {
-    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"][multiple][accept="image/*"]');
-    if (fileInput) fileInput.click();
-  }
   private destroy$ = new Subject<void>();
   private readonly baseUrl = `${environment.apiUrl}/manager`;
   
@@ -88,68 +70,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   validationErrors: string[] = [];
   sidebarCollapsed = false;
 
-  // Image management
-  selectedFiles: File[] = [];
-
-
-  uploadSelectedImages(): void {
-    if (!this.selectedFiles.length || !this.plant) return;
-    const formData = new FormData();
-    this.selectedFiles.forEach(file => formData.append('images', file));
-    this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plant.id}`, formData)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Tải ảnh lên thành công!');
-          this.loadPlantData();
-          this.selectedFiles = [];
-        },
-        error: () => {
-          this.toast.error('Tải ảnh lên thất bại!');
-        }
-      });
-  }
-
-  deleteImage(index: number): void {
-    if (!this.plant || !this.plant.imageUrls || index < 0 || index >= this.plant.imageUrls.length) return;
-    // Lấy tên file từ url (bỏ mọi query string)
-    const url = this.plant.imageUrls[index];
-    let filename = url.split('/').pop() || '';
-    if (filename.includes('?')) filename = filename.split('?')[0];
-    if (!filename) return;
-    const formData = new FormData();
-    // Đảm bảo backend nhận đúng dạng mảng nếu cần
-    formData.append('deleteImageFilenames', filename);
-    this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plant.id}`, formData)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Đã xóa ảnh!');
-          this.loadPlantData();
-        },
-        error: () => {
-          this.toast.error('Xóa ảnh thất bại!');
-        }
-      });
-  }
-
-  setPrimaryImage(index: number): void {
-    if (!this.plant || !this.plant.imageUrls || index < 0 || index >= this.plant.imageUrls.length) return;
-    // Lấy tên file từ url
-    const url = this.plant.imageUrls[index];
-    const filename = url.split('/').pop();
-    if (!filename) return;
-    const formData = new FormData();
-    formData.append('setPrimaryImageFilename', filename);
-    this.http.put<any>(`${this.baseUrl}/update-plant-images/${this.plant.id}`, formData)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Đã đặt ảnh chính!');
-          this.loadPlantData();
-        },
-        error: () => {
-          this.toast.error('Đặt ảnh chính thất bại!');
-        }
-      });
-  }
   updateForm: UpdatePlantRequest = {
     scientificName: '',
     commonName: '',
@@ -199,16 +119,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     super();
   }
 
-  getPlantImageUrl(filename: string): string {
-    if (!filename) return '';
-    if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
-    if (filename.startsWith('/api/manager/plants') || filename.startsWith('api/manager/plants')) {
-      return filename.startsWith('/') ? filename : '/' + filename;
-    }
-    if (!filename.startsWith('/')) return `/api/manager/plants/${filename}`;
-    return filename;
-  }
-
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'];
@@ -224,8 +134,6 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   }
 
   ngOnDestroy(): void {
-    this.previewUrls.forEach(url => URL.revokeObjectURL(url));
-    this.previewUrls = [];
     this.destroy$.next();
     this.destroy$.complete();
     this.cleanupSubscriptions();

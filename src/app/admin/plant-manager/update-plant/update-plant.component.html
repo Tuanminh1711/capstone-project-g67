@@ -23,38 +23,10 @@
   <div *ngIf="plant && !loading" class="update-plant-content">
     <div class="plant-image-block">
       <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="plant-image-gallery">
-        <div *ngFor="let url of plant.imageUrls; let i = index" class="image-item">
-          <img [src]="getPlantImageUrl(url)" [alt]="plant.commonName" (error)="onImageError($event)" style="cursor:pointer; border:2px dashed #aaa; border-radius:8px;" (click)="fileInput.click()" title="Click để chọn ảnh mới" />
-            <div class="image-actions">
-              <!-- Ảnh chính đã bị ẩn theo yêu cầu -->
-            <!--
-    <div class="image-update-note">
-      <i class="fas fa-info-circle"></i>
-      <span>
-        <b>Lưu ý:</b> Để cập nhật ảnh cho cây, hãy chọn và tải lên ảnh mới. Ảnh mới sẽ được thêm vào danh sách ảnh của cây. Nếu không thấy ảnh mới trong database, hãy kiểm tra lại API backend hoặc thử tải lại trang.
-      </span>
-    </div>
-            -->
-          </div>
-        </div>
+        <img *ngFor="let imageUrl of plant.imageUrls" [src]="imageUrl" [alt]="plant.commonName" (error)="onImageError($event)" />
       </div>
       <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
-        <i class="fas fa-seedling"></i>
-        <span>Chưa có ảnh</span>
-      </div>
-      <div class="upload-section">
-        <input #fileInput type="file" multiple (change)="onImageFilesSelected($event)" accept="image/*" hidden />
-        <ng-container *ngIf="selectedFiles && selectedFiles.length > 0">
-          <div class="demo-preview-list" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:10px;">
-            <img *ngFor="let url of previewUrls; let i = index" [src]="url" [alt]="'demo-' + i" style="width:80px; height:80px; object-fit:cover; border:1.5px solid #aaa; border-radius:6px; background:#f8f8f8;" />
-          </div>
-          <button type="button" class="main-upload-btn main-action-btn" (click)="uploadSelectedImages()" style="background:#28a745; color:#fff; font-weight:bold; border-radius:6px; padding:8px 18px; margin-top:10px; width:100%; max-width:320px; display:block; margin-left:auto; margin-right:auto;">
-            <i class="fas fa-save"></i> Lưu thay đổi
-          </button>
-          <span class="selected-files-info" style="display:block; text-align:center; margin-top:4px; color:#007bff;">
-            Đã chọn {{selectedFiles.length}} ảnh
-          </span>
-        </ng-container>
+        Không có ảnh
       </div>
     </div>
     <form (ngSubmit)="onSubmit()" #plantForm="ngForm" class="plant-form-block">

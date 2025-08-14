@@ -1,11 +1,11 @@
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { UrlService } from '../../../shared/url.service';
 import { ChatService } from '../../../shared/services/chat.service';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-expert-sidebar',
@@ -16,9 +16,10 @@ import { ChatService } from '../../../shared/services/chat.service';
 })
 export class ExpertSidebarComponent implements OnInit {
   isChatDropdownOpen = false;
-  recentUsers: { username: string, userId: number, conversationId?: string }[] = [];
+  recentUsers$ = new BehaviorSubject<{ username: string, userId: number, conversationId?: string }[]>([]);
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private router: Router,
     private authService: AuthService,
     private http: HttpClient,
@@ -34,20 +35,23 @@ export class ExpertSidebarComponent implements OnInit {
     // Lấy danh sách các cuộc trò chuyện giống trang tin nhắn riêng tư
     this.chatService.getConversations().subscribe({
       next: (conversations) => {
-        this.recentUsers = conversations.map(c => ({
+        const users = conversations.map(c => ({
           username: c.otherUsername,
           userId: c.otherUserId,
           conversationId: c.conversationId
         }));
+        this.recentUsers$.next(users);
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.recentUsers = [];
+        this.recentUsers$.next([]);
+        this.cdr.detectChanges();
       }
     });
   }
 
   toggleChatDropdown() {
-    this.isChatDropdownOpen = true;
+    this.isChatDropdownOpen = !this.isChatDropdownOpen;
   }
 
   navigateToCommunityChat() {
@@ -58,5 +62,9 @@ export class ExpertSidebarComponent implements OnInit {
   navigateToUserChat(user: any) {
     this.router.navigate(['/expert/private-chat'], { queryParams: { conversationId: user.conversationId } });
     // Dropdown luôn mở
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

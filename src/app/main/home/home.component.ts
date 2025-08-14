@@ -181,18 +181,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       title: 'Chào mừng đến với PlantCare!',
       desc: 'Khám phá kho kiến thức cây cảnh, mẹo chăm sóc và cộng đồng yêu cây lớn nhất Việt Nam.',
+      image: 'assets/image/slide1.jpg',
       cta: 'Khám phá ngay',
       ctaAction: () => this.router.navigate(['/plant-info'])
     },
     {
       title: 'Tư vấn cùng chuyên gia',
       desc: 'Đặt câu hỏi, nhận lời khuyên và giải đáp mọi thắc mắc về cây từ đội ngũ chuyên gia uy tín.',
+      image: 'assets/image/slide2.jpg',
       cta: 'Gặp chuyên gia',
       ctaAction: () => this.router.navigate(['/care-expert'])
     },
     {
       title: 'Quản lý vườn cây của bạn',
       desc: 'Theo dõi, ghi chú, nhận nhắc nhở chăm sóc và chia sẻ vườn cây với bạn bè.',
+      image: 'assets/image/slide3.jpg',
       cta: 'Vào vườn của tôi',
       ctaAction: () => this.router.navigate(['/user/my-garden'])
     }

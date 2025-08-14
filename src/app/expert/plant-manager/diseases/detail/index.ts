@@ -1,0 +1,1 @@
+export { DiseaseDetailComponent } from './disease-detail.component';

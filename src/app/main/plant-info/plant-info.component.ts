@@ -304,10 +304,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
       this.toast.error('Không tìm thấy thông tin cây');
       return;
     }
-    if (selectedPlant.status === 'INACTIVE') {
-      this.toast.error('Cây này đã bị khóa do bị báo cáo quá nhiều. Bạn không thể báo cáo thêm.');
-      return;
-    }
+
     // Check authentication
     const token = this.cookieService.getAuthToken();
     if (!token) {
@@ -315,6 +312,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
       this.toast.error('Vui lòng đăng nhập để báo cáo thông tin cây!');
       return;
     }
+
     // Set selected plant in service for the report component
     this.plantDataService.setSelectedPlant(selectedPlant);
     this.router.navigate(['/user/report-plant', plantId]);

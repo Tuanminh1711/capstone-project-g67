@@ -1,16 +1,76 @@
-<app-expert-layout>
-  <div class="expert-welcome-content">
-    <!-- Welcome Section -->
-    <div class="welcome-section">
-      <div class="welcome-header">
-        
-        <h1 class="welcome-title">Chào mừng đến với Hệ thống Chuyên gia</h1>
-        <p class="welcome-description">
-          Nơi bạn có thể chia sẻ kiến thức chuyên môn về cây cảnh và tư vấn cho cộng đồng yêu thực vật
-        </p>
-      </div>
-    </div>
+<div class="page-header">
+  <h1>Chào mừng đến với Hệ thống Chuyên gia</h1>
+  <p class="subtitle">Nơi bạn có thể chia sẻ kiến thức chuyên môn về cây cảnh và tư vấn cho cộng đồng yêu thực vật</p>
+</div>
 
-  
+<div class="content-container">
+  <div class="dashboard-grid">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Quản lý bệnh cây</mat-card-title>
+        <mat-card-subtitle>Quản lý thông tin bệnh cây và hướng dẫn điều trị</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Tạo và quản lý thông tin về các loại bệnh cây</p>
+        <p>Cung cấp hướng dẫn điều trị chi tiết</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/expert/plant-manager/diseases">
+          <mat-icon>local_florist</mat-icon>
+          Quản lý bệnh
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Bài viết chuyên môn</mat-card-title>
+        <mat-card-subtitle>Chia sẻ kiến thức về cây cảnh</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Viết bài chia sẻ kiến thức chuyên môn</p>
+        <p>Quản lý và cập nhật các bài viết</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/expert/articles">
+          <mat-icon>article</mat-icon>
+          Quản lý bài viết
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Chat hỗ trợ</mat-card-title>
+        <mat-card-subtitle>Tư vấn trực tiếp cho người dùng</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Tham gia phòng chat cộng đồng</p>
+        <p>Chat riêng với từng người dùng</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/expert/chat">
+          <mat-icon>chat</mat-icon>
+          Vào chat
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Danh mục bài viết</mat-card-title>
+        <mat-card-subtitle>Quản lý các chuyên mục</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Tổ chức bài viết theo chuyên mục</p>
+        <p>Thêm, sửa, xóa danh mục</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/expert/categories">
+          <mat-icon>category</mat-icon>
+          Quản lý danh mục
+        </button>
+      </mat-card-actions>
+    </mat-card>
   </div>
-</app-expert-layout>
+</div>

@@ -1,17 +1,15 @@
-// ...existing code from previous create-article.component.ts...
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ArticlesService } from '../articles.service';
 import { ExpertService } from '../../categories/categories.service';
-import { ExpertLayoutComponent } from '../../shared/expert-layout/expert-layout.component';
 
 @Component({
 	selector: 'app-create-article',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, ExpertLayoutComponent],
+	imports: [CommonModule, ReactiveFormsModule, RouterModule],
 	templateUrl: './create-article.component.html',
 	styleUrls: ['./create-article.component.scss']
 })
@@ -32,6 +30,8 @@ export class CreateArticleComponent implements OnInit {
 				private fb: FormBuilder,
 				private articlesService: ArticlesService,
 				private expertService: ExpertService,
+				private toastService: ToastService,
+				private router: Router,
 				private cdr: ChangeDetectorRef
 			) {
 			this.articleForm = this.fb.group({
@@ -130,6 +130,7 @@ export class CreateArticleComponent implements OnInit {
 				this.articlesService.createArticle(payload).subscribe({
 					next: () => {
 						this.success = 'Tạo bài viết thành công!';
+						this.toastService.success('Tạo bài viết thành công! 🌱');
 						this.error = null;
 						this.isLoading = false;
 						this.articleForm.reset();
@@ -137,9 +138,15 @@ export class CreateArticleComponent implements OnInit {
 						this.imagePreview = null;
 						this.uploadedImageUrl = null;
 						this.cdr.detectChanges();
+						
+						// Chuyển hướng về trang danh sách sau khi tạo thành công
+						setTimeout(() => {
+							this.router.navigate(['/expert/articles']);
+						}, 2000);
 					},
 					error: () => {
 						this.error = 'Tạo bài viết thất bại.';
+						this.toastService.error('Tạo bài viết thất bại. Vui lòng thử lại.');
 						this.success = null;
 						this.isLoading = false;
 						this.cdr.detectChanges();

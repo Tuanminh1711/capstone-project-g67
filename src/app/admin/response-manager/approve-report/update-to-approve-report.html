@@ -1,19 +1,20 @@
 <!-- Giao diện chuyên nghiệp, tối giản, không lạm dụng icon -->
 <div class="update-plant-page">
   <div class="update-plant-header">
-  <!-- Đã xóa tiêu đề và mô tả -->
+    <h1>Chấp nhận Report</h1>
+    <p class="subtitle">Xem xét và chấp nhận báo cáo từ người dùng</p>
     
     <!-- Workflow guidance -->
     <div class="workflow-guidance">
-      <div class="workflow-step" [class.completed]="adminNotes.trim().length > 0">
+      <div class="workflow-step" [class.completed]="hasPlantBeenSaved">
         <span class="step-number">1</span>
-        <span class="step-text">Chỉnh sửa thông tin cây và nhập ghi chú admin</span>
-        <span *ngIf="adminNotes.trim().length > 0" class="step-status">✓ Đã nhập ghi chú</span>
+        <span class="step-text">Chỉnh sửa và lưu thông tin cây</span>
+        <span *ngIf="hasPlantBeenSaved" class="step-status">✓ Hoàn thành</span>
       </div>
-      <div class="workflow-step" [class.completed]="hasPlantBeenSaved && canApprove()">
+      <div class="workflow-step" [class.completed]="canApprove()">
         <span class="step-number">2</span>
-        <span class="step-text">Lưu thông tin cây và chấp nhận report</span>
-        <span *ngIf="hasPlantBeenSaved && canApprove()" class="step-status">✓ Hoàn thành</span>
+        <span class="step-text">Nhập ghi chú và chấp nhận báo cáo</span>
+        <span *ngIf="canApprove()" class="step-status">✓ Sẵn sàng</span>
       </div>
     </div>
   </div>
@@ -21,7 +22,7 @@
   <div *ngIf="loading" class="loading-section">
     <div class="loading-card">
       <div class="loading-spinner-large"></div>
-      <h3>Đang tải thông tin report...</h3>
+      <h3>Đang tải thông tin báo cáo...</h3>
     </div>
   </div>
 
@@ -34,20 +35,9 @@
   </div>
 
   <div *ngIf="plant && !loading" class="update-plant-content">
-    <!-- Quản lý ảnh cho plant -->
     <div class="plant-image-block">
-      <div class="plant-image-gallery">
-        <div class="plant-image-item" *ngFor="let imageUrl of plant.imageUrls; let i = index">
-          <label style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-            <img [src]="getPlantImageUrl(imageUrl)" [alt]="plant.commonName" (error)="onImageError($event)" (click)="$event.preventDefault()" />
-            <input type="file" accept="image/*" style="display:none" (change)="onReplaceImage($event, i)" />
-          </label>
-        </div>
-        <!-- Ô upload ảnh -->
-        <label class="plant-image-item add-image-item" tabindex="0">
-          <input type="file" multiple accept="image/*" (change)="onImageFilesSelected($event)" style="display:none" />
-          <span class="add-icon">+</span>
-        </label>
+      <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="plant-image-gallery">
+        <img *ngFor="let imageUrl of plant.imageUrls" [src]="imageUrl" [alt]="plant.commonName" (error)="onImageError($event)" />
       </div>
       <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
         Không có ảnh
@@ -123,25 +113,22 @@
       <div class="form-row">
         <div class="form-group full-width">
           <label for="adminNotes">Ghi chú của admin *</label>
-          <textarea id="adminNotes" [(ngModel)]="adminNotes" name="adminNotes" rows="3" placeholder="Nhập ghi chú về việc chấp nhận report này..." required (ngModelChange)="onFieldChange()"></textarea>
+          <textarea id="adminNotes" [(ngModel)]="adminNotes" name="adminNotes" rows="3" placeholder="Nhập ghi chú về việc chấp nhận báo cáo này..." required (ngModelChange)="onFieldChange()"></textarea>
         </div>
       </div>
       <div class="form-actions">
         <button type="button" (click)="resetForm()" [disabled]="isUpdating || isApproving" class="btn ghost">Đặt lại</button>
         <button type="button" (click)="onCancel()" [disabled]="isUpdating || isApproving" class="btn secondary">Hủy bỏ</button>
-          <button type="submit"
-            [disabled]="!plantForm.valid || !adminNotes.trim() || isUpdating || isApproving"
-            class="btn secondary"
-            [ngClass]="{'disabled': !plantForm.valid || !adminNotes.trim()}"
-            [title]="!plantForm.valid || !adminNotes.trim() ? 'Cần chỉnh sửa thông tin cây và nhập ghi chú admin trước khi lưu' : ''">
-            {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây' }}
-          </button>
+        <button type="submit" [disabled]="!plantForm.valid || isUpdating || isApproving" class="btn secondary" 
+                title="Lưu thông tin cây trước khi chấp nhận báo cáo">
+          {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây' }}
+        </button>
         <button type="button" 
                 (click)="onApprove()" 
                 [disabled]="!canApprove()" 
                 [title]="getApproveTooltip()"
                 [class]="'btn ' + (canApprove() ? 'primary' : 'primary disabled')">
-          {{ isApproving ? 'Đang chấp nhận...' : 'Chấp nhận Report' }}
+          {{ isApproving ? 'Đang chấp nhận...' : 'Chấp nhận báo cáo' }}
         </button>
       </div>
     </form>
