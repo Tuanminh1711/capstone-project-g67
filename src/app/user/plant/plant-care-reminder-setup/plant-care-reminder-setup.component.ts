@@ -42,6 +42,11 @@ export class PlantCareReminderSetupComponent {
   // Chọn loại chăm sóc từ sidebar
   selectCareType(typeId: number) {
     this.selectedCareTypeId = typeId;
+    
+    // Nếu chọn 1 loại cụ thể mà chưa có schedule cho loại đó, tạo mới
+    if (typeId !== 0 && !this.hasSchedule(typeId)) {
+      this.addSchedule(typeId, true);
+    }
   }
 
   // Kiểm tra loại đã có lịch chưa
@@ -53,27 +58,38 @@ export class PlantCareReminderSetupComponent {
   saveSchedule(i: number) {
     const schedule = this.schedules.at(i);
     if (schedule.invalid || !this.userPlantId) return;
+    
     this.loading = true;
     const s = schedule.value;
     const startDateObj = s.startDate ? new Date(s.startDate).toISOString() : null;
+    
+    // Tạo payload với format mà backend mong đợi
     const payload = {
-      ...s,
-      reminderTime: s.reminderTime,
-      startDate: startDateObj
+      schedules: [{
+        careTypeId: s.careTypeId,
+        enabled: s.enabled ?? true,
+        frequencyDays: s.frequencyDays,
+        reminderTime: s.reminderTime,
+        customMessage: s.customMessage,
+        startDate: startDateObj
+      }]
     };
+    
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop()?.split(';').shift();
       return '';
     };
+    
     const token = getCookie('auth_token');
     const options: any = {
       responseType: 'text' as 'text',
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     };
+    
     this.http.post(
-      `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminder`,
+      `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`,
       payload,
       options
     ).subscribe({
@@ -83,7 +99,20 @@ export class PlantCareReminderSetupComponent {
         this.cdr.detectChanges();
       },
       error: err => {
-        this.toast.error('Có lỗi xảy ra khi lưu.');
+        console.error('Save schedule error:', err);
+        console.error('Request URL:', `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`);
+        console.error('Payload:', payload);
+        console.error('UserPlantId:', this.userPlantId);
+        
+        if (err.status === 404) {
+          this.toast.error('Không tìm thấy endpoint API. Vui lòng kiểm tra backend.');
+        } else if (err.status === 401 || err.status === 403) {
+          this.toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        } else if (err.error?.message) {
+          this.toast.error(`Lỗi: ${err.error.message}`);
+        } else {
+          this.toast.error(`Có lỗi xảy ra khi lưu. Status: ${err.status}`);
+        }
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -97,7 +126,7 @@ export class PlantCareReminderSetupComponent {
 
   form: FormGroup;
   newCareTypeId: number | null = null;
-  selectedCareTypeId: number = 1;
+  selectedCareTypeId: number = 0; // 0 = hiện tất cả
 
   constructor(
     private fb: FormBuilder,
@@ -111,8 +140,8 @@ export class PlantCareReminderSetupComponent {
       schedules: this.fb.array([]),
       newCareTypeId: [null]
     });
-    // Khởi tạo loại đầu tiên làm mặc định
-    this.selectedCareTypeId = this.careTypes[0].id;
+    // Mặc định hiện tất cả
+    this.selectedCareTypeId = 0;
   }
   // Kiểm tra đã setup lịch cho loại đang chọn chưa
   hasSetupForSelectedType(): boolean {
@@ -162,21 +191,29 @@ export class PlantCareReminderSetupComponent {
                 startDate: [startDateStr, Validators.required]
               }));
             });
+            // Nếu đã có setup rồi, mặc định hiện tất cả
+            this.selectedCareTypeId = 0;
+          } else {
+            // Chưa có setup gì cả, tạo tất cả loại và hiện tất cả
+            this.enableAllRemindersDefaultTomorrow8h();
+            this.selectedCareTypeId = 0;
           }
           this.loading = false;
         },
         error: () => {
           this.loading = false;
-          // Nếu không có lịch thì khởi tạo mặc định
+          // Nếu không có lịch thì khởi tạo mặc định cho tất cả loại
           if (this.schedules.length === 0) {
             this.enableAllRemindersDefaultTomorrow8h();
+            this.selectedCareTypeId = 0;
           }
         }
       });
     } else {
-      // Nếu không có userPlantId thì khởi tạo mặc định
+      // Nếu không có userPlantId thì khởi tạo mặc định cho tất cả loại
       if (this.schedules.length === 0) {
         this.enableAllRemindersDefaultTomorrow8h();
+        this.selectedCareTypeId = 0;
       }
     }
   }
@@ -252,9 +289,12 @@ export class PlantCareReminderSetupComponent {
   // Hàm bật tất cả nhắc nhở với trạng thái mặc định 8h sáng ngày hôm sau
   enableAllRemindersDefaultTomorrow8h() {
     this.schedules.clear();
+    // Tạo schedule cho tất cả loại chăm sóc
     for (const type of this.careTypes) {
       this.addSchedule(type.id, true);
     }
+    // Hiện tất cả
+    this.selectedCareTypeId = 0;
   }
 
   getCareTypeName(id: number): string {
@@ -287,8 +327,11 @@ export class PlantCareReminderSetupComponent {
       startDateObj = new Date(s.startDate).toISOString();
     }
     return {
-      ...s,
+      careTypeId: s.careTypeId,
+      enabled: s.enabled ?? true,
+      frequencyDays: s.frequencyDays,
       reminderTime: s.reminderTime, // giữ nguyên string '08:00'
+      customMessage: s.customMessage,
       startDate: startDateObj
     };
   });
@@ -314,8 +357,11 @@ export class PlantCareReminderSetupComponent {
       setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
     },
     error: err => {
+      console.error('Submit error:', err);
       if (err.status === 403) {
         this.toast.error('Bạn không có quyền thực hiện thao tác này!');
+      } else if (err.status === 401) {
+        this.toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       } else {
         const msg = typeof err?.error === 'string' ? err.error : (err?.error?.message || 'Có lỗi xảy ra khi lưu.');
         this.toast.error(msg);

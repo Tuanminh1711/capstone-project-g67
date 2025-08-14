@@ -192,6 +192,11 @@ export class TopNavigatorComponent implements OnInit {
     return this.authService.isLoggedIn();
   }
 
+  isAdvancedFeatureActive(): boolean {
+    const url = this.router.url;
+    return url.startsWith('/vip') || url.startsWith('/care-expert');
+  }
+
   logout = (): void => {
     // User thường sử dụng logout bình thường (sẽ về home)
     this.authService.logout();

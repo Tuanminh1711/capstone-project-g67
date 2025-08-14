@@ -16,7 +16,6 @@ interface AddPlantRequest {
   nickname: string;
   plantingDate: string;
   locationInHouse: string;
-  reminderEnabled: boolean;
 }
 
 @Component({
@@ -40,8 +39,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     plantId: 0,
     nickname: '',
     plantingDate: '',
-    locationInHouse: '',
-    reminderEnabled: true
+    locationInHouse: ''
   };
 
   // Location options
@@ -185,8 +183,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
       plantId: this.formData.plantId,
       nickname: this.formData.nickname.trim(),
       plantingDate: this.formData.plantingDate, // Keep as YYYY-MM-DD format
-      locationInHouse: this.formData.locationInHouse,
-      reminderEnabled: this.formData.reminderEnabled
+      locationInHouse: this.formData.locationInHouse
     };
   }
 
@@ -198,7 +195,6 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     formData.append('nickname', requestData.nickname);
     formData.append('plantingDate', requestData.plantingDate);
     formData.append('locationInHouse', requestData.locationInHouse);
-    formData.append('reminderEnabled', requestData.reminderEnabled.toString());
 
     // Add images if selected
     if (this.selectedImages && this.selectedImages.length > 0) {

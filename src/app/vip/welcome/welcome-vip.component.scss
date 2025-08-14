@@ -2,6 +2,7 @@
   background: linear-gradient(135deg, #f6f9fc 0%, #ecf4f3 100%);
   min-height: 100vh;
   font-family: 'Segoe UI', 'Roboto', sans-serif;
+  padding-top: 60px; // Add padding to avoid being hidden under top-nav
 }
 
 .welcome-container {
@@ -199,6 +200,10 @@ h1 {
 
 /* Responsive Design */
 @media (max-width: 992px) {
+  .welcome-vip-page {
+    padding-top: 70px; // Adjust for smaller screens
+  }
+  
   h1 {
     font-size: 2.5rem;
   }
@@ -209,6 +214,10 @@ h1 {
 }
 
 @media (max-width: 768px) {
+  .welcome-vip-page {
+    padding-top: 60px; // Adjust for mobile
+  }
+  
   .vip-features {
     grid-template-columns: 1fr;
   }

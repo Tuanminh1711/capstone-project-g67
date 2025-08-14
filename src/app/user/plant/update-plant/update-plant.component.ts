@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil, filter, firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { MyGardenService, UserPlant, UpdatePlantRequest, ApiResponse } from '../my-garden/my-garden.service';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -40,6 +41,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
+    private http: HttpClient,
     private myGardenService: MyGardenService,
     private toastService: ToastService,
     private cookieService: CookieService,
@@ -80,23 +82,23 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Lấy tất cả URL ảnh của cây
+  // Lấy tất cả URL ảnh của cây từ API response
   getAllPlantImageUrls(): string[] {
     if (!this.currentPlant) return [];
     
-    // Ưu tiên trường imageUrls nếu có
+    // Ưu tiên trường imageUrls từ API chi tiết
     let imageUrls: string[] = [];
-    if (Array.isArray((this.currentPlant as any).imageUrls)) {
-      imageUrls = (this.currentPlant as any).imageUrls;
+    if (Array.isArray(this.currentPlant.imageUrls)) {
+      imageUrls = this.currentPlant.imageUrls.filter(url => !!url);
     } 
     // Fallback cho trường images nếu imageUrls không có
-    else if (Array.isArray((this.currentPlant as any).images)) {
-      imageUrls = (this.currentPlant as any).images
+    else if (Array.isArray(this.currentPlant.images)) {
+      imageUrls = this.currentPlant.images
         .map((img: any) => img?.imageUrl)
         .filter((url: string) => !!url);
     }
     
-    return imageUrls.length > 0 ? imageUrls : [this.placeholderImage];
+    return imageUrls.length > 0 ? imageUrls : [];
   }
 
   // Xử lý lỗi ảnh
@@ -229,9 +231,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
         this.userPlantId = params['id'];
-        if (this.userPlantId && this.allUserPlants.length > 0) {
-          this.findAndSetCurrentPlant();
-        } else if (this.userPlantId) {
+        if (this.userPlantId) {
           this.initializeComponent();
         }
       });
@@ -339,38 +339,35 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Load all user plants
-    this.myGardenService.getUserPlants(0, 100)
+    // Sử dụng API giống view-user-plant-detail để lấy thông tin chi tiết
+    if (!this.userPlantId) {
+      this.errorMessage = 'ID cây không hợp lệ';
+      this.isLoading = false;
+      return;
+    }
+
+    this.http.get<any>(`/api/user-plants/user-plant-detail/${this.userPlantId}`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           this.isLoading = false;
           
-          if (response && response.data && response.data.content) {
-            // Handle paginated response structure
-            this.allUserPlants = response.data.content;
-            this.findAndSetCurrentPlant();
+          if (response && response.data) {
+            // Map API response giống view-user-plant-detail
+            this.currentPlant = this.mapApiResponseToUserPlant(response.data);
+            this.populateForm();
             this.errorMessage = '';
+            // Reset image index khi thay đổi cây
+            this.currentImageIndex = 0;
             this.cdr.markForCheck();
-          } 
-          // Handle direct response (fallback)
-          else if (response && Array.isArray(response)) {
-            this.allUserPlants = response;
-            this.findAndSetCurrentPlant();
-            this.errorMessage = '';
-            this.cdr.markForCheck();
-          } 
-          // No data found
-          else {
-            this.allUserPlants = [];
+          } else {
             this.currentPlant = null;
-            this.errorMessage = 'Không tìm thấy dữ liệu cây';
+            this.errorMessage = 'Không tìm thấy thông tin cây';
             this.cdr.markForCheck();
           }
         },
         error: (error) => {
           this.isLoading = false;
-          this.allUserPlants = [];
           this.currentPlant = null;
           this.handleLoadError(error);
           this.cdr.markForCheck();
@@ -378,24 +375,22 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       });
   }
 
-   private findAndSetCurrentPlant(): void {
-    if (!this.userPlantId || this.allUserPlants.length === 0) {
-      this.currentPlant = null;
-      this.errorMessage = 'Không tìm thấy thông tin cây';
-      return;
-    }
-
-    this.currentPlant = this.allUserPlants.find(p => String(p.userPlantId) === String(this.userPlantId)) || null;
-    
-    if (this.currentPlant) {
-      this.populateForm();
-      this.errorMessage = '';
-      // Reset image index khi thay đổi cây
-      this.currentImageIndex = 0;
-    } else {
-      this.errorMessage = 'Không tìm thấy cây để chỉnh sửa';
-      this.toastService.error('Không tìm thấy cây để chỉnh sửa');
-    }
+  // Map API response giống view-user-plant-detail
+  private mapApiResponseToUserPlant(apiData: any): UserPlant {
+    return {
+      userPlantId: apiData.userPlantId,
+      nickname: apiData.nickname || apiData.commonName || '',
+      imageUrls: apiData.imageUrls || apiData.images?.map((img: any) => img.imageUrl) || [],
+      plantingDate: apiData.plantingDate || '',
+      plantLocation: apiData.locationInHouse || '',
+      reminderEnabled: apiData.reminderEnabled ?? false,
+      images: apiData.images || [],
+      imageUrl: (apiData.imageUrls && apiData.imageUrls.length > 0) ? apiData.imageUrls[0] : '',
+      // Thêm các fields khác nếu cần
+      plantId: apiData.plantId,
+      userId: apiData.userId,
+      createdAt: apiData.createdAt
+    } as UserPlant;
   }
 
   private handleLoadError(error: any): void {

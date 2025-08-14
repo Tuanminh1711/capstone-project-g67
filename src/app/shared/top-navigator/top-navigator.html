@@ -16,7 +16,7 @@
   <a class="nav-link" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Trang chủ</a>
   <a class="nav-link" routerLink="/plant-info" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Tìm kiếm cây cảnh</a>
   <a class="nav-link" routerLink="/user/my-garden" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Khu vườn của tôi</a>
-  <a class="nav-link" (click)="goToCareExpert(); closeMobileMenu();">Tính năng nâng cao</a>
+  <a class="nav-link" [class.active]="isAdvancedFeatureActive()" (click)="goToCareExpert(); closeMobileMenu();">Tính năng nâng cao</a>
   <a class="nav-link" routerLink="/user/articles/list" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Blog</a>
   <a class="nav-link" routerLink="/about-us" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Về chúng tôi</a>
     </div>

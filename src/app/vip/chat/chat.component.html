@@ -84,7 +84,7 @@
           <div class="chat-info">
             <div class="chat-name">{{ conversation.otherUsername }}</div>
             <div class="chat-preview">
-              {{ conversation.lastMessage || 'Chưa có tin nhắn' }}
+              {{ conversation.lastMessage || '' }}
             </div>
           </div>
           <div class="chat-meta">
@@ -152,10 +152,6 @@
           <p>{{ error }}</p>
           <button class="retry-btn" (click)="fetchHistory()">Thử lại</button>
         </div>
-        <div *ngIf="!loading && filteredMessages.length === 0" class="empty-state">
-          <h4>Chưa có tin nhắn nào</h4>
-          <p>Hãy bắt đầu cuộc trò chuyện đầu tiên trong VIP Community!</p>
-        </div>
         <div *ngIf="!loading && filteredMessages.length > 0" class="messages-list">
           <div *ngFor="let msg of filteredMessages; trackBy: trackMessage" 
                class="message-wrapper"
@@ -197,10 +193,6 @@
         <div *ngIf="error && !loading" class="error-state">
           <p>{{ error }}</p>
           <button class="retry-btn" (click)="loadPrivateMessages(selectedConversation.otherUserId)">Thử lại</button>
-        </div>
-        <div *ngIf="!loading && filteredMessages.length === 0" class="empty-state">
-          <h4>Chưa có tin nhắn nào</h4>
-          <p>Bắt đầu trò chuyện với chuyên gia!</p>
         </div>
         <div *ngIf="!loading && filteredMessages.length > 0" class="messages-list">
           <div *ngFor="let msg of filteredMessages; trackBy: trackMessage"

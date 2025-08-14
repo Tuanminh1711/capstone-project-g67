@@ -4,6 +4,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChatAiComponent } from './chat-ai.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/auth.service';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-chat-ai-fab',
@@ -11,7 +13,7 @@ import { AuthService } from '../../auth/auth.service';
   imports: [CommonModule, MatDialogModule],
   template: `
     <button 
-      *ngIf="isLoggedIn" 
+      *ngIf="isLoggedIn && !isOnAdminLogin" 
       #fabButton
       class="chat-ai-fab" 
       (click)="openDialog()"
@@ -31,6 +33,7 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
   @ViewChild('fabButton', { static: false }) fabButton!: ElementRef;
   
   isLoggedIn = false;
+  isOnAdminLogin = false;
   position = { x: null as number | null, y: null as number | null };
   
   // Drag functionality
@@ -40,12 +43,21 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
   private dragStartPosition = { x: 0, y: 0 };
   private dragOffset = { x: 0, y: 0 };
 
-  constructor(private dialog: MatDialog, private authService: AuthService) {
+  constructor(private dialog: MatDialog, private authService: AuthService, private router: Router) {
     this.isLoggedIn = this.authService.isLoggedIn();
+    this.checkCurrentRoute();
   }
 
   ngOnInit() {
     this.loadPosition();
+    this.checkCurrentRoute();
+    
+    // Listen to route changes
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.checkCurrentRoute();
+      });
   }
 
   ngOnDestroy() {
@@ -178,5 +190,10 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
 
   private applyPosition() {
     // Position được áp dụng qua template binding, không cần DOM manipulation
+  }
+
+  private checkCurrentRoute() {
+    const currentUrl = this.router.url;
+    this.isOnAdminLogin = currentUrl.includes('/login-admin');
   }
 }
