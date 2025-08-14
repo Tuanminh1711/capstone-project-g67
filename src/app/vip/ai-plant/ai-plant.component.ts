@@ -64,8 +64,16 @@ export class AiPlantComponent implements OnInit {
    */
   private getApiEndpoint(path: string): string {
     // In development: apiUrl = '/api', so /api + /ai/identify-plant = /api/ai/identify-plant
-    // In production: apiUrl = 'https://plantcare.id.vn', so https://plantcare.id.vn + /api/ai/identify-plant
-    return `${this.configService.apiUrl}/api${path}`;
+    // In production: apiUrl = 'https://plantcare.id.vn', so https://plantcare.id.vn + /api + /ai/identify-plant
+    const baseUrl = this.configService.apiUrl;
+    
+    // If apiUrl already contains '/api' (development), don't add it again
+    if (baseUrl.endsWith('/api')) {
+      return `${baseUrl}${path}`;
+    } else {
+      // Production: add /api prefix
+      return `${baseUrl}/api${path}`;
+    }
   }
 
   ngOnInit() {
@@ -189,7 +197,7 @@ export class AiPlantComponent implements OnInit {
       console.log('Validation timeout - clearing loading state');
     }, 3000); // 3 second timeout - much shorter
 
-    this.http.post<any>(`${this.configService.apiUrl}/api/ai/validate-plant-image`, formData, { 
+    this.http.post<any>(this.getApiEndpoint('/ai/validate-plant-image'), formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -240,13 +248,13 @@ export class AiPlantComponent implements OnInit {
     // Debug: Log token and headers
     const token = this.cookieService.getCookie('auth_token');
     console.log('🔍 [AI Plant] Making request with:', {
-      endpoint: `${this.configService.apiUrl}/api/ai/identify-plant`,
+      endpoint: this.getApiEndpoint('/ai/identify-plant'),
       userId,
       hasToken: !!token,
       tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
     });
 
-    this.http.post<any>(`${this.configService.apiUrl}/api/ai/identify-plant`, formData, { 
+    this.http.post<any>(this.getApiEndpoint('/ai/identify-plant'), formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -314,7 +322,7 @@ export class AiPlantComponent implements OnInit {
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted search
 
-    this.http.get<any>(`${this.configService.apiUrl}/api/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
+    this.http.get<any>(this.getApiEndpoint(`/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`), { 
       headers: this.getAuthHeaders() 
     })
       .subscribe({
@@ -384,7 +392,7 @@ export class AiPlantComponent implements OnInit {
     const token = this.cookieService.getCookie('auth_token');
     console.log('🧪 Testing JWT with backend...');
     
-    this.http.get(`${this.configService.apiUrl}/api/ai/test-api-key`, {
+    this.http.get(this.getApiEndpoint('/ai/test-api-key'), {
       headers: this.getAuthHeaders()
     }).subscribe({
       next: (response) => {
