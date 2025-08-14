@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../../shared/config.service';
@@ -9,10 +9,19 @@ import { ConfigService } from '../../shared/config.service';
   templateUrl: './activity-logs.component.html',
   styleUrls: ['./activity-logs.component.scss'],
   standalone: true,
-  imports: [DatePipe, TopNavigatorComponent]
+  imports: [CommonModule, DatePipe, TopNavigatorComponent]
 })
 export class ActivityLogsComponent implements OnInit {
   logs: any[] = [];
+  loading = true;
+  error: string | null = null;
+  
+  // Pagination
+  pageNo = 0;
+  pageSize = 10;
+  totalElements = 0;
+  totalPages = 1;
+
   actionMap: Record<string, string> = {
     LOGIN: 'Đăng nhập',
     LOGOUT: 'Đăng xuất',
@@ -20,20 +29,6 @@ export class ActivityLogsComponent implements OnInit {
     SETUP_CARE_REMINDERS: 'Thiết lập nhắc nhở',
     // Thêm các action khác nếu có
   };
-
-  translateAction(action: string): string {
-    return this.actionMap[action] || action || '-';
-  }
-
-  translateDescription(log: any): string {
-    if (log.action === 'LOGIN') return 'Đăng nhập thành công';
-    if (log.action === 'LOGOUT') return 'Đăng xuất';
-    if (log.action === 'CREATE_NEW_PLANT') return `Tạo cây mới: ${log.description?.split(':')[1]?.trim() || ''}`;
-    if (log.action === 'SETUP_CARE_REMINDERS') return 'Thiết lập nhắc nhở chăm sóc';
-    return log.description || '-';
-  }
-  loading = true;
-  error: string | null = null;
 
   constructor(
     private http: HttpClient, 
@@ -45,12 +40,21 @@ export class ActivityLogsComponent implements OnInit {
     this.fetchLogs();
   }
 
-  fetchLogs() {
+  fetchLogs(page = 0) {
     this.loading = true;
     this.error = null;
-    this.http.post<any>(`${this.configService.apiUrl}/personal/activity-logs`, {}).subscribe({
+    this.pageNo = page;
+    
+    this.http.post<any>(`${this.configService.apiUrl}/personal/activity-logs`, {
+      page: this.pageNo,
+      size: this.pageSize
+    }).subscribe({
       next: (res) => {
-        this.logs = res?.data?.content || res?.data?.logs || res?.data || [];
+        const data = res?.data || res;
+        this.logs = data?.content || data?.logs || data || [];
+        this.totalElements = data?.totalElements || this.logs.length;
+        this.totalPages = data?.totalPages || 1;
+        this.pageNo = data?.number || page;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -60,5 +64,23 @@ export class ActivityLogsComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  onPageChange(newPage: number) {
+    if (newPage >= 0 && newPage < this.totalPages) {
+      this.fetchLogs(newPage);
+    }
+  }
+
+  translateAction(action: string): string {
+    return this.actionMap[action] || action || '-';
+  }
+
+  translateDescription(log: any): string {
+    if (log.action === 'LOGIN') return 'Đăng nhập thành công';
+    if (log.action === 'LOGOUT') return 'Đăng xuất';
+    if (log.action === 'CREATE_NEW_PLANT') return `Tạo cây mới: ${log.description?.split(':')[1]?.trim() || ''}`;
+    if (log.action === 'SETUP_CARE_REMINDERS') return 'Thiết lập nhắc nhở chăm sóc';
+    return log.description || '-';
   }
 }

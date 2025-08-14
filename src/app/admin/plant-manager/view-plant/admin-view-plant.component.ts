@@ -201,6 +201,59 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
+  togglePlantLock(): void {
+    if (!this.plant) return;
+    
+    const isCurrentlyActive = this.plant.status === 'ACTIVE';
+    const actionText = isCurrentlyActive ? 'khóa' : 'mở khóa';
+    const confirmed = confirm(`Bạn có chắc chắn muốn ${actionText} cây "${this.plant.commonName}"?`);
+    
+    if (confirmed) {
+      const lockData = {
+        plantId: this.plant.id,
+        lock: isCurrentlyActive // true = khóa (INACTIVE), false = mở khóa (ACTIVE)
+      };
+      
+      // Call API to lock/unlock plant
+      this.http.post('/api/manager/lock-unlock', lockData).subscribe({
+        next: (response) => {
+          if (this.plant) {
+            // Update status immediately for instant feedback
+            this.plant.status = isCurrentlyActive ? 'INACTIVE' : 'ACTIVE';
+            this.plant.statusDisplay = this.plant.status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa';
+            
+            // Force change detection
+            this.cdr.markForCheck();
+            
+            // Show success message
+            alert(`Đã ${actionText} cây thành công!`);
+            
+            // Live update: reload plant detail after short delay to ensure server state is updated
+            setTimeout(() => {
+              this.loadPlantDetail();
+            }, 300);
+          }
+        },
+        error: (err) => {
+          console.error('Error updating plant status:', err);
+          let errorMessage = `Có lỗi xảy ra khi ${actionText} cây. `;
+          
+          if (err.status === 401) {
+            errorMessage += 'Bạn không có quyền thực hiện thao tác này.';
+          } else if (err.status === 404) {
+            errorMessage += 'Không tìm thấy cây này.';
+          } else if (err.error?.message) {
+            errorMessage += err.error.message;
+          } else {
+            errorMessage += 'Vui lòng thử lại.';
+          }
+          
+          alert(errorMessage);
+        }
+      });
+    }
+  }
+
   // Admin Control Methods
   togglePublish(): void {
     // ...existing code...

@@ -17,17 +17,24 @@
           </tr>
         </thead>
         <tbody>
-          @for (log of logs; track log) {
+          @for (log of logs; track log; let i = $index) {
             <tr>
               <td class="log-time">{{ log.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
               <td class="log-detail">{{ translateDescription(log) }}</td>
             </tr>
           }
           @if (logs.length === 0) {
-            <tr><td colspan="4" class="empty">Không có nhật ký nào.</td></tr>
+            <tr><td colspan="2" class="empty">Không có nhật ký nào.</td></tr>
           }
         </tbody>
       </table>
+      
+      <!-- Pagination -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button [disabled]="pageNo === 0" (click)="onPageChange(pageNo - 1)">&lt; Trước</button>
+        <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
+        <button [disabled]="pageNo + 1 >= totalPages" (click)="onPageChange(pageNo + 1)">Sau &gt;</button>
+      </div>
     </div>
   }
 </div>

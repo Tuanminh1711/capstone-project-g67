@@ -102,15 +102,46 @@ export class AdminUserActivityLogsComponent implements OnInit {
     this.errorMsg = '';
     this.cdr.detectChanges();
     
-    const apiUrl = `/api/admin/activity-logs-user/${this.userId}?page=${this.currentPage}&size=${this.pageSize}`;
+    const apiUrl = `/api/admin/activity-logs-user/${this.userId}?pageNo=${this.currentPage}&pageSize=${this.pageSize}&_t=${Date.now()}`;
+    console.log(`Loading page ${this.currentPage} from:`, apiUrl);
     
-    this.http.get<ActivityLogsResponse>(apiUrl).subscribe({
+    this.http.get<ActivityLogsResponse>(apiUrl, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    }).subscribe({
       next: (response: any) => {
+        console.log('API Response for page', this.currentPage, ':', response);
+        
         if (response && response.data) {
           this.logs = response.data.content || [];
           this.totalPages = response.data.totalPages || 0;
           this.totalElements = response.data.totalElements || 0;
-          this.currentPage = response.data.number || 0;
+          
+          // Bây giờ API sẽ trả về đúng page number
+          const apiPageNumber = response.data.number || 0;
+          console.log(`Expected page: ${this.currentPage}, API returned page: ${apiPageNumber}`);
+          
+          // Verify that API returned the correct page
+          if (apiPageNumber === this.currentPage) {
+            console.log('✅ Pagination working correctly');
+          } else {
+            console.warn(`⚠️ Page mismatch: expected ${this.currentPage}, got ${apiPageNumber}`);
+            // Update currentPage to match API response
+            this.currentPage = apiPageNumber;
+          }
+          
+          console.log(`Loaded ${this.logs.length} logs for page ${this.currentPage}`);
+          if (this.logs.length > 0) {
+            console.log('First log ID:', this.logs[0].id);
+            console.log('Last log ID:', this.logs[this.logs.length - 1].id);
+          }
+          
+          // Đảm bảo currentPage không vượt quá bounds
+          if (this.currentPage >= this.totalPages && this.totalPages > 0) {
+            this.currentPage = this.totalPages - 1;
+          }
         } else {
           this.logs = [];
           this.errorMsg = 'Không tìm thấy dữ liệu hoạt động';
@@ -147,22 +178,28 @@ export class AdminUserActivityLogsComponent implements OnInit {
   }
 
   nextPage() {
-    if (this.currentPage + 1 < this.totalPages) {
+    console.log(`nextPage called: current=${this.currentPage}, total=${this.totalPages}, loading=${this.loading}`);
+    if (this.currentPage + 1 < this.totalPages && !this.loading) {
       this.currentPage++;
+      console.log(`Moving to next page: ${this.currentPage}`);
       this.loadUserActivityLogs();
     }
   }
 
   prevPage() {
-    if (this.currentPage > 0) {
+    console.log(`prevPage called: current=${this.currentPage}, loading=${this.loading}`);
+    if (this.currentPage > 0 && !this.loading) {
       this.currentPage--;
+      console.log(`Moving to prev page: ${this.currentPage}`);
       this.loadUserActivityLogs();
     }
   }
 
   goToPage(page: number) {
-    if (page >= 0 && page < this.totalPages) {
+    console.log(`goToPage called: target=${page}, current=${this.currentPage}, total=${this.totalPages}, loading=${this.loading}`);
+    if (page >= 0 && page < this.totalPages && page !== this.currentPage && !this.loading) {
       this.currentPage = page;
+      console.log(`Moving to page: ${this.currentPage}`);
       this.loadUserActivityLogs();
     }
   }
@@ -214,5 +251,27 @@ export class AdminUserActivityLogsComponent implements OnInit {
   reloadLogs() {
     this.currentPage = 0;
     this.loadUserActivityLogs();
+  }
+
+  // Helper methods for pagination
+  getPaginationPages(): number[] {
+    const pages: number[] = [];
+    const totalPages = this.totalPages;
+    const currentPage = this.currentPage;
+    
+    for (let i = 0; i < totalPages; i++) {
+      // Show first, last, and pages around current page
+      if (i === 0 || i === totalPages - 1 || Math.abs(i - currentPage) <= 2) {
+        pages.push(i);
+      } else if (Math.abs(i - currentPage) === 3 && !pages.includes(-1)) {
+        pages.push(-1); // Ellipsis marker
+      }
+    }
+    
+    return pages;
+  }
+
+  isEllipsis(page: number): boolean {
+    return page === -1;
   }
 }

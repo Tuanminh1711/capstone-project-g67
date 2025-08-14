@@ -1,36 +1,25 @@
 <div class="view-plant-container">
     
-    <!-- Header Section -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="breadcrumb">
-          <a routerLink="/admin/plants" class="breadcrumb-link">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại danh sách
-          </a>
-        </div>
-        
-        <div class="title-section">
-          <h1 class="page-title">Chi tiết cây cảnh</h1>
-          <div class="navigation-controls">
-            <span class="plant-id">ID: {{plantId}}</span>
-            <div class="nav-buttons">
-              <button class="nav-button prev" 
-                      (click)="goToPrevious()" 
-                      [disabled]="plantId <= 1"
-                      title="Cây trước (ID: {{plantId - 1}})">
-                <i class="fas fa-chevron-left"></i>
-                <span class="nav-label"></span>
-              </button>
-              <button class="nav-button next" 
-                      (click)="goToNext()" 
-                      title="Cây tiếp theo (ID: {{plantId + 1}})">
-                <i class="fas fa-chevron-right"></i>
-                <span class="nav-label"></span>
-              </button>
-            </div>
-          </div>
-        </div>
+    <!-- Navigation Controls -->
+    <div class="navigation-controls">
+      <div class="breadcrumb">
+        <a routerLink="/admin/plants" class="breadcrumb-link">
+          <i class="fas fa-arrow-left"></i>
+          Quay lại danh sách
+        </a>
+      </div>
+      <div class="nav-buttons">
+        <button class="nav-button prev" 
+                (click)="goToPrevious()" 
+                [disabled]="plantId <= 1"
+                title="Cây trước">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-button next" 
+                (click)="goToNext()" 
+                title="Cây tiếp theo">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
 
@@ -112,9 +101,9 @@
                 <i class="fas fa-edit"></i>
                 Chỉnh sửa
               </button>
-              <button class="btn btn-secondary" (click)="deletePlant()">
-                <i class="fas fa-trash"></i>
-                Xóa
+              <button class="btn btn-warning" (click)="togglePlantLock()" [class.btn-success]="plant.status === 'INACTIVE'">
+                <i class="fas" [class.fa-lock]="plant.status === 'ACTIVE'" [class.fa-unlock]="plant.status === 'INACTIVE'"></i>
+                {{ plant.status === 'ACTIVE' ? 'Khóa cây' : 'Mở khóa cây' }}
               </button>
             </div>
           </div>

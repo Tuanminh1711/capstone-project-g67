@@ -31,17 +31,39 @@ export class ClaimTicketDialogComponent {
 
   submit() {
     if (this.claimForm.invalid) return;
+    
+    console.log('[CLAIM DEBUG] Attempting to claim ticket:', this.data.ticketId, 'with note:', this.claimForm.value.note);
+    
     this.loading = true;
     this.error = null;
     this.ticketsService.claimTicket(this.data.ticketId, this.claimForm.value.note).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('[CLAIM DEBUG] Claim successful:', response);
         this.loading = false;
         this.dialogRef.close(true);
       },
       error: (err) => {
+        console.error('[CLAIM DEBUG] Claim failed:', err);
         this.loading = false;
-        this.toast.error(err?.error?.message || 'Có lỗi xảy ra khi nhận ticket.');
-        this.dialogRef.close(false);
+        
+        let errorMessage = 'Có lỗi xảy ra khi nhận ticket.';
+        
+        if (err?.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err?.message) {
+          errorMessage = err.message;
+        }
+        
+        // Special handling for specific error cases
+        if (errorMessage.includes('Ticket cannot be claimed')) {
+          errorMessage = 'Ticket không thể nhận được. Có thể đã được admin khác nhận hoặc trạng thái đã thay đổi. Vui lòng tải lại trang.';
+        }
+        
+        this.error = errorMessage;
+        this.toast.error(errorMessage);
+        
+        // Don't close dialog immediately to let user see the error
+        // They can manually close or retry
       }
     });
   }

@@ -1,46 +1,66 @@
-<div class="admin-support-tickets-page">
-  <h1>Quản lý phiếu hỗ trợ</h1>
+<div class="admin-ticket-list-container">
+  <div class="ticket-list-header">
+    <h2>Danh sách phiếu hỗ trợ</h2>
+    <button class="reload-btn" (click)="loadTickets(0)" title="Tải lại danh sách">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+        <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
+        <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
+      </svg>
+      Cập nhật
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input 
+      type="text" 
+      [(ngModel)]="searchText" 
+      (input)="onSearch()"
+      placeholder="Tìm kiếm phiếu hỗ trợ..."
+      class="search-input"
+    >
+    <button (click)="onSearch()" class="search-btn">Tìm kiếm</button>
+  </div>
+
   <div *ngIf="isLoading" class="loading-container">
     <div class="loading-spinner"></div>
     <p>Đang tải danh sách phiếu hỗ trợ...</p>
   </div>
-  <div *ngIf="!isLoading && tickets.length > 0" class="tickets-table-container">
 
+  <div *ngIf="!isLoading && tickets.length > 0" class="tickets-table-container">
     <table class="tickets-table">
       <thead>
         <tr>
           <th>STT</th>
           <th>Tiêu đề</th>
-          <th>Mô tả</th>
           <th>Người gửi</th>
-          <th>Trạng thái</th>
-          <th>Admin xử lý</th>
+          <th>Người xử lý</th>
           <th>Ngày tạo</th>
-          <th>Số phản hồi</th>
-          <th></th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let ticket of filteredTickets; let i = index" 
-            (click)="viewTicketDetail(ticket)"
+            (click)="viewTicketDetail(ticket)" 
+            class="clickable-row"
             [title]="getAccessTooltip(ticket)"
             [class.restricted-access]="!canProcessTicket(ticket) && (ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS')">
           <td>{{ i + 1 + (page * 10) }}</td>
-          <td>{{ ticket.title }}</td>
-          <td>{{ ticket.description }}</td>
-          <td>{{ ticket.userName }}</td>
           <td>
-            <span class="status-label" [class]="getStatusClass(ticket.status)">
-              {{ getStatusText(ticket.status) }}
-            </span>
+            <span class="ticket-title">{{ ticket.title }}</span>
           </td>
+          <td>{{ ticket.userName }}</td>
           <td>
             <span *ngIf="ticket.status === 'OPEN'" class="no-claimed">Chưa có ai nhận</span>
             <span *ngIf="ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'" class="claimed-unknown">Đã được nhận</span>
             <span *ngIf="ticket.status === 'CLOSED'" class="no-claimed">-</span>
           </td>
           <td>{{ formatDate(ticket.createdAt) }}</td>
-          <td>{{ ticket.responseCount }}</td>
+          <td>
+            <span class="status-badge status-inline" [ngClass]="getStatusClass(ticket.status)">
+              {{ getStatusText(ticket.status) }}
+            </span>
+          </td>
           <td>
             <div class="action-buttons" (click)="$event.stopPropagation()">
               <!-- Nút Nhận phiếu hỗ trợ - chỉ hiện khi OPEN -->
@@ -49,7 +69,7 @@
                       (click)="openClaimDialog(ticket); $event.stopPropagation()"
                       title="Nhận phiếu hỗ trợ để xử lý">
                 <i class="fas fa-user-check"></i>
-                <span>Nhận xử lý</span>
+                Nhận xử lý
               </button>
               
               <!-- Nút Trả lại phiếu hỗ trợ - chỉ hiện khi admin hiện tại đã claim ticket -->
@@ -58,10 +78,11 @@
                       (click)="openReleaseDialog(ticket); $event.stopPropagation()"
                       title="Trả lại phiếu hỗ trợ cho admin khác xử lý">
                 <i class="fas fa-undo-alt"></i>
-                <span>Trả lại</span>
+                Trả lại
               </button>
               
-              <!-- Nút Mở lại phiếu hỗ trợ - chỉ hiện khi CLOSED -->
+              <!-- Nút Mở lại phiếu hỗ trợ - DISABLED -->
+              <!-- 
               <button *ngIf="canReopenTicket(ticket)" 
                       class="reopen-btn"
                       (click)="onReopenTicket(ticket); $event.stopPropagation()"
@@ -69,19 +90,21 @@
                 <i class="fas fa-redo"></i>
                 <span>Mở lại</span>
               </button>
+              -->
             </div>
           </td>
         </tr>
       </tbody>
     </table>
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button [disabled]="page === 0" (click)="onPageChange(page - 1)">&lt;</button>
+
+    <div class="pagination-bar" *ngIf="totalPages > 1">
+      <button [disabled]="page === 0" (click)="onPageChange(page - 1)">&lt; Trước</button>
       <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
-      <button [disabled]="page + 1 >= totalPages" (click)="onPageChange(page + 1)">&gt;</button>
+      <button [disabled]="page + 1 >= totalPages" (click)="onPageChange(page + 1)">Sau &gt;</button>
     </div>
   </div>
-  <div *ngIf="!isLoading && tickets.length === 0" class="empty-container">
-    <h2>Không có phiếu hỗ trợ nào</h2>
-    <p>Không có phiếu nào được gửi bởi người dùng.</p>
+
+  <div *ngIf="!isLoading && tickets.length === 0" class="empty-state">
+    <p>Không có phiếu hỗ trợ nào.</p>
   </div>
 </div>

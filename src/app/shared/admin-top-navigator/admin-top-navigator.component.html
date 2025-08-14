@@ -1,8 +1,12 @@
 <header class="admin-top-nav">
   <div class="left-group">
     <button class="admin-topnav-sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarOpen ? 'Thu gọn sidebar' : 'Mở sidebar'">
-      <svg *ngIf="sidebarOpen" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13H5v-2h14v2z"/></svg>
-      <svg *ngIf="!sidebarOpen" viewBox="0 0 24 24"><path fill="currentColor" d="M4 11h16v2H4z"/></svg>
+      @if (sidebarOpen) {
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13H5v-2h14v2z"/></svg>
+      }
+      @if (!sidebarOpen) {
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 11h16v2H4z"/></svg>
+      }
     </button>
     <span class="logo">
       <img src="/assets/image/logo.png" alt="Logo" />
@@ -10,7 +14,7 @@
     </span>
   </div>
   <div class="center-group">
-    <span class="page-title">Dashboard</span>
+    <span class="page-title">{{ currentPageTitle }}</span>
   </div>
   <div class="right-group">
     <div class="user-info">

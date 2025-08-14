@@ -309,6 +309,7 @@ body, .plant-info-layout {
   box-shadow: 0 2px 10px rgba(30, 174, 96, 0.08);
   margin-bottom: 24px;
   max-width: 500px;
+  gap: 12px;
 
   &.full-width {
     width: 100%;
@@ -333,15 +334,20 @@ body, .plant-info-layout {
 
 .plant-search-btn {
   border: none;
-  background: none;
-  font-size: 1.5rem;
-  color: #178a4c;
+  background: #178a4c;
+  color: white;
+  border-radius: 4px;
+  padding: 10px 16px;
   cursor: pointer;
-  padding: 4px 8px;
-  margin-left: 8px; // Add margin to separate from input
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
 
   &:hover {
-    color: #0c4f2f;
+    background: #0c4f2f;
   }
 }
 

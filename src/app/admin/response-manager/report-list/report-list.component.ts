@@ -81,12 +81,13 @@ export class ReportListComponent implements OnInit, OnDestroy {
   loadReports() {
     this.loading = true;
     this.errorMsg = '';
-    this.currentKeyword = '';
+    this.currentKeyword = this.searchText.trim();
+    
     this.http.get<any>(`${environment.apiUrl}/manager/report-list`, {
       params: {
-        page: this.pageNo,
-        size: this.pageSize,
-        keyword: this.searchText.trim() || ''
+        page: this.pageNo.toString(),
+        size: this.pageSize.toString(),
+        keyword: this.currentKeyword || ''
       }
     }).subscribe({
       next: (res) => {
@@ -104,23 +105,26 @@ export class ReportListComponent implements OnInit, OnDestroy {
           adminNotes: r.adminNotes,
           createdAt: r.createdAt
         }));
-        this.totalElements = data.totalElements || this.allReports.length;
+        this.totalElements = data.totalElements || 0;
         this.totalPages = data.totalPages || 1;
         this.pageNo = data.currentPage || 0;
-        this.updatePage();
+        
+        // Cập nhật BehaviorSubject với dữ liệu từ API (không slice)
+        this.reportsSubject.next(this.allReports);
         this.loading = false;
       },
       error: (err) => {
         this.loading = false;
         this.errorMsg = err?.error?.message || 'Không thể tải danh sách báo cáo.';
+        this.allReports = [];
+        this.reportsSubject.next([]);
       }
     });
   }
 
-  updatePage() {
-    const start = 0;
-    const end = this.pageSize;
-    this.reportsSubject.next(this.allReports.slice(start, end));
+  reloadReports() {
+    this.pageNo = 0;
+    this.loadReports();
   }
 
   onSearchInputChange(): void {
@@ -128,6 +132,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
     this.searchDebounce = setTimeout(() => {
       const keyword = this.searchText.trim();
       if (keyword !== this.currentKeyword) {
+        this.pageNo = 0; // Reset về trang đầu khi search
         this.loadReports();
       }
     }, 300);
@@ -136,31 +141,32 @@ export class ReportListComponent implements OnInit, OnDestroy {
   onSearch(): void {
     const keyword = this.searchText.trim();
     if (keyword !== this.currentKeyword) {
+      this.pageNo = 0; // Reset về trang đầu khi search
       this.loadReports();
     }
   }
 
   goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
+    if (page >= 0 && page < this.totalPages && page !== this.pageNo) {
       this.pageNo = page;
-      this.updatePage();
+      this.loadReports(); // Gọi API để load dữ liệu trang mới
     }
   }
 
   nextPage() {
-    this.goToPage(this.pageNo + 1);
+    if (this.pageNo + 1 < this.totalPages) {
+      this.goToPage(this.pageNo + 1);
+    }
   }
 
   prevPage() {
-    this.goToPage(this.pageNo - 1);
+    if (this.pageNo > 0) {
+      this.goToPage(this.pageNo - 1);
+    }
   }
 
   viewDetail(report: Report) {
     this.router.navigate(['/admin/reports/detail', report.reportId]);
-  }
-
-  reloadReports() {
-    this.loadReports();
   }
 
   sortBy(field: string) {
@@ -180,7 +186,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
     });
     
     this.pageNo = 0;
-    this.updatePage();
+    this.reportsSubject.next(this.allReports);
   }
 
   getStatusClass(status: string): string {

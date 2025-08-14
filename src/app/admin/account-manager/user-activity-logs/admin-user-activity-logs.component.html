@@ -73,21 +73,32 @@
         <button 
           class="pagination-btn" 
           (click)="prevPage()" 
-          [disabled]="currentPage === 0"
+          [disabled]="currentPage === 0 || loading"
           title="Trang trước">
           <i class="fas fa-chevron-left"></i>
         </button>
         
-        <div class="pagination-info">
-          <span class="pagination-text">
-            Trang {{ currentPage + 1 }} / {{ totalPages }}
-          </span>
+        <!-- Page numbers -->
+        <div class="pagination-numbers">
+          @for (pageNum of getPaginationPages(); track pageNum) {
+            @if (isEllipsis(pageNum)) {
+              <span class="page-ellipsis">...</span>
+            } @else {
+              <button 
+                class="page-number-btn" 
+                [class.active]="pageNum === currentPage"
+                [disabled]="loading"
+                (click)="goToPage(pageNum)">
+                {{ pageNum + 1 }}
+              </button>
+            }
+          }
         </div>
         
         <button 
           class="pagination-btn" 
           (click)="nextPage()" 
-          [disabled]="currentPage + 1 >= totalPages"
+          [disabled]="currentPage + 1 >= totalPages || loading"
           title="Trang sau">
           <i class="fas fa-chevron-right"></i>
         </button>

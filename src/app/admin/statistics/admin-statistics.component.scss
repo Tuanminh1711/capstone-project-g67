@@ -136,8 +136,10 @@ body, html {
 .admin-statistics-container .date-range-form {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin: 24px 0 16px 0;
   width: 100%;
+  gap: 16px;
 }
 .admin-statistics-container .date-inputs {
   display: flex;
@@ -168,6 +170,35 @@ body, html {
 .admin-statistics-container .date-inputs input[type="date"]:focus {
   border: 1.5px solid #19916c;
   outline: none;
+}
+
+.search-btn {
+  background: #388e3c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(56, 142, 60, 0.2);
+}
+
+.search-btn:hover {
+  background: #2e7d32;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3);
+}
+
+.search-btn:disabled {
+  background: #bdbdbd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 .admin-statistics-container .refresh-btn {
   background: #19916c;
@@ -275,6 +306,14 @@ canvas[baseChart] {
     max-width: 98vw;
     padding: 18px 2vw;
   }
+  .admin-statistics-container .date-range-form {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .search-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -291,6 +330,18 @@ canvas[baseChart] {
   canvas[baseChart] {
     min-width: 320px;
     height: 220px !important;
+  }
+  .admin-statistics-container .date-inputs {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+  .admin-statistics-container .date-inputs label {
+    text-align: center;
+  }
+  .search-btn {
+    width: 100%;
+    padding: 14px 20px;
   }
 }
 

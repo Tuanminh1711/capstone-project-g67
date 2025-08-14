@@ -91,6 +91,7 @@ export class AdminSupportTicketsListComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   openClaimDialog(ticket: AdminSupportTicket) {
+    console.log(`[DEBUG] openClaimDialog called for ticket ${ticket.ticketId} with status ${ticket.status}`);
     const dialogRef = this.dialog.open(ClaimTicketDialogComponent, {
       data: { ticketId: ticket.ticketId },
       width: '400px',
@@ -101,7 +102,9 @@ export class AdminSupportTicketsListComponent implements OnInit {
       if (claimed) {
         this.toast.success('Đã nhận ticket thành công!');
         // Reload danh sách để cập nhật thông tin claimedBy
-        this.loadTickets(this.page);
+        setTimeout(() => {
+          this.loadTickets(this.page);
+        }, 0);
         // Chuyển đến trang detail để tiếp tục xử lý
         this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
       }
@@ -120,7 +123,9 @@ export class AdminSupportTicketsListComponent implements OnInit {
         this.ticketsService.releaseTicket(ticket.ticketId).subscribe({
           next: () => {
             this.toast.success('Trả lại ticket thành công!');
-            this.loadTickets();
+            setTimeout(() => {
+              this.loadTickets();
+            }, 0);
           },
           error: () => this.toast.error('Trả lại ticket thất bại!')
         });
@@ -143,6 +148,13 @@ export class AdminSupportTicketsListComponent implements OnInit {
         this.totalElements = res.totalElements;
         this.totalPages = res.totalPages;
         this.page = res.number;
+        
+        // Debug: log ticket statuses
+        console.log(`[DEBUG] Loaded ${this.tickets.length} tickets:`);
+        this.tickets.forEach((ticket, index) => {
+          console.log(`  ${index + 1}. Ticket ${ticket.ticketId}: status = "${ticket.status}"`);
+        });
+        
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -169,7 +181,10 @@ export class AdminSupportTicketsListComponent implements OnInit {
   }
 
   onPageChange(newPage: number) {
-    this.loadTickets(newPage);
+    if (newPage >= 0 && newPage < this.totalPages && newPage !== this.page) {
+      this.page = newPage;
+      this.loadTickets(newPage);
+    }
   }
 
   formatDate(dateString: string): string {
@@ -204,6 +219,7 @@ export class AdminSupportTicketsListComponent implements OnInit {
 
   // Check if ticket can be claimed (only when OPEN)
   canClaimTicket(ticket: AdminSupportTicket): boolean {
+    console.log(`[DEBUG] canClaimTicket for ticket ${ticket.ticketId}: status = ${ticket.status}, can claim = ${ticket.status === 'OPEN'}`);
     return ticket.status === 'OPEN';
   }
 
@@ -238,7 +254,10 @@ export class AdminSupportTicketsListComponent implements OnInit {
     this.ticketsService.reopenTicket(ticket.ticketId).subscribe({
       next: () => {
         this.toast.success('Đã mở lại ticket thành công!');
-        this.loadTickets(this.page); // Reload current page
+        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+        setTimeout(() => {
+          this.loadTickets(this.page); // Reload current page
+        }, 0);
       },
       error: (error) => {
         console.error('Error reopening ticket:', error);

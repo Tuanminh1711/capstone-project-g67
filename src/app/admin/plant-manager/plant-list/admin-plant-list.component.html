@@ -3,12 +3,21 @@
   <!-- Header and create button removed -->
   <div class="search-bar-container">
     <div class="search-bar">
-      <div class="search-input-wrapper">
-        <input type="text" [(ngModel)]="searchText" (input)="onSearchInputChange()" placeholder="Tìm kiếm báo cáo..." />
-        <span class="search-icon" (click)="onSearch()">
-          <i class="fas fa-search"></i>
-        </span>
-      </div>
+      <input 
+        type="text" 
+        [(ngModel)]="searchText" 
+        (input)="onSearchInputChange()" 
+        placeholder="Tìm kiếm cây..." 
+        class="search-input"
+      />
+      <button 
+        type="button" 
+        (click)="onSearch()" 
+        class="search-btn"
+      >
+        <i class="fas fa-search"></i>
+        Tìm kiếm
+      </button>
     </div>
   </div>
   <div *ngIf="errorMsg" class="error-bar">

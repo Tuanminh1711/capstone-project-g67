@@ -6,6 +6,7 @@ import { AdminSupportTicketsService } from '../admin-support-tickets.service';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { HandleTicketDialogComponent } from '../handle/handle-ticket-dialog.component';
+import { ClaimTicketDialogComponent } from '../claim/claim-ticket-dialog.component';
 import { ReleaseTicketConfirmDialogComponent } from '../release/release-ticket-confirm-dialog.component';
 import { ResponseTicketDialogComponent } from '../response/response-ticket-dialog.component';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -300,9 +301,10 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
   onClaimTicket(): void {
     if (!this.ticket) return;
 
-    const dialogRef = this.dialog.open(HandleTicketDialogComponent, {
-      width: '500px',
-      data: { ticket: this.ticket }
+    const dialogRef = this.dialog.open(ClaimTicketDialogComponent, {
+      width: '400px',
+      data: { ticketId: this.ticket.ticketId },
+      disableClose: true
     });
 
     dialogRef.afterClosed().subscribe(result => {

@@ -13,6 +13,10 @@
         <input type="date" [(ngModel)]="endDate" name="endDate" required />
       </label>
     </div>
+    <button type="submit" class="search-btn" [disabled]="loading">
+      <i class="fas fa-search"></i>
+      {{ loading ? 'Đang tải...' : 'Tìm kiếm' }}
+    </button>
   </form>
   <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
 

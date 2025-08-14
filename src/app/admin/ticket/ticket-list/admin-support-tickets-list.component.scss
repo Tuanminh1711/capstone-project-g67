@@ -1,176 +1,268 @@
+.admin-ticket-list-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ticket-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ticket-list-header h2 {
+  color: #388e3c;
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.reload-btn {
+  background: #e8f5e9;
+  color: #388e3c;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.reload-btn:hover {
+  background: #c8e6c9;
+}
+
 .search-bar {
   display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 18px;
 }
+
 .search-input {
-  flex: 1 1 320px;
-  max-width: 400px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1.5px solid #bfc8d6;
-  background: #f5f7fa;
-  color: #222;
-  font-size: 1rem;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
 }
+
 .search-input:focus {
-  border-color: #1976d2;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.13);
+  outline: none;
+  border-color: #388e3c;
+  box-shadow: 0 0 0 2px rgba(56, 142, 60, 0.1);
 }
+
 .search-btn {
-  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
-  color: #fff;
+  background: #388e3c;
+  color: white;
   border: none;
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
+  border-radius: 4px;
+  padding: 10px 20px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
-  transition: background 0.18s, box-shadow 0.18s;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
+
 .search-btn:hover {
-  background: linear-gradient(90deg, #1565c0 0%, #42a5f5 100%);
-  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.18);
+  background: #2e7d32;
 }
-.tickets-table-container {
-  overflow-x: auto;
-  border-radius: 14px;
-  box-shadow: 0 4px 24px rgba(67, 160, 71, 0.10);
-  background: #f6fcf7;
-  padding: 0 0 12px 0;
+
+.loading-container {
+  text-align: center;
+  color: #388e3c;
+  padding: 20px;
+  font-weight: 500;
 }
+
 .tickets-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
+  border-collapse: collapse;
   margin-bottom: 20px;
-  background: transparent;
+  background: white;
+  table-layout: fixed;
 }
-.tickets-table th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #e8f5e9;
-  color: #43a047;
-  font-size: 1.08rem;
-  font-weight: 700;
-  padding: 12px 10px;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.04);
-  text-align: center;
+
+/* Điều chỉnh độ rộng cho từng cột */
+.tickets-table th:nth-child(1), .tickets-table td:nth-child(1) { /* STT */
+  width: 60px;
 }
+
+.tickets-table th:nth-child(2), .tickets-table td:nth-child(2) { /* Tiêu đề */
+  width: 30%;
+}
+
+.tickets-table th:nth-child(3), .tickets-table td:nth-child(3) { /* Người gửi */
+  width: 12%;
+}
+
+.tickets-table th:nth-child(4), .tickets-table td:nth-child(4) { /* Người xử lý */
+  width: 15%;
+}
+
+.tickets-table th:nth-child(5), .tickets-table td:nth-child(5) { /* Ngày tạo */
+  width: 15%;
+}
+
+.tickets-table th:nth-child(6), .tickets-table td:nth-child(6) { /* Trạng thái */
+  width: 12%;
+}
+
+.tickets-table th:nth-child(7), .tickets-table td:nth-child(7) { /* Hành động */
+  width: 150px;
+  min-width: 150px;
+}
+
+.tickets-table th,
 .tickets-table td {
-  background: #fff;
-  border: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 12px rgba(67, 160, 71, 0.06);
+  border: 1px solid #e0e0e0;
+  padding: 15px 10px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 14px;
   vertical-align: middle;
-  padding: 10px 10px;
-  font-size: 1.01rem;
-  color: #222;
-  text-align: center;
-  transition: box-shadow 0.18s;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
-.tickets-table tr {
-  transition: box-shadow 0.18s;
+
+.tickets-table td:nth-child(2) { /* Cột tiêu đề */
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.4;
 }
-.tickets-table tr:hover td {
-  box-shadow: 0 4px 24px rgba(67, 160, 71, 0.13);
+
+.tickets-table th {
   background: #e8f5e9;
+  color: #388e3c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-align: center;
 }
-.status-label {
-  display: inline-block;
-  padding: 6px 18px;
-  border-radius: 18px;
-  font-size: 1.05rem;
-  font-weight: 700;
+
+.tickets-table th:hover {
+  background: #c8e6c9;
+}
+
+.tickets-table tr:hover {
+  background: #f5f5f5;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+  background-color: #f8f9fa;
+}
+
+.ticket-title {
+  font-weight: 500;
+  color: #495057;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  white-space: nowrap;
+  display: inline-block;
+  min-width: 70px;
+  text-align: center;
+}
+
+.status-inline {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
 }
 
 .status-open {
-  color: #43a047;
+  background: #fff3e0;
+  color: #f57c00;
 }
 
 .status-claimed {
+  background: #e3f2fd;
   color: #1976d2;
 }
 
 .status-in-progress {
-  color: #f57c00;
+  background: #e8f5e9;
+  color: #388e3c;
 }
 
 .status-closed {
-  color: #d32f2f;
+  background: #ffebee;
+  color: #c62828;
 }
 
-/* Action Buttons Container */
+.no-claimed, .claimed-unknown {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
 .action-buttons {
   display: flex;
-  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
   align-items: center;
-  width: 100%;
+  justify-content: center;
 }
 
-/* Simple Action Buttons - giống style trang báo cáo */
 .claim-btn, .release-btn, .reopen-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 16px;
-  min-width: 110px; /* Đặt chiều rộng tối thiểu cố định */
-  width: 110px; /* Đặt chiều rộng cố định */
-  height: 36px; /* Đặt chiều cao cố định */
-  border: 1px solid;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
   border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  text-align: center;
-  
-  i {
-    font-size: 0.9rem;
-    flex-shrink: 0; /* Icon không bị co lại */
-  }
-  
-  span {
-    flex-shrink: 0; /* Text không bị co lại */
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  min-width: 90px;
+  height: 32px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
-/* Claim Button - Blue theme */
 .claim-btn {
   background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
   color: #ffffff;
-  border-color: #007bff;
+  border: 1px solid #007bff;
 }
 
 .claim-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
   border-color: #0056b3;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25), 0 1px 3px rgba(0, 123, 255, 0.35);
 }
 
-/* Release Button - Orange theme */
 .release-btn {
   background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
   color: #ffffff;
-  border-color: #fd7e14;
+  border: 1px solid #fd7e14;
 }
 
 .release-btn:hover:not(:disabled) {
@@ -180,227 +272,106 @@
   box-shadow: 0 2px 6px rgba(253, 126, 20, 0.25);
 }
 
-/* Reopen Button - Green theme */
-.reopen-btn {
-  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-  color: #ffffff;
-  border-color: #28a745;
-}
-
-.reopen-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
-  border-color: #1e7e34;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
-}
-
-/* Responsive styles for simple buttons */
-@media (max-width: 768px) {
-  .claim-btn, .release-btn, .reopen-btn {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-    min-width: 90px; /* Giảm kích thước trên mobile nhưng vẫn đồng đều */
-    width: 90px;
-    height: 32px;
-    
-    i {
-      font-size: 0.8rem;
-    }
-    
-    span {
-      font-size: 0.75rem;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .claim-btn, .release-btn {
-    padding: 6px 8px;
-    font-size: 0.75rem;
-    
-    /* Hide text on very small screens, keep only icon */
-    span {
-      display: none;
-    }
-    
-    i {
-      font-size: 0.9rem;
-    }
-  }
-}
-
-.btn-detail {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 50%;
-  background: #e8f5e9;
-  color: #43a047;
-  border: none;
-  font-size: 1.15rem;
-  margin: 0 3px;
-  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.08);
-  cursor: pointer;
-  transition: background 0.18s, box-shadow 0.18s, color 0.18s, transform 0.13s;
-  padding: 0;
-}
-.btn-detail:hover {
-  background: linear-gradient(90deg, #388e3c 0%, #43ea7f 100%);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(67, 160, 71, 0.18);
-  transform: translateY(-2px) scale(1.08);
-}
-.btn-view {
-  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
-  color: #fff;
-}
-.btn-view:hover {
-  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 100%);
-  color: #fff;
-}
-.btn-claim {
-  background: linear-gradient(90deg, #43ea7f 0%, #2ecc40 100%);
-  color: #fff;
-}
-.btn-claim:disabled {
-  background: #c8e6c9;
-  color: #888;
-  box-shadow: none;
+.claim-btn:disabled, .release-btn:disabled {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #6c757d;
+  border-color: #dee2e6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   opacity: 0.7;
 }
-.admin-support-tickets-page {
-  max-width: 1100px;
-  margin: 32px auto;
-  background: linear-gradient(135deg, #f6fcf7 0%, #e8f5e9 100%);
-  border-radius: 18px;
-  box-shadow: 0 4px 32px rgba(67, 160, 71, 0.10);
-  padding: 36px 40px 32px 40px;
+
+.claim-btn i, .release-btn i {
+  font-size: 12px;
+  opacity: 0.8;
 }
-h1 {
-  font-size: 2.2rem;
-  margin-bottom: 28px;
-  color: #43a047;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-align: center;
+
+.claim-btn:active, .release-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
-.loading-container {
-  text-align: center;
-  padding: 40px 0;
-}
-.empty-container {
-  text-align: center;
-  color: #888;
-  padding: 40px 0;
-}
-.pagination {
+
+.pagination-bar {
   display: flex;
   align-items: center;
-  gap: 14px;
   justify-content: center;
-  margin-top: 18px;
+  gap: 16px;
+  margin-top: 20px;
 }
-.pagination button {
+
+.pagination-bar button {
   background: #e8f5e9;
-  border: none;
-  border-radius: 8px;
-  padding: 7px 18px;
-  font-size: 1.08rem;
-  color: #43a047;
-  font-weight: 700;
+  color: #388e3c;
+  border: 1px solid #388e3c;
+  border-radius: 4px;
+  padding: 8px 16px;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.18s;
-  box-shadow: 0 1px 4px rgba(67, 160, 71, 0.07);
+  transition: all 0.2s;
 }
-.pagination button:disabled {
+
+.pagination-bar button:hover:not(:disabled) {
+  background: #388e3c;
+  color: white;
+}
+
+.pagination-bar button:disabled {
   background: #f5f5f5;
-  color: #aaa;
+  color: #ccc;
+  border-color: #ddd;
   cursor: not-allowed;
-  box-shadow: none;
 }
-.btn-detail {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 50%;
-  background: #e8f5e9;
-  color: #43a047;
-  border: none;
-  font-size: 1.15rem;
-  margin: 0 3px;
-  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.08);
-  cursor: pointer;
-  transition: background 0.18s, box-shadow 0.18s, color 0.18s, transform 0.13s;
-  padding: 0;
+
+.pagination-bar span {
+  color: #666;
+  font-weight: 500;
 }
-.btn-detail:hover {
-  background: linear-gradient(90deg, #388e3c 0%, #43ea7f 100%);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(67, 160, 71, 0.18);
-  transform: translateY(-2px) scale(1.08);
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
 }
-.btn-view {
-  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
-  color: #fff;
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
 }
-.btn-view:hover {
-  background: linear-gradient(90deg, #1565c0 0%, #1e88e5 100%);
-  color: #fff;
-}
-.btn-claim {
-  background: linear-gradient(90deg, #43ea7f 0%, #2ecc40 100%);
-  color: #fff;
-}
-.btn-claim:disabled {
-  background: #c8e6c9;
-  color: #888;
-  box-shadow: none;
-  cursor: not-allowed;
+
+.restricted-access {
   opacity: 0.7;
+  background-color: #f9f9f9 !important;
 }
-.admin-support-tickets-page {
-  max-width: 1100px;
-  margin: 32px auto;
-  background: linear-gradient(135deg, #f6fcf7 0%, #e8f5e9 100%);
-  border-radius: 18px;
-  box-shadow: 0 4px 32px rgba(67, 160, 71, 0.10);
-  padding: 36px 40px 32px 40px;
+
+.restricted-access:hover {
+  background-color: #f0f0f0 !important;
 }
-h1 {
-  font-size: 2.2rem;
-  margin-bottom: 28px;
-  color: #43a047;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-.loading-container {
-  text-align: center;
-  padding: 40px 0;
-}
-.empty-container {
-  text-align: center;
-  color: #888;
-  padding: 40px 0;
-}
-.tickets-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
-  margin-bottom: 20px;
-  background: transparent;
-}
-.tickets-table th {
-  background: #e8f5e9;
-  color: #43a047;
-  font-size: 1.08rem;
-  font-weight: 700;
+
+// Responsive design
+@media (max-width: 768px) {
+  .admin-ticket-list-container {
+    padding: 16px;
+  }
+  
+  .tickets-table {
+    font-size: 12px;
+  }
+  
+  .tickets-table th, .tickets-table td {
+    padding: 8px 6px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+  
+  .claim-btn, .release-btn {
+    width: 100%;
+    min-width: auto;
+    font-size: 11px;
+    padding: 6px 8px;
+    height: 28px;
+  }
 }
