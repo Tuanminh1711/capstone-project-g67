@@ -59,6 +59,15 @@ export class AiPlantComponent implements OnInit {
     private cookieService: CookieService
   ) {}
 
+  /**
+   * Get correct API endpoint based on environment
+   */
+  private getApiEndpoint(path: string): string {
+    // In development: apiUrl = '/api', so /api + /ai/identify-plant = /api/ai/identify-plant
+    // In production: apiUrl = 'https://plantcare.id.vn', so https://plantcare.id.vn + /api/ai/identify-plant
+    return `${this.configService.apiUrl}/api${path}`;
+  }
+
   ngOnInit() {
     // Check if user is VIP
     if (!this.authService.isLoggedIn()) {
@@ -70,6 +79,31 @@ export class AiPlantComponent implements OnInit {
     const role = this.authService.getCurrentUserRole();
     const userId = this.authService.getCurrentUserId();
     const token = this.cookieService.getCookie('auth_token');
+    
+    // Decode JWT to check algorithm and claims
+    if (token) {
+      try {
+        const base64Url = token.split('.')[0];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const header = JSON.parse(window.atob(base64));
+        
+        const base64Payload = token.split('.')[1];
+        const base64PayloadDecoded = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64PayloadDecoded));
+        
+        console.log('🔍 [VIP AI Plant] JWT Debug:', {
+          header,
+          payload,
+          algorithm: header.alg,
+          userId: payload.userId,
+          role: payload.role,
+          exp: new Date(payload.exp * 1000),
+          isExpired: Date.now() > payload.exp * 1000
+        });
+      } catch (e) {
+        console.error('JWT decode error:', e);
+      }
+    }
     
     console.log('🔍 [VIP AI Plant] Debug info:', {
       role,
@@ -155,7 +189,7 @@ export class AiPlantComponent implements OnInit {
       console.log('Validation timeout - clearing loading state');
     }, 3000); // 3 second timeout - much shorter
 
-    this.http.post<any>(`${this.configService.apiUrl}/ai/validate-plant-image`, formData, { 
+    this.http.post<any>(`${this.configService.apiUrl}/api/ai/validate-plant-image`, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -206,13 +240,13 @@ export class AiPlantComponent implements OnInit {
     // Debug: Log token and headers
     const token = this.cookieService.getCookie('auth_token');
     console.log('🔍 [AI Plant] Making request with:', {
-      endpoint: `${this.configService.apiUrl}/ai/identify-plant`,
+      endpoint: `${this.configService.apiUrl}/api/ai/identify-plant`,
       userId,
       hasToken: !!token,
       tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
     });
 
-    this.http.post<any>(`${this.configService.apiUrl}/ai/identify-plant`, formData, { 
+    this.http.post<any>(`${this.configService.apiUrl}/api/ai/identify-plant`, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
@@ -239,11 +273,29 @@ export class AiPlantComponent implements OnInit {
           this.isLoading = false;
           console.error('Error identifying plant:', error);
           
+          // Log detailed error for debugging
+          console.error('🔍 Detailed error info:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            url: error.url,
+            body: error.error
+          });
+          
           setTimeout(() => {
             if (error.status === 403) {
-              this.toastService.show('Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP', 'error');
+              // Check if it's JWT/auth issue
+              if (error.error && error.error.message) {
+                this.toastService.show(`Lỗi xác thực: ${error.error.message}`, 'error');
+              } else {
+                this.toastService.show('Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP', 'error');
+              }
             } else if (error.status === 404) {
               this.toastService.show('API endpoint không tìm thấy', 'error');
+            } else if (error.status === 401) {
+              this.toastService.show('Token hết hạn hoặc không hợp lệ', 'error');
+            } else if (error.status === 500) {
+              this.toastService.show('Lỗi server, có thể do JWT algorithm không match', 'error');
             } else {
               this.toastService.show('Có lỗi xảy ra khi nhận diện cây', 'error');
             }
@@ -262,7 +314,7 @@ export class AiPlantComponent implements OnInit {
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted search
 
-    this.http.get<any>(`${this.configService.apiUrl}/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
+    this.http.get<any>(`${this.configService.apiUrl}/api/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`, { 
       headers: this.getAuthHeaders() 
     })
       .subscribe({
@@ -323,5 +375,26 @@ export class AiPlantComponent implements OnInit {
   shouldShowEmptyState(): boolean {
     // Only show empty state if user has searched/identified but got no results
     return this.hasSearched && this.results.length === 0 && !this.isLoading && !this.isValidating;
+  }
+
+  /**
+   * Test JWT validation with backend
+   */
+  testJwtValidation() {
+    const token = this.cookieService.getCookie('auth_token');
+    console.log('🧪 Testing JWT with backend...');
+    
+    this.http.get(`${this.configService.apiUrl}/api/ai/test-api-key`, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ JWT test passed:', response);
+        this.toastService.show('JWT validation thành công', 'success');
+      },
+      error: (error) => {
+        console.error('❌ JWT test failed:', error);
+        this.toastService.show(`JWT validation thất bại: ${error.status}`, 'error');
+      }
+    });
   }
 }

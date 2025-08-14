@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://plantcare.id.vn/api',  // URL backend production thật
+  apiUrl: 'https://plantcare.id.vn',  // Base URL without /api
   baseUrl: 'https://plantcare.id.vn',  // Base URL production
   endpoints: {
     auth: '/api/auth',
