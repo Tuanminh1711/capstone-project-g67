@@ -11,6 +11,9 @@ export interface AdminSupportTicket {
   createdAt: string;
   userName: string;
   responseCount: number;
+  claimedBy?: string; // Username của admin đã claim ticket (deprecated, use claimedByUserName)
+  claimedById?: number; // UserId của admin đã claim ticket (không có trong response)
+  claimedByUserName?: string; // Username của admin đã claim ticket (actual field from backend)
 }
 
 export interface AdminSupportTicketsResponse {
@@ -68,6 +71,12 @@ export class AdminSupportTicketsService {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map(res => res.data as AdminSupportTicketsResponse)
+    );
+  }
+
+  getTicketDetail(ticketId: number): Observable<AdminSupportTicket> {
+    return this.http.get<any>(`${this.apiUrl}/${ticketId}`).pipe(
+      map(res => res.data as AdminSupportTicket)
     );
   }
 }

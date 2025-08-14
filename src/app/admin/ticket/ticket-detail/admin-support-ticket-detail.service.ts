@@ -13,8 +13,10 @@ export interface AdminSupportTicketDetail {
   userName: string;
   responses: any[];
   claimedByUserName: string | null;
+  claimedById?: number; // Thêm ID của admin đã claim
   claimedAt: string | null;
   handledByUserName: string | null;
+  handledById?: number; // Thêm ID của admin đã handle
   handledAt: string | null;
   logs: any[];
 }

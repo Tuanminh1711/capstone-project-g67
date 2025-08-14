@@ -154,6 +154,13 @@ export class AuthService {
   }
 
   /**
+   * Lấy username hiện tại từ token
+   */
+  getCurrentUsername(): string | null {
+    return this.jwtUserUtil.getUsernameFromToken();
+  }
+
+  /**
    * Lấy role hiện tại từ token
    */
   getCurrentUserRole(): string | null {

@@ -7,6 +7,7 @@ import { AdminSupportTicketsService, AdminSupportTicket } from '../admin-support
 import { ClaimTicketDialogComponent } from '../claim/claim-ticket-dialog.component';
 import { ReleaseTicketConfirmDialogComponent } from '../release/release-ticket-confirm-dialog.component';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { AuthService } from '../../../auth/auth.service';
 
 
 @Component({
@@ -18,8 +19,62 @@ import { ToastService } from '../../../shared/toast/toast.service';
 })
 export class AdminSupportTicketsListComponent implements OnInit {
   viewTicketDetail(ticket: AdminSupportTicket) {
-    // Điều hướng đến trang chi tiết ticket (SPA)
-    this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
+    // Kiểm tra quyền truy cập ticket detail
+    if (ticket.status === 'OPEN') {
+      // Ticket chưa được claim, mọi admin đều có thể xem
+      this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
+    } else if (ticket.status === 'CLOSED') {
+      // Ticket đã đóng, mọi admin đều có thể xem
+      this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
+    } else if (ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS') {
+      // Ticket đã được claim, cần kiểm tra chi tiết từ API
+      this.checkClaimedTicketAccess(ticket.ticketId);
+    } else {
+      // Các trạng thái khác, cho phép xem
+      this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
+    }
+  }
+
+  private checkClaimedTicketAccess(ticketId: number) {
+    // Gọi API detail để lấy thông tin claimedByUserName
+    this.ticketsService.getTicketDetail(ticketId).subscribe({
+      next: (ticket) => {
+        const currentUsername = this.authService.getCurrentUsername();
+        
+        if (ticket.claimedByUserName === currentUsername) {
+          // Admin hiện tại đã claim ticket này
+          this.router.navigate([`/admin/support/tickets/${ticketId}`]);
+        } else {
+          // Admin khác đã claim
+          const claimerName = ticket.claimedByUserName || 'không xác định';
+          this.toast.error(`Ticket này đã được admin "${claimerName}" nhận xử lý. Chỉ admin đó mới có thể tiếp tục xử lý!`);
+        }
+      },
+      error: (error) => {
+        console.error('Error checking ticket access:', error);
+        this.toast.error('Có lỗi xảy ra khi kiểm tra quyền truy cập ticket');
+      }
+    });
+  }
+
+  /**
+   * Hiển thị tooltip thông tin quyền truy cập
+   */
+  getAccessTooltip(ticket: AdminSupportTicket): string {
+    const currentUsername = this.authService.getCurrentUsername();
+    
+    if (ticket.status === 'OPEN') {
+      return 'Click để xem chi tiết và có thể nhận xử lý ticket';
+    } else if (ticket.status === 'CLOSED') {
+      return 'Click để xem chi tiết ticket đã đóng';
+    } else if (ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS') {
+      if (ticket.claimedByUserName === currentUsername) {
+        return 'Click để tiếp tục xử lý ticket đã nhận';
+      } else {
+        return `Ticket đã được "${ticket.claimedByUserName || 'không xác định'}" nhận xử lý. Chỉ xem được thôi.`;
+      }
+    }
+    return 'Click để xem chi tiết ticket';
   }
   searchText: string = '';
   filteredTickets: AdminSupportTicket[] = [];
@@ -34,6 +89,7 @@ export class AdminSupportTicketsListComponent implements OnInit {
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   openClaimDialog(ticket: AdminSupportTicket) {
     const dialogRef = this.dialog.open(ClaimTicketDialogComponent, {
       data: { ticketId: ticket.ticketId },
@@ -44,6 +100,8 @@ export class AdminSupportTicketsListComponent implements OnInit {
     dialogRef.afterClosed().subscribe((claimed) => {
       if (claimed) {
         this.toast.success('Đã nhận ticket thành công!');
+        // Reload danh sách để cập nhật thông tin claimedBy
+        this.loadTickets(this.page);
         // Chuyển đến trang detail để tiếp tục xử lý
         this.router.navigate([`/admin/support/tickets/${ticket.ticketId}`]);
       }
@@ -123,6 +181,20 @@ export class AdminSupportTicketsListComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  // Check if current admin can release this ticket (only who claimed it)
+  canReleaseTicket(ticket: AdminSupportTicket): boolean {
+    // For list view, we don't have claimedByUserName, so hide the button
+    // User will need to go to detail view to perform actions
+    return false; // Hide release button in list view
+  }
+
+  // Check if current admin can process this ticket (only who claimed it)
+  canProcessTicket(ticket: AdminSupportTicket): boolean {
+    // For list view, we don't have claimedByUserName, so hide the button
+    // User will need to go to detail view to perform actions
+    return false; // Hide process button in list view
   }
 
   // Check if ticket can be reopened (only when CLOSED)

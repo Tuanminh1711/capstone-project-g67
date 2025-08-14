@@ -14,13 +14,17 @@
           <th>Mô tả</th>
           <th>Người gửi</th>
           <th>Trạng thái</th>
+          <th>Admin xử lý</th>
           <th>Ngày tạo</th>
           <th>Số phản hồi</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let ticket of filteredTickets; let i = index" (click)="viewTicketDetail(ticket)">
+        <tr *ngFor="let ticket of filteredTickets; let i = index" 
+            (click)="viewTicketDetail(ticket)"
+            [title]="getAccessTooltip(ticket)"
+            [class.restricted-access]="!canProcessTicket(ticket) && (ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS')">
           <td>{{ i + 1 + (page * 10) }}</td>
           <td>{{ ticket.title }}</td>
           <td>{{ ticket.description }}</td>
@@ -29,6 +33,11 @@
             <span class="status-label" [class]="getStatusClass(ticket.status)">
               {{ getStatusText(ticket.status) }}
             </span>
+          </td>
+          <td>
+            <span *ngIf="ticket.status === 'OPEN'" class="no-claimed">Chưa có ai nhận</span>
+            <span *ngIf="ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'" class="claimed-unknown">Đã được nhận</span>
+            <span *ngIf="ticket.status === 'CLOSED'" class="no-claimed">-</span>
           </td>
           <td>{{ formatDate(ticket.createdAt) }}</td>
           <td>{{ ticket.responseCount }}</td>
@@ -43,8 +52,8 @@
                 <span>Nhận xử lý</span>
               </button>
               
-              <!-- Nút Trả lại phiếu hỗ trợ - hiện khi CLAIMED hoặc IN_PROGRESS -->
-              <button *ngIf="ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'" 
+              <!-- Nút Trả lại phiếu hỗ trợ - chỉ hiện khi admin hiện tại đã claim ticket -->
+              <button *ngIf="canReleaseTicket(ticket)" 
                       class="release-btn"
                       (click)="openReleaseDialog(ticket); $event.stopPropagation()"
                       title="Trả lại phiếu hỗ trợ cho admin khác xử lý">

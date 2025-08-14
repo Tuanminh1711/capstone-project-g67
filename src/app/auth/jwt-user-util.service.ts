@@ -25,6 +25,20 @@ export class JwtUserUtilService {
     }
   }
 
+  getUsernameFromToken(): string | null {
+    // Lấy username từ token (thường là field 'sub')
+    const token = this.cookieService.getCookie('auth_token');
+    if (!token) return null;
+    
+    try {
+      const decoded: any = jwtDecode(token);
+      // JWT thường sử dụng 'sub' (subject) cho username
+      return decoded.sub || decoded.username || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   getRoleFromToken(): string | null {
     // Lấy token từ cookie thay vì localStorage
     const token = this.cookieService.getCookie('auth_token');

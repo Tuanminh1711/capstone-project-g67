@@ -34,6 +34,20 @@
         </div>
       </div>
       
+      <!-- Permission Message -->
+      <div class="permission-message" *ngIf="ticket && !loading && !error">
+        <div class="permission-alert" 
+             [ngClass]="{
+               'alert-info': ticket.status === 'OPEN',
+               'alert-success': hasProcessPermission() && (ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'),
+               'alert-warning': !hasProcessPermission() && (ticket.status === 'CLAIMED' || ticket.status === 'IN_PROGRESS'),
+               'alert-secondary': ticket.status === 'CLOSED'
+             }">
+          <i class="fas fa-info-circle"></i>
+          <span>{{ getPermissionMessage() }}</span>
+        </div>
+      </div>
+      
       <!-- Action Buttons - Keep in current position -->
       <div class="ticket-header-actions" *ngIf="ticket && !loading && !error">
         <!-- Nút "Nhận" cho ticket chưa được claim -->
@@ -120,9 +134,17 @@
           <ul *ngIf="(ticket?.responses?.length ?? 0) > 0">
             <li *ngFor="let res of ticket?.responses">
               <div class="response-row">
-                <span class="response-user"><i class="fa fa-user"></i> {{ res.userName }}</span>
-                <span class="response-date">{{ res.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
-                <span class="response-content">{{ res.content }}</span>
+                <div class="response-header">
+                  <span class="response-user">
+                    <i [class]="getResponderIcon(res.responderRole)"></i> 
+                    {{ res.responderName || 'Người dùng không xác định' }}
+                    <span class="responder-role" [class]="getRoleClass(res.responderRole)">
+                      ({{ getRoleText(res.responderRole) }})
+                    </span>
+                  </span>
+                  <span class="response-date">{{ res.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="response-content">{{ res.content }}</div>
               </div>
             </li>
           </ul>

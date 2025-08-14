@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 import { CookieService } from '../../../auth/cookie.service';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-support-ticket-detail',
@@ -33,6 +34,36 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
       case 'CLOSE': return 'Đóng phiếu';
       case 'REOPEN': return 'Mở lại';
       default: return action;
+    }
+  }
+
+  // Get responder icon based on role
+  getResponderIcon(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'fas fa-user-shield';
+      case 'VIP': return 'fas fa-crown';
+      case 'USER': return 'fas fa-user';
+      default: return 'fas fa-user-circle';
+    }
+  }
+
+  // Get role text in Vietnamese
+  getRoleText(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'Admin';
+      case 'VIP': return 'VIP';
+      case 'USER': return 'Người dùng';
+      default: return 'Không xác định';
+    }
+  }
+
+  // Get CSS class for role styling
+  getRoleClass(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'role-admin';
+      case 'VIP': return 'role-vip';
+      case 'USER': return 'role-user';
+      default: return 'role-unknown';
     }
   }
 
@@ -59,6 +90,7 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
   private cookieService = inject(CookieService);
+  private authService = inject(AuthService);
 
   constructor(
     private route: ActivatedRoute,
@@ -79,6 +111,20 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
     if (id) {
       this.ticketId = +id;
       this.loadTicketDetail();
+    }
+  }
+
+  // Kiểm tra quyền truy cập và hiển thị cảnh báo nếu cần
+  private checkAccessPermission(): void {
+    if (!this.ticket) return;
+    
+    const currentUsername = this.authService.getCurrentUsername();
+    
+    // Nếu ticket đã được claim bởi admin khác, hiển thị cảnh báo
+    if ((this.ticket.status === 'CLAIMED' || this.ticket.status === 'IN_PROGRESS') && 
+        this.ticket.claimedByUserName !== currentUsername) {
+      const claimerName = this.ticket.claimedByUserName || 'không xác định';
+      this.toastService.show(`Lưu ý: Ticket này đã được admin "${claimerName}" nhận xử lý. Bạn chỉ có thể xem thông tin.`, 'warning');
     }
   }
 
@@ -111,6 +157,9 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         if (ticket.imageUrl) {
           this.loadImage(ticket.imageUrl);
         }
+        
+        // Check access permission and show warning if needed
+        setTimeout(() => this.checkAccessPermission(), 100);
         
         this.cdr.markForCheck();
       },
@@ -153,6 +202,26 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Check if current admin has permission to process this ticket
+  hasProcessPermission(): boolean {
+    if (!this.ticket) return false;
+    
+    const currentUsername = this.authService.getCurrentUsername();
+    
+    // For OPEN tickets, anyone can claim
+    if (this.ticket.status === 'OPEN') return true;
+    
+    // For CLOSED tickets, anyone can reopen
+    if (this.ticket.status === 'CLOSED') return true;
+    
+    // For CLAIMED/IN_PROGRESS tickets, only the claimed admin can process
+    if (this.ticket.status === 'CLAIMED' || this.ticket.status === 'IN_PROGRESS') {
+      return this.ticket.claimedByUserName === currentUsername;
+    }
+    
+    return false;
+  }
+
   // Check if user can claim a ticket (for unclaimed tickets)
   canClaimTicket(): boolean {
     // Can only claim when ticket is OPEN
@@ -161,26 +230,26 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
 
   // Check if user can handle a ticket (for claimed tickets)
   canHandleTicket(): boolean {
-    // Can handle when ticket is CLAIMED (đã nhận nhưng chưa xử lý)
-    return this.ticket?.status === 'CLAIMED';
+    // Can handle when ticket is CLAIMED and current user is the claimer
+    return this.ticket?.status === 'CLAIMED' && this.hasProcessPermission();
   }
 
   // Check if user can release a ticket
   canReleaseTicket(): boolean {
-    // Can release when ticket is CLAIMED or IN_PROGRESS
-    return this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS';
+    // Can release when ticket is CLAIMED or IN_PROGRESS and current user is the claimer
+    return (this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS') && this.hasProcessPermission();
   }
 
   // Check if user can respond to a ticket
   canRespondToTicket(): boolean {
-    // Can respond when ticket is CLAIMED or IN_PROGRESS
-    return this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS';
+    // Can respond when ticket is CLAIMED or IN_PROGRESS and current user is the claimer
+    return (this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS') && this.hasProcessPermission();
   }
 
   // Check if user can close a ticket
   canCloseTicket(): boolean {
-    // Can close when ticket is IN_PROGRESS
-    return this.ticket?.status === 'IN_PROGRESS';
+    // Can close when ticket is IN_PROGRESS and current user is the claimer
+    return this.ticket?.status === 'IN_PROGRESS' && this.hasProcessPermission();
   }
 
   // Check if user can reopen a ticket
@@ -201,6 +270,30 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
     } else {
       return '--';
     }
+  }
+
+  // Get current admin permission message
+  getPermissionMessage(): string {
+    if (!this.ticket) return '';
+    
+    const currentUsername = this.authService.getCurrentUsername();
+    
+    if (this.ticket.status === 'OPEN') {
+      return 'Ticket này chưa có ai nhận. Bạn có thể nhận để xử lý.';
+    } else if (this.ticket.status === 'CLOSED') {
+      return 'Ticket đã được đóng.';
+    } else if (this.ticket.status === 'CLAIMED' || this.ticket.status === 'IN_PROGRESS') {
+      const hasPermission = this.ticket.claimedByUserName === currentUsername;
+      
+      if (hasPermission) {
+        return 'Bạn đã nhận ticket này và có thể tiếp tục xử lý.';
+      } else {
+        const claimerName = this.ticket.claimedByUserName || 'không xác định';
+        return `Ticket này đã được admin "${claimerName}" nhận xử lý. Chỉ admin đó mới có thể tiếp tục xử lý.`;
+      }
+    }
+    
+    return '';
   }
 
   // Claim ticket action (for unclaimed tickets)
