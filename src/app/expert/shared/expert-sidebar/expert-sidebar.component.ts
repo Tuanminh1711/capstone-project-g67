@@ -65,6 +65,7 @@ export class ExpertSidebarComponent implements OnInit {
   }
 
   logout() {
-    this.authService.logout();
+    // Sử dụng AuthService logout dành riêng cho expert
+    this.authService.logoutExpert();
   }
 }

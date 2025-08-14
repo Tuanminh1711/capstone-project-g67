@@ -193,7 +193,7 @@ export class TopNavigatorComponent implements OnInit {
   }
 
   logout = (): void => {
+    // User thường sử dụng logout bình thường (sẽ về home)
     this.authService.logout();
-    this.router.navigate(['/home']);
   };
 }

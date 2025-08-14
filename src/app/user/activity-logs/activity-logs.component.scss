@@ -51,3 +51,49 @@ h2 {
   text-align: center;
   margin: 24px 0;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #43a047;
+  background: #fff;
+  color: #43a047;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background: #43a047;
+    color: #fff;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #ccc;
+    color: #ccc;
+  }
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 14px;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}

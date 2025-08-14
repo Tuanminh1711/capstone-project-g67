@@ -118,10 +118,12 @@ export class AuthService {
         // Sử dụng session storage để đánh dấu rằng đây là một logout
         sessionStorage.setItem('isLogout', 'true');
         
-        // Sử dụng reload để đảm bảo state được reset hoàn toàn
+        // Logic redirect based on role
         if (role === 'admin' || role === 'staff' || role === 'expert') {
-          window.location.href = '/login/admin';
+          // Admin, staff, expert luôn về login-admin
+          window.location.href = '/login-admin';
         } else {
+          // User thường về home
           window.location.href = '/home';
         }
       }
@@ -131,11 +133,91 @@ export class AuthService {
       this.http.post(`${this.apiUrl}/auth/logout`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
-        next: () => doLogout(),
-        error: () => doLogout()
+        next: (response: any) => {
+          console.log('Logout successful:', response);
+          doLogout();
+        },
+        error: (error: any) => {
+          console.error('Logout API error:', error);
+          doLogout(); // Vẫn logout dù API fail
+        }
       });
     } else {
       doLogout();
+    }
+  }
+
+  /**
+   * Đăng xuất dành riêng cho Admin/Staff
+   */
+  logoutAdmin(): void {
+    const token = this.cookieService.getCookie('auth_token');
+    
+    const doAdminLogout = () => {
+      // Xóa tất cả tokens
+      this.cookieService.removeAuthToken();
+      this.cookieService.removeAccessToken();
+      
+      // Đánh dấu logout
+      sessionStorage.setItem('isLogout', 'true');
+      sessionStorage.setItem('logoutType', 'admin');
+      
+      // Luôn chuyển về login-admin
+      window.location.href = '/login-admin';
+    };
+
+    if (token) {
+      this.http.post(`${this.apiUrl}/auth/logout`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: (response: any) => {
+          console.log('Admin logout successful:', response);
+          doAdminLogout();
+        },
+        error: (error: any) => {
+          console.error('Admin logout API error:', error);
+          doAdminLogout(); // Vẫn logout dù API fail
+        }
+      });
+    } else {
+      doAdminLogout();
+    }
+  }
+
+  /**
+   * Đăng xuất dành riêng cho Expert
+   */
+  logoutExpert(): void {
+    const token = this.cookieService.getCookie('auth_token');
+    
+    const doExpertLogout = () => {
+      // Xóa tất cả tokens
+      this.cookieService.removeAuthToken();
+      this.cookieService.removeAccessToken();
+      
+      // Đánh dấu logout
+      sessionStorage.setItem('isLogout', 'true');
+      sessionStorage.setItem('logoutType', 'expert');
+      
+      // Luôn chuyển về login-admin
+      window.location.href = '/login-admin';
+    };
+
+    if (token) {
+      this.http.post(`${this.apiUrl}/auth/logout`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: (response: any) => {
+          console.log('Expert logout successful:', response);
+          doExpertLogout();
+        },
+        error: (error: any) => {
+          console.error('Expert logout API error:', error);
+          doExpertLogout(); // Vẫn logout dù API fail
+        }
+      });
+    } else {
+      doExpertLogout();
     }
   }
 

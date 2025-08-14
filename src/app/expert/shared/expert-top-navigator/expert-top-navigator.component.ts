@@ -74,25 +74,8 @@ export class ExpertTopNavigatorComponent implements OnInit {
   }
 
 logout() {
-    // Gọi API logout và chuyển về /login-admin, không phụ thuộc AuthService
-    const token = this.cookieService.getCookie('auth_token');
-    if (token) {
-      this.http.post('/api/auth/logout', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).subscribe({
-        next: () => {
-          this.cookieService.removeAuthToken();
-          window.location.href = '/login-admin';
-        },
-        error: () => {
-          this.cookieService.removeAuthToken();
-          window.location.href = '/login-admin';
-        }
-      });
-    } else {
-      this.cookieService.removeAuthToken();
-      window.location.href = '/login-admin';
-    }
+    // Sử dụng AuthService logout dành riêng cho expert
+    this.authService.logoutExpert();
   }
 
   private updatePageInfo(): void {

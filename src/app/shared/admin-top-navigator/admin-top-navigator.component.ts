@@ -149,9 +149,7 @@ export class AdminTopNavigatorComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    // Sử dụng AuthService để logout đúng cách
-    this.authService.logout();
-    // Sau khi logout, chuyển hướng về trang đăng nhập admin
-    this.router.navigate(['/login-admin']);
+    // Sử dụng AuthService logout dành riêng cho admin
+    this.authService.logoutAdmin();
   }
 }

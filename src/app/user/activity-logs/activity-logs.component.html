@@ -17,7 +17,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (log of logs; track log; let i = $index) {
+          @for (log of logs; track log) {
             <tr>
               <td class="log-time">{{ log.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
               <td class="log-detail">{{ translateDescription(log) }}</td>
@@ -29,12 +29,46 @@
         </tbody>
       </table>
       
-      <!-- Pagination -->
-      <div class="pagination-bar" *ngIf="totalPages > 1">
-        <button [disabled]="pageNo === 0" (click)="onPageChange(pageNo - 1)">&lt; Trước</button>
-        <span>Trang {{ pageNo + 1 }} / {{ totalPages }}</span>
-        <button [disabled]="pageNo + 1 >= totalPages" (click)="onPageChange(pageNo + 1)">Sau &gt;</button>
-      </div>
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button 
+            type="button" 
+            (click)="goToPage(0)" 
+            [disabled]="currentPage === 0"
+            class="pagination-btn">
+            ≪ Đầu
+          </button>
+          
+          <button 
+            type="button" 
+            (click)="previousPage()" 
+            [disabled]="currentPage === 0"
+            class="pagination-btn">
+            ‹ Trước
+          </button>
+          
+          <span class="pagination-info">
+            Trang {{ currentPage + 1 }} / {{ totalPages }} 
+            ({{ totalElements }} bản ghi)
+          </span>
+          
+          <button 
+            type="button" 
+            (click)="nextPage()" 
+            [disabled]="currentPage >= totalPages - 1"
+            class="pagination-btn">
+            Sau ›
+          </button>
+          
+          <button 
+            type="button" 
+            (click)="goToPage(totalPages - 1)" 
+            [disabled]="currentPage >= totalPages - 1"
+            class="pagination-btn">
+            Cuối ≫
+          </button>
+        </div>
+      }
     </div>
   }
 </div>
