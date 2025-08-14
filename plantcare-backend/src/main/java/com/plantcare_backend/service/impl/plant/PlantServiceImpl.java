@@ -213,6 +213,12 @@ public class PlantServiceImpl implements PlantService {
      */
     @Override
     public void reportPlant(PlantReportRequestDTO request, Long reporterId) {
+        if (request.getReason() == null || request.getReason().trim().isEmpty()) {
+            throw new IllegalArgumentException("Reason cannot be null or empty");
+        }
+        if (request.getReason().trim().length() < 10) {
+            throw new IllegalArgumentException("Reason must be at least 1- characters long");
+        }
         // 1. Lấy thông tin user
         Users reporter = userRepository.findById(Math.toIntExact(reporterId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

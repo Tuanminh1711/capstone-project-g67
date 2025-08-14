@@ -36,9 +36,11 @@ public class CreateUserPlantRequestDTO {
     @NotNull(message = "careDifficulty must not null")
     private Plants.CareDifficulty careDifficulty;
 
+    @NotBlank(message = "suitableLocation must not blank")
     @Size(max = 500, message = "suitableLocation must not null")
     private String suitableLocation;
 
+    @NotBlank(message = "commonDiseases must not blank")
     @Size(max = 1000, message = "commonDiseases max 1000 characters")
     private String commonDiseases;
 

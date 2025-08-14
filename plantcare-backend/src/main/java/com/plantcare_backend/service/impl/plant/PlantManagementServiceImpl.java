@@ -152,6 +152,15 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         PlantCategory category = plantCategoryRepository.findById(updateRequest.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
+        if (!plant.getScientificName().equalsIgnoreCase(updateRequest.getScientificName()) &&
+                plantRepository.existsByScientificNameIgnoreCase(updateRequest.getScientificName())) {
+            throw new InvalidDataException("Plat with scientific name already exitsts: "
+                    + updateRequest.getScientificName());
+        }
+        if (!plant.getCommonName().equalsIgnoreCase(updateRequest.getCommonName()) &&
+                plantRepository.existsByCommonNameIgnoreCase(updateRequest.getCommonName())) {
+            throw new InvalidDataException("Plant with common name already exists");
+        }
         plant.setScientificName(updateRequest.getScientificName());
         plant.setCommonName(updateRequest.getCommonName());
         plant.setCategory(category);
