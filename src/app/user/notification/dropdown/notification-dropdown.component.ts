@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -33,8 +34,20 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private router: Router
   ) {}
+  /**
+   * Xử lý click notification: đánh dấu đã đọc và điều hướng nếu có link
+   */
+  onNotificationClick(notification: Notification, event: Event): void {
+    event.stopPropagation();
+    this.markAsRead(notification, event);
+    if (notification.link) {
+      this.router.navigate([notification.link]);
+      this.isOpen = false;
+    }
+  }
 
   ngOnInit(): void {
     // Subscribe to unread count changes

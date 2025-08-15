@@ -38,18 +38,15 @@
         *ngFor="let notification of notifications; trackBy: trackByNotificationId"
         class="dropdown-item"
         [ngClass]="getNotificationClass(toNotificationType(notification.type))"
-        (click)="markAsRead(notification, $event)">
-        
+        (click)="onNotificationClick(notification, $event)">
         <div class="item-icon">
           <i [class]="getNotificationIcon(toNotificationType(notification.type))"></i>
         </div>
-
         <div class="item-content">
           <div class="item-title">{{ truncateText(notification.title, 40) }}</div>
           <div class="item-message">{{ truncateText(notification.message, 50) }}</div>
           <div class="item-time">{{ formatTime(notification.createdAt + '') }}</div>
         </div>
-
         <div class="item-indicator" *ngIf="!notification.isRead">
           <i class="fas fa-circle"></i>
         </div>

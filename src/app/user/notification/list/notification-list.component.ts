@@ -1,6 +1,6 @@
+import { Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NotificationService } from '../notification.service';
@@ -266,8 +266,27 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   onNotificationClick(notification: Notification): void {
     // Đánh dấu đã đọc
     this.markAsRead(notification);
-    
-    // Navigate dựa trên type và relatedEntityId
+    // Nếu có link thì ưu tiên điều hướng theo link
+    if (notification.link) {
+      let link = notification.link;
+      // Map BE /user-plants/:id => FE /user/user-plant-detail/:id
+      const userPlantMatch = link.match(/^\/user-plants\/(\d+)$/);
+      if (userPlantMatch) {
+        link = `/user/user-plant-detail/${userPlantMatch[1]}`;
+      }
+      // Map BE /ticket/:id => FE /user/my-tickets/:id
+      const ticketMatch = link.match(/^\/ticket\/(\d+)$/);
+      if (ticketMatch) {
+        link = `/user/my-tickets/${ticketMatch[1]}`;
+      }
+      // Map BE /vip/benefits => FE /vip/welcome
+      if (link === '/vip/benefits') {
+        link = '/vip/welcome';
+      }
+      this.router.navigate([link]);
+      return;
+    }
+    // Nếu không có link thì fallback về entity
     if (notification.relatedEntityId && notification.relatedEntityType) {
       this.navigateToRelatedEntity(notification);
     }

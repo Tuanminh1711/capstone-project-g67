@@ -49,14 +49,13 @@
       <div 
         *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
         class="notification-item"
-  [class.unread]="!notification.isRead"
-  [class]="getNotificationClass(toNotificationType(notification.type))">
-        
+        [class.unread]="!notification.isRead"
+        [class]="getNotificationClass(toNotificationType(notification.type))"
+        (click)="onNotificationClick(notification)">
         <div class="notification-icon">
           <i [class]="getNotificationIcon(toNotificationType(notification.type))"></i>
         </div>
-        
-        <div class="notification-content" (click)="markAsRead(notification)">
+        <div class="notification-content">
           <div class="notification-header-item">
             <h4 class="notification-title">{{ notification.title }}</h4>
             <div class="notification-meta">
@@ -69,9 +68,7 @@
               </button>
             </div>
           </div>
-          
           <p class="notification-message">{{ notification.message }}</p>
-          
           <div class="notification-footer" *ngIf="!notification.isRead">
             <span class="unread-indicator">
               <i class="fas fa-circle"></i>

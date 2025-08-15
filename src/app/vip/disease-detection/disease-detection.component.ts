@@ -927,6 +927,14 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       this.error = 'Không thể tải hướng dẫn điều trị: thiếu tên bệnh.';
       return;
     }
+    // Nếu là cây khỏe mạnh thì trả về thông báo đặc biệt
+    if (diseaseName.trim().toLowerCase() === 'cây khỏe mạnh' || diseaseName.trim().toLowerCase() === 'cay khoe manh') {
+      this.treatmentGuide = null;
+      this.error = 'Cây của bạn đang khỏe mạnh, không cần hướng dẫn điều trị.';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
     this.isLoading = true;
     this.diseaseService.getTreatmentGuide(diseaseName)
       .pipe(takeUntil(this.destroy$))
@@ -942,10 +950,9 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
             this.error = null;
           } else {
             this.treatmentGuide = null;
-            this.error = 'Không có dữ liệu hướng dẫn điều trị.';
+            this.error = 'Không tìm thấy hướng dẫn điều trị cho bệnh này.';
           }
           this.isLoading = false;
-          // Force UI update
           this.cdr.detectChanges();
         },
         error: (err) => {
