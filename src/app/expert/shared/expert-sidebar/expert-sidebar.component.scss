@@ -40,6 +40,8 @@
 .logo-text {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0; // Cho phép text bị cắt nếu cần
 }
 
 .main-text {
@@ -53,6 +55,16 @@
   font-size: 12px;
   color: #475569;
   font-weight: 500;
+  max-width: 140px; // Giới hạn chiều rộng
+  white-space: nowrap; // Không xuống dòng
+  overflow: hidden; // Ẩn phần tràn
+  text-overflow: ellipsis; // Hiển thị ... khi text dài
+  cursor: help; // Hiển thị cursor help khi hover
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #334155; // Màu đậm hơn khi hover
+  }
 }
 
 .sidebar-nav {

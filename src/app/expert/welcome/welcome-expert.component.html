@@ -1,76 +1,83 @@
-<div class="page-header">
-  <h1>Chào mừng đến với Hệ thống Chuyên gia</h1>
-  <p class="subtitle">Nơi bạn có thể chia sẻ kiến thức chuyên môn về cây cảnh và tư vấn cho cộng đồng yêu thực vật</p>
-</div>
+<div class="plant-welcome-container">
+  <!-- Header with plant theme -->
+  <div class="plant-header">
+    <div class="plant-decoration">
+      <div class="leaf leaf-1">🌿</div>
+      <div class="leaf leaf-2">🍃</div>
+      <div class="leaf leaf-3">🌱</div>
+    </div>
+    
+    <div class="welcome-content">
+      <div class="greeting-time">{{ currentTime }}</div>
+      <h1 class="welcome-title">
+        Chào mừng <span class="user-name">{{ userName }}</span>!
+      </h1>
+      <p class="welcome-subtitle">
+        🌻 Chuyên gia chăm sóc cây cảnh của Plant Care 🌻
+      </p>
+      <div class="nature-quote">
+        "Mỗi cây xanh là một câu chuyện, mỗi lá là một bài học về sự sống"
+      </div>
+    </div>
+    
+    <div class="plant-decoration right">
+      <div class="leaf leaf-4">🌿</div>
+      <div class="leaf leaf-5">🍃</div>
+      <div class="leaf leaf-6">🌱</div>
+    </div>
+  </div>
 
-<div class="content-container">
-  <div class="dashboard-grid">
-    <mat-card class="dashboard-card">
-      <mat-card-header>
-        <mat-card-title>Quản lý bệnh cây</mat-card-title>
-        <mat-card-subtitle>Quản lý thông tin bệnh cây và hướng dẫn điều trị</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Tạo và quản lý thông tin về các loại bệnh cây</p>
-        <p>Cung cấp hướng dẫn điều trị chi tiết</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" routerLink="/expert/plant-manager/diseases">
-          <mat-icon>local_florist</mat-icon>
-          Quản lý bệnh
-        </button>
-      </mat-card-actions>
-    </mat-card>
+  <!-- Main actions with plant theme -->
+  <div class="plant-actions">
+    <h2 class="section-title">
+      🌳 Khu vườn công việc của bạn
+    </h2>
+    
+    <div class="actions-garden">
+      <!-- Chat action -->
+      <div class="action-plant" (click)="navigateToChat()">
+        <div class="plant-pot">
+          <div class="plant-icon">💬</div>
+          <div class="plant-stem"></div>
+        </div>
+        <h3 class="plant-name">Khu vườn trò chuyện</h3>
+        <p class="plant-description">Tham gia chat với cộng đồng yêu cây</p>
+        <div class="growth-indicator">
+          <span class="growth-dot active"></span>
+          <span class="growth-dot active"></span>
+          <span class="growth-dot"></span>
+        </div>
+      </div>
 
-    <mat-card class="dashboard-card">
-      <mat-card-header>
-        <mat-card-title>Bài viết chuyên môn</mat-card-title>
-        <mat-card-subtitle>Chia sẻ kiến thức về cây cảnh</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Viết bài chia sẻ kiến thức chuyên môn</p>
-        <p>Quản lý và cập nhật các bài viết</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" routerLink="/expert/articles">
-          <mat-icon>article</mat-icon>
-          Quản lý bài viết
-        </button>
-      </mat-card-actions>
-    </mat-card>
+      <!-- Articles action -->
+      <div class="action-plant" (click)="navigateToArticles()">
+        <div class="plant-pot">
+          <div class="plant-icon">📝</div>
+          <div class="plant-stem"></div>
+        </div>
+        <h3 class="plant-name">Vườn tri thức</h3>
+        <p class="plant-description">Quản lý bài viết và chia sẻ kiến thức</p>
+        <div class="growth-indicator">
+          <span class="growth-dot active"></span>
+          <span class="growth-dot active"></span>
+          <span class="growth-dot active"></span>
+        </div>
+      </div>
 
-    <mat-card class="dashboard-card">
-      <mat-card-header>
-        <mat-card-title>Chat hỗ trợ</mat-card-title>
-        <mat-card-subtitle>Tư vấn trực tiếp cho người dùng</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Tham gia phòng chat cộng đồng</p>
-        <p>Chat riêng với từng người dùng</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" routerLink="/expert/chat">
-          <mat-icon>chat</mat-icon>
-          Vào chat
-        </button>
-      </mat-card-actions>
-    </mat-card>
-
-    <mat-card class="dashboard-card">
-      <mat-card-header>
-        <mat-card-title>Danh mục bài viết</mat-card-title>
-        <mat-card-subtitle>Quản lý các chuyên mục</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Tổ chức bài viết theo chuyên mục</p>
-        <p>Thêm, sửa, xóa danh mục</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" routerLink="/expert/categories">
-          <mat-icon>category</mat-icon>
-          Quản lý danh mục
-        </button>
-      </mat-card-actions>
-    </mat-card>
+      <!-- Plant Manager action -->
+      <div class="action-plant" (click)="navigateToPlantManager()">
+        <div class="plant-pot">
+          <div class="plant-icon">🦠</div>
+          <div class="plant-stem"></div>
+        </div>
+        <h3 class="plant-name">Quản lý bệnh cây</h3>
+        <p class="plant-description">Chẩn đoán và điều trị bệnh cây cảnh</p>
+        <div class="growth-indicator">
+          <span class="growth-dot active"></span>
+          <span class="growth-dot active"></span>
+          <span class="growth-dot"></span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

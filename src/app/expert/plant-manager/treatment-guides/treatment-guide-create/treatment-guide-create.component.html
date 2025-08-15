@@ -1,139 +1,100 @@
 <div class="page-container">
   <div class="page-header">
-    <h1>🩺 Tạo hướng dẫn điều trị mới</h1>
+    <h1>Tạo hướng dẫn điều trị mới</h1>
     <p class="subtitle">Thêm hướng dẫn điều trị chi tiết cho bệnh cây</p>
   </div>
 
   <div class="form-container">
     <div class="form-header">
-      <h2>📋 Thông tin hướng dẫn</h2>
+      <h2>Thông tin hướng dẫn</h2>
       <p>Vui lòng điền đầy đủ thông tin để tạo hướng dẫn điều trị</p>
     </div>
 
     <div class="form-content">
       <form (ngSubmit)="onSubmit()">
         
-        <!-- Chọn bệnh cây -->
-        <div class="form-group" *ngIf="!diseaseId">
-          <label for="diseaseSelect">🌿 Chọn bệnh cây <span class="required">*</span></label>
-          <select 
-            id="diseaseSelect"
-            [(ngModel)]="selectedDiseaseId" 
-            name="diseaseId" 
-            class="form-control"
-            (change)="onDiseaseChange()"
-            [disabled]="isLoadingDiseases"
-            required>
-            <option value="" disabled>
-              {{ isLoadingDiseases ? 'Đang tải danh sách bệnh...' : '-- Chọn bệnh cây --' }}
-            </option>
-            <ng-container *ngIf="diseases && diseases.length > 0 && !isLoadingDiseases">
-              <option *ngFor="let disease of diseases; trackBy: trackByDiseaseId" [value]="disease.id">
-                {{ disease.diseaseName || disease.name || 'Bệnh không tên' }}
+        <div class="form-grid">
+          <!-- Chọn bệnh cây -->
+          <div class="form-group" *ngIf="!diseaseId">
+            <label for="diseaseSelect">Chọn bệnh cây <span class="required">*</span></label>
+            <select 
+              id="diseaseSelect"
+              [(ngModel)]="selectedDiseaseId" 
+              name="diseaseId" 
+              class="form-control"
+              (change)="onDiseaseChange()"
+              [disabled]="isLoadingDiseases"
+              required>
+              <option value="" disabled>
+                {{ isLoadingDiseases ? 'Đang tải danh sách bệnh...' : '-- Chọn bệnh cây --' }}
               </option>
-            </ng-container>
-          </select>
-        </div>
-
-        <!-- Loading state cho existing guides -->
-        <div class="form-group" *ngIf="isLoadingGuides">
-          <div class="loading-section">
-            <div class="loading-spinner"></div>
-            <p>🔍 Đang kiểm tra hướng dẫn đã có...</p>
+              <ng-container *ngIf="diseases && diseases.length > 0 && !isLoadingDiseases">
+                <option *ngFor="let disease of diseases; trackBy: trackByDiseaseId" [value]="disease.id">
+                  {{ disease.diseaseName || disease.name || 'Bệnh không tên' }}
+                </option>
+              </ng-container>
+            </select>
           </div>
-        </div>
 
-        <!-- Hiển thị hướng dẫn đã có -->
-        <div class="existing-guides-section" *ngIf="!isLoadingGuides && selectedDiseaseId && existingTreatmentGuides && existingTreatmentGuides.length > 0">
-          <div class="section-title">
-            <span class="icon">⚠️</span>
-            Hướng dẫn đã có cho bệnh này ({{ existingTreatmentGuides.length }} hướng dẫn):
-          </div>
-          <div class="guides-list">
-            <div class="guide-item" *ngFor="let guide of existingTreatmentGuides; let i = index">
-              <div class="guide-header">
-                <span class="step-number">Bước {{ guide.stepNumber }}</span>
-                <span class="guide-title">{{ guide.title }}</span>
-              </div>
-              <div class="guide-description">{{ guide.description }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Message khi không có hướng dẫn -->
-        <div class="existing-guides-section" *ngIf="!isLoadingGuides && selectedDiseaseId && existingTreatmentGuides && existingTreatmentGuides.length === 0">
-          <div class="no-guides-message">
-            ✅ Chưa có hướng dẫn nào cho bệnh này. Bạn có thể tạo hướng dẫn đầu tiên!
-          </div>
-        </div>
-
-        <!-- Thông tin bệnh đã chọn -->
-        <div class="form-group" *ngIf="diseaseId">
-          <label>🎯 Tạo hướng dẫn cho bệnh</label>
-          <div class="form-control" style="background: #e3f2fd; color: #1976d2; font-weight: 600;">
-            Bệnh ID: {{ diseaseId }}
-          </div>
-        </div>
-
-        <!-- Số bước -->
-        <div class="form-group">
-          <label for="stepNumber">🔢 Số bước <span class="required">*</span></label>
-          <input 
-            type="number" 
-            id="stepNumber"
-            [(ngModel)]="treatmentGuide.stepNumber" 
-            name="stepNumber" 
-            class="form-control"
-            [class.is-invalid]="!isStepNumberValid() && treatmentGuide.stepNumber > 0"
-            min="1" 
-            placeholder="Ví dụ: 1, 2, 3..."
-            required>
-          
-          <!-- Step number validation message -->
-          <div *ngIf="existingTreatmentGuides.length > 0" class="step-info">
-            <div class="existing-steps">
-              <small class="text-muted">
-                📝 Các bước đã có: {{ getExistingStepNumbers().join(', ') }}
-              </small>
-            </div>
-            <div *ngIf="!isStepNumberValid() && treatmentGuide.stepNumber > 0" class="invalid-feedback">
-              ⚠️ Bước {{ treatmentGuide.stepNumber }} đã tồn tại! Vui lòng chọn bước {{ getSuggestedNextStep() }}
-            </div>
-            <div *ngIf="isStepNumberValid() && treatmentGuide.stepNumber > 0" class="valid-feedback">
-              ✅ Bước {{ treatmentGuide.stepNumber }} có thể sử dụng
-            </div>
-          </div>
-        </div>
-
-        <!-- Tiêu đề -->
-        <div class="form-group">
-          <label for="title">📝 Tiêu đề bước điều trị <span class="required">*</span></label>
-          <input 
-            type="text" 
-            id="title"
-            [(ngModel)]="treatmentGuide.title" 
-            name="title" 
-            class="form-control"
-            placeholder="Ví dụ: Làm sạch vùng bị bệnh"
-            required>
-        </div>
-
-        <!-- Mô tả chi tiết -->
-        <div class="form-group">
-          <label for="description">📋 Mô tả chi tiết <span class="required">*</span></label>
-          <textarea 
-            id="description"
-            [(ngModel)]="treatmentGuide.description" 
-            name="description" 
-            class="form-control"
-            placeholder="Mô tả chi tiết cách thực hiện bước này..."
-            required></textarea>
-        </div>
-
-        <!-- Thời gian và tần suất -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Số bước với hiển thị hướng dẫn đã có -->
           <div class="form-group">
-            <label for="duration">⏰ Thời gian thực hiện <span class="required">*</span></label>
+            <label for="stepNumber">Số bước <span class="required">*</span></label>
+            <input 
+              type="number" 
+              id="stepNumber"
+              [(ngModel)]="treatmentGuide.stepNumber" 
+              name="stepNumber" 
+              class="form-control"
+              [class.is-invalid]="!isStepNumberValid() && treatmentGuide.stepNumber > 0"
+              min="1" 
+              placeholder="Ví dụ: 1, 2, 3..."
+              required>
+            
+            <!-- Loading state cho existing guides -->
+            <div *ngIf="isLoadingGuides" class="loading-section-small">
+              <div class="loading-spinner-small"></div>
+              <span>Đang kiểm tra hướng dẫn...</span>
+            </div>
+
+            <!-- Hiển thị hướng dẫn đã có ngay ở đây -->
+            <div class="existing-guides-inline" *ngIf="!isLoadingGuides && selectedDiseaseId && existingTreatmentGuides && existingTreatmentGuides.length > 0">
+              <div class="guides-inline-title">
+                Hướng dẫn đã có cho bệnh này 
+                <span class="guide-count">{{ existingTreatmentGuides.length }}</span>
+              </div>
+              <div class="inline-guide-item" *ngFor="let guide of existingTreatmentGuides">
+                <div class="guide-header">
+                  <span class="step-number">{{ guide.stepNumber }}</span>
+                  <span class="guide-title">{{ guide.title }}</span>
+                </div>
+                <div class="guide-description">{{ guide.description }}</div>
+              </div>
+            </div>
+
+            <!-- Message khi không có hướng dẫn -->
+            <div class="no-guides-inline" *ngIf="!isLoadingGuides && selectedDiseaseId && existingTreatmentGuides && existingTreatmentGuides.length === 0">
+              Chưa có hướng dẫn nào cho bệnh này. Bạn có thể tạo hướng dẫn đầu tiên!
+            </div>
+            
+            <!-- Step number validation message -->
+            <div *ngIf="existingTreatmentGuides.length > 0" class="step-info">
+              <div class="existing-steps">
+                <small class="text-muted">
+                  Các bước đã có: {{ getExistingStepNumbers().join(', ') }}
+                </small>
+              </div>
+              <div *ngIf="!isStepNumberValid() && treatmentGuide.stepNumber > 0" class="invalid-feedback">
+                Bước {{ treatmentGuide.stepNumber }} đã tồn tại! Vui lòng chọn bước {{ getSuggestedNextStep() }}
+              </div>
+              <div *ngIf="isStepNumberValid() && treatmentGuide.stepNumber > 0" class="valid-feedback">
+                Bước {{ treatmentGuide.stepNumber }} có thể sử dụng
+              </div>
+            </div>
+          </div>
+
+          <!-- Thời gian và tần suất -->
+          <div class="form-group">
+            <label for="duration">Thời gian thực hiện <span class="required">*</span></label>
             <input 
               type="text" 
               id="duration"
@@ -145,7 +106,7 @@
           </div>
 
           <div class="form-group">
-            <label for="frequency">🔁 Tần suất <span class="required">*</span></label>
+            <label for="frequency">Tần suất <span class="required">*</span></label>
             <input 
               type="text" 
               id="frequency"
@@ -157,13 +118,46 @@
           </div>
         </div>
 
+        <!-- Thông tin bệnh đã chọn -->
+        <div class="form-group" *ngIf="diseaseId">
+          <label>Tạo hướng dẫn cho bệnh</label>
+          <div class="form-control" style="background: #f0fdf4; color: #16a34a; font-weight: 600;">
+            Bệnh ID: {{ diseaseId }}
+          </div>
+        </div>
+
+        <!-- Tiêu đề -->
+        <div class="form-group full-width">
+          <label for="title">Tiêu đề bước điều trị <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="title"
+            [(ngModel)]="treatmentGuide.title" 
+            name="title" 
+            class="form-control"
+            placeholder="Ví dụ: Làm sạch vùng bị bệnh"
+            required>
+        </div>
+
+        <!-- Mô tả chi tiết -->
+        <div class="form-group full-width">
+          <label for="description">Mô tả chi tiết <span class="required">*</span></label>
+          <textarea 
+            id="description"
+            [(ngModel)]="treatmentGuide.description" 
+            name="description" 
+            class="form-control"
+            placeholder="Mô tả chi tiết cách thực hiện bước này..."
+            required></textarea>
+        </div>
+
         <!-- Vật liệu cần thiết -->
-        <div class="form-group">
+        <div class="form-group full-width">
           <div class="materials-section">
             <div class="materials-header">
-              <h3>🧰 Vật liệu cần thiết</h3>
+              <h3>Vật liệu cần thiết</h3>
               <button type="button" class="add-material-btn" (click)="addMaterial()">
-                ➕ Thêm vật liệu
+                Thêm vật liệu
               </button>
             </div>
             <div *ngFor="let material of treatmentGuide.materials; let i = index; trackBy: trackByIndex" 
@@ -179,15 +173,15 @@
                 class="remove-material-btn" 
                 (click)="removeMaterial(i)"
                 [disabled]="treatmentGuide.materials.length <= 1">
-                ❌
+                Xóa
               </button>
             </div>
           </div>
         </div>
 
         <!-- Ghi chú -->
-        <div class="form-group">
-          <label for="notes">📝 Ghi chú</label>
+        <div class="form-group full-width">
+          <label for="notes">Ghi chú</label>
           <textarea 
             id="notes"
             [(ngModel)]="treatmentGuide.notes" 
@@ -199,10 +193,10 @@
         <!-- Form Actions -->
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="onCancel()">
-            ❌ Hủy
+            Hủy
           </button>
           <button type="submit" class="btn btn-primary">
-            💾 Tạo hướng dẫn
+            Tạo hướng dẫn
           </button>
         </div>
       </form>

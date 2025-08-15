@@ -1,67 +1,67 @@
 <div class="create-article-wrapper">
-		<div class="create-article-header">
-			<h2><span class="icon">📝</span> Tạo bài viết mới</h2>
-			<p class="desc">Chia sẻ kiến thức, kinh nghiệm và thông tin hữu ích về cây trồng cho cộng đồng.</p>
-		</div>
-		<form [formGroup]="articleForm" (ngSubmit)="submitArticle()" class="create-article-form">
-			<div class="form-row">
-				<label><span class="icon">🌱</span> Tiêu đề bài viết</label>
-				<input formControlName="title" placeholder="Nhập tiêu đề" />
-			</div>
-			<div class="form-row">
-				<label><span class="icon">🗂️</span> Chuyên mục</label>
-				<div class="category-select-row">
-					<select formControlName="categoryId">
-						<option value="" disabled selected>Chọn chuyên mục</option>
-						<option *ngFor="let cat of categories" [value]="cat.id">{{ cat.categoryName }}</option>
-					</select>
-					<button type="button" class="btn-create-category" (click)="toggleCategoryForm()"><span class="icon">➕</span> Tạo chuyên mục mới</button>
-				</div>
-			</div>
-			<div *ngIf="showCategoryForm" class="category-form-inline">
-				<div [formGroup]="categoryForm">
-					<h3><span class="icon">🗂️</span> Tạo chuyên mục mới</h3>
-					<div class="form-row">
-						<label>Tên chuyên mục</label>
-						<input formControlName="name" placeholder="Nhập tên chuyên mục" />
-					</div>
-					<div class="form-row">
-						<label>Mô tả</label>
-						<textarea formControlName="description" placeholder="Mô tả chuyên mục"></textarea>
-					</div>
-					<div class="form-actions">
-						<button type="button" [disabled]="categoryForm.invalid || isLoading" class="btn-main" (click)="submitCategory()">Tạo chuyên mục</button>
-						<button type="button" (click)="toggleCategoryForm()" class="btn-cancel">Hủy</button>
-					</div>
-					<div *ngIf="error" class="error">{{ error }}</div>
-					<div *ngIf="success" class="success">{{ success }}</div>
-				</div>
-			</div>
-									<div class="form-row">
-											<label><span class="icon">📄</span> Nội dung</label>
-											<div class="markdown-note">
-												<span class="icon">ℹ️</span> <b>Lưu ý nhập nội dung:</b>
-												<ul>
-													<li><span class="icon">#️⃣</span> <b>Dùng <code>##</code> để tạo tiêu đề lớn (h2), <code>###</code> cho tiêu đề nhỏ (h3), <code>####</code> cho tiêu đề phụ (h4).</b></li>
-													<li><span class="icon">↩️</span> <b>Xuống dòng 2 lần để tạo khoảng cách đoạn.</b></li>
-												</ul>
-											</div>
-											<textarea formControlName="content" rows="8" placeholder="Nhập nội dung bài viết..." class="content-input"></textarea>
-									</div>
-			<div class="form-row">
-				<label><span class="icon">🖼️</span> Ảnh bài viết</label>
-				<input type="file" accept="image/*" (change)="onImageSelected($event)" />
-				<div *ngIf="imagePreview" class="image-preview">
-					<img [src]="imagePreview" alt="Preview" />
-				</div>
-				<div *ngIf="uploadedImageUrl && !isLoading" class="upload-success"><span class="icon">✅</span> Ảnh đã upload thành công!</div>
-				<div *ngIf="isLoading" class="loading"><span class="icon">⏳</span> Đang upload ảnh...</div>
-			</div>
-			<div class="form-actions">
-				<button type="submit" [disabled]="articleForm.invalid || isLoading" class="btn-main big-btn"><span class="icon">🌳</span> Đăng bài viết</button>
-			</div>
-			<div *ngIf="error" class="error">{{ error }}</div>
-			<div *ngIf="success" class="success">{{ success }}</div>
-			<div *ngIf="isLoading && !uploadedImageUrl" class="loading">Đang xử lý...</div>
-		</form>
+	<div class="create-article-header">
+		<h2>Tạo bài viết mới</h2>
+		<p class="desc">Chia sẻ kiến thức, kinh nghiệm và thông tin hữu ích về cây trồng cho cộng đồng.</p>
 	</div>
+	<form [formGroup]="articleForm" (ngSubmit)="submitArticle()" class="create-article-form">
+		<div class="form-row">
+			<label>Tiêu đề bài viết</label>
+			<input formControlName="title" placeholder="Nhập tiêu đề" />
+		</div>
+		<div class="form-row">
+			<label>Chuyên mục</label>
+			<div class="category-select-row">
+				<select formControlName="categoryId">
+					<option value="" disabled selected>Chọn chuyên mục</option>
+					<option *ngFor="let cat of categories" [value]="cat.id">{{ cat.categoryName }}</option>
+				</select>
+				<button type="button" class="btn-create-category" (click)="toggleCategoryForm()">Tạo chuyên mục mới</button>
+			</div>
+		</div>
+		<div *ngIf="showCategoryForm" class="category-form-inline">
+			<div [formGroup]="categoryForm">
+				<h3>Tạo chuyên mục mới</h3>
+				<div class="form-row">
+					<label>Tên chuyên mục</label>
+					<input formControlName="name" placeholder="Nhập tên chuyên mục" />
+				</div>
+				<div class="form-row">
+					<label>Mô tả</label>
+					<textarea formControlName="description" placeholder="Mô tả chuyên mục"></textarea>
+				</div>
+				<div class="form-actions">
+					<button type="button" [disabled]="categoryForm.invalid || isLoading" class="btn-main" (click)="submitCategory()">Tạo chuyên mục</button>
+					<button type="button" (click)="toggleCategoryForm()" class="btn-cancel">Hủy</button>
+				</div>
+				<div *ngIf="error" class="error">{{ error }}</div>
+				<div *ngIf="success" class="success">{{ success }}</div>
+			</div>
+		</div>
+		<div class="form-row">
+			<label>Nội dung</label>
+			<div class="markdown-note">
+				<b>Lưu ý nhập nội dung:</b>
+				<ul>
+					<li><b>Dùng <code>##</code> để tạo tiêu đề lớn (h2), <code>###</code> cho tiêu đề nhỏ (h3), <code>####</code> cho tiêu đề phụ (h4).</b></li>
+					<li><b>Xuống dòng 2 lần để tạo khoảng cách đoạn.</b></li>
+				</ul>
+			</div>
+			<textarea formControlName="content" rows="8" placeholder="Nhập nội dung bài viết..." class="content-input"></textarea>
+		</div>
+		<div class="form-row">
+			<label>Ảnh bài viết</label>
+			<input type="file" accept="image/*" (change)="onImageSelected($event)" />
+			<div *ngIf="imagePreview" class="image-preview">
+				<img [src]="imagePreview" alt="Preview" />
+			</div>
+			<div *ngIf="uploadedImageUrl && !isLoading" class="upload-success">Ảnh đã upload thành công!</div>
+			<div *ngIf="isLoading" class="loading">Đang upload ảnh...</div>
+		</div>
+		<div class="form-actions">
+			<button type="submit" [disabled]="articleForm.invalid || isLoading" class="btn-main big-btn">Đăng bài viết</button>
+		</div>
+		<div *ngIf="error" class="error">{{ error }}</div>
+		<div *ngIf="success" class="success">{{ success }}</div>
+		<div *ngIf="isLoading && !uploadedImageUrl" class="loading">Đang xử lý...</div>
+	</form>
+</div>

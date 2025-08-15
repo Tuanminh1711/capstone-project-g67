@@ -403,7 +403,7 @@
   &.own-message {
     flex-direction: row-reverse;
     justify-content: flex-start;
-    padding-left: 36px; /* Thêm padding bằng với kích thước avatar */
+    padding-left: 48px; // Thêm padding bằng với kích thước avatar + gap
 
     .message-bubble {
       background: #007bff;
@@ -441,9 +441,7 @@
       }
     }
 
-    .message-avatar {
-      order: 2;
-    }
+    // Bỏ own-avatar vì không còn hiển thị
   }
 
   &.other-message {
@@ -477,10 +475,6 @@
   font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
-  
-  &.own-avatar {
-    order: 2;
-  }
 }
 
 .message-bubble {

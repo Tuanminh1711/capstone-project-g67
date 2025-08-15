@@ -1,38 +1,43 @@
-// Reset và base styles
-* {
-  box-sizing: border-box;
-}
-
+// Plant Care Disease Creation - Green Nature Theme
 .create-disease-container {
-  padding: 20px;
-  max-width: 900px;
+  padding: 32px;
+  max-width: 1400px;
   margin: 0 auto;
-  background-color: #f0f4f8;
-  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  min-height: calc(100vh - 120px);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 // Header
 .form-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
-  padding: 30px;
-  border-radius: 15px;
-  margin-bottom: 25px;
+  padding: 40px;
+  border-radius: 20px;
+  margin-bottom: 32px;
   text-align: center;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+
+  &::before {
+    content: '🦠';
+    display: block;
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
 
   h2 {
-    margin: 0 0 10px 0;
-    font-size: 32px;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0 0 12px 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   p {
     margin: 0;
-    font-size: 16px;
-    opacity: 0.9;
+    font-size: 1.1rem;
+    opacity: 0.95;
+    max-width: 600px;
+    margin: 0 auto;
   }
 }
 
@@ -40,14 +45,14 @@
 .progress-bar {
   width: 100%;
   height: 6px;
-  background-color: #e0e7ff;
+  background-color: rgba(34, 197, 94, 0.1);
   border-radius: 3px;
-  margin-bottom: 25px;
+  margin-bottom: 32px;
   overflow: hidden;
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    background: linear-gradient(90deg, #22c55e, #16a34a);
     border-radius: 3px;
     animation: loading 2s infinite;
   }
@@ -62,24 +67,41 @@
 // Main form
 .disease-form {
   background: white;
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
+  padding: 48px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+  animation: slideUp 0.6s ease-out;
+}
+
+// Form grid layout
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 // Form groups
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 24px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
 }
 
 .form-label {
   display: block;
-  font-size: 16px;
-  font-weight: bold;
-  color: #1a202c;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
 }
 
 // Input styles
@@ -87,35 +109,36 @@
 .form-textarea,
 select.form-input {
   width: 100%;
-  padding: 15px 18px;
-  font-size: 16px;
+  padding: 14px 18px;
+  font-size: 1rem;
   font-weight: 500;
-  color: #1a202c;
-  background-color: #ffffff;
-  border: 3px solid #cbd5e0;
-  border-radius: 10px;
+  color: #1f2937;
+  background-color: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   outline: none;
   transition: all 0.3s ease;
   font-family: inherit;
 
   &::placeholder {
-    color: #718096;
+    color: #9ca3af;
     font-weight: normal;
   }
 
   &:focus {
-    border-color: #3182ce;
-    box-shadow: 0 0 0 4px rgba(49, 130, 206, 0.1);
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    background-color: white;
     transform: translateY(-1px);
   }
 
   &:hover {
-    border-color: #a0aec0;
+    border-color: #16a34a;
   }
 
   &.error {
-    border-color: #e53e3e;
-    box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.1);
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
   }
 }
 
@@ -126,7 +149,7 @@ select.form-input {
   option {
     padding: 10px;
     background-color: #ffffff;
-    color: #1a202c;
+    color: #1f2937;
     font-weight: 500;
   }
 }
@@ -140,42 +163,36 @@ select.form-input {
 // Error messages
 .error-message {
   margin-top: 8px;
-  color: #e53e3e;
-  font-size: 14px;
+  color: #dc2626;
+  font-size: 0.9rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  background: rgba(220, 38, 38, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #dc2626;
 }
 
 // Form actions
 .form-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 15px;
+  justify-content: center;
+  gap: 16px;
   margin-top: 40px;
-  padding-top: 30px;
-  border-top: 2px solid #e2e8f0;
+  padding-top: 32px;
+  border-top: 2px solid #f3f4f6;
 }
 
 .btn-primary,
 .btn-secondary {
-  padding: 15px 30px;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 140px;
-  justify-content: center;
-
-  .button-icon {
-    font-size: 16px;
-  }
+  min-width: 120px;
+  text-align: center;
 
   &:disabled {
     opacity: 0.6;
@@ -185,40 +202,57 @@ select.form-input {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, #16a34a, #15803d);
   }
 }
 
 .btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
-  border: 2px solid #cbd5e0;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  color: #374151;
+  border: 2px solid #d1d5db;
 
-  &:hover {
-    background: #e2e8f0;
-    border-color: #a0aec0;
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e5e7eb, #d1d5db);
     transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Animation
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 // Responsive design
 @media (max-width: 768px) {
   .create-disease-container {
-    padding: 15px;
+    padding: 16px;
   }
 
   .disease-form {
-    padding: 25px;
+    padding: 24px;
   }
 
-  .form-header h2 {
-    font-size: 24px;
+  .form-header {
+    padding: 32px 24px;
+
+    h2 {
+      font-size: 2rem;
+    }
   }
 
   .form-actions {
@@ -228,25 +262,5 @@ select.form-input {
     .btn-secondary {
       width: 100%;
     }
-  }
-
-  .image-upload-section .selected-images {
-    justify-content: center;
-  }
-}
-
-// Animation cho form
-.disease-form {
-  animation: slideUp 0.6s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

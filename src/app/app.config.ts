@@ -7,6 +7,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { authInterceptor } from './auth/auth.interceptor';
+import { expertOnlyInterceptor } from './auth/expert-only.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,7 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor])
+      withInterceptors([authInterceptor, expertOnlyInterceptor])
     ),
     provideAnimations(),
     MatDialogModule

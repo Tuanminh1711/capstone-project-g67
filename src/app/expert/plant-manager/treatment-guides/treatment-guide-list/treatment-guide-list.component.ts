@@ -19,140 +19,127 @@ import { ToastService } from '../../../../shared/toast/toast.service';
   template: `
     <div class="page-container">
       <div class="page-header">
-        <h1>🌿 Danh sách hướng dẫn điều trị</h1>
-        <p class="subtitle">Quản lý các hướng dẫn điều trị bệnh cây</p>
+        <h1>Danh sách hướng dẫn điều trị</h1>
+        <p class="subtitle">Quản lý các phương pháp điều trị bệnh cây hiệu quả</p>
       </div>
 
-      <div class="content-card">
-        <div class="card-header">
-          <h2>📋 Hướng dẫn điều trị theo bệnh cây</h2>
-          <p class="description">
-            Chọn bệnh cây để xem danh sách hướng dẫn điều trị
-          </p>
+      <div class="content-wrapper">
+        <!-- Disease Selection Card -->
+        <div class="selection-card">
+          <div class="card-header">
+            <h2>Chọn bệnh cây để xem hướng dẫn</h2>
+            <button class="btn-create" routerLink="/expert/plant-manager/treatment-guides/create">
+              Tạo hướng dẫn mới
+            </button>
+          </div>
+          
+          <div class="disease-selector">
+            <select 
+              [(ngModel)]="selectedDiseaseId" 
+              (ngModelChange)="onDiseaseChange()"
+              class="disease-select"
+              [disabled]="isLoadingDiseases">
+              <option value="" [value]="null">
+                {{ isLoadingDiseases ? 'Đang tải danh sách bệnh...' : '-- Chọn bệnh cây để xem hướng dẫn --' }}
+              </option>
+              <option *ngFor="let disease of diseases; trackBy: trackByDiseaseId" [value]="disease.id">
+                {{ disease.diseaseName || disease.name || 'Bệnh không tên' }}
+              </option>
+            </select>
+          </div>
         </div>
-        
-        <div class="card-content">
-          <!-- Disease Selection -->
-          <div class="disease-selection">
-            <div class="selection-header">
-              <h3>🔍 Chọn bệnh cây</h3>
-              <button class="btn btn-create" routerLink="/expert/plant-manager/treatment-guides/create">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                </svg>
-                Tạo hướng dẫn mới
-              </button>
-            </div>
-            
-            <div class="disease-dropdown">
-              <select 
-                [(ngModel)]="selectedDiseaseId" 
-                (ngModelChange)="onDiseaseChange()"
-                class="disease-select"
-                [disabled]="isLoadingDiseases">
-                <option value="" [value]="null">
-                  {{ isLoadingDiseases ? 'Đang tải danh sách bệnh...' : '-- Chọn bệnh cây để xem hướng dẫn --' }}
-                </option>
-                <option *ngFor="let disease of diseases; trackBy: trackByDiseaseId" [value]="disease.id">
-                  🦠 {{ disease.diseaseName || disease.name || 'Bệnh không tên' }}
-                </option>
-              </select>
-            </div>
-          </div>
 
-          <!-- Loading State -->
-          <div *ngIf="isLoadingGuides" class="loading-section">
+        <!-- Loading State -->
+        <div *ngIf="isLoadingGuides" class="loading-card">
+          <div class="loading-content">
             <div class="loading-spinner"></div>
-            <p>🔍 Đang tải hướng dẫn điều trị...</p>
+            <p>Đang tải hướng dẫn điều trị...</p>
           </div>
+        </div>
 
-          <!-- Treatment Guides List -->
-          <div *ngIf="!isLoadingGuides && selectedDiseaseId && treatmentGuides.length > 0" class="guides-section">
-            <div class="section-header">
-              <h3>📚 Hướng dẫn điều trị ({{ treatmentGuides.length }} hướng dẫn)</h3>
-              <span class="disease-name">cho bệnh: {{ getSelectedDiseaseName() }}</span>
+        <!-- Treatment Guides Grid -->
+        <div *ngIf="!isLoadingGuides && selectedDiseaseId && treatmentGuides.length > 0" class="guides-container">
+          <div class="guides-header">
+            <div class="header-info">
+              <h3>Hướng dẫn điều trị</h3>
+              <span class="guide-count">{{ treatmentGuides.length }} hướng dẫn</span>
             </div>
-            
-            <div class="guides-grid">
-              <div *ngFor="let guide of treatmentGuides; let i = index; trackBy: trackByGuideId" class="guide-card">
-                <div class="guide-header">
-                  <div class="step-badge">Bước {{ guide.stepNumber }}</div>
-                  <div class="guide-actions">
-                    <button class="btn-action btn-edit" (click)="editGuide(guide.id)" title="Chỉnh sửa">
-                      ✏️
-                    </button>
-                    <button class="btn-action btn-view" (click)="viewGuide(guide.id)" title="Xem chi tiết">
-                      👁️
-                    </button>
-                    <button class="btn-action btn-delete" (click)="deleteGuide(guide.id)" title="Xóa">
-                      🗑️
-                    </button>
-                  </div>
-                </div>
+            <div class="disease-info">
+              <span>Bệnh: {{ getSelectedDiseaseName() }}</span>
+            </div>
+          </div>
+          
+          <div class="guides-grid">
+            <div *ngFor="let guide of treatmentGuides; let i = index; trackBy: trackByGuideId" class="guide-card">
+              <div class="step-indicator">
+                <span class="step-number">{{ guide.stepNumber }}</span>
+              </div>
+              
+              <div class="guide-content">
+                <h4 class="guide-title">{{ guide.title }}</h4>
+                <p class="guide-description">{{ guide.description | slice:0:120 }}<span *ngIf="guide.description && guide.description.length > 120">...</span></p>
                 
-                <div class="guide-content">
-                  <h4 class="guide-title">{{ guide.title }}</h4>
-                  <p class="guide-description">{{ guide.description | slice:0:150 }}<span *ngIf="guide.description && guide.description.length > 150">...</span></p>
-                  
-                  <div class="guide-meta" *ngIf="guide.createdAt">
-                    <span class="meta-item">
-                      📅 {{ guide.createdAt | date:'dd/MM/yyyy' }}
-                    </span>
-                    <span class="meta-item" *ngIf="guide.updatedAt && guide.updatedAt !== guide.createdAt">
-                      🔄 {{ guide.updatedAt | date:'dd/MM/yyyy' }}
-                    </span>
-                  </div>
+                <div class="guide-meta" *ngIf="guide.createdAt">
+                  <span class="created-date">{{ guide.createdAt | date:'dd/MM/yyyy' }}</span>
+                  <span class="updated-date" *ngIf="guide.updatedAt && guide.updatedAt !== guide.createdAt">
+                    Cập nhật: {{ guide.updatedAt | date:'dd/MM/yyyy' }}
+                  </span>
                 </div>
               </div>
-            </div>
-            
-            <div class="guides-actions">
-              <button class="btn btn-primary" [routerLink]="['/expert/plant-manager/treatment-guides/create', selectedDiseaseId]">
-                ➕ Thêm bước tiếp theo
-              </button>
-            </div>
-          </div>
-
-          <!-- No Guides Message -->
-          <div *ngIf="!isLoadingGuides && selectedDiseaseId && treatmentGuides.length === 0" class="no-guides-section">
-            <div class="no-guides-message">
-              <div class="no-guides-icon">📝</div>
-              <h3>Chưa có hướng dẫn điều trị</h3>
-              <p>Bệnh "{{ getSelectedDiseaseName() }}" chưa có hướng dẫn điều trị nào.</p>
-              <button class="btn btn-primary" [routerLink]="['/expert/plant-manager/treatment-guides/create', selectedDiseaseId]">
-                🚀 Tạo hướng dẫn đầu tiên
-              </button>
-            </div>
-          </div>
-
-          <!-- Initial State -->
-          <div *ngIf="!selectedDiseaseId && !isLoadingDiseases" class="initial-state">
-            <div class="info-box">
-              <div class="info-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                </svg>
+              
+              <div class="guide-actions">
+                <button class="action-btn view-btn" (click)="viewGuide(guide.id)" title="Xem chi tiết">
+                  Xem
+                </button>
+                <button class="action-btn edit-btn" (click)="editGuide(guide.id)" title="Chỉnh sửa">
+                  Sửa
+                </button>
+                <button class="action-btn delete-btn" (click)="deleteGuide(guide.id)" title="Xóa">
+                  Xóa
+                </button>
               </div>
-              <div class="info-content">
-                <h3>🚀 Cách sử dụng</h3>
-                <ul class="instruction-list">
-                  <li>
-                    <span class="step-number">1</span>
-                    <span>Chọn bệnh cây từ dropdown phía trên</span>
-                  </li>
-                  <li>
-                    <span class="step-number">2</span>
-                    <span>Xem danh sách hướng dẫn điều trị có sẵn</span>
-                  </li>
-                  <li>
-                    <span class="step-number">3</span>
-                    <span>Tạo mới hoặc chỉnh sửa hướng dẫn</span>
-                  </li>
-                  <li>
-                    <span class="step-number">4</span>
-                    <span>Quản lý các bước điều trị một cách có hệ thống</span>
-                  </li>
-                </ul>
+            </div>
+          </div>
+          
+          <div class="add-more-section">
+            <button class="btn-add-step" [routerLink]="['/expert/plant-manager/treatment-guides/create', selectedDiseaseId]">
+              Thêm bước điều trị tiếp theo
+            </button>
+          </div>
+        </div>
+
+        <!-- No Guides State -->
+        <div *ngIf="!isLoadingGuides && selectedDiseaseId && treatmentGuides.length === 0" class="empty-state">
+          <div class="empty-content">
+            <div class="empty-icon"></div>
+            <h3>Chưa có hướng dẫn điều trị</h3>
+            <p>Bệnh "{{ getSelectedDiseaseName() }}" chưa có hướng dẫn điều trị nào.</p>
+            <button class="btn-create-first" [routerLink]="['/expert/plant-manager/treatment-guides/create', selectedDiseaseId]">
+              Tạo hướng dẫn đầu tiên
+            </button>
+          </div>
+        </div>
+
+        <!-- Initial Instructions -->
+        <div *ngIf="!selectedDiseaseId && !isLoadingDiseases" class="instructions-card">
+          <div class="instructions-content">
+            <h3>Hướng dẫn sử dụng</h3>
+            <div class="instruction-steps">
+              <div class="step">
+                <span class="step-num">1</span>
+                <span>Chọn bệnh cây từ danh sách phía trên</span>
+              </div>
+              <div class="step">
+                <span class="step-num">2</span>
+                <span>Xem các hướng dẫn điều trị có sẵn</span>
+              </div>
+              <div class="step">
+                <span class="step-num">3</span>
+                <span>Tạo mới hoặc chỉnh sửa hướng dẫn</span>
+              </div>
+              <div class="step">
+                <span class="step-num">4</span>
+                <span>Quản lý các bước điều trị một cách có hệ thống</span>
               </div>
             </div>
           </div>

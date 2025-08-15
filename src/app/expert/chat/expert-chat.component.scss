@@ -219,16 +219,13 @@
 
   &.own-message {
     flex-direction: row-reverse;
+    padding-right: 12px; // Thêm padding thay vì chỗ avatar
 
     .message-bubble {
       background: #007bff;
       color: white;
       border-bottom-right-radius: 4px;
       border-bottom-left-radius: 16px;
-    }
-
-    .message-avatar {
-      order: 2;
     }
 
     .message-content {
@@ -275,10 +272,6 @@
   font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
-  
-  &.own-avatar {
-    order: 2;
-  }
 }
 
 .message-bubble {

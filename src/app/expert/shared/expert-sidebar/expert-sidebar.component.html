@@ -4,7 +4,7 @@
       <img src="assets/image/logo.png" alt="Logo" class="logo-img">
       <div class="logo-text">
         <span class="main-text">Plant Care</span>
-        <span class="sub-text">Expert</span>
+        <span class="sub-text" [title]="'Chào mừng, ' + fullUserName">{{ currentUserName }}</span>
       </div>
     </div>
   </div>
@@ -25,9 +25,11 @@
         </div>
         <ul class="chat-dropdown-list" [class.opened]="isChatDropdownOpen">
           <li class="chat-dropdown-item" (click)="navigateToCommunityChat()">Cộng đồng</li>
-          <li class="chat-dropdown-item" *ngFor="let user of recentUsers$ | async" (click)="navigateToUserChat(user)">
-            {{ user.username }}
-          </li>
+          @for (user of recentUsers$ | async; track user.userId) {
+            <li class="chat-dropdown-item" (click)="navigateToUserChat(user)">
+              {{ user.username }}
+            </li>
+          }
         </ul>
       </li>
   <!-- Đã xoá mục Tin nhắn riêng tư và Chức năng chuyên gia -->
