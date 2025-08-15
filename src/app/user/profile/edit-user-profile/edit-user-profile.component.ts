@@ -1,7 +1,8 @@
+
 import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, AfterViewInit, ViewChild } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { UserProfileService, UserProfile, UpdateUserProfileRequest } from '../view-user-profile/user-profile.service';
+import { FormsModule } from '@angular/forms';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
@@ -12,6 +13,22 @@ import { catchError, finalize, tap } from 'rxjs/operators';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { CommonModule } from '@angular/common';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
+
+// Dịch nhanh các lỗi backend trả về sang tiếng Việt
+function translateErrorMessage(message: string): string {
+  if (!message) return '';
+  const map: { [key: string]: string } = {
+    'Living environment cannot be null or empty': 'Vui lòng chọn môi trường sống cho hồ sơ của bạn.',
+    'Full name cannot be null or empty': 'Họ tên không được để trống.',
+    'Phone number is invalid': 'Số điện thoại không hợp lệ.',
+    'Gender is invalid': 'Giới tính không hợp lệ.',
+    // Thêm các lỗi khác nếu cần
+  };
+  for (const key in map) {
+    if (message.includes(key)) return map[key];
+  }
+  return message; // fallback: giữ nguyên nếu không khớp
+}
 
 @Component({
   selector: 'app-edit-user-profile',
@@ -258,10 +275,18 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
     this.saveError = '';
     this.saveMessage = '';
 
-    // Validate required fields
-    if (!this.user.id || !this.user.fullName || !this.user.phoneNumber) {
-      this.saveError = 'Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại)';
-      this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại)');
+    // Validate required fields (id, fullName, phoneNumber, livingEnvironment)
+    if (!this.user.id || !this.user.fullName || !this.user.phoneNumber || !this.user.livingEnvironment) {
+      this.saveError = 'Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Môi trường sống)';
+      this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Môi trường sống)');
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      return;
+    }
+    // Check empty string for livingEnvironment
+    if (typeof this.user.livingEnvironment === 'string' && this.user.livingEnvironment.trim() === '') {
+      this.saveError = 'Vui lòng chọn môi trường sống cho hồ sơ của bạn.';
+      this.toastService.error('Vui lòng chọn môi trường sống cho hồ sơ của bạn.');
       this.cdr.markForCheck();
       this.cdr.detectChanges();
       return;
@@ -323,24 +348,26 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         this.cdr.markForCheck();
       }),
       catchError(error => {
-        this.saveError = 'Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.';
-        
+        let errorMessage = '';
         if (error.status === 0) {
-          this.saveError = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+          errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
         } else if (error.status === 401) {
-          this.saveError = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
           this.showLoginDialog();
         } else if (error.status === 403) {
-          this.saveError = 'Không có quyền truy cập. Vui lòng kiểm tra quyền hạn.';
+          errorMessage = 'Không có quyền truy cập. Vui lòng kiểm tra quyền hạn.';
         } else if (error.status === 404) {
-          this.saveError = 'API không tồn tại. Vui lòng liên hệ admin.';
+          errorMessage = 'API không tồn tại. Vui lòng liên hệ admin.';
         } else if (error.status >= 500) {
-          this.saveError = 'Lỗi server. Vui lòng thử lại sau.';
+          errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
         } else if (error.error?.message) {
-          this.saveError = error.error.message;
+          errorMessage = translateErrorMessage(error.error.message);
         }
-        
-        this.toastService.error(this.saveError);
+        if (!errorMessage) {
+          errorMessage = 'Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.';
+        }
+        this.saveError = errorMessage;
+        this.toastService.error(errorMessage);
         // Force change detection immediately
         this.cdr.markForCheck();
         return of(null);

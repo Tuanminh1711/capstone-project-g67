@@ -88,14 +88,8 @@
             <div class="image-section">
               <span class="info-label">Ảnh đính kèm</span>
               <div class="image-container">
-                @if (imageObjectUrl) {
-                  <img [src]="imageObjectUrl" alt="Ticket image" class="ticket-image" />
-                } @else {
-                  <div class="image-loading">
-                    <div class="loading-spinner"></div>
-                    <span>Đang tải ảnh...</span>
-                  </div>
-                }
+                <!-- Nếu là absolute URL thì render trực tiếp, không loading blob -->
+                <img [src]="getFullImageUrl(ticket.imageUrl)" alt="Ticket image" class="ticket-image" />
               </div>
             </div>
           }

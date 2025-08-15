@@ -22,50 +22,51 @@ export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
   private sanitizer = inject(DomSanitizer);
   private cdr = inject(ChangeDetectorRef);
   
-  imageObjectUrl: SafeUrl | null = null;
+  imageObjectUrl: SafeUrl | string | null = null;
 
   ngOnInit() {
-    // Trigger change detection để đảm bảo UI update
     this.cdr.detectChanges();
-    
     if (this.ticket?.imageUrl) {
-      this.loadImage();
+      this.prepareImage();
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['ticket'] && changes['ticket'].currentValue) {
       // Reset image URL khi ticket thay đổi
-      if (this.imageObjectUrl) {
+      if (this.imageObjectUrl && typeof this.imageObjectUrl !== 'string') {
         URL.revokeObjectURL(this.imageObjectUrl.toString());
         this.imageObjectUrl = null;
       }
-      
       // Load ảnh mới nếu có
       if (this.ticket?.imageUrl) {
-        this.loadImage();
+        this.prepareImage();
       }
     }
   }
 
   ngOnDestroy() {
     // Clean up object URL to prevent memory leaks
-    if (this.imageObjectUrl) {
+    if (this.imageObjectUrl && typeof this.imageObjectUrl !== 'string') {
       URL.revokeObjectURL(this.imageObjectUrl.toString());
     }
   }
 
-  private loadImage() {
+  private prepareImage() {
     if (!this.ticket?.imageUrl) return;
-
+    const imageUrl = this.ticket.imageUrl;
+    // Nếu là absolute URL (http/https), render trực tiếp qua <img [src]>
+    if (/^https?:\/\//i.test(imageUrl)) {
+      this.imageObjectUrl = imageUrl;
+      this.cdr.detectChanges();
+      return;
+    }
+    // Nếu là ảnh nội bộ, fetch blob như cũ
     const token = localStorage.getItem('token');
-    // Trong development: sử dụng URL tương đối (qua proxy)
-    // Trong production: sử dụng baseUrl + imageUrl
-    const imageUrl = environment.production 
-      ? `${environment.baseUrl}${this.ticket.imageUrl}`
-      : (this.ticket.imageUrl.startsWith('/') ? this.ticket.imageUrl : `/${this.ticket.imageUrl}`);
-    
-    this.http.get(imageUrl, {
+    let localUrl = environment.production 
+      ? `${environment.baseUrl}${imageUrl}`
+      : (imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`);
+    this.http.get(localUrl, {
       responseType: 'blob',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -74,12 +75,12 @@ export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
       next: (blob) => {
         const objectUrl = URL.createObjectURL(blob);
         this.imageObjectUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
-        this.cdr.detectChanges(); // Force change detection
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load image:', error);
         this.imageObjectUrl = null;
-        this.cdr.detectChanges(); // Force change detection
+        this.cdr.detectChanges();
       }
     });
   }
@@ -89,11 +90,10 @@ export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   getFullImageUrl(imageUrl: string): SafeUrl | string {
-    // Trả về object URL đã được tạo sẵn hoặc fallback URL
+    // Nếu đã có objectUrl (ảnh nội bộ) hoặc là absolute URL thì trả về luôn
     if (this.imageObjectUrl) {
       return this.imageObjectUrl;
     }
-    // Fallback: trả về URL gốc nếu object URL chưa sẵn sàng
     return imageUrl || '';
   }
 

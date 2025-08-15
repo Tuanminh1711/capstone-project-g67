@@ -1,5 +1,5 @@
 
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChatAiComponent } from './chat-ai.component';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,7 @@ import { filter } from 'rxjs/operators';
   imports: [CommonModule, MatDialogModule],
   template: `
     <button 
-      *ngIf="isLoggedIn && !isOnAdminLogin" 
+      *ngIf="isLoggedIn && !isOnAdminLogin && !isDialogOpen" 
       #fabButton
       class="chat-ai-fab" 
       (click)="openDialog()"
@@ -34,6 +34,7 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
   
   isLoggedIn = false;
   isOnAdminLogin = false;
+  isDialogOpen = false;
   position = { x: null as number | null, y: null as number | null };
   
   // Drag functionality
@@ -43,7 +44,7 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
   private dragStartPosition = { x: 0, y: 0 };
   private dragOffset = { x: 0, y: 0 };
 
-  constructor(private dialog: MatDialog, private authService: AuthService, private router: Router) {
+  constructor(private dialog: MatDialog, private authService: AuthService, private router: Router, private cdr: ChangeDetectorRef) {
     this.isLoggedIn = this.authService.isLoggedIn();
     this.checkCurrentRoute();
   }
@@ -156,14 +157,14 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
   }
 
   openDialog() {
-    // Chỉ mở dialog nếu KHÔNG phải là drag
+    // Chỉ mở dialog nếu KHÔNG phải là drag và chưa mở dialog
     if (this.dragStarted) {
-      this.dragStarted = false; // Reset state
+      this.dragStarted = false;
       return;
     }
-    
-    // Mở dialog
-    this.dialog.open(ChatAiComponent, {
+    if (this.isDialogOpen) return;
+    this.isDialogOpen = true;
+    const dialogRef = this.dialog.open(ChatAiComponent, {
       width: '400px',
       height: '70vh',
       maxWidth: '90vw',
@@ -173,6 +174,10 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
       hasBackdrop: false,
       backdropClass: 'no-backdrop',
       disableClose: false
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.isDialogOpen = false;
+      this.cdr.detectChanges();
     });
   }
 

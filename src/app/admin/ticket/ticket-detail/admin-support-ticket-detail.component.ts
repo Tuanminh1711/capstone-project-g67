@@ -178,12 +178,14 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
     if (!imageUrl) return;
 
     const token = localStorage.getItem('token');
-    // Trong development: sử dụng URL tương đối (qua proxy)
-    // Trong production: sử dụng baseUrl + imageUrl
-    const fullImageUrl = environment.production 
-      ? `${environment.baseUrl}${imageUrl}`
-      : (imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`);
-    
+    let fullImageUrl = imageUrl;
+    // Nếu là absolute URL (http/https), dùng trực tiếp, ngược lại build như cũ
+    if (!/^https?:\/\//i.test(fullImageUrl)) {
+      fullImageUrl = environment.production 
+        ? `${environment.baseUrl}${fullImageUrl}`
+        : (fullImageUrl.startsWith('/') ? fullImageUrl : `/${fullImageUrl}`);
+    }
+
     this.http.get(fullImageUrl, {
       responseType: 'blob',
       headers: {
