@@ -28,6 +28,9 @@ public class UserPlantImage {
     @Column(name = "image_url", nullable = false, length = 255)
     private String imageUrl;
 
+    @Column(name = "is_primary", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isPrimary = false;
+
     @Column(name = "description", length = 255)
     private String description;
 
