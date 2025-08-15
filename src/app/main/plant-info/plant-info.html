@@ -153,9 +153,10 @@
                       <div class="plant-category">
                         Phân loại: {{ plant.categoryName }}
                       </div>
-                      <div class="plant-desc" title="{{ plant.description }}">
+                      <!-- Mô tả chi tiết đã được ẩn theo yêu cầu -->
+                      <!-- <div class="plant-desc" title="{{ plant.description }}">
                         {{ plant.description.length > 120 ? (plant.description | slice:0:120) + '…' : plant.description }}
-                      </div>
+                      </div> -->
                       <div class="plant-meta-simple">
                         <span class="meta-item">
                           <span class="meta-label">Ánh sáng:</span>

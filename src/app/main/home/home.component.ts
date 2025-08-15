@@ -245,6 +245,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToVipUpgrade() {
-    this.router.navigate(['/user/exper/vip-payment']);
+  this.router.navigate(['/care-expert']);
   }
 }
