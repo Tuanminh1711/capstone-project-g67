@@ -9,6 +9,7 @@ import com.plantcare_backend.repository.UserProfileRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.UserProfileService;
 import com.plantcare_backend.util.Gender;
+import com.plantcare_backend.service.AzureStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,10 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Autowired
     private final UserRepository userRepository;
 
-    private static final String UPLOAD_DIR = "uploads/avatars/";
+    @Autowired
+    private AzureStorageService azureStorageService;
+
+    // UPLOAD_DIR constant removed - now using Azure Storage
 
     @Override
     public UserProfileRequestDTO getUserProfile(Integer userId) {
@@ -99,28 +103,27 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
 
         try {
-            // Tạo thư mục nếu chưa tồn tại
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
             // Tạo unique filename
             String originalFilename = avatar.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-            // Lưu file
-            Path filePath = uploadPath.resolve(newFilename);
-            Files.copy(avatar.getInputStream(), filePath);
-
-            // Tạo URL để truy cập file
-            String avatarUrl = "/api/avatars/" + newFilename;
+            // Upload to Azure Storage
+            String path = "avatars/" + newFilename;
+            String avatarUrl = azureStorageService.uploadFile(avatar, path);
 
             // Xóa avatar cũ nếu có
             String oldAvatarUrl = userProfile.getAvatarUrl();
             if (oldAvatarUrl != null && !oldAvatarUrl.isEmpty()) {
-                // Logic xóa file cũ (tùy chọn)
+                try {
+                    // Extract path from old avatar URL and delete from Azure
+                    if (oldAvatarUrl.contains("/")) {
+                        String oldPath = oldAvatarUrl.substring(oldAvatarUrl.lastIndexOf("/") + 1);
+                        azureStorageService.deleteFile("avatars/" + oldPath);
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to delete old avatar: {}", e.getMessage());
+                }
             }
 
             // Cập nhật database
