@@ -9,7 +9,7 @@
             <div class="plant-avatar-row-all">
               <div class="plant-avatar big-horizontal professional" *ngFor="let img of [0,1,2]">
                 <ng-container *ngIf="plant?.imageUrls && plant.imageUrls.length > img; else noImages">
-                  <img class="plant-main-img big big-horizontal" [src]="plant.imageUrls[img]" alt="Ảnh cây" (error)="onImageError($event)" />
+                  <img class="plant-main-img big big-horizontal" [src]="getImageUrl(plant.imageUrls[img])" alt="Ảnh cây" (error)="onImageError($event)" />
                 </ng-container>
                 <ng-template #noImages>
                   <div class="no-image-placeholder big big-horizontal">

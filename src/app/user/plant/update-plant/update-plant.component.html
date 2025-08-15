@@ -34,11 +34,6 @@
     @if (!isLoading && !errorMessage && currentPlant) {
       <div class="form-section">
 
-      <!-- Plant Name Header -->
-      <div class="plant-name-header">
-        <h2 class="plant-name">{{ currentPlant.nickname }}</h2>
-      </div>
-
       <!-- Two Column Layout -->
       <div class="two-column-layout">
         <!-- Left Column - Images -->
@@ -49,7 +44,7 @@
               <div class="current-images" style="margin-bottom: 18px;">
                 @if (getAllPlantImageUrls().length > 0) {
                   @for (img of getAllPlantImageUrls(); track img) {
-                    <img [src]="img" alt="Ảnh cây hiện tại" class="plant-img" (error)="onImageError($event)" />
+                    <img [src]="getImageUrl(img)" alt="Ảnh cây hiện tại" class="plant-img" (error)="onImageError($event)" />
                   }
                 } @else {
                   <div class="no-image-placeholder">
@@ -115,11 +110,30 @@
                       </div>
                     }
                   </div>
+                  
+                  <!-- Nút cập nhật ảnh riêng biệt -->
+                  <div class="image-update-actions">
+                    <button 
+                      type="button" 
+                      class="btn btn-update-images"
+                      (click)="updateImagesOnly()"
+                      [disabled]="isUpdatingImages"
+                    >
+                      @if (isUpdatingImages) {
+                        <span class="btn-loading"></span>
+                      }
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"/>
+                      </svg>
+                      <span>{{ isUpdatingImages ? 'Đang cập nhật...' : 'Cập nhật ảnh' }}</span>
+                    </button>
+                  </div>
+                  
                   <small class="update-note">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
                     </svg>
-                    Ảnh mới sẽ thay thế toàn bộ ảnh hiện tại
+                    Bấm "Cập nhật ảnh" để lưu ảnh mới, hoặc "Cập nhật thông tin" để lưu tất cả thay đổi  
                   </small>
                 </div>
               }
@@ -131,8 +145,7 @@
         <div class="form-column">
           <div class="form-card">
             <div class="form-header">
-              <h3>Thông tin cây</h3>
-              <p>Cập nhật thông tin chi tiết cho cây của bạn</p>
+              <h3>Thông tin cây</h3>      
             </div>
 
             <form [formGroup]="updateForm" (ngSubmit)="onSubmit()" class="update-form">

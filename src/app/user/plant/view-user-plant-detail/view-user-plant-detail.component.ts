@@ -24,6 +24,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from '../../../auth/cookie.service';
 import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../../shared/top-navigator';
+import { ImageUrlService } from '../../../shared/services/image-url.service';
 import { Subscription, filter, switchMap } from 'rxjs';
 
 @Component({
@@ -42,6 +43,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private cookieService = inject(CookieService);
+  private imageUrlService = inject(ImageUrlService);
 
   userPlantId!: number;
   plant: any = null;
@@ -218,9 +220,15 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
     return new Date(dateString).toLocaleDateString('vi-VN');
   }
 
+  getImageUrl(imageUrl: string): string {
+    console.log('🖼️ [ViewUserPlantDetail] Processing image URL:', imageUrl);
+    const processedUrl = this.imageUrlService.getImageUrl(imageUrl);
+    console.log('🖼️ [ViewUserPlantDetail] Processed URL:', processedUrl);
+    return processedUrl;
+  }
+
   onImageError(event: any) {
-    // Thay thế ảnh lỗi bằng placeholder
-    event.target.src = 'assets/image/placeholder-plant.png';
-    event.target.style.opacity = '0.6';
+    // Sử dụng ImageUrlService để xử lý lỗi hình ảnh
+    this.imageUrlService.onImageError(event);
   }
 }

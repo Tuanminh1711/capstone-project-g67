@@ -1,8 +1,8 @@
 import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, from } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 export interface UserPlant {
   userPlantId: number;
@@ -58,7 +58,7 @@ export interface ApiResponse<T = any> {
 export interface UpdatePlantRequest {
   userPlantId: string;
   nickname: string;
-  plantingDate: string; // Will be timestamp as string
+  plantingDate: string; // SQL timestamp format: YYYY-MM-DD HH:mm:ss.SSS
   locationInHouse: string;
   reminderEnabled: boolean;
 }
@@ -100,52 +100,51 @@ export class MyGardenService {
     return this.http.put<ApiResponse>(endpoint, updateData);
   }
 
-  // Method để update plant với images sử dụng FormData
+  // Method để update plant với images - matching backend expectations
   updateUserPlantWithImages(updateData: UpdatePlantRequest, images: File[]): Observable<ApiResponse> {
     console.log('Service PUT call for updating plant with images:', updateData, 'Images count:', images.length);
     
     const formData = new FormData();
     
-    // Simply append the data received from component (already processed)
+    // Append data as expected by @ModelAttribute UpdateUserPlantRequestDTO
     formData.append('userPlantId', updateData.userPlantId);
     formData.append('nickname', updateData.nickname);
     formData.append('locationInHouse', updateData.locationInHouse);
-    formData.append('plantingDate', updateData.plantingDate); // timestamp as string
+    formData.append('plantingDate', updateData.plantingDate); // Already a string in SQL format
     formData.append('reminderEnabled', updateData.reminderEnabled.toString());
     
-    // Add images
+    // Add images as expected by @RequestParam("images") List<MultipartFile>
     images.forEach((image, index) => {
       formData.append('images', image, image.name);
       console.log(`- image[${index}]: ${image.name} (${image.size} bytes, type: ${image.type})`);
     });
     
-    // Log FormData for debugging
-    console.log('=== FormData being sent ===');
+    // Log FormData entries for debugging the bracket issue
+    console.log('=== Detailed FormData Debug ===');
     for (let pair of formData.entries()) {
       if (pair[1] instanceof File) {
         console.log(`${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes)`);
       } else {
-        console.log(`${pair[0]}: ${pair[1]}`);
+        console.log(`${pair[0]}: "${pair[1]}" (length: ${pair[1].toString().length})`);
+        // Check for any hidden characters
+        console.log(`${pair[0]} chars:`, Array.from(pair[1].toString()).map(c => `'${c}' (${c.charCodeAt(0)})`));
       }
     }
     console.log('========================');
     
+    // Use the update-with-images endpoint as designed by backend
     const endpoint = `${this.baseUrl}/user-plants/update-with-images`;
     console.log('PUT URL:', endpoint);
     
     return this.http.put<ApiResponse>(endpoint, formData).pipe(
       catchError(error => {
-        console.error('❌ update-with-images API failed:', error);
+        console.error('❌ update-with-images endpoint failed:', error);
         console.error('Error status:', error.status);
         console.error('Error response body:', error.error);
         
-        // If the new endpoint fails with 400 or 404, try fallback to old endpoint
-        if (error.status === 400 || error.status === 404) {
-          console.log('🔄 Fallback: Using old update endpoint without images');
-          return this.updateUserPlant(updateData);
-        }
-        
-        return throwError(() => error);
+        // If the main endpoint fails, try fallback without images
+        console.log('🔄 Fallback: Using standard update endpoint without images');
+        return this.updateUserPlant(updateData);
       })
     );
   }

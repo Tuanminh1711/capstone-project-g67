@@ -17,7 +17,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, var(--bg-green) 0%, #f7fdf8 100%);
   padding: 100px 0 2rem 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
   z-index: 1;
   width: 100%;
@@ -30,22 +30,59 @@
   width: 100%;
 }
 
-// Page Header
+// Page Header - Professional and clean
 .page-header {
   text-align: center;
-  margin: 1rem 0 2rem 0;
+  margin: 2rem 0 3rem 0;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 255, 254, 0.9) 100%);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(45, 90, 61, 0.08);
+  border: 1px solid rgba(110, 166, 120, 0.15);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-green), var(--accent-green), var(--light-green));
+  }
   
   .page-title {
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 700;
     color: var(--primary-green);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 4px rgba(45, 90, 61, 0.1);
+    position: relative;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+      border-radius: 2px;
+    }
   }
   
   .page-subtitle {
     color: var(--text-light);
-    font-size: 1rem;
+    font-size: 1.1rem;
     margin: 0;
+    font-weight: 500;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
   }
 }
 
@@ -145,74 +182,81 @@
   margin-bottom: 3rem;
 }
 
-// Plant Name Header
-.plant-name-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  width: 100%;
-  
-  .plant-name {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
-    
-    @media (max-width: 768px) {
-      font-size: 1.5rem;
-    }
-  }
-}
-
 // Debug: Ensure container has proper width
 .form-section {
   width: 100%;
   max-width: none;
 }
 
-// Two Column Layout - Enhanced for full width
+// Two Column Layout - Fixed responsive and overflow issues
 .form-section .two-column-layout {
   display: grid !important;
-  grid-template-columns: 45% 55% !important; // Chia tỷ lệ 45-55 để form rộng hơn
-  gap: 3rem !important; // Tăng gap
+  grid-template-columns: 1fr 1fr !important; // Chia đều 50-50 để tránh chèn
+  gap: 2rem !important; 
   align-items: start;
   width: 100%;
   max-width: none;
+  margin-top: 2rem;
   
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 2rem !important;
-  }
-  
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
+    gap: 2rem !important;
   }
 }
 
 .form-section .images-column {
+  min-width: 0; // Quan trọng để tránh overflow
+  
   .plant-info-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
     border-radius: 20px;
-    padding: 2rem; // Tăng padding
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    box-shadow: 
+      0 8px 25px rgba(45, 90, 61, 0.08),
+      0 4px 12px rgba(45, 90, 61, 0.05);
+    border: 1px solid rgba(110, 166, 120, 0.15);
     position: sticky;
     top: 2rem;
     height: fit-content;
-    min-height: 400px; // Đảm bảo có chiều cao tối thiểu
+    overflow: hidden; // Tránh content tràn ra ngoài
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-green), var(--accent-green), var(--light-green));
+      border-radius: 20px 20px 0 0;
+    }
   }
 }
 
 .form-section .form-column {
+  min-width: 0; // Quan trọng để tránh overflow
+  
   .form-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #fafffe 100%);
     border-radius: 20px;
-    padding: 2.5rem; // Tăng padding
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2rem;
+    box-shadow: 
+      0 8px 25px rgba(45, 90, 61, 0.08),
+      0 4px 12px rgba(45, 90, 61, 0.05);
+    border: 1px solid rgba(110, 166, 120, 0.15);
     height: fit-content;
-    min-height: 400px; // Đảm bảo có chiều cao tối thiểu
+    overflow: hidden; // Tránh content tràn ra ngoài
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-green), var(--primary-green));
+      border-radius: 20px 20px 0 0;
+    }
   }
 }
 
@@ -251,24 +295,50 @@
 
 // Form styling removed - now handled in .form-column
   
-// Form styling simplified for two-column layout
+// Form styling enhanced for better visual hierarchy
 .form-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   text-align: center;
   
   h3 {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-green);
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.5rem 0;
     text-shadow: 0 1px 2px rgba(45, 90, 61, 0.1);
   }
   
   p {
     color: var(--text-light);
-    margin: 0;
+    margin: 0 0 1.5rem 0;
     font-size: 1rem;
     font-weight: 500;
+    line-height: 1.5;
+  }
+  
+  .current-plant-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, var(--bg-green) 0%, #f0f7f1 100%);
+    border-radius: 12px;
+    border: 1px solid var(--border-green);
+    margin-top: 1rem;
+    
+    .plant-label {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    
+    .plant-name {
+      font-size: 1.1rem;
+      color: var(--primary-green);
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(45, 90, 61, 0.1);
+    }
   }
 }
 
@@ -276,12 +346,12 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
   
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
   }
   
@@ -290,17 +360,11 @@
   }
 }
 
-// Desktop layout - 2 columns for larger screens
-@media (min-width: 900px) {
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 .form-group {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-width: 0; // Quan trọng để tránh overflow
+  width: 100%;
   
   .form-label {
     font-size: 1rem;
@@ -328,7 +392,8 @@
     background: white;
     color: var(--text-dark);
     box-sizing: border-box;
-    font-family: inherit;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-width: 0; // Tránh overflow
     
     &:focus {
       outline: none;
@@ -545,7 +610,23 @@
   }
 }
 
-// Responsive Design
+// Responsive Design - Fixed for better mobile experience
+@media (max-width: 1024px) {
+  .form-section .two-column-layout {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  
+  .form-section .images-column .plant-info-card {
+    position: static !important; // Remove sticky on tablet/mobile
+    padding: 1.25rem !important;
+  }
+  
+  .form-section .form-column .form-card {
+    padding: 1.5rem !important;
+  }
+}
+
 @media (max-width: 768px) {
   .update-plant-container {
     padding: 80px 0 1rem 0;
@@ -556,59 +637,27 @@
     max-width: 100%;
   }
   
-  .update-header {
-    padding: 1.5rem 0 2rem;
-    
-    .header-content {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
-    }
-    
-    .back-btn {
-      align-self: flex-start;
-    }
+  .page-header {
+    margin: 1rem 0 2rem 0 !important;
+    padding: 1.5rem 1rem !important;
     
     .page-title {
-      font-size: 1.75rem;
+      font-size: 1.75rem !important;
     }
-  }
-  
-  .plant-info-card {
-    padding: 1.5rem;
-    flex-direction: column;
-    text-align: center;
     
-    .plant-avatar {
-      width: 60px;
-      height: 60px;
-      
-      .plant-text {
-        font-size: 0.875rem;
-      }
+    .page-subtitle {
+      font-size: 0.95rem !important;
     }
-  }
-  
-  .form-card .form-header {
-    padding: 1.5rem;
-  }
-  
-  .update-form {
-    padding: 1.5rem;
   }
   
   .form-grid {
-    gap: 1rem;
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
   }
   
-  .toggle-section {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-    
-    .toggle-wrapper {
-      margin: 0;
-    }
+  .form-group .form-input {
+    padding: 0.875rem 1rem !important;
+    font-size: 1rem !important;
   }
   
   .form-actions {
@@ -619,31 +668,33 @@
     }
   }
   
-  .state-section {
-    min-height: 300px;
-    padding: 1rem;
+  // Image section mobile adjustments
+  .plant-images-section .current-images {
+    padding: 1rem !important;
+    gap: 8px !important;
     
-    .state-content {
-      padding: 2rem 1.5rem;
+    .plant-img {
+      height: 100px !important;
+      max-width: 120px !important;
+    }
+    
+    .plant-img:only-child {
+      max-width: 160px !important;
+      height: 120px !important;
     }
   }
   
-  // Two-column layout mobile responsive - Enhanced
-  .form-section .two-column-layout {
-    grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
-  }
-  
-  .form-section .images-column .plant-info-card {
-    position: static !important; // Remove sticky on mobile
-  }
-  
-  .form-section .form-column .form-card {
-    padding: 1.5rem !important;
-  }
-  
-  .plant-name-header .plant-name {
-    font-size: 1.5rem !important;
+  .no-image-placeholder {
+    height: 120px !important;
+    max-width: 160px !important;
+    
+    .placeholder-icon {
+      font-size: 1.5rem !important;
+    }
+    
+    .placeholder-text {
+      font-size: 0.8rem !important;
+    }
   }
 }
 
@@ -698,71 +749,102 @@
 .plant-images-section {
   margin-bottom: 18px;
   
-// Plant Images Section - Enhanced display
+// Plant Images Section - Fixed size constraints and layout
 .plant-images-section {
   .current-images {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
     padding: 1.5rem;
     background: linear-gradient(135deg, var(--bg-green) 0%, #f0f7f1 100%);
     border-radius: 16px;
-    border: 1px solid var(--border-green);
+    border: 2px solid var(--border-green);
+    max-width: 380px; // Giới hạn tối đa cho 3 ảnh
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-green), var(--accent-green));
+    }
     
     .plant-img {
       width: 100%;
-      height: 150px;
+      height: 110px; // Giảm chiều cao để phù hợp hơn
+      max-width: 120px; // Giới hạn chiều rộng cho 3 ảnh
       border-radius: 12px;
       object-fit: cover;
       border: 3px solid white;
       box-shadow: 
-        0 8px 25px rgba(45, 90, 61, 0.2),
-        0 3px 10px rgba(45, 90, 61, 0.1);
+        0 4px 15px rgba(45, 90, 61, 0.15),
+        0 2px 8px rgba(45, 90, 61, 0.1);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
+      justify-self: center; // Center trong grid cell
       
       &:hover {
-        transform: translateY(-3px);
+        transform: translateY(-3px) scale(1.05);
         box-shadow: 
-          0 15px 35px rgba(45, 90, 61, 0.25),
-          0 8px 20px rgba(45, 90, 61, 0.15);
+          0 8px 25px rgba(45, 90, 61, 0.2),
+          0 4px 15px rgba(45, 90, 61, 0.15);
         border-color: var(--accent-green);
       }
     }
     
-    // Single image takes full width
+    // Single image sizing
     .plant-img:only-child {
       grid-column: 1 / -1;
-      max-width: 300px;
+      max-width: 180px;
+      height: 140px;
       justify-self: center;
+    }
+    
+    // Two images
+    .plant-img:first-child:nth-last-child(2),
+    .plant-img:first-child:nth-last-child(2) ~ .plant-img {
+      max-width: 130px;
+      height: 115px;
+    }
+    
+    // Three images - optimal layout
+    .plant-img:first-child:nth-last-child(3),
+    .plant-img:first-child:nth-last-child(3) ~ .plant-img {
+      max-width: 110px;
+      height: 110px;
     }
   }
   
   .no-image-placeholder {
     width: 100%;
-    height: 150px;
+    height: 140px;
+    max-width: 200px;
     border-radius: 12px;
     background: linear-gradient(135deg, #ffffff 0%, var(--bg-green) 100%);
-    border: 3px dashed var(--accent-green);
+    border: 2px dashed var(--accent-green);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 8px;
     grid-column: 1 / -1;
-    max-width: 300px;
     justify-self: center;
+    margin: 0 auto;
     
     .placeholder-icon {
       font-size: 2rem;
-      opacity: 0.7;
+      opacity: 0.8;
     }
     
     .placeholder-text {
       color: var(--text-light);
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
+      text-align: center;
     }
   }
 }
@@ -895,23 +977,27 @@
   }
   
   .preview-grid {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+    gap: 10px;
     justify-content: center;
     margin-bottom: 1rem;
+    max-width: 250px; // Giới hạn cho tối đa 3 ảnh preview
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .preview-item {
     position: relative;
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
+    width: 65px;
+    height: 65px;
+    border-radius: 8px; // Đổi từ tròn sang vuông bo góc
     overflow: hidden;
     background: white;
-    border: 3px solid var(--border-green);
+    border: 2px solid var(--border-green);
     box-shadow: 0 4px 15px rgba(45, 90, 61, 0.2);
     transition: all 0.3s ease;
+    justify-self: center;
     
     &:hover {
       transform: scale(1.1);
@@ -923,7 +1009,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 50%;
+      border-radius: 6px;
     }
     
     .remove-btn {
@@ -961,7 +1047,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-light);
     background: white;
     padding: 0.75rem 1rem;
@@ -971,6 +1057,80 @@
     
     svg {
       color: var(--accent-green);
+    }
+  }
+  
+  // Nút cập nhật ảnh riêng biệt
+  .image-update-actions {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0 0.5rem 0;
+    
+    .btn-update-images {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-green) 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(45, 90, 61, 0.25);
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(45, 90, 61, 0.35);
+        background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-green) 100%);
+        
+        &::before {
+          left: 100%;
+        }
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 4px 15px rgba(45, 90, 61, 0.25);
+      }
+      
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 8px rgba(45, 90, 61, 0.15);
+      }
+      
+      svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      
+      .btn-loading {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+      }
     }
   }
 }

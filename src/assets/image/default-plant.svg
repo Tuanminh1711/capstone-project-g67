@@ -1,0 +1,9 @@
+<!-- Default plant placeholder image -->
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#f0f9ff"/>
+  <circle cx="150" cy="200" r="20" fill="#22c55e"/>
+  <rect x="145" y="180" width="10" height="40" fill="#16a34a"/>
+  <path d="M120,160 Q130,140 150,150 Q170,140 180,160" stroke="#22c55e" stroke-width="3" fill="none"/>
+  <path d="M115,180 Q125,160 150,170 Q175,160 185,180" stroke="#16a34a" stroke-width="3" fill="none"/>
+  <text x="150" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#6b7280">Chưa có ảnh</text>
+</svg>

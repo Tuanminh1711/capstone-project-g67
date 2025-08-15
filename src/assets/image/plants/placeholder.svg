@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#f0f9ff"/>
+  <circle cx="100" cy="60" r="15" fill="#22c55e"/>
+  <rect x="95" y="75" width="10" height="60" fill="#15803d"/>
+  <path d="M85 90 Q100 85 115 90" stroke="#22c55e" stroke-width="3" fill="none"/>
+  <path d="M85 100 Q100 95 115 100" stroke="#22c55e" stroke-width="3" fill="none"/>
+  <path d="M85 110 Q100 105 115 110" stroke="#22c55e" stroke-width="3" fill="none"/>
+  <text x="100" y="160" text-anchor="middle" fill="#6b7280" font-family="Arial" font-size="14">Plant Image</text>
+  <text x="100" y="180" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="12">Placeholder</text>
+</svg>

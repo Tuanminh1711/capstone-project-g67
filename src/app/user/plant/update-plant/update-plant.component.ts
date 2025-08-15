@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { MyGardenService, UserPlant, UpdatePlantRequest, ApiResponse } from '../my-garden/my-garden.service';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { ImageUrlService } from '../../../shared/services/image-url.service';
 import { CookieService } from '../../../auth/cookie.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
 
@@ -22,6 +23,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   updateForm: FormGroup;
   isLoading = false;
   isSubmitting = false;
+  isUpdatingImages = false; // Thêm biến cho việc cập nhật ảnh riêng
   errorMessage = '';
   userPlantId: string | null = null;
   currentPlant: UserPlant | null = null;
@@ -46,6 +48,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private cookieService: CookieService,
     private authDialogService: AuthDialogService,
+    private imageUrlService: ImageUrlService,
     private cdr: ChangeDetectorRef
   ) {
     this.updateForm = this.createForm();
@@ -84,30 +87,34 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
   // Lấy tất cả URL ảnh của cây từ API response
   getAllPlantImageUrls(): string[] {
-    if (!this.currentPlant) return [];
+    if (!this.currentPlant) {
+      console.log('🚫 No currentPlant data');
+      return [];
+    }
+    
+    console.log('🌿 Current plant data:', this.currentPlant);
     
     // Ưu tiên trường imageUrls từ API chi tiết
     let imageUrls: string[] = [];
     if (Array.isArray(this.currentPlant.imageUrls)) {
       imageUrls = this.currentPlant.imageUrls.filter(url => !!url);
+      console.log('📸 Image URLs from imageUrls field:', imageUrls);
     } 
     // Fallback cho trường images nếu imageUrls không có
     else if (Array.isArray(this.currentPlant.images)) {
       imageUrls = this.currentPlant.images
         .map((img: any) => img?.imageUrl)
         .filter((url: string) => !!url);
+      console.log('📸 Image URLs from images field:', imageUrls);
     }
     
+    console.log('✅ Final image URLs:', imageUrls);
     return imageUrls.length > 0 ? imageUrls : [];
   }
 
   // Xử lý lỗi ảnh
   onImageError(event: any): void {
-    if (event?.target) {
-      event.target.src = this.placeholderImage;
-      event.target.style.opacity = '0.6';
-      event.target.style.objectFit = 'cover';
-    }
+    this.imageUrlService.onImageError(event);
   }
 
   // === IMAGE UPLOAD METHODS ===
@@ -559,6 +566,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
   private handleSuccessfulUpdate(): void {
     this.isSubmitting = false;
+    this.isUpdatingImages = false;
     // Khi cập nhật ảnh mới, luôn clear toàn bộ ảnh cũ trên UI
     if (this.selectedImages && this.selectedImages.length > 0 && this.currentPlant) {
       (this.currentPlant as any).imageUrls = [];
@@ -582,6 +590,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
   private handleUpdateError(errorMessage: string): void {
     this.isSubmitting = false;
+    this.isUpdatingImages = false;
     this.toastService.error(errorMessage);
   }
 
@@ -686,5 +695,37 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   onWindowFocus(event: any): void {
     // Auto refresh when window is focused again
     this.onPageVisible();
+  }
+
+  updateImagesOnly(): void {
+    if (!this.selectedImages || this.selectedImages.length === 0 || !this.userPlantId) {
+      this.toastService.error('Vui lòng chọn ít nhất một ảnh để cập nhật');
+      return;
+    }
+
+    this.isUpdatingImages = true;
+    this.errorMessage = '';
+    
+    // Trigger change detection
+    this.cdr.detectChanges();
+
+    // Get current form values to preserve other data
+    const currentFormValues = this.updateForm.value;
+    const processedData = this.processFormData(currentFormValues);
+    
+    // Update plant with new images
+    setTimeout(() => {
+      this.updatePlantWithImages(processedData);
+    }, 0);
+  }
+
+  /**
+   * Get processed image URL using ImageUrlService
+   */
+  getImageUrl(imageUrl: string): string {
+    console.log('🖼️ [UpdatePlant] Processing image URL:', imageUrl);
+    const processedUrl = this.imageUrlService.getImageUrl(imageUrl);
+    console.log('🖼️ [UpdatePlant] Processed URL:', processedUrl);
+    return processedUrl;
   }
 }
