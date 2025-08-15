@@ -8,4 +8,5 @@ public class UserPlantImageUpdateDTO {
     private String imageUrl; // URL mới của ảnh
     private String action; // "UPDATE", "DELETE", "ADD"
     private String description;
+    private Boolean setAsPrimary = false;
 }

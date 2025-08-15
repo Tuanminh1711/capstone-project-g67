@@ -275,6 +275,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                         .userPlants(userPlant)
                         .imageUrl(imageUrl)
                         .description("User uploaded image for plant: " + userPlant.getPlantName())
+                        .isPrimary(true)
                         .build();
 
                 userPlantImages.add(userPlantImage);
@@ -479,11 +480,30 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                             .userPlants(userPlant)
                             .imageUrl(update.getImageUrl())
                             .description(
-                            update.getDescription() != null ? update.getDescription() : "User uploaded image")
-                            .isPrimary(true)
+                                    update.getDescription() != null ? update.getDescription() : "User uploaded image")
+                            .isPrimary(update.getSetAsPrimary() != null ? update.getSetAsPrimary() : false)
                             .build();
+                    if (update.getSetAsPrimary() != null && update.getSetAsPrimary()) {
+                        userPlant.getImages().forEach(img -> img.setIsPrimary(false));
+                    }
+
                     userPlant.getImages().add(newImage);
                     log.info("Added new image for user plant: {}", userPlant.getUserPlantId());
+                    break;
+
+                case "SET_PRIMARY":
+                    if (update.getImageId() != null) {
+                        userPlant.getImages().forEach(img -> img.setIsPrimary(false));
+
+                        userPlant.getImages().stream()
+                                .filter(img -> img.getId().equals(update.getImageId()))
+                                .findFirst()
+                                .ifPresent(img -> {
+                                    img.setIsPrimary(true);
+                                    log.info("Set image ID: {} as primary for user plant: {}",
+                                            update.getImageId(), userPlant.getUserPlantId());
+                                });
+                    }
                     break;
 
                 default:
@@ -507,6 +527,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                         .userPlants(userPlant)
                         .imageUrl(imageUrl)
                         .description("User uploaded image")
+                        .isPrimary(true)
                         .build();
                 newImages.add(newImage);
             }

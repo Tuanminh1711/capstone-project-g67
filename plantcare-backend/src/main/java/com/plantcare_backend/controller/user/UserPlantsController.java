@@ -215,6 +215,7 @@ public class UserPlantsController {
                         imageUpdate.setAction("ADD");
                         imageUpdate.setImageUrl(imageUrl);
                         imageUpdate.setDescription("User uploaded image");
+                        imageUpdate.setSetAsPrimary(true);
                         imageUpdates.add(imageUpdate);
                     }
                 }
