@@ -1,3 +1,31 @@
+// Hiển thị 3 ảnh, mỗi ảnh 1 ô vuông nhỏ, canh ngang
+.plant-img-list {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.square-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: block;
+}
+// Ảnh chính hiển thị 1 ô vuông lớn
+.main-plant-img {
+  width: 240px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: block;
+  margin: 0 auto;
+}
 // Fix cứng kích thước và object-fit cho ảnh cây
 .update-plant-image-wrapper img, .update-plant-image {
   width: 240px;

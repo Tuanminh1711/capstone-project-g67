@@ -43,9 +43,11 @@
               <!-- Current Images Display -->
               <div class="current-images" style="margin-bottom: 18px;">
                 @if (getAllPlantImageUrls().length > 0) {
-                  @for (img of getAllPlantImageUrls(); track img) {
-                    <img [src]="getImageUrl(img)" alt="Ảnh cây hiện tại" class="plant-img" (error)="onImageError($event)" />
-                  }
+                  <div class="plant-img-list">
+                    @for (img of getAllPlantImageUrls().slice(0, 3); track img) {
+                      <img [src]="getImageUrl(img)" alt="Ảnh cây hiện tại" class="plant-img square-img" (error)="onImageError($event)" />
+                    }
+                  </div>
                 } @else {
                   <div class="no-image-placeholder">
                     <span class="placeholder-icon">🌱</span>
