@@ -8,6 +8,7 @@ import com.plantcare_backend.dto.response.ticket_support.TicketListResponseDTO;
 import com.plantcare_backend.dto.response.ticket_support.TicketResponseDTO;
 import com.plantcare_backend.service.SupportTicketService;
 import com.plantcare_backend.service.ActivityLogService;
+import com.plantcare_backend.service.AzureStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.file.Files;
@@ -37,6 +39,9 @@ import java.util.UUID;
 public class SupportTicketController {
     private final SupportTicketService supportTicketService;
     private final ActivityLogService activityLogService;
+
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @Operation(summary = "Create support ticket", description = "User creates a new support ticket")
     @PostMapping("/tickets")
@@ -67,52 +72,43 @@ public class SupportTicketController {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ResponseData<>(400, "File is empty", null));
             }
-            
+
             String contentType = image.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 return ResponseEntity.badRequest().body(new ResponseData<>(400, "File must be an image", null));
             }
-            
+
             if (image.getSize() > 20 * 1024 * 1024) {
-                return ResponseEntity.badRequest().body(new ResponseData<>(400, "File size must be less than 20MB", null));
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File size must be less than 20MB", null));
             }
-            
-            String uploadDir = "uploads/tickets/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            
+
             String originalFilename = image.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
-            
-            Path filePath = uploadPath.resolve(newFilename);
-            Files.copy(image.getInputStream(), filePath);
-            
-            String imageUrl = "/api/support/ticket-images/" + newFilename;
-            
+
+            String path = "tickets/" + newFilename;
+            String imageUrl = azureStorageService.uploadFile(image, path);
+
             return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
         } catch (Exception e) {
             log.error("Upload ticket image failed", e);
-            return ResponseEntity.internalServerError().body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
         }
     }
 
     @Operation(summary = "Get ticket image", description = "Display ticket image")
     @GetMapping("/ticket-images/{filename}")
-    public ResponseEntity<Resource> getTicketImage(@PathVariable String filename) {
+    public ResponseEntity<?> getTicketImage(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get("uploads/tickets/").resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
+            String path = "tickets/" + filename;
+            String azureUrl = azureStorageService.generateBlobUrl(path);
 
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // Redirect to Azure Blob Storage URL
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, azureUrl)
+                    .build();
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

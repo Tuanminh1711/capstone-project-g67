@@ -15,6 +15,7 @@ import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.service.ActivityLogService;
 import com.plantcare_backend.service.ExpertService;
+import com.plantcare_backend.service.AzureStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -44,14 +46,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200/")
 public class ExpertController {
-
-    private final ActivityLogService activityLogService;
-    private final ExpertService expertService;
+    @Autowired
+    private ActivityLogService activityLogService;
+    @Autowired
+    private ExpertService expertService;
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @PostMapping("/create-category")
     public ResponseData<Long> createCategory(
             @Valid @RequestBody CreateCategoryRequestDTO createCategoryRequestDTO,
-            @RequestAttribute("userId") Integer expertId){
+            @RequestAttribute("userId") Integer expertId) {
         try {
             Long categoryId = expertService.createCategoryByExpert(createCategoryRequestDTO);
             activityLogService.logActivity(expertId, "Create_Category",
@@ -70,7 +75,7 @@ public class ExpertController {
             @Valid @RequestBody CreateArticleRequestDTO createArticleRequestDTO,
             @RequestAttribute("userId") Integer expertId) {
         log.info("Request create article, expertId: {}", expertId);
-        
+
         try {
             Long articleId = expertService.createArticleByExpert(createArticleRequestDTO, expertId.longValue());
             activityLogService.logActivity(expertId, "Create_Article",
@@ -111,7 +116,7 @@ public class ExpertController {
             @Valid @RequestBody UpdateCategoryRequestDTO updateCategoryRequestDTO,
             @RequestAttribute("userId") Integer expertId) {
         log.info("Request update category, categoryId: {}, expertId: {}", categoryId, expertId);
-        
+
         try {
             Long updatedCategoryId = expertService.updateCategoryByExpert(categoryId, updateCategoryRequestDTO);
             activityLogService.logActivity(expertId, "Update_Category",
@@ -132,7 +137,7 @@ public class ExpertController {
             @PathVariable Long categoryId,
             @RequestAttribute("userId") Integer expertId) {
         log.info("Request delete category, categoryId: {}, expertId: {}", categoryId, expertId);
-        
+
         try {
             expertService.deleteCategoryByExpert(categoryId);
             activityLogService.logActivity(expertId, "Delete_Category",
@@ -153,16 +158,19 @@ public class ExpertController {
             @PathVariable Long categoryId,
             @Valid @RequestBody ChangeCategoryStatusRequestDTO changeCategoryStatusRequestDTO,
             @RequestAttribute("userId") Integer expertId) {
-        log.info("Request change category status, categoryId: {}, status: {}", categoryId, changeCategoryStatusRequestDTO.getStatus());
-        
+        log.info("Request change category status, categoryId: {}, status: {}", categoryId,
+                changeCategoryStatusRequestDTO.getStatus());
+
         try {
             expertService.changeCategoryStatus(categoryId, changeCategoryStatusRequestDTO.getStatus());
             activityLogService.logActivity(expertId, "Change_Category_Status",
-                    "Expert change category status to " + changeCategoryStatusRequestDTO.getStatus() + " for category id " + categoryId);
+                    "Expert change category status to " + changeCategoryStatusRequestDTO.getStatus()
+                            + " for category id " + categoryId);
             return new ResponseData<>(HttpStatus.OK.value(), "Change category status successfully", null);
         } catch (Exception e) {
             log.error("Change category status failed", e);
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change category status failed: " + e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(),
+                    "Change category status failed: " + e.getMessage());
         }
     }
 
@@ -172,7 +180,7 @@ public class ExpertController {
             @RequestParam("image") MultipartFile image,
             @RequestAttribute("userId") Integer expertId) {
         log.info("Request upload article image, expertId: {}", expertId);
-        
+
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -190,20 +198,12 @@ public class ExpertController {
                         .body(new ResponseData<>(400, "File size must be less than 5MB", null));
             }
 
-            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "articles/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
             String originalFilename = image.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-            Path filePath = uploadPath.resolve(newFilename);
-            Files.copy(image.getInputStream(), filePath);
-
-            String imageUrl = "/api/expert/article-images/" + newFilename;
+            String path = "articles/" + newFilename;
+            String imageUrl = azureStorageService.uploadFile(image, path);
 
             log.info("Article image uploaded successfully: {}", imageUrl);
             return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
@@ -216,19 +216,15 @@ public class ExpertController {
     }
 
     @GetMapping("/article-images/{filename}")
-    public ResponseEntity<Resource> getArticleImage(@PathVariable String filename) {
+    public ResponseEntity<?> getArticleImage(@PathVariable String filename) {
         try {
-            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "articles/";
-            Path filePath = Paths.get(uploadDir).resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
+            String path = "articles/" + filename;
+            String azureUrl = azureStorageService.generateBlobUrl(path);
 
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // Redirect to Azure Blob Storage URL
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, azureUrl)
+                    .build();
         } catch (Exception e) {
             log.error("Error serving article image: {}", filename, e);
             return ResponseEntity.notFound().build();
@@ -259,12 +255,14 @@ public class ExpertController {
             @PathVariable Long articleId,
             @Valid @RequestBody ChangeArticleStatusRequestDTO changeArticleStatusRequestDTO,
             @RequestAttribute("userId") Integer expertId) {
-        log.info("Request change article status, articleId: {}, status: {}", articleId, changeArticleStatusRequestDTO.getStatus());
-        
+        log.info("Request change article status, articleId: {}, status: {}", articleId,
+                changeArticleStatusRequestDTO.getStatus());
+
         try {
             expertService.changeArticleStatus(articleId, changeArticleStatusRequestDTO.getStatus());
             activityLogService.logActivity(expertId, "Change_Article_Status",
-                    "Expert change article status to " + changeArticleStatusRequestDTO.getStatus() + " for article id " + articleId);
+                    "Expert change article status to " + changeArticleStatusRequestDTO.getStatus() + " for article id "
+                            + articleId);
             return new ResponseData<>(HttpStatus.OK.value(), "Change article status successfully", null);
         } catch (ResourceNotFoundException e) {
             log.error("Article not found for status change, articleId: {}", articleId, e);
@@ -279,7 +277,7 @@ public class ExpertController {
     @GetMapping("/get_article_detail/{articleId}")
     public ResponseData<ArticleDetailResponseDTO> getArticleDetail(@PathVariable Long articleId) {
         log.info("Request get article detail, articleId: {}", articleId);
-        
+
         try {
             ArticleDetailResponseDTO articleDetail = expertService.getArticleDetail(articleId);
             return new ResponseData<>(HttpStatus.OK.value(), "Get article detail successfully", articleDetail);
@@ -298,7 +296,7 @@ public class ExpertController {
             @PathVariable Long articleId,
             @Valid @RequestBody UpdateArticleRequestDTO updateRequest) {
         log.info("Request update article, articleId: {}", articleId);
-        
+
         try {
             ArticleDetailResponseDTO updatedArticle = expertService.updateArticle(articleId, updateRequest);
             return new ResponseData<>(HttpStatus.OK.value(), "Article updated successfully", updatedArticle);
