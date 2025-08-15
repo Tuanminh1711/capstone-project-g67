@@ -22,8 +22,44 @@
 
   <div *ngIf="plant && !loading" class="update-plant-content">
     <div class="plant-image-block">
-      <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="plant-image-gallery">
-        <img *ngFor="let imageUrl of plant.imageUrls" [src]="imageUrl" [alt]="plant.commonName" (error)="onImageError($event)" />
+      <div *ngIf="(plant.images && plant.images.length > 0) || (plant.imageUrls && plant.imageUrls.length > 0)" class="plant-image-gallery">
+        <ng-container *ngIf="plant.images && plant.images.length > 0; else showImageUrls">
+          <div *ngFor="let img of plant.images.slice(-3)" class="plant-image-item">
+            <img [src]="getPlantImageSrc(img.imageUrl)" [alt]="plant.commonName" (error)="onImageError($event)" [class.primary-image]="img.isPrimary" />
+          </div>
+        </ng-container>
+        <ng-template #showImageUrls>
+          <div *ngFor="let url of plant.imageUrls.slice(-3)" class="plant-image-item">
+            <img [src]="getPlantImageSrc(url)" [alt]="plant.commonName" (error)="onImageError($event)" />
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="plant-image-upload-block">
+        <div class="upload-center">
+          <label class="image-upload-plus" [class.disabled]="isUploadingImage">
+            <input type="file" accept="image/*" (change)="onNewImageFileSelected($event)" [disabled]="isUploadingImage" hidden />
+            <div class="upload-img-frame">
+              <ng-container *ngIf="selectedNewImageFile; else showPlaceholder">
+                <img [src]="newImagePreviewUrl" alt="Preview" class="preview-img" />
+              </ng-container>
+              <ng-template #showPlaceholder>
+                <div class="upload-placeholder">
+                  <svg class="upload-img-icon" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="12" width="32" height="24" rx="4" fill="#e8f5e9"/>
+                    <rect x="8" y="12" width="32" height="24" rx="4" stroke="#43b06d" stroke-width="2"/>
+                    <circle cx="18" cy="22" r="3" fill="#c8e6c9" stroke="#43b06d" stroke-width="1.5"/>
+                    <path d="M13 32L20 25L28 33L33 28L39 34" stroke="#43b06d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div class="upload-placeholder-text">Thêm ảnh mới</div>
+                </div>
+              </ng-template>
+            </div>
+          </label>
+          <button *ngIf="selectedNewImageFile" type="button" class="upload-btn-abs" (click)="onUploadNewImage()" [disabled]="isUploadingImage">
+            {{ isUploadingImage ? 'Đang tải lên...' : 'Thêm ảnh mới' }}
+          </button>
+        </div>
       </div>
       <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
         Không có ảnh

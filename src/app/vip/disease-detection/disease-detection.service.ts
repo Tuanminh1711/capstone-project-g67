@@ -2,15 +2,85 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, retry, timeout } from 'rxjs/operators';
-import { 
-  DiseaseDetectionRequest,
-  DiseaseDetectionResult,
-  TreatmentGuide,
-  TreatmentProgress,
-  DiseaseStats,
-  PlantDisease,
-  DiseaseDetectionHistory
-} from './disease-detection.model';
+
+// Import interfaces from component
+interface DiseaseDetectionRequest {
+  description: string;
+  detectionMethod: 'SYMPTOMS';
+}
+
+interface DiseaseDetectionResult {
+  id: number;
+  detectedDisease: string;
+  confidenceScore: number;
+  severity: string;
+  symptoms: string;
+  recommendedTreatment: string;
+  status: string;
+  isConfirmed: boolean;
+  expertNotes?: string;
+  detectedAt: number;
+  treatedAt?: number;
+  treatmentResult?: string;
+  detectionMethod: 'IMAGE' | 'SYMPTOMS';
+  aiModelVersion: string;
+}
+
+interface TreatmentGuide {
+  diseaseName: string;
+  treatment: string;
+  prevention: string;
+  medications: string[];
+  duration: string;
+  notes: string;
+}
+
+interface TreatmentProgress {
+  id: number;
+  detectionId: number;
+  currentStatus: 'STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  successRate?: number;
+  startDate: number;
+  completionDate?: number;
+  notes?: string;
+  treatments: string[];
+}
+
+interface DiseaseStats {
+  totalDetections: number;
+  commonDiseases: {
+    diseaseName: string;
+    count: number;
+    percentage: number;
+  }[];
+  severityDistribution: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+  successfulTreatments: number;
+  pendingTreatments: number;
+}
+
+interface PlantDisease {
+  id: number;
+  name: string;
+  scientificName: string;
+  category: string;
+  severity: string;
+  symptoms: string[];
+  treatment: string;
+  prevention: string;
+  affectedPlants: string[];
+  commonality: number;
+}
+
+interface DiseaseDetectionHistory {
+  content: DiseaseDetectionResult[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+}
 import { environment } from '../../../environments/environment';
 import { CookieService } from '../../auth/cookie.service';
 

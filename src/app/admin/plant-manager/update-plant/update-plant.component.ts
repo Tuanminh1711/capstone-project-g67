@@ -24,6 +24,12 @@ interface UpdatePlantRequest {
   status: string;
 }
 
+interface PlantImage {
+  id: number;
+  imageUrl: string;
+  isPrimary: boolean;
+}
+
 interface Plant {
   id: number;
   scientificName: string;
@@ -40,7 +46,7 @@ interface Plant {
   status: string;
   statusDisplay?: string;
   imageUrls: string[];
-  images?: any;
+  images: PlantImage[];
   createdAt: string | null;
   updatedAt?: string | null;
 }
@@ -60,12 +66,32 @@ interface ApiResponse<T = any> {
   styleUrls: ['./update-plant.scss']
 })
 export class UpdatePlantComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
+  // Helper to get correct image src from BE filename or url
+  getPlantImageSrc(imageUrl: string): string {
+    if (!imageUrl) return '';
+    // Nếu là ảnh ngoài (http/https không phải nội bộ BE) hoặc là Azure blob thì trả về nguyên url
+    if (/^https?:\/\//.test(imageUrl)) {
+      // Nếu là Azure blob thì trả về luôn
+      if (imageUrl.includes('plantcarestorage.blob.core.windows.net')) {
+        return imageUrl;
+      }
+      // Nếu là ảnh ngoài (không phải BE) cũng trả về luôn
+      return imageUrl;
+    }
+    // Nếu là BE trả về filename thì lấy filename cuối cùng
+    let filename = imageUrl;
+    if (imageUrl.includes('/')) filename = imageUrl.split('/').pop() || imageUrl;
+    return `/api/manager/plants/${filename}`;
+  }
   private destroy$ = new Subject<void>();
   private readonly baseUrl = `${environment.apiUrl}/manager`;
-  
+
   plantId: number = 0;
   plant: Plant | null = null;
   isUpdating = false;
+  selectedNewImageFile: File | null = null;
+  newImagePreviewUrl: string | null = null;
+  isUploadingImage: boolean = false;
   // loading, error, and success state handled by BaseAdminListComponent
   validationErrors: string[] = [];
   sidebarCollapsed = false;
@@ -125,6 +151,8 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       if (id && !isNaN(+id)) {
         this.plantId = +id;
         this.loadPlantData();
+        this.selectedNewImageFile = null;
+        this.isUploadingImage = false;
       } else {
         this.setError('Invalid plant ID');
         this.navigateBack();
@@ -151,6 +179,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     this.toast.info('Chuyển đến trang chỉnh sửa cây.');
     this.router.navigate(['/admin/plants/edit', this.plantId]);
   }
+  
 
   private loadPlantData(): void {
     this.setLoading(true);
@@ -163,11 +192,16 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
         next: (response) => {
           this.setLoading(false);
           if (response && response.data) {
-            this.plant = response.data;
-            this.populateForm(response.data);
+            // Ensure images is always an array of PlantImage
+            const data = response.data;
+            data.images = Array.isArray(data.images) ? data.images : [];
+            this.plant = data;
+            this.populateForm(data);
           } else if (response) {
-            this.plant = response;
-            this.populateForm(response);
+            const data = response;
+            data.images = Array.isArray(data.images) ? data.images : [];
+            this.plant = data;
+            this.populateForm(data);
           } else {
             this.setError('No plant data found');
           }
@@ -177,6 +211,83 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
           this.setLoading(false);
           this.setError('Không thể tải thông tin cây.');
           this.cdr.detectChanges();
+        }
+      });
+  }
+
+
+  // Handle file input change for new image
+  onNewImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedNewImageFile = input.files[0];
+      // Hiện preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.newImagePreviewUrl = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(this.selectedNewImageFile);
+    } else {
+      this.selectedNewImageFile = null;
+      this.newImagePreviewUrl = null;
+    }
+  }
+
+  // Upload new image for plant (max 3 images, if 3 then remove first, set new as primary)
+  onUploadNewImage(): void {
+    if (!this.plantId || !this.selectedNewImageFile) {
+      this.toast.error('Vui lòng chọn ảnh để tải lên.');
+      return;
+    }
+    if (!this.plant) return;
+    const images = Array.isArray(this.plant.images) ? this.plant.images : [];
+    const formData = new FormData();
+    formData.append('images', this.selectedNewImageFile);
+    let deleteImageIds: number[] = [];
+    let setPrimaryImageId: number | null = null;
+    // Nếu đã đủ 3 ảnh, xóa ảnh đầu tiên
+    if (images.length >= 3) {
+      deleteImageIds = [images[0].id];
+    }
+    // Khi upload ảnh mới, sẽ set nó làm primary (BE sẽ trả về id mới, FE reload lại)
+    // Gửi request
+    this.isUploadingImage = true;
+    this.setError('');
+    this.setSuccess('');
+    const apiUrl = `/api/manager/update-plant-images/${this.plantId}`;
+    formData.append('deleteImageIds', deleteImageIds.join(','));
+    // setPrimaryImageId sẽ được set sau khi upload xong (nếu BE cần, có thể truyền null)
+    this.http.put<ApiResponse>(apiUrl, formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.zone.run(() => {
+            this.isUploadingImage = false;
+            if (response && (response.success === true || response.status === 200)) {
+              this.toast.success('Tải ảnh lên thành công!');
+              this.setSuccess('Tải ảnh lên thành công!');
+              this.selectedNewImageFile = null;
+              this.newImagePreviewUrl = null;
+              this.loadPlantData();
+            } else {
+              this.toast.error(response.message || 'Tải ảnh lên thất bại!');
+              this.setError(response.message || 'Tải ảnh lên thất bại!');
+            }
+            this.cdr.detectChanges();
+          });
+        },
+        error: (error) => {
+          this.zone.run(() => {
+            this.isUploadingImage = false;
+            let msg = 'Có lỗi xảy ra khi tải ảnh lên!';
+            if (error && error.error && error.error.message) {
+              msg = error.error.message;
+            }
+            this.toast.error(msg);
+            this.setError(msg);
+            this.cdr.detectChanges();
+          });
         }
       });
   }

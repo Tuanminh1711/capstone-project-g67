@@ -1,1111 +1,930 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+// ...existing imports and decorator...
+
+
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
-import { FooterComponent } from '../../shared/footer/footer.component';
-import { DiseaseDetectionService } from './disease-detection.service';
-import { 
-  DiseaseDetectionResult,
-  DiseaseDetectionHistory,
-  PlantDisease,
-  TreatmentGuide
-} from './disease-detection.model';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { FormsModule } from '@angular/forms';
+
+// Interfaces
+interface PlantDisease {
+  id: number;
+  name: string;
+  scientificName: string;
+  category: string;
+  severity: string;
+  symptoms: string[];
+  treatment: string;
+  prevention: string;
+  affectedPlants: string[];
+  commonality: number;
+}
+
+interface DiseaseDetectionResult {
+  id: number;
+  detectedDisease: string;
+  confidenceScore: number;
+  severity: string;
+  symptoms: string;
+  recommendedTreatment: string;
+  status: string;
+  isConfirmed: boolean;
+  expertNotes?: string;
+  detectedAt: number;
+  treatedAt?: number;
+  treatmentResult?: string;
+  detectionMethod: 'IMAGE' | 'SYMPTOMS';
+  aiModelVersion: string;
+}
+
+interface DiseaseDetectionHistory {
+  id: number;
+  detectedDisease: string;
+  confidenceScore: number;
+  severity: string;
+  symptoms: string;
+  recommendedTreatment: string;
+  status: string;
+  isConfirmed: boolean;
+  expertNotes?: string;
+  detectedAt: number;
+  treatedAt?: number;
+  treatmentResult?: string;
+  detectionMethod: 'IMAGE' | 'SYMPTOMS';
+  aiModelVersion: string;
+}
+
+interface TreatmentGuide {
+  diseaseName: string;
+  treatment: string;
+  prevention: string;
+  medications: string[];
+  duration: string;
+  notes: string;
+  lastUpdated?: string;
+  source?: string;
+}
+
+interface DiseaseFilter {
+  searchKeyword: string;
+  selectedCategory: string;
+  selectedSeverity: string;
+  showOnlyCommon: boolean;
+  sortBy: 'name' | 'category' | 'severity' | 'common';
+  sortOrder: 'asc' | 'desc';
+}
 
 @Component({
   selector: 'app-disease-detection',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
-    RouterModule,
+    ReactiveFormsModule,
     TopNavigatorComponent
   ],
   templateUrl: './disease-detection.component.html',
-  styleUrls: ['./disease-detection.component.scss']
+  styleUrl: './disease-detection.component.scss'
 })
 export class DiseaseDetectionComponent implements OnInit, OnDestroy {
-  /**
-   * Helper to get symptoms as array (handles string or array)
-   */
-  getSymptomsArray(disease: any): string[] {
-  if (!disease || !disease.symptoms) return [];
-  if (Array.isArray(disease.symptoms)) return disease.symptoms;
-  if (typeof disease.symptoms === 'string') return disease.symptoms.split(',').map((s: string) => s.trim()).filter((s: string) => s);
-  return [];
-  }
-  activeTab: 'upload' | 'symptoms' | 'history' | 'diseases' = 'upload';
-  imageForm!: FormGroup;
-  symptomForm!: FormGroup;
-  isLoading = false;
-  error: string | null = null;
-  selectedFile: File | null = null;
-  imagePreviewUrl: string | null = null;
-  detectionResult: DiseaseDetectionResult | null = null;
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('imagePreview') imagePreview!: ElementRef<HTMLImageElement>;
   
-  // Tham chiếu đến phần kết quả để scroll/hightlight
-  resultPanelRef?: HTMLElement;
-  
-  // History data
-  historyPage = 0;
-  historyPageSize = 10;
-  historyTotalPages = 0;
-  historyTotalElements = 0;
-  detectionHistory: import('./disease-detection.model').DiseaseDetectionHistoryItem[] = [];
-  
-  // Common diseases & library
-  commonDiseases: PlantDisease[] = [];
-  diseaseLibrary: PlantDisease[] = [];
-  symptomSearchDiseases: PlantDisease[] = [];
-  symptomDescription: string = '';
-  selectedPlantType = '';
-  plantTypes = [
-    { value: 'indoor', label: 'Cây trồng trong nhà' },
-    { value: 'outdoor', label: 'Cây trồng ngoài trời' },
-    { value: 'fruit', label: 'Cây ăn quả' },
-    { value: 'vegetable', label: 'Rau củ' },
-    { value: 'flower', label: 'Hoa' },
-    { value: 'ornamental', label: 'Cây cảnh' }
-  ];
-  
-  public diseaseSearchText: string = '';
-
   private destroy$ = new Subject<void>();
   
-  // Storage keys for persistence
-  private readonly STORAGE_KEYS = {
-    ACTIVE_TAB: 'disease_detection_active_tab',
-    DETECTION_RESULT: 'disease_detection_result',
-    DETECTION_HISTORY: 'disease_detection_history',
-    DISEASE_LIBRARY: 'disease_detection_library',
-    SELECTED_PLANT_TYPE: 'disease_detection_plant_type',
-    HISTORY_PAGE: 'disease_detection_history_page',
-    HISTORY_TOTAL_PAGES: 'disease_detection_history_total_pages',
-    HISTORY_TOTAL_ELEMENTS: 'disease_detection_history_total_elements'
-  };
-
-  // Loading states for different operations
-  isImageUploading = false;
-  isSymptomAnalyzing = false;
-  isHistoryLoading = false;
-  isLibraryLoading = false;
-
-  // Error states for different operations
-  imageError: string | null = null;
-  symptomError: string | null = null;
-  historyError: string | null = null;
-  libraryError: string | null = null;
+  // Active tab
+  activeTab: 'image' | 'symptoms' | 'history' | 'library' = 'image';
+  
+  // Image detection
+  selectedImage: File | null = null;
+  imagePreviewUrl: string | null = null;
+  isDetectingFromImage = false;
+  imageDetectionResult: DiseaseDetectionResult | null = null;
+  
+  // Symptoms detection
+  symptomsForm: FormGroup;
+  isDetectingFromSymptoms = false;
+  symptomsDetectionResult: DiseaseDetectionResult | null = null;
+  
+  // Disease library
+  allDiseases: PlantDisease[] = [];
+  filteredDiseases: PlantDisease[] = [];
+  categories: string[] = [];
+  severities: string[] = [];
+  filterForm: FormGroup;
+  isLoadingLibrary = false;
+  isFiltering = false;
+  showAdvancedFilters = false;
+  
+  // History
+  detectionHistory: DiseaseDetectionHistory[] = [];
+  isLoadingHistory = false;
+  totalHistoryItems: number = 0;
+  
+  // Pagination
+  currentPage = 0;
+  pageSize = 12;
+  totalItems = 0;
+  pagedDiseases: PlantDisease[] = [];
+  
+  // Selected disease for detail view
+  selectedDisease: PlantDisease | null = null;
+  selectedTreatmentGuide: TreatmentGuide | null = null;
+  
+  // UI states
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
 
   constructor(
+    private http: HttpClient,
     private fb: FormBuilder,
-    private diseaseService: DiseaseDetectionService,
     private cdr: ChangeDetectorRef
   ) {
-    // Enable API now that backend is configured
-    this.diseaseService.enableApi();
+    this.symptomsForm = this.fb.group({
+      symptoms: ['', Validators.required]
+    });
+
+    this.filterForm = this.fb.group({
+      searchKeyword: [''],
+      selectedCategory: ['all'],
+      selectedSeverity: ['all'],
+      showOnlyCommon: [false],
+      sortBy: ['name'],
+      sortOrder: ['asc']
+    });
+
+    // Initialize UI states to prevent ExpressionChangedAfterItHasBeenCheckedError
+    this.showAdvancedFilters = false;
+    this.pagedDiseases = [];
   }
 
-  /**
-   * Custom validator for symptoms array
-   */
-  atLeastOneSymptomValidator(control: AbstractControl) {
-    const symptoms = control.value;
-    if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
-      return { atLeastOneRequired: true };
+  // Force change detection to update UI
+  private forceChangeDetection(): void {
+    this.cdr.detectChanges();
+    console.log('Change detection forced');
+  }
+
+  ngOnInit(): void {
+    this.initializeFilters();
+    this.setupFilterListeners();
+    
+    // Load data immediately and ensure it's displayed
+    this.loadInitialData();
+  }
+
+  private async loadInitialData(): Promise<void> {
+    try {
+      // Load diseases library first
+      await this.loadDiseases();
+      
+      // Force change detection after loading diseases
+      this.cdr.detectChanges();
+      
+      // Load detection history
+      await this.loadDetectionHistory();
+      
+      // Force change detection after loading history
+      this.cdr.detectChanges();
+      
+      // Final force change detection
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 200);
+      
+    } catch (error) {
+      console.error('Error in loadInitialData:', error);
     }
-    return null;
   }
-
-          ngOnInit(): void {
-          this.initForms();
-          this.loadPersistedData();
-          // Don't call loadDetectionHistory() here - let setActiveTab handle it if needed
-        }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  /**
-   * Load persisted data from localStorage
-   */
-  private loadPersistedData(): void {
-    try {
-      // Load active tab
-      const savedTab = localStorage.getItem(this.STORAGE_KEYS.ACTIVE_TAB);
-      if (savedTab && ['upload', 'symptoms', 'history', 'diseases'].includes(savedTab)) {
-        this.activeTab = savedTab as any;
-      }
-
-      // Load detection result
-      const savedResult = localStorage.getItem(this.STORAGE_KEYS.DETECTION_RESULT);
-      if (savedResult) {
-        this.detectionResult = JSON.parse(savedResult);
-        // Defensive: ensure recommendations is always array
-        if (this.detectionResult && !Array.isArray(this.detectionResult.recommendations)) {
-          this.detectionResult.recommendations = [];
-        }
-        console.log('[DiseaseDetectionComponent] Loaded detection result from localStorage:', this.detectionResult);
-      }
-
-      // Load history data
-      const savedHistory = localStorage.getItem(this.STORAGE_KEYS.DETECTION_HISTORY);
-      if (savedHistory) {
-  this.detectionHistory = JSON.parse(savedHistory) || [];
-      }
-
-      // Load history pagination
-      const savedPage = localStorage.getItem(this.STORAGE_KEYS.HISTORY_PAGE);
-      if (savedPage) {
-        this.historyPage = parseInt(savedPage);
-      }
-
-      const savedTotalPages = localStorage.getItem(this.STORAGE_KEYS.HISTORY_TOTAL_PAGES);
-      if (savedTotalPages) {
-        this.historyTotalPages = parseInt(savedTotalPages);
-      }
-
-      const savedTotalElements = localStorage.getItem(this.STORAGE_KEYS.HISTORY_TOTAL_ELEMENTS);
-      if (savedTotalElements) {
-        this.historyTotalElements = parseInt(savedTotalElements);
-      }
-
-      // Load disease library
-      const savedLibrary = localStorage.getItem(this.STORAGE_KEYS.DISEASE_LIBRARY);
-      if (savedLibrary) {
-  this.diseaseLibrary = JSON.parse(savedLibrary) || [];
-      }
-
-      // Load selected plant type
-      const savedPlantType = localStorage.getItem(this.STORAGE_KEYS.SELECTED_PLANT_TYPE);
-      if (savedPlantType) {
-        this.selectedPlantType = savedPlantType;
-      }
-
-      // After loading persisted data, if the active tab needs data, load it
-      if (this.activeTab === 'history' && this.detectionHistory.length === 0) {
-        this.loadDetectionHistory();
-      } else if (this.activeTab === 'diseases' && this.diseaseLibrary.length === 0) {
-        this.onPlantTypeChange('indoor');
-      }
-
-    } catch (error) {
-      this.clearPersistedData();
-    }
-  }
-
-  /**
-   * Save data to localStorage for persistence
-   */
-  private savePersistedData(): void {
-    try {
-      // Save active tab
-      localStorage.setItem(this.STORAGE_KEYS.ACTIVE_TAB, this.activeTab);
-
-      // Save detection result
-      if (this.detectionResult) {
-        localStorage.setItem(this.STORAGE_KEYS.DETECTION_RESULT, JSON.stringify(this.detectionResult));
-      }
-
-      // Always save history data (even if empty) to maintain state
-      localStorage.setItem(this.STORAGE_KEYS.DETECTION_HISTORY, JSON.stringify(this.detectionHistory));
-
-      // Save history pagination
-      localStorage.setItem(this.STORAGE_KEYS.HISTORY_PAGE, this.historyPage.toString());
-      localStorage.setItem(this.STORAGE_KEYS.HISTORY_TOTAL_PAGES, this.historyTotalPages.toString());
-      localStorage.setItem(this.STORAGE_KEYS.HISTORY_TOTAL_ELEMENTS, this.historyTotalElements.toString());
-
-      // Always save disease library (even if empty) to maintain state
-      localStorage.setItem(this.STORAGE_KEYS.DISEASE_LIBRARY, JSON.stringify(this.diseaseLibrary));
-
-      // Save selected plant type
-      if (this.selectedPlantType) {
-        localStorage.setItem(this.STORAGE_KEYS.SELECTED_PLANT_TYPE, this.selectedPlantType);
-      }
-
-    } catch (error) {
-      // Error saving persisted data
-    }
-  }
-
-  /**
-   * Clear all persisted data
-   */
-  private clearPersistedData(): void {
-    Object.values(this.STORAGE_KEYS).forEach(key => {
-      localStorage.removeItem(key);
-    });
-  }
-
-  initForms(): void {
-    this.imageForm = this.fb.group({});
-    // Only one field for symptom detection
-    this.symptomForm = this.fb.group({
-      description: ['', [Validators.required, Validators.minLength(10)]]
-    });
-  }
-
-  // Treatment guide
-  treatmentGuide: TreatmentGuide | null = null;
-  
-  openTreatmentGuide(diseaseName: string | undefined): void {
-    if (!diseaseName) {
-      this.error = 'Không thể mở thông tin bệnh: thiếu tên bệnh.';
-      return;
-    }
-    
-    // Get treatment guide directly
-    this.getTreatmentGuide(diseaseName);
-  }
-
-  /**
-   * Set active tab
-   */
-  setActiveTab(tab: 'upload' | 'symptoms' | 'history' | 'diseases'): void {
+  // ==================== TAB MANAGEMENT ====================
+  setActiveTab(tab: 'image' | 'symptoms' | 'history' | 'library'): void {
     this.activeTab = tab;
-    this.error = null;
-    // Don't clear detection result when switching tabs
-    // this.detectionResult = null;
-
+    
+    // Force change detection when switching tabs
+    this.cdr.detectChanges();
+    
+    // Load specific data for each tab
     if (tab === 'history') {
-      // Reset về trang đầu khi chuyển sang tab lịch sử
-      this.historyPage = 0;
-      this.loadDetectionHistory(0);
-    } else if (tab === 'diseases') {
-      // Only load diseases if we don't have data or if there was an error
-      if (this.diseaseLibrary.length === 0 || this.libraryError) {
-        this.onPlantTypeChange('indoor');
+      this.loadDetectionHistory();
+    } else if (tab === 'library') {
+      // Ensure diseases are loaded
+      if (this.allDiseases.length === 0) {
+        this.loadDiseases();
       }
     }
-
-    // Save active tab
-    this.savePersistedData();
+    
+    // Force change detection again after loading data
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
   }
 
-  /**
-   * File selection handler
-   */
-  onFileSelected(event: any): void {
+  // ==================== IMAGE DETECTION ====================
+  onImageSelected(event: any): void {
     const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      this.imageError = null;
-      // Create a preview immediately
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreviewUrl = reader.result as string;
-        this.cdr.detectChanges();
-      };
-      reader.readAsDataURL(file);
+    if (file && file.type.startsWith('image/')) {
+      this.selectedImage = file;
+      this.createImagePreview(file);
+      this.clearMessages();
     } else {
-      this.selectedFile = null;
-      this.imagePreviewUrl = null;
+      this.showError('Vui lòng chọn file ảnh hợp lệ');
     }
   }
-  /**
-   * Remove selected image and clear preview/error
-   */
-  clearImage() {
-    this.selectedFile = null;
-    this.imagePreviewUrl = null;
-    this.imageError = null;
-  }
 
-  /**
-   * Upload image for analysis
-   */
-  uploadImage(): void {
-    if (!this.selectedFile) {
-      return;
-    }
-
-    this.isImageUploading = true;
-    this.imageError = null;
-    // Don't clear detection result immediately
-    // this.detectionResult = null;
-
-    this.diseaseService.detectDiseaseFromImage(this.selectedFile)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
-          this.detectionResult = result;
-          console.log('[DiseaseDetectionComponent] Detection result set from image upload:', result);
-          this.isImageUploading = false;
-          this.clearError('image');
-          // Tự động lấy hướng dẫn điều trị khi có kết quả
-          if (result && result.detectedDisease) {
-            this.getTreatmentGuide(result.detectedDisease);
-          }
-          // Save to localStorage for persistence
-          this.savePersistedData();
-          // Scroll to result
-          this.scrollToResult();
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          // Check if this is a JSON parsing error or timeout
-          const isJsonParsingError = err.message && (
-            err.message.includes('Expected') && err.message.includes('JSON') ||
-            err.message.includes('JSON parsing error') ||
-            err.name === 'TimeoutError'
-          );
-          const isServerError = err.status === 500 || err.status === 404;
-          
-          if (isJsonParsingError || isServerError) {
-            this.imageError = null; // Don't show error for better UX
-            this.isImageUploading = false;
-            const mockResult = this.getMockDetectionResult();
-            this.detectionResult = mockResult;
-            // Save mock result to localStorage
-            this.savePersistedData();
-            
-            // Force change detection
-            this.cdr.detectChanges();
-            
-            // Auto-scroll to result
-            setTimeout(() => {
-              const el = document.getElementById('detection-result-panel');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                el.classList.add('highlight-result');
-                setTimeout(() => el.classList.remove('highlight-result'), 2000);
-              }
-            }, 100);
-          } else {
-            this.imageError = 'Không thể phân tích hình ảnh. Vui lòng thử lại sau.';
-            this.isImageUploading = false;
-          }
-        }
-      });
-  }
-
-  /**
-   * Handle symptom checkbox change
-   */
-  onSymptomChange(event: any): void {
-    const symptoms = this.symptomForm.get('symptoms')?.value || [];
-    const symptomValue = event.target.value;
-    
-    if (event.target.checked) {
-      if (!symptoms.includes(symptomValue)) {
-        symptoms.push(symptomValue);
-      }
-    } else {
-      const index = symptoms.indexOf(symptomValue);
-      if (index > -1) {
-        symptoms.splice(index, 1);
-      }
-    }
-    
-    this.symptomForm.patchValue({ symptoms });
-  }
-
-  /**
-   * Check if symptom form can be submitted
-   */
-  canSubmitSymptoms(): boolean {
-    const descriptionValid = this.symptomForm.get('description')?.valid;
-    return !!(descriptionValid && !this.isLoading);
-  }
-
-  /**
-   * Submit symptom analysis
-   */
-  submitSymptoms(): void {
-    this.symptomForm.markAllAsTouched();
-    if (!this.symptomForm.valid) {
-      return;
-    }
-    
-    this.isSymptomAnalyzing = true;
-    this.symptomError = null;
-    // Don't clear detection result immediately
-    // this.detectionResult = null;
-    
-    // Gửi đúng body cho backend: chỉ gồm description và detectionMethod
-    const body = {
-      description: this.symptomForm.get('description')?.value,
-      detectionMethod: 'SYMPTOMS'
+  private createImagePreview(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.imagePreviewUrl = e.target.result;
     };
-    
-    this.diseaseService.detectDiseaseFromSymptoms(body)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
-          this.detectionResult = result;
-          console.log('[DiseaseDetectionComponent] Detection result set from symptoms:', result);
-          this.isSymptomAnalyzing = false;
-          this.clearError('symptom');
-          // Tự động lấy hướng dẫn điều trị khi có kết quả
-          if (result && result.detectedDisease) {
-            this.getTreatmentGuide(result.detectedDisease);
-          }
-          // Save to localStorage for persistence
-          this.savePersistedData();
-          // Scroll to result
-          this.scrollToResult();
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          // Check if this is a JSON parsing error or timeout
-          const isJsonParsingError = err.message && (
-            err.message.includes('Expected') && err.message.includes('JSON') ||
-            err.message.includes('JSON parsing error') ||
-            err.name === 'TimeoutError'
-          );
-          const isServerError = err.status === 500 || err.status === 404;
-          
-          if (isJsonParsingError || isServerError) {
-            this.symptomError = null; // Don't show error for better UX
-            this.isSymptomAnalyzing = false;
-            const mockResult = this.getMockDetectionResultFromSymptoms(this.symptomForm.get('description')?.value || '');
-            this.detectionResult = mockResult;
-            
-            // Save mock result to localStorage
-            this.savePersistedData();
-            
-            // Force change detection
-            this.cdr.detectChanges();
-            
-            // Tự động scroll đến phần kết quả nếu có
-            setTimeout(() => {
-              const el = document.getElementById('detection-result-panel');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                el.classList.add('highlight-result');
-                setTimeout(() => el.classList.remove('highlight-result'), 2000);
-            }
-          }, 100);
-          } else {
-            this.symptomError = 'Không thể phân tích triệu chứng. Vui lòng thử lại sau.';
-            this.isSymptomAnalyzing = false;
-          }
-        }
-      });
-  }
-  /**
-   * Change history page and reload detection history
-   */
-  changeHistoryPage(newPage: number): void {
-    if (newPage < 0 || newPage >= this.historyTotalPages || newPage === this.historyPage) return;
-    this.historyPage = newPage;
-    this.loadDetectionHistory(newPage);
+    reader.readAsDataURL(file);
   }
 
-  /**
-   * Load detection history
-   */
-  loadDetectionHistory(page: number = 0): void {
-    this.isHistoryLoading = true;
-    this.historyError = null;
-
-    this.diseaseService.getDetectionHistory(page, this.historyPageSize)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
-          // Nếu response là kiểu mới, gán trực tiếp
-          if (result.content && Array.isArray(result.content)) {
-            // Map DiseaseDetectionResult[] to DiseaseDetectionHistoryItem[] for sorting
-            this.detectionHistory = result.content.map((item: any) => ({
-              id: item.detectionId ?? item.id,
-              detectedDisease: item.detectedDisease,
-              confidenceScore: item.confidenceScore,
-              severity: item.severity,
-              symptoms: item.symptoms ?? item.description ?? '',
-              recommendedTreatment: item.recommendedTreatment ?? (item.recommendations ? item.recommendations.join(', ') : null),
-              status: item.status ?? 'DETECTED',
-              isConfirmed: item.isConfirmed ?? false,
-              expertNotes: item.expertNotes ?? null,
-              detectedAt: item.detectedAt ?? item.createdAt ?? 0,
-              treatedAt: item.treatedAt ?? null,
-              treatmentResult: item.treatmentResult ?? null,
-              detectionMethod: item.detectionMethod ?? '',
-              aiModelVersion: item.aiModelVersion ?? ''
-            })).sort((a, b) => (b.detectedAt ?? 0) - (a.detectedAt ?? 0));
-            this.historyPage = result.currentPage ?? page;
-            this.historyTotalPages = result.totalPages ?? 1;
-            this.historyTotalElements = result.totalElements ?? result.content.length;
-          } else if (Array.isArray(result)) {
-            this.detectionHistory = result.map((item: any) => ({
-              id: item.detectionId ?? item.id,
-              detectedDisease: item.detectedDisease,
-              confidenceScore: item.confidenceScore,
-              severity: item.severity,
-              symptoms: item.symptoms ?? item.description ?? '',
-              recommendedTreatment: item.recommendedTreatment ?? (item.recommendations ? item.recommendations.join(', ') : null),
-              status: item.status ?? 'DETECTED',
-              isConfirmed: item.isConfirmed ?? false,
-              expertNotes: item.expertNotes ?? null,
-              detectedAt: item.detectedAt ?? item.createdAt ?? 0,
-              treatedAt: item.treatedAt ?? null,
-              treatmentResult: item.treatmentResult ?? null,
-              detectionMethod: item.detectionMethod ?? '',
-              aiModelVersion: item.aiModelVersion ?? ''
-            })).sort((a, b) => (b.detectedAt ?? 0) - (a.detectedAt ?? 0));
-            this.historyPage = 0;
-            this.historyTotalPages = 1;
-            this.historyTotalElements = result.length;
-          }
-          this.isHistoryLoading = false;
-          
-          // Save history data to localStorage
-          this.savePersistedData();
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          const isJsonParsingError = err.message && err.message.includes('Expected') && err.message.includes('JSON');
-          const isServerError = err.status === 500 || err.status === 404;
-          if (isJsonParsingError || isServerError) {
-            this.historyError = null;
-            this.isHistoryLoading = false;
-            this.detectionHistory = [];
-            this.historyPage = 0;
-            this.historyTotalPages = 0;
-            this.historyTotalElements = 0;
-            // Save empty history to localStorage
-            this.savePersistedData();
-            
-            // Force change detection
-            this.cdr.detectChanges();
-          } else {
-            this.historyError = 'Không thể tải lịch sử. Vui lòng thử lại sau.';
-            this.isHistoryLoading = false;
-            
-            // Force change detection
-            this.cdr.detectChanges();
-          }
-        }
-      });
-  }
-
-  /**
-   * Handle plant type change
-   */
-  onPlantTypeChange(plantType: string): void {
-    this.selectedPlantType = plantType;
-    this.isLibraryLoading = true;
-    this.libraryError = null;
-
-    this.diseaseService.getCommonDiseases(plantType)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (diseases) => {
-          this.diseaseLibrary = diseases;
-          this.isLibraryLoading = false;
-          // Save disease library to localStorage
-          this.savePersistedData();
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          // Check if this is a JSON parsing error (status 200 but invalid JSON)
-          const isJsonParsingError = err.message && err.message.includes('Expected') && err.message.includes('JSON');
-          const isServerError = err.status === 500 || err.status === 404;
-          
-          if (isJsonParsingError || isServerError) {
-            this.libraryError = null;
-            this.isLibraryLoading = false;
-            this.commonDiseases = this.getMockDiseases(plantType);
-            // Save mock data to localStorage
-            this.savePersistedData();
-            
-            // Force change detection
-            this.cdr.detectChanges();
-          } else {
-            this.libraryError = 'Không thể tải danh sách bệnh. Vui lòng thử lại sau.';
-            this.isLibraryLoading = false;
-            
-            // Force change detection
-            this.cdr.detectChanges();
-          }
-        }
-      });
-  }
-
-  /**
-   * Tìm kiếm bệnh qua mô tả triệu chứng (AI)
-   */
-  searchDiseasesByDescription(description: string): void {
-    if (!description || description.trim().length < 5) {
-      this.error = 'Vui lòng nhập mô tả triệu chứng (ít nhất 5 ký tự).';
+  async detectDiseaseFromImage(): Promise<void> {
+    if (!this.selectedImage) {
+      this.showError('Vui lòng chọn ảnh trước khi phát hiện bệnh');
       return;
     }
+
+    this.isDetectingFromImage = true;
+    this.clearMessages();
+
+    try {
+      const formData = new FormData();
+      formData.append('image', this.selectedImage);
+
+      const result = await firstValueFrom(
+        this.http.post<DiseaseDetectionResult>(
+          `/api/vip/disease-detection/detect-from-image`,
+          formData
+        )
+      );
+
+      if (result) {
+        this.imageDetectionResult = {
+          ...result,
+          detectedAt: Date.now()
+        };
+        this.showSuccess('Phát hiện bệnh thành công!');
+        this.loadDetectionHistory(); // Refresh history
+      }
+    } catch (error: any) {
+      console.error('Error detecting disease from image:', error);
+      this.showError('Có lỗi xảy ra khi phát hiện bệnh. Vui lòng thử lại.');
+    } finally {
+      this.isDetectingFromImage = false;
+    }
+  }
+
+  clearImageDetection(): void {
+    this.selectedImage = null;
+    this.imagePreviewUrl = null;
+    this.imageDetectionResult = null;
+    if (this.imageInput) {
+      this.imageInput.nativeElement.value = '';
+    }
+  }
+
+  // ==================== SYMPTOMS DETECTION ====================
+  async detectDiseaseFromSymptoms(): Promise<void> {
+    if (this.symptomsForm.invalid) {
+      this.showError('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+
+    this.isDetectingFromSymptoms = true;
+    this.clearMessages();
+
+    try {
+      // Prepare request with correct format
+      const symptomsText = this.symptomsForm.get('symptoms')?.value;
+      const request = {
+        description: symptomsText,
+        detectionMethod: 'SYMPTOMS' as const
+      };
+
+      console.log('Sending symptoms detection request:', request);
+
+      const result = await firstValueFrom(
+        this.http.post<DiseaseDetectionResult>(
+          `/api/vip/disease-detection/detect-from-symptoms`,
+          request
+        )
+      );
+
+      if (result) {
+        this.symptomsDetectionResult = {
+          ...result,
+          detectedAt: Date.now()
+        };
+        this.showSuccess('Phân tích triệu chứng thành công!');
+        this.loadDetectionHistory(); // Refresh history
+      }
+    } catch (error: any) {
+      console.error('Error detecting disease from symptoms:', error);
+      this.showError('Có lỗi xảy ra khi phân tích triệu chứng. Vui lòng thử lại.');
+    } finally {
+      this.isDetectingFromSymptoms = false;
+    }
+  }
+
+  clearSymptomsDetection(): void {
+    this.symptomsForm.reset();
+    this.symptomsDetectionResult = null;
+  }
+
+  // ==================== DETECTION HISTORY ====================
+  async loadDetectionHistory(): Promise<void> {
+    this.isLoadingHistory = true;
     
-    this.isLibraryLoading = true;
-    this.libraryError = null;
-    this.symptomSearchDiseases = [];
-    
-    // Use the correct API endpoint from backend
-    this.diseaseService.searchDiseases(description.trim())
+    try {
+      const response = await firstValueFrom(
+        this.http.get<any>(`/api/vip/disease-detection/history`)
+      );
+
+      // Handle paginated response from API
+      if (response && response.content) {
+        this.detectionHistory = [...response.content];
+        this.totalHistoryItems = response.totalElements;
+      } else {
+        this.detectionHistory = response ? [...response] : [];
+        this.totalHistoryItems = this.detectionHistory.length;
+      }
+      
+      // Force change detection immediately
+      this.cdr.detectChanges();
+      
+    } catch (error: any) {
+      console.error('Error loading detection history:', error);
+      this.detectionHistory = [];
+      this.totalHistoryItems = 0;
+    } finally {
+      this.isLoadingHistory = false;
+      
+      // Force change detection again after completion
+      this.cdr.detectChanges();
+    }
+  }
+
+  clearHistory(): void {
+    this.detectionHistory = [];
+  }
+
+  // ==================== DISEASE LIBRARY ====================
+  private initializeFilters(): void {
+    // Initialize filter options based on actual data
+    this.categories = ['all', 'Nấm', 'Vi khuẩn', 'Virus', 'Côn trùng', 'Sinh lý'];
+    this.severities = ['all', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+  }
+
+  private setupFilterListeners(): void {
+    // Search keyword with debounce
+    this.filterForm.get('searchKeyword')?.valueChanges
+      .pipe(
+        takeUntil(this.destroy$),
+        debounceTime(300),
+        distinctUntilChanged()
+      )
+      .subscribe(() => this.applyFilters());
+
+    // Other filters
+    this.filterForm.valueChanges
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (diseases) => {
-          this.symptomSearchDiseases = diseases;
-          this.isLibraryLoading = false;
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.libraryError = 'Không thể tìm kiếm bệnh. Vui lòng thử lại sau.';
-          this.isLibraryLoading = false;
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        }
-      });
+      .subscribe(() => this.applyFilters());
   }
 
-  /**
-   * Track by function for ngFor
-   */
-  trackById(index: number, item: any): number {
-    return item.id || item.detectionId || index;
-  }
-
-  trackByRecommendation(index: number, item: string): number {
-    return index;
-  }
-
-  
-
-  /**
-   * Format severity
-   */
-  formatSeverity(severity: string): string {
-    return this.diseaseService.formatSeverity(severity);
-  }
-
-  /**
-   * Get severity class
-   */
-  getSeverityClass(severity: string): string {
-    return this.diseaseService.getSeverityClass(severity);
-  }
-
-  /**
-   * Format date
-   */
-  formatDate(timestamp: number): string {
-    return this.diseaseService.formatDate(timestamp);
-  }
-
-  /**
-   * Clear detection result manually
-   */
-  clearDetectionResult(): void {
-    this.detectionResult = null;
-    this.treatmentGuide = null;
-    console.log('[DiseaseDetectionComponent] Detection result cleared');
+  private async loadDiseases(): Promise<void> {
+    this.isLoadingLibrary = true;
     
-    // Clear from localStorage
-    localStorage.removeItem(this.STORAGE_KEYS.DETECTION_RESULT);
+    try {
+      // Try to load from API first
+      const diseases = await this.fetchAllDiseases();
+      
+      if (diseases && diseases.length > 0) {
+        this.allDiseases = [...diseases];
+        this.totalItems = diseases.length;
+      } else {
+        // Fallback to mock data
+        this.allDiseases = [...this.getMockDiseases()];
+        this.totalItems = this.allDiseases.length;
+      }
+      
+      // Initialize filtered diseases immediately
+      this.filteredDiseases = [...this.allDiseases];
+      
+      // Apply initial filters and update pagination
+      this.applyFilters();
+      
+    } catch (error) {
+      console.error('Error loading diseases:', error);
+      // Use mock data as fallback
+      this.allDiseases = [...this.getMockDiseases()];
+      this.filteredDiseases = [...this.allDiseases];
+      this.totalItems = this.allDiseases.length;
+      
+      // Apply filters even with mock data
+      this.applyFilters();
+    } finally {
+      this.isLoadingLibrary = false;
+    }
+  }
+
+  private async fetchAllDiseases(): Promise<PlantDisease[]> {
+    try {
+      // Try to get common diseases first
+      const commonDiseases = await firstValueFrom(
+        this.http.get<PlantDisease[]>(
+          `/api/vip/disease-detection/common-diseases?plantType=general`
+        )
+      );
+
+      // If we have common diseases, use them as base
+      if (commonDiseases && commonDiseases.length > 0) {
+        return commonDiseases;
+      }
+
+      // Fallback: try to get diseases by category
+      const fungalDiseases = await firstValueFrom(
+        this.http.get<PlantDisease[]>(
+          `/api/vip/disease-detection/by-category?category=Fungal`
+        )
+      );
+
+      const bacterialDiseases = await firstValueFrom(
+        this.http.get<PlantDisease[]>(
+          `/api/vip/disease-detection/by-category?category=Bacterial`
+        )
+      );
+
+      return [...(fungalDiseases || []), ...(bacterialDiseases || [])];
+    } catch (error) {
+      console.error('Error fetching diseases:', error);
+      // Return mock data as fallback
+      return this.getMockDiseases();
+    }
+  }
+
+  private getMockDiseases(): PlantDisease[] {
+    const mockDiseases = [
+      {
+        id: 1,
+        name: 'Bệnh phấn trắng',
+        scientificName: 'Erysiphe cichoracearum',
+        category: 'Nấm',
+        severity: 'MEDIUM',
+        symptoms: ['Lá xuất hiện lớp phấn trắng', 'Lá vàng và rụng'],
+        treatment: 'Phun thuốc trừ nấm, cắt tỉa lá bệnh',
+        prevention: 'Tăng ánh sáng, giảm độ ẩm',
+        affectedPlants: ['Hoa hồng', 'Cúc', 'Dạ yến thảo'],
+        commonality: 1
+      },
+      {
+        id: 2,
+        name: 'Bệnh đốm đen',
+        scientificName: 'Diplocarpon rosae',
+        category: 'Nấm',
+        severity: 'HIGH',
+        symptoms: ['Đốm đen tròn trên lá', 'Lá vàng và rụng'],
+        treatment: 'Phun thuốc trừ nấm, vệ sinh vườn',
+        prevention: 'Tránh tưới nước lên lá',
+        affectedPlants: ['Hoa hồng', 'Cúc', 'Dạ yến thảo'],
+        commonality: 1
+      },
+      {
+        id: 3,
+        name: 'Rệp sáp',
+        scientificName: 'Pseudococcidae',
+        category: 'Côn trùng',
+        severity: 'MEDIUM',
+        symptoms: ['Côn trùng nhỏ màu trắng trên thân và lá'],
+        treatment: 'Phun thuốc trừ sâu, lau sạch rệp',
+        prevention: 'Tăng dinh dưỡng, kiểm tra thường xuyên',
+        affectedPlants: ['Tất cả các loại cây'],
+        commonality: 1
+      },
+      {
+        id: 4,
+        name: 'Thiếu dinh dưỡng',
+        scientificName: 'Nutrient Deficiency',
+        category: 'Sinh lý',
+        severity: 'LOW',
+        symptoms: ['Lá vàng', 'Cây còi cọc', 'Chậm phát triển'],
+        treatment: 'Bón phân đầy đủ, cải tạo đất',
+        prevention: 'Bón phân định kỳ',
+        affectedPlants: ['Tất cả các loại cây'],
+        commonality: 1
+      },
+      {
+        id: 5,
+        name: 'Bệnh gỉ sắt',
+        scientificName: 'Puccinia graminis',
+        category: 'Nấm',
+        severity: 'MEDIUM',
+        symptoms: ['Đốm nâu cam trên lá'],
+        treatment: 'Phun thuốc trừ nấm, cắt tỉa',
+        prevention: 'Tăng thông gió',
+        affectedPlants: ['Hoa hồng', 'Cúc'],
+        commonality: 1
+      },
+      {
+        id: 6,
+        name: 'Bệnh héo vi khuẩn',
+        scientificName: 'Ralstonia solanacearum',
+        category: 'Vi khuẩn',
+        severity: 'CRITICAL',
+        symptoms: ['Lá héo', 'Thân mềm', 'Rễ thối'],
+        treatment: 'Nhổ bỏ cây bệnh, xử lý đất',
+        prevention: 'Tưới nước vừa phải',
+        affectedPlants: ['Cà chua', 'Ớt', 'Cà tím'],
+        commonality: 1
+      },
+      {
+        id: 7,
+        name: 'Bệnh khảm lá',
+        scientificName: 'Tobacco mosaic virus',
+        category: 'Virus',
+        severity: 'HIGH',
+        symptoms: ['Lá có vệt xanh vàng', 'Biến dạng'],
+        treatment: 'Nhổ bỏ cây bệnh, diệt côn trùng',
+        prevention: 'Trồng cây kháng bệnh',
+        affectedPlants: ['Cà chua', 'Dưa chuột'],
+        commonality: 1
+      },
+      {
+        id: 8,
+        name: 'Thối rễ',
+        scientificName: 'Phytophthora spp.',
+        category: 'Nấm',
+        severity: 'CRITICAL',
+        symptoms: ['Rễ đen', 'Mềm', 'Cây héo'],
+        treatment: 'Cải tạo đất, thoát nước',
+        prevention: 'Tránh tưới quá nhiều',
+        affectedPlants: ['Tất cả các loại cây'],
+        commonality: 1
+      },
+      {
+        id: 9,
+        name: 'Cháy lá',
+        scientificName: 'Alternaria spp.',
+        category: 'Nấm',
+        severity: 'MEDIUM',
+        symptoms: ['Lá cháy từ mép vào trong'],
+        treatment: 'Phun thuốc trừ nấm, cắt tỉa',
+        prevention: 'Tăng ánh sáng, giảm độ ẩm',
+        affectedPlants: ['Hoa hồng', 'Cúc'],
+        commonality: 1
+      },
+      {
+        id: 10,
+        name: 'Thối thân',
+        scientificName: 'Sclerotinia sclerotiorum',
+        category: 'Nấm',
+        severity: 'HIGH',
+        symptoms: ['Thân mềm', 'Đen', 'Cây gãy'],
+        treatment: 'Cắt tỉa, phun thuốc',
+        prevention: 'Tăng thông gió',
+        affectedPlants: ['Hoa hồng', 'Cúc'],
+        commonality: 1
+      },
+      {
+        id: 11,
+        name: 'Bệnh thối ngọn xương rồng',
+        scientificName: 'Fusarium oxysporum',
+        category: 'Nấm',
+        severity: 'HIGH',
+        symptoms: ['Phần ngọn mềm nhũn', 'Đổi màu từ xanh sang nâu sẫm', 'Có thể chảy dịch nhầy'],
+        treatment: 'Cắt bỏ phần bị thối, xử lý vết cắt bằng thuốc nấm',
+        prevention: 'Sử dụng giá thể thoáng, thoát nước tốt, tránh tưới quá nhiều',
+        affectedPlants: ['Cây mọng nước', 'Xương rồng cảnh'],
+        commonality: 1
+      }
+    ];
+    
+    console.log('Generated mock diseases:', mockDiseases.length);
+    return mockDiseases;
+  }
+
+  private applyFilters(): void {
+    this.isFiltering = true;
+
+    const filters = this.filterForm.value;
+    let filtered = [...this.allDiseases];
+
+    // Search keyword filter
+    if (filters.searchKeyword && filters.searchKeyword.trim()) {
+      const keyword = filters.searchKeyword.toLowerCase();
+      filtered = filtered.filter(disease =>
+        disease.name.toLowerCase().includes(keyword) ||
+        disease.scientificName.toLowerCase().includes(keyword) ||
+        disease.symptoms.some(symptom => symptom.toLowerCase().includes(keyword)) ||
+        disease.treatment.toLowerCase().includes(keyword) ||
+        disease.prevention.toLowerCase().includes(keyword) ||
+        disease.affectedPlants.some(plant => plant.toLowerCase().includes(keyword))
+      );
+    }
+
+    // Category filter
+    if (filters.selectedCategory && filters.selectedCategory !== 'all') {
+      filtered = filtered.filter(disease => disease.category === filters.selectedCategory);
+    }
+
+    // Severity filter
+    if (filters.selectedSeverity && filters.selectedSeverity !== 'all') {
+      filtered = filtered.filter(disease => disease.severity === filters.selectedSeverity);
+    }
+
+    // Common diseases filter
+    if (filters.showOnlyCommon) {
+      filtered = filtered.filter(disease => disease.commonality === 1);
+    }
+
+    // Sorting
+    this.sortDiseases(filtered, filters.sortBy, filters.sortOrder);
+
+    // Update filtered diseases
+    this.filteredDiseases = [...filtered];
+    this.totalItems = filtered.length;
+    this.currentPage = 0;
+    
+    // Update paged diseases immediately
+    this.updatePagedDiseases();
+    
+    // Force change detection
+    this.cdr.detectChanges();
+    
+    this.isFiltering = false;
+  }
+
+  private sortDiseases(diseases: PlantDisease[], sortBy: string, sortOrder: string): void {
+    diseases.sort((a, b) => {
+      let aValue: any, bValue: any;
+
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'category':
+          aValue = a.category.toLowerCase();
+          bValue = b.category.toLowerCase();
+          break;
+        case 'severity':
+          aValue = this.getSeverityWeight(a.severity);
+          bValue = this.getSeverityWeight(b.severity);
+          break;
+        case 'common':
+          aValue = a.commonality;
+          bValue = b.commonality;
+          break;
+        default:
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }
+
+  private getSeverityWeight(severity: string): number {
+    const weights: { [key: string]: number } = {
+      'LOW': 1,
+      'MEDIUM': 2,
+      'HIGH': 3,
+      'CRITICAL': 4
+    };
+    return weights[severity] || 0;
+  }
+
+  private updatePagedDiseases(): void {
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    
+    // Create new array to trigger change detection
+    this.pagedDiseases = [...this.filteredDiseases.slice(startIndex, endIndex)];
+    
+    // Force change detection after updating
+    this.cdr.detectChanges();
+  }
+
+  // ==================== PAGINATION ====================
+  get paginatedDiseases(): PlantDisease[] {
+    return this.pagedDiseases;
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  get hasNextPage(): boolean {
+    return this.currentPage < this.totalPages - 1;
+  }
+
+  get hasPrevPage(): boolean {
+    return this.currentPage > 0;
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    const startPage = Math.max(0, Math.min(this.currentPage - 2, this.totalPages - maxVisiblePages));
+    const endPage = Math.min(startPage + maxVisiblePages, this.totalPages);
+    
+    for (let i = startPage; i < endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.updatePagedDiseases();
+    }
+  }
+
+  nextPage(): void {
+    if (this.hasNextPage) {
+      this.currentPage++;
+      this.updatePagedDiseases();
+    }
+  }
+
+  prevPage(): void {
+    if (this.hasPrevPage) {
+      this.currentPage--;
+      this.updatePagedDiseases();
+    }
+  }
+
+  // ==================== TREATMENT GUIDE ====================
+  async loadTreatmentGuide(diseaseName: string): Promise<void> {
+    try {
+      const guide = await firstValueFrom(
+        this.http.get<TreatmentGuide>(
+          `/api/vip/disease-detection/treatment-guide?diseaseName=${encodeURIComponent(diseaseName)}`
+        )
+      );
+
+      if (guide) {
+        this.selectedTreatmentGuide = guide;
+      }
+    } catch (error: any) {
+      console.error('Error loading treatment guide:', error);
+      this.showError('Không thể tải hướng dẫn điều trị');
+    }
+  }
+
+  closeTreatmentGuide(): void {
+    this.selectedTreatmentGuide = null;
+  }
+
+  // ==================== FILTER METHODS ====================
+  clearFilters(): void {
+    this.filterForm.patchValue({
+      searchKeyword: '',
+      selectedCategory: 'all',
+      selectedSeverity: 'all',
+      showOnlyCommon: false,
+      sortBy: 'name',
+      sortOrder: 'asc'
+    });
+    
+    // Reset to show all diseases
+    this.filteredDiseases = [...this.allDiseases];
+    this.totalItems = this.allDiseases.length;
+    this.currentPage = 0;
+    
+    // Update paged diseases immediately
+    this.updatePagedDiseases();
     
     // Force change detection
     this.cdr.detectChanges();
   }
 
-  /**
-   * Clear all errors
-   */
-  clearAllErrors(): void {
-    this.imageError = null;
-    this.symptomError = null;
-    this.historyError = null;
-    this.libraryError = null;
-    this.error = null;
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
   }
 
-  /**
-   * Clear specific error
-   */
-  clearError(errorType: 'image' | 'symptom' | 'history' | 'library'): void {
-    switch (errorType) {
-      case 'image':
-        this.imageError = null;
-        break;
-      case 'symptom':
-        this.symptomError = null;
-        break;
-      case 'history':
-        this.historyError = null;
-        break;
-      case 'library':
-        this.libraryError = null;
-        break;
-    }
+  // ==================== DISEASE DETAIL METHODS ====================
+  selectDisease(disease: PlantDisease): void {
+    this.selectedDisease = disease;
   }
 
-  /**
-   * Get mock detection result for demo when API is not available
-   */
-  private getMockDetectionResult(): DiseaseDetectionResult {
-    return {
-      detectionId: Math.floor(Math.random() * 1000),
-      detectedDisease: 'Bệnh đốm lá',
-      confidenceScore: 85.5,
-      severity: 'MEDIUM',
-      description: 'Bệnh này thường gặp ở cây cảnh trong nhà, được gây ra bởi nấm phát triển trong môi trường ẩm ướt. Các đốm nâu xuất hiện trên lá, có thể lan rộng và gây rụng lá.',
-      recommendations: [
-        'Cắt bỏ những lá bị bệnh nặng để ngăn lây lan',
-        'Phun thuốc diệt nấm sinh học 2-3 lần/tuần trong 2 tuần',
-        'Giảm tưới nước và tăng thông gió cho cây',
-        'Đặt cây ở nơi có ánh sáng gián tiếp, tránh ánh nắng trực tiếp',
-        'Sử dụng đất thoát nước tốt và tránh để nước đọng',
-        'Theo dõi tiến độ điều trị và ghi chép các thay đổi'
-      ],
-      createdAt: Date.now(),
-      plantName: 'Cây cảnh demo',
-      plantId: this.imageForm?.get('plantId')?.value || this.symptomForm?.get('plantId')?.value || 1
+  closeDiseaseDetail(): void {
+    this.selectedDisease = null;
+  }
+
+  // ==================== EXPORT METHODS ====================
+  exportToCSV(): void {
+    if (this.filteredDiseases.length === 0) return;
+
+    const headers = ['Tên bệnh', 'Tên khoa học', 'Loại bệnh', 'Mức độ', 'Triệu chứng', 'Điều trị', 'Phòng ngừa', 'Cây bị ảnh hưởng'];
+    const csvContent = [
+      headers.join(','),
+      ...this.filteredDiseases.map(disease => [
+        `"${disease.name}"`,
+        `"${disease.scientificName}"`,
+        `"${disease.category}"`,
+        `"${disease.severity}"`,
+        `"${disease.symptoms.join('; ')}"`,
+        `"${disease.treatment}"`,
+        `"${disease.prevention}"`,
+        `"${disease.affectedPlants.join('; ')}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `benh_cay_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // ==================== UTILITY METHODS ====================
+  getSeverityColor(severity: string): string {
+    const colors: { [key: string]: string } = {
+      'Low': '#28a745',
+      'Medium': '#ffc107',
+      'High': '#fd7e14',
+      'Critical': '#dc3545'
     };
+    return colors[severity] || '#6c757d';
   }
 
-  /**
-   * Get mock detection result based on symptoms for demo when API is not available
-   */
-  private getMockDetectionResultFromSymptoms(symptoms: string): DiseaseDetectionResult {
-    // Analyze symptoms to determine mock disease
-    const lowerSymptoms = symptoms.toLowerCase();
-    let detectedDisease = 'Bệnh đốm lá';
-    let description = 'Bệnh này thường gặp ở cây cảnh trong nhà, được gây ra bởi nấm phát triển trong môi trường ẩm ướt. Các đốm nâu xuất hiện trên lá, có thể lan rộng và gây rụng lá.';
-    let recommendations = [
-      'Cắt bỏ những lá bị bệnh nặng để ngăn lây lan',
-      'Phun thuốc diệt nấm sinh học 2-3 lần/tuần trong 2 tuần',
-      'Giảm tưới nước và tăng thông gió cho cây',
-      'Đặt cây ở nơi có ánh sáng gián tiếp, tránh ánh nắng trực tiếp',
-      'Sử dụng đất thoát nước tốt và tránh để nước đọng',
-      'Theo dõi tiến độ điều trị và ghi chép các thay đổi'
-    ];
-    let severity = 'MEDIUM';
-    let confidenceScore = 85.5;
-
-    if (lowerSymptoms.includes('vàng') || lowerSymptoms.includes('héo')) {
-      detectedDisease = 'Bệnh thối rễ';
-      description = 'Bệnh thối rễ thường xảy ra do tưới nước quá nhiều hoặc đất không thoát nước tốt. Rễ bị thối khiến cây không thể hấp thụ dinh dưỡng, dẫn đến lá vàng héo và cây chậm phát triển.';
-      recommendations = [
-        'Kiểm tra và cải thiện hệ thống thoát nước ngay lập tức',
-        'Giảm tần suất tưới nước, chỉ tưới khi đất khô 2-3cm bề mặt',
-        'Thay đất mới có khả năng thoát nước tốt (thêm cát, perlite)',
-        'Cắt bỏ phần rễ bị thối bằng dụng cụ sạch',
-        'Sử dụng thuốc kích thích ra rễ và thuốc trị nấm rễ',
-        'Đặt cây ở nơi thoáng gió, tránh ánh nắng trực tiếp trong thời gian hồi phục',
-        'Theo dõi sự phát triển của rễ mới và điều chỉnh chế độ chăm sóc'
-      ];
-      severity = 'HIGH';
-      confidenceScore = 92.0;
-    } else if (lowerSymptoms.includes('đốm') || lowerSymptoms.includes('nâu')) {
-      detectedDisease = 'Bệnh đốm lá';
-      description = 'Bệnh đốm lá do nấm gây ra, tạo ra các đốm nâu trên bề mặt lá. Bệnh phát triển mạnh trong môi trường ẩm ướt và có thể lây lan nhanh chóng nếu không được điều trị kịp thời.';
-      recommendations = [
-        'Cắt bỏ những lá bị bệnh nặng để ngăn lây lan',
-        'Phun thuốc diệt nấm sinh học 2-3 lần/tuần trong 2 tuần',
-        'Giảm tưới nước và tăng thông gió cho cây',
-        'Đặt cây ở nơi có ánh sáng gián tiếp, tránh ánh nắng trực tiếp',
-        'Sử dụng đất thoát nước tốt và tránh để nước đọng',
-        'Theo dõi tiến độ điều trị và ghi chép các thay đổi'
-      ];
-      severity = 'MEDIUM';
-      confidenceScore = 88.5;
-    } else if (lowerSymptoms.includes('trắng') || lowerSymptoms.includes('bột')) {
-      detectedDisease = 'Bệnh phấn trắng';
-      description = 'Bệnh phấn trắng tạo ra lớp bột trắng trên bề mặt lá, làm giảm khả năng quang hợp của cây. Bệnh thường xuất hiện khi độ ẩm cao và thông gió kém.';
-      recommendations = [
-        'Phun thuốc diệt nấm chuyên dụng cho bệnh phấn trắng',
-        'Tăng thông gió và giảm độ ẩm trong môi trường',
-        'Cắt bỏ lá bị bệnh nặng để ngăn lây lan',
-        'Tránh tưới nước lên lá, chỉ tưới vào gốc cây',
-        'Sử dụng baking soda pha loãng (1 thìa cà phê + 1 lít nước) để phun',
-        'Đặt cây ở nơi có ánh sáng tốt và thông gió',
-        'Theo dõi và ghi chép tiến độ điều trị'
-      ];
-      severity = 'MEDIUM';
-      confidenceScore = 90.0;
-    } else if (lowerSymptoms.includes('rệp') || lowerSymptoms.includes('sáp')) {
-      detectedDisease = 'Bệnh rệp sáp';
-      description = 'Rệp sáp là loại côn trùng hút nhựa cây, thường gặp ở cây trong nhà. Chúng tạo ra vết dính trên lá và làm cây yếu đi do mất dinh dưỡng.';
-      recommendations = [
-        'Sử dụng tăm bông nhúng cồn để lau sạch rệp sáp',
-        'Phun xà phòng diệt côn trùng (1 thìa xà phòng + 1 lít nước)',
-        'Sử dụng dầu neem hoặc dầu khoáng để diệt trừ',
-        'Tăng độ ẩm và thông gió để ngăn rệp sáp phát triển',
-        'Kiểm tra và cách ly cây bị bệnh khỏi cây khác',
-        'Theo dõi sự xuất hiện của rệp sáp mới',
-        'Sử dụng thiên địch như bọ rùa nếu có thể'
-      ];
-      severity = 'MEDIUM';
-      confidenceScore = 87.0;
-    }
-
-    return {
-      detectionId: Math.floor(Math.random() * 1000),
-      detectedDisease,
-      confidenceScore,
-      severity,
-      description,
-      recommendations,
-      createdAt: Date.now(),
-      plantName: 'Cây cảnh demo',
-      plantId: this.imageForm?.get('plantId')?.value || this.symptomForm?.get('plantId')?.value || 1
+  getCategoryIcon(category: string): string {
+    const icons: { [key: string]: string } = {
+      'Fungal': '🍄',
+      'Bacterial': '��',
+      'Viral': '🦠',
+      'Nematode': '🐛',
+      'Environmental': '🌡️',
+      'Nutritional': '🌱'
     };
+    return icons[category] || '🌿';
   }
 
-  /**
-   * Get mock diseases list for demo when API is not available
-   */
-  private getMockDiseases(plantType: string): PlantDisease[] {
-    const baseDiseases = [
-      {
-        id: 1,
-        name: 'Bệnh đốm lá',
-        scientificName: 'Leaf spot disease',
-        category: 'fungal',
-        severity: 'MEDIUM' as const,
-        description: 'Bệnh nấm phổ biến gây ra các đốm nâu trên lá',
-        symptoms: ['Đốm nâu trên lá', 'Lá héo vàng', 'Rụng lá sớm'],
-        causes: ['Độ ẩm cao', 'Thông gió kém', 'Tưới nước lên lá']
-      },
-      {
-        id: 2,
-        name: 'Bệnh thối rễ',
-        scientificName: 'Root rot',
-        category: 'fungal',
-        severity: 'HIGH' as const,
-        description: 'Bệnh nấm tấn công hệ thống rễ của cây',
-        symptoms: ['Lá vàng héo', 'Cây chậm phát triển', 'Rễ đen thối'],
-        causes: ['Tưới nước quá nhiều', 'Đất không thoát nước', 'Nấm bệnh']
-      }
-    ];
-
-    // Add specific diseases based on plant type
-    switch (plantType) {
-      case 'indoor':
-        return [...baseDiseases, {
-          id: 3,
-          name: 'Bệnh rệp sáp',
-          scientificName: 'Scale insects',
-          category: 'pest',
-          severity: 'MEDIUM' as const,
-          description: 'Côn trùng hút nhựa cây, thường gặp ở cây trong nhà',
-          symptoms: ['Vết dính trên lá', 'Lá vàng', 'Cây yếu đi'],
-          causes: ['Môi trường khô', 'Thiếu ánh sáng', 'Côn trùng']
-        }];
-      case 'outdoor':
-        return [...baseDiseases, {
-          id: 4,
-          name: 'Bệnh phấn trắng',
-          scientificName: 'Powdery mildew',
-          category: 'fungal',
-          severity: 'MEDIUM' as const,
-          description: 'Lớp bột trắng xuất hiện trên bề mặt lá',
-          symptoms: ['Lớp bột trắng trên lá', 'Lá cong quăn', 'Giảm quang hợp'],
-          causes: ['Độ ẩm cao', 'Nhiệt độ ấm', 'Thông gió kém']
-        }];
-      default:
-        return baseDiseases;
-    }
+  getDetectionMethodIcon(method: 'IMAGE' | 'SYMPTOMS'): string {
+    return method === 'IMAGE' ? '📷' : '🔍';
   }
 
-  /**
-   * Get treatment guide for detected disease
-   */
-  getTreatmentGuide(diseaseName: string | undefined): void {
-    this.error = null;
-    if (!diseaseName) {
-      this.treatmentGuide = null;
-      this.error = 'Không thể tải hướng dẫn điều trị: thiếu tên bệnh.';
-      return;
-    }
-    // Nếu là cây khỏe mạnh thì trả về thông báo đặc biệt
-    if (diseaseName.trim().toLowerCase() === 'cây khỏe mạnh' || diseaseName.trim().toLowerCase() === 'cay khoe manh') {
-      this.treatmentGuide = null;
-      this.error = 'Cây của bạn đang khỏe mạnh, không cần hướng dẫn điều trị.';
-      this.isLoading = false;
-      this.cdr.detectChanges();
-      return;
-    }
-    this.isLoading = true;
-    this.diseaseService.getTreatmentGuide(diseaseName)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (guide) => {
-          if (guide && guide.diseaseName) {
-            this.treatmentGuide = {
-              ...guide,
-              steps: Array.isArray(guide.steps) ? guide.steps : [],
-              requiredProducts: Array.isArray(guide.requiredProducts) ? guide.requiredProducts : [],
-              precautions: Array.isArray(guide.precautions) ? guide.precautions : [],
-            };
-            this.error = null;
-          } else {
-            this.treatmentGuide = null;
-            this.error = 'Không tìm thấy hướng dẫn điều trị cho bệnh này.';
-          }
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.treatmentGuide = null;
-          if (err && err.status === 404) {
-            this.error = 'Bệnh này chưa có phương pháp chữa trị chính xác. Vui lòng kết nối với chuyên gia để được hỗ trợ.';
-          } else if (err && err.status === 500) {
-            this.error = 'Lỗi máy chủ (500): Không thể xử lý yêu cầu. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.';
-          } else {
-            this.error = `Không thể tải hướng dẫn điều trị (Lỗi ${err?.status || 'không xác định'}). Vui lòng thử lại sau.`;
-          }
-          this.isLoading = false;
-        }
-      });
+  // ==================== MESSAGE MANAGEMENT ====================
+  private showSuccess(message: string): void {
+    this.successMessage = message;
+    this.errorMessage = '';
+    setTimeout(() => this.successMessage = '', 5000);
   }
 
-  /**
-   * Start tracking treatment progress
-   */
-  startTreatmentTracking(detectionId: number | undefined): void {
-    if (!detectionId) {
-      this.error = 'Không thể bắt đầu theo dõi điều trị: thiếu ID phát hiện bệnh.';
-      return;
+  private showError(message: string): void {
+    this.errorMessage = message;
+    this.successMessage = '';
+    setTimeout(() => this.errorMessage = '', 5000);
+  }
+
+  private clearMessages(): void {
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
+
+  // ==================== FORM VALIDATION ====================
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.symptomsForm.get(fieldName);
+    return field ? field.invalid && (field.dirty || field.touched) : false;
+  }
+
+  getFieldError(fieldName: string): string {
+    const field = this.symptomsForm.get(fieldName);
+    if (field && field.errors) {
+      if (field.errors['required']) return 'Trường này là bắt buộc';
+      if (field.errors['minlength']) return `Tối thiểu ${field.errors['minlength'].requiredLength} ký tự`;
+    }
+    return '';
+  }
+
+  // Method to force refresh current tab
+  refreshCurrentTab(): void {
+    if (this.activeTab === 'history') {
+      this.loadDetectionHistory();
+    } else if (this.activeTab === 'library') {
+      this.loadDiseases();
     }
     
-    this.isLoading = true;
-    
-    this.diseaseService.trackTreatmentProgress(detectionId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (progress) => {
-          this.isLoading = false;
-          // Sau khi theo dõi điều trị, reload lịch sử phát hiện bệnh
-          this.loadDetectionHistory();
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.error = 'Không thể bắt đầu theo dõi điều trị.';
-          this.isLoading = false;
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        }
-      });
+    // Force change detection
+    this.cdr.detectChanges();
   }
-
-  /**
-   * Update treatment progress
-   */
-  updateTreatmentProgress(detectionId: number, updateData: any): void {
-    this.isLoading = true;
-    
-    this.diseaseService.updateTreatmentProgress(detectionId, updateData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (progress) => {
-          this.isLoading = false;
-          
-          // Show success message or update UI
-          // this.showSuccessMessage('Tiến độ điều trị đã được cập nhật');
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.error = 'Không thể cập nhật tiến độ điều trị.';
-          this.isLoading = false;
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        }
-      });
-  }
-
-  /**
-   * Complete treatment
-   */
-  completeTreatment(detectionId: number, result: string, successRate: number): void {
-    this.isLoading = true;
-    
-    this.diseaseService.completeTreatment(detectionId, result, successRate)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (progress) => {
-          this.isLoading = false;
-          
-          // Show success message
-          // this.showSuccessMessage('Điều trị đã hoàn thành thành công!');
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.error = 'Không thể hoàn thành điều trị.';
-          this.isLoading = false;
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        }
-      });
-  }
-
-  /**
-   * Search diseases by keyword
-   */
-  searchDiseases(keyword: string): void {
-    if (!keyword || keyword.trim().length < 3) {
-      this.error = 'Vui lòng nhập từ khóa tìm kiếm (ít nhất 3 ký tự).';
-      return;
-    }
-    
-    this.isLibraryLoading = true;
-    this.libraryError = null;
-    
-    this.diseaseService.searchDiseases(keyword.trim())
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (diseases) => {
-          this.diseaseLibrary = diseases;
-          this.isLibraryLoading = false;
-          
-          // Save to localStorage
-          this.savePersistedData();
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.libraryError = 'Không thể tìm kiếm bệnh. Vui lòng thử lại sau.';
-          this.isLibraryLoading = false;
-          
-          // Force change detection
-          this.cdr.detectChanges();
-        }
-      });
-  }
-
-  /**
-   * Scroll to the detection result panel
-   */
-  private scrollToResult(): void {
-    setTimeout(() => {
-      const el = document.getElementById('detection-result-panel');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('highlight-result');
-        setTimeout(() => el.classList.remove('highlight-result'), 2000);
-      }
-    }, 100);
-  }
-
-  /**
-   * Clear detection result and reset form
-   */
 }

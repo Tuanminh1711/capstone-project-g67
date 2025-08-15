@@ -56,11 +56,14 @@
   align-items: flex-start;
 }
 .plant-image-block {
-  flex: 0 0 180px;
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 160px;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
 }
 .plant-image-gallery {
   display: flex;
