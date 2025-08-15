@@ -112,6 +112,26 @@ export class AdminSupportTicketsListComponent implements OnInit {
   }
 
   openReleaseDialog(ticket: AdminSupportTicket) {
+    // Check if ticket status allows release (only CLAIMED status)
+    if (ticket.status !== 'CLAIMED') {
+      let statusMessage = '';
+      switch (ticket.status) {
+        case 'OPEN':
+          statusMessage = 'Ticket này chưa được ai nhận, không thể trả lại.';
+          break;
+        case 'IN_PROGRESS':
+          statusMessage = 'Ticket đang được xử lý, không thể trả lại.';
+          break;
+        case 'CLOSED':
+          statusMessage = 'Ticket đã đóng, không thể trả lại.';
+          break;
+        default:
+          statusMessage = 'Trạng thái ticket không cho phép trả lại.';
+      }
+      this.toast.error(statusMessage);
+      return;
+    }
+
     const dialogRef = this.dialog.open(ReleaseTicketConfirmDialogComponent, {
       data: { ticketId: ticket.ticketId },
       width: '350px',
@@ -198,11 +218,12 @@ export class AdminSupportTicketsListComponent implements OnInit {
     });
   }
 
-  // Check if current admin can release this ticket (only who claimed it)
+  // Check if current admin can release this ticket (only who claimed it and only when CLAIMED status)
   canReleaseTicket(ticket: AdminSupportTicket): boolean {
-    // For list view, we don't have claimedByUserName, so hide the button
-    // User will need to go to detail view to perform actions
-    return false; // Hide release button in list view
+    // Only allow release when ticket is CLAIMED (not OPEN, IN_PROGRESS, or CLOSED)
+    // In list view, we can't verify the claimedByUserName, so we'll need to check in detail
+    // For now, show the button only for CLAIMED status - actual permission will be checked in dialog
+    return ticket.status === 'CLAIMED';
   }
 
   // Check if current admin can process this ticket (only who claimed it)

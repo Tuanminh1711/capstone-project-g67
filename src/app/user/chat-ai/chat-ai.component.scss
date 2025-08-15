@@ -111,7 +111,10 @@ h2 {
   position: relative;
   word-break: break-word;
   overflow-wrap: break-word;
-  white-space: pre-line;
+  white-space: normal; // Thay đổi từ pre-wrap thành normal để tự động xuống dòng
+  hyphens: auto;
+  min-width: 0;
+  overflow: hidden; // Đảm bảo không bị tràn
 }
 .user-msg .chat-bubble {
   background: #e3f2fd;
@@ -132,39 +135,6 @@ h2 {
   border-top-left-radius: 12px;
 }
 
-.chat-bubble {
-  background: #f5fdfb;
-  border-radius: 12px;
-  padding: 8px 14px 8px 14px;
-  font-size: 1rem;
-  max-width: 70vw;
-  min-width: 40px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.06);
-  position: relative;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-line;
-}
-.user-msg .chat-bubble {
-  background: #e3f2fd;
-  color: #1976d2;
-  align-items: flex-end;
-  border-bottom-right-radius: 2px;
-  border-bottom-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-top-left-radius: 12px;
-}
-.ai-msg .chat-bubble {
-  background: #f5fdfb;
-  color: #178a4c;
-  align-items: flex-start;
-  border-bottom-left-radius: 2px;
-  border-bottom-right-radius: 12px;
-  border-top-right-radius: 12px;
-  border-top-left-radius: 12px;
-}
 .chat-meta {
   font-weight: 600;
   margin-bottom: 2px;
@@ -193,8 +163,10 @@ h2 {
   max-width: 100%;
   word-break: break-word;
   overflow-wrap: break-word;
-  white-space: pre-line;
+  white-space: normal; // Thay đổi từ pre-wrap thành normal để tự động xuống dòng
   overflow-x: hidden;
+  hyphens: auto;
+  overflow: hidden; // Đảm bảo không bị tràn
 }
 
 .chat-time {

@@ -237,8 +237,8 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
 
   // Check if user can release a ticket
   canReleaseTicket(): boolean {
-    // Can release when ticket is CLAIMED or IN_PROGRESS and current user is the claimer
-    return (this.ticket?.status === 'CLAIMED' || this.ticket?.status === 'IN_PROGRESS') && this.hasProcessPermission();
+    // Can only release when ticket is CLAIMED (not IN_PROGRESS, CLOSED, or OPEN) and current user is the claimer
+    return this.ticket?.status === 'CLAIMED' && this.hasProcessPermission();
   }
 
   // Check if user can respond to a ticket
@@ -341,6 +341,26 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
   // Release ticket action
   onReleaseTicket(): void {
     if (!this.ticket) return;
+
+    // Check if ticket status allows release (only CLAIMED status)
+    if (this.ticket.status !== 'CLAIMED') {
+      let statusMessage = '';
+      switch (this.ticket.status) {
+        case 'OPEN':
+          statusMessage = 'Ticket này chưa được ai nhận, không thể trả lại.';
+          break;
+        case 'IN_PROGRESS':
+          statusMessage = 'Ticket đang được xử lý, không thể trả lại.';
+          break;
+        case 'CLOSED':
+          statusMessage = 'Ticket đã đóng, không thể trả lại.';
+          break;
+        default:
+          statusMessage = 'Trạng thái ticket không cho phép trả lại.';
+      }
+      this.toastService.error(statusMessage);
+      return;
+    }
 
     const dialogRef = this.dialog.open(ReleaseTicketConfirmDialogComponent, {
       width: '400px',

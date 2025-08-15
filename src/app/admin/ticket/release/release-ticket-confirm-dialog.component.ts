@@ -10,14 +10,18 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
         <h3>Xác nhận trả lại ticket</h3>
       </div>
       <div class="dialog-body">
-        <p>Bạn có chắc chắn muốn trả lại ticket này?</p>
+        <p>Bạn có chắc chắn muốn trả lại ticket #{{ data.ticketId }} này không?</p>
+        <div class="warning-note">
+          <i class="fas fa-info-circle"></i>
+          <span>Lưu ý: Chỉ có thể trả lại ticket khi đang ở trạng thái "Đã nhận"</span>
+        </div>
       </div>
       <div class="dialog-footer">
         <button type="button" class="btn btn-secondary" (click)="close(false)">
           Hủy
         </button>
         <button type="button" class="btn btn-danger" (click)="close(true)">
-          Xác nhận
+          Xác nhận trả lại
         </button>
       </div>
     </div>

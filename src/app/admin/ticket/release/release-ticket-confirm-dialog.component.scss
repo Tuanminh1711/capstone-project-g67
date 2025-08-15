@@ -69,11 +69,28 @@
   padding: 16px 20px;
   
   p {
-    margin: 0;
+    margin: 0 0 12px 0;
     font-size: 14px;
     color: #666;
     text-align: center;
     line-height: 1.4;
+  }
+  
+  .warning-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    color: #856404;
+    font-size: 12px;
+    
+    i {
+      color: #f39c12;
+    }
   }
 }
 

@@ -491,6 +491,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
   position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word; // Bắt buộc ngắt từ dài
+  white-space: normal; // Thay đổi từ pre-wrap thành normal để tự động xuống dòng
+  min-width: 0;
+  hyphens: auto;
+  overflow: hidden; // Đảm bảo không bị tràn
 
   .message-content {
     display: flex;
@@ -523,7 +530,13 @@
     line-height: 1.4;
     color: #212529;
     word-wrap: break-word;
-    margin-bottom: 8px; // Tăng margin bottom để tách biệt với status
+    overflow-wrap: break-word;
+    word-break: break-word; // Bắt buộc ngắt từ dài
+    white-space: normal; // Thay đổi từ pre-wrap thành normal để tự động xuống dòng
+    hyphens: auto;
+    max-width: 100%;
+    margin-bottom: 8px;
+    overflow: hidden; // Đảm bảo không bị tràn
   }
 
   .message-status {
