@@ -203,10 +203,13 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   }
 
   private prepareRequestData() {
+    // Convert date to java.sql.Timestamp format
+    const plantingDate = this.formatToJavaTimestamp(new Date(this.formData.plantingDate + 'T00:00:00'));
+    
     return {
       plantId: this.formData.plantId,
       nickname: this.formData.nickname.trim(),
-      plantingDate: this.formData.plantingDate, // Keep as YYYY-MM-DD format
+      plantingDate: plantingDate, // java.sql.Timestamp format
       locationInHouse: this.formData.locationInHouse
     };
   }
@@ -536,5 +539,21 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   // Helper method to determine if submit button should be disabled
   isSubmitDisabled(): boolean {
     return this.loading || !this.isFormValid();
+  }
+
+  /**
+   * Format Date to java.sql.Timestamp compatible string
+   * Format: yyyy-MM-dd HH:mm:ss.SSS
+   */
+  private formatToJavaTimestamp(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 }

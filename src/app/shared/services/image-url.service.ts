@@ -33,9 +33,9 @@ export class ImageUrlService {
       return this.defaultPlantImage;
     }
 
-    // If it's a full HTTP/HTTPS URL (Azure Blob), use it directly in both dev and prod
+    // If it's a full HTTP/HTTPS URL (Azure Blob), use as-is since avatar works fine
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      console.log('🌐 Using Azure URL directly:', imageUrl);
+      console.log('🌐 Using original Azure URL:', imageUrl);
       return imageUrl;
     }
 
@@ -65,6 +65,87 @@ export class ImageUrlService {
     }
     
     return imageUrls.map(url => this.getImageUrl(url));
+  }
+
+  /**
+   * Fix malformed Azure Blob URLs
+   * Handles cases where URLs have incorrect path structure like:
+   * user-plants%2F{id}.jpg%2F{realId}.jpg -> {realId}.jpg
+   */
+  private fixAzureBlobUrl(originalUrl: string): string {
+    try {
+      // If it's not an Azure blob URL, return as-is
+      if (!originalUrl.includes('blob.core.windows.net')) {
+        return originalUrl;
+      }
+
+      // Decode the entire URL first to handle %2F encoding
+      const decodedUrl = decodeURIComponent(originalUrl);
+      
+      console.log('🔧 Original URL:', originalUrl);
+      console.log('🔧 Decoded URL:', decodedUrl);
+      
+      const url = new URL(decodedUrl);
+      const pathname = url.pathname; // Already decoded now
+      
+      // Check if the URL has malformed structure like /container/user-plants/{id}.jpg/{realId}.jpg
+      if (pathname.includes('/user-plants/') && pathname.includes('.jpg/')) {
+        console.log('🔧 Detected malformed path structure:', pathname);
+        
+        // Split the path and find the real image filename
+        const pathSegments = pathname.split('/').filter(s => s.length > 0);
+        console.log('🔧 Path segments:', pathSegments);
+        
+        // Find the segment that looks like a UUID or real filename (usually the last one)
+        let realImageName = '';
+        for (let i = pathSegments.length - 1; i >= 0; i--) {
+          const segment = pathSegments[i];
+          // Look for segment that's a UUID-like string with extension or just has image extension
+          if (segment.match(/^[a-f0-9\-]{36}\.(jpg|jpeg|png)$/i) || 
+              segment.match(/\.(jpg|jpeg|png)$/i)) {
+            realImageName = segment;
+            break;
+          }
+        }
+        
+        if (realImageName) {
+          const containerName = pathSegments[1] || 'plantcare-storage';
+          const fixedUrl = `${url.protocol}//${url.host}/${containerName}/${realImageName}`;
+          console.log('🔧 Fixed Azure URL:', fixedUrl);
+          return fixedUrl;
+        }
+      }
+      
+      // Check if URL has avatars path structure (similar issue might exist)
+      if (pathname.includes('/avatars/') && pathname.includes('.png/')) {
+        console.log('🔧 Detected malformed avatar path structure:', pathname);
+        
+        const pathSegments = pathname.split('/').filter(s => s.length > 0);
+        let realImageName = '';
+        
+        for (let i = pathSegments.length - 1; i >= 0; i--) {
+          const segment = pathSegments[i];
+          if (segment.match(/^[a-f0-9\-]{36}\.(jpg|jpeg|png)$/i) || 
+              segment.match(/\.(jpg|jpeg|png)$/i)) {
+            realImageName = segment;
+            break;
+          }
+        }
+        
+        if (realImageName) {
+          const containerName = pathSegments[1] || 'plantcare-storage';
+          const fixedUrl = `${url.protocol}//${url.host}/${containerName}/${realImageName}`;
+          console.log('🔧 Fixed Avatar URL:', fixedUrl);
+          return fixedUrl;
+        }
+      }
+      
+      // If no issues found, return the decoded URL (which should work)
+      return decodedUrl;
+    } catch (error) {
+      console.warn('Error fixing Azure URL:', originalUrl, error);
+      return originalUrl;
+    }
   }
 
   /**
@@ -120,13 +201,28 @@ export class ImageUrlService {
    */
   private constructAzureUrl(imagePath: string): string {
     if (imagePath.startsWith('https://')) {
-      return imagePath;
+      return this.fixAzureBlobUrl(imagePath);
     }
     
-    // Construct Azure blob URL (adjust based on your storage account)
+    // Clean the image path - remove any prefix paths that shouldn't be there
+    let cleanImagePath = imagePath;
+    
+    // If the path includes user-plants prefix, extract just the filename
+    if (cleanImagePath.includes('user-plants/')) {
+      const parts = cleanImagePath.split('/');
+      cleanImagePath = parts[parts.length - 1]; // Get the last part (filename)
+    }
+    
+    // Remove any URL encoding
+    cleanImagePath = decodeURIComponent(cleanImagePath);
+    
+    // Construct Azure blob URL with clean path
     const storageAccount = 'plantcarestorage';
     const containerName = 'plantcare-storage';
-    return `https://${storageAccount}.blob.core.windows.net/${containerName}/${imagePath}`;
+    const azureUrl = `https://${storageAccount}.blob.core.windows.net/${containerName}/${cleanImagePath}`;
+    
+    console.log(`🔗 Constructed Azure URL: ${imagePath} → ${azureUrl}`);
+    return azureUrl;
   }
 
   /**
@@ -180,5 +276,25 @@ export class ImageUrlService {
    */
   isDevelopmentMode(): boolean {
     return !environment.production;
+  }
+
+  /**
+   * Test method to verify URL fixing functionality
+   */
+  testUrlFix(): void {
+    const testUrls = [
+      "https://plantcarestorage.blob.core.windows.net/plantcare-storage/user-plants%2F247b2b19-4136-4820-90bb-ea3a77336656.jpg%2F642cf8e1-070b-47ad-ab9f-d390e85ed943.jpg",
+      "https://plantcarestorage.blob.core.windows.net/plantcare-storage/avatars%2Feff03e0b-45fa-42a5-881c-e3764293f7ab.png%2F36611dc6-e451-4092-86a2-dceeeaba63a7.png",
+      "https://plantcarestorage.blob.core.windows.net/plantcare-storage/cb638d67-1516-4f36-9a0f-eb4f2ad0d004.jpg",
+      "user-plants/some-id.jpg/real-image.jpg"
+    ];
+
+    console.log('🧪 Testing URL fixes:');
+    testUrls.forEach(url => {
+      const fixed = this.getImageUrl(url);
+      console.log(`  Input:  ${url}`);
+      console.log(`  Output: ${fixed}`);
+      console.log('  -----');
+    });
   }
 }

@@ -10,6 +10,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
 import { ImageUrlService } from '../../../shared/services/image-url.service';
 import { CookieService } from '../../../auth/cookie.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-update-plant',
@@ -509,24 +510,24 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         console.warn('Invalid date provided, using current date');
         dateObj = new Date();
       }
-      // Format: ISO 8601 (yyyy-MM-ddTHH:mm:ss.SSSX)
-      plantingDateFormatted = dateObj.toISOString();
+      // Format for java.sql.Timestamp: yyyy-MM-dd HH:mm:ss.SSS
+      plantingDateFormatted = this.formatToJavaTimestamp(dateObj);
     } else {
       const now = new Date();
-      plantingDateFormatted = now.toISOString();
+      plantingDateFormatted = this.formatToJavaTimestamp(now);
     }
 
     const processedData: UpdatePlantRequest = {
       userPlantId: this.userPlantId!.toString().trim(),
       nickname: (formValues.nickname || '').toString().trim(),
       locationInHouse: (formValues.locationInHouse || '').toString().trim(),
-      plantingDate: plantingDateFormatted, // ISO 8601 format for backend
+      plantingDate: plantingDateFormatted, // java.sql.Timestamp format for backend
       reminderEnabled: Boolean(formValues.reminderEnabled)
     };
 
     console.log('Form data processing:');
     console.log('- Original date:', formValues.plantingDate);
-    console.log('- Formatted:', plantingDateFormatted);
+    console.log('- Formatted (java.sql.Timestamp):', plantingDateFormatted);
     console.log('- Processed data:', processedData);
     return processedData;
   }
@@ -565,24 +566,29 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private handleSuccessfulUpdate(): void {
+    // Reset form states
     this.isSubmitting = false;
     this.isUpdatingImages = false;
-    // Khi cập nhật ảnh mới, luôn clear toàn bộ ảnh cũ trên UI
+    
+    // Clear image states if we updated images
     if (this.selectedImages && this.selectedImages.length > 0 && this.currentPlant) {
+      // Clear old images from display
       (this.currentPlant as any).imageUrls = [];
       (this.currentPlant as any).images = [];
     }
+    
+    // Clear form image state
     this.selectedImages = [];
     this.imagePreviewUrls.clear();
     
+    // Show success message
     this.toastService.success('Cập nhật thông tin cây thành công!');
     
-    // Navigate to plant detail page after successful update
+    // Navigate after a delay
     setTimeout(() => {
       if (this.userPlantId) {
         this.router.navigate(['/user/user-plant-detail', this.userPlantId]);
       } else {
-        // Fallback to my-garden if no plant ID
         this.router.navigate(['/my-garden']);
       }
     }, 1500);
@@ -685,6 +691,14 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
   // Method to refresh data when needed
   onPageVisible(): void {
+    // Clear failed images cache when user returns to page
+    this.imageUrlService.clearFailedImagesCache();
+    
+    // Test URL fixing functionality in development
+    if (!environment.production) {
+      this.imageUrlService.testUrlFix();
+    }
+    
     // Reload data if we don't have data or there's an error
     if (!this.isLoading && (!this.currentPlant || this.errorMessage)) {
       this.initializeComponent();
@@ -706,17 +720,28 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     this.isUpdatingImages = true;
     this.errorMessage = '';
     
-    // Trigger change detection
-    this.cdr.detectChanges();
-
     // Get current form values to preserve other data
     const currentFormValues = this.updateForm.value;
     const processedData = this.processFormData(currentFormValues);
     
-    // Update plant with new images
-    setTimeout(() => {
-      this.updatePlantWithImages(processedData);
-    }, 0);
+    // Update plant with new images using proper async handling
+    this.updatePlantWithImages(processedData);
+  }
+
+  /**
+   * Format Date to java.sql.Timestamp compatible string
+   * Format: yyyy-MM-dd HH:mm:ss.SSS
+   */
+  private formatToJavaTimestamp(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 
   /**
