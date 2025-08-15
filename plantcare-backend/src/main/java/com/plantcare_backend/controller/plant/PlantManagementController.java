@@ -347,4 +347,38 @@ public class PlantManagementController {
         }
     }
 
+    @PostMapping("/upload-plant-image")
+    public ResponseEntity<ResponseData<String>> uploadPlantImageForNewPlant(
+            @RequestParam("image") MultipartFile image) {
+        try {
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File is empty", null));
+            }
+
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File must be an image", null));
+            }
+
+            if (image.getSize() > 20 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File size must be less than 20MB", null));
+            }
+
+            String originalFilename = image.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + fileExtension;
+
+            String path = "plants/new/" + newFilename;
+            String imageUrl = azureStorageService.uploadFile(image, path);
+
+            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+        } catch (Exception e) {
+            log.error("Upload plant image failed", e);
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
+        }
+    }
 }

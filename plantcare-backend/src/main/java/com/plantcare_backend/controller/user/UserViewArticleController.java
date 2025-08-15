@@ -1,7 +1,5 @@
 package com.plantcare_backend.controller.user;
 
-import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
-import com.plantcare_backend.dto.response.Plants.UserPlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.base.ResponseData;
 import com.plantcare_backend.dto.response.base.ResponseError;
 import com.plantcare_backend.dto.response.expert.ArticleDetailResponseDTO;
