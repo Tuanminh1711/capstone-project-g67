@@ -13,6 +13,7 @@ import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantImageRepository;
 import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.repository.UserPlantRepository;
+import com.plantcare_backend.service.AzureStorageService;
 import com.plantcare_backend.service.UserPlantsService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +29,6 @@ import com.plantcare_backend.repository.CareTypeRepository;
 import com.plantcare_backend.repository.CareLogRepository;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -59,6 +56,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private final CareTypeRepository careTypeRepository;
     @Autowired
     private final CareLogRepository careLogRepository;
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @Override
     public UserPlantsSearchResponseDTO searchUserPlants(UserPlantsSearchRequestDTO request) {
@@ -240,13 +239,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
         log.info("Saving {} images for user plant ID: {}", images.size(), userPlant.getUserPlantId());
 
-        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-        Path uploadPath = Paths.get(uploadDir);
-
         try {
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
             List<UserPlantImage> userPlantImages = new ArrayList<>();
             for (MultipartFile image : images) {
                 if (image == null || image.isEmpty()) {
@@ -274,10 +267,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
                 String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-                Path filePath = uploadPath.resolve(newFilename);
-                Files.copy(image.getInputStream(), filePath);
-
-                String imageUrl = "/api/user-plants/" + newFilename;
+                // Sử dụng Azure Storage thay vì local
+                String path = "user-plants/" + userPlant.getUserPlantId() + "/" + newFilename;
+                String imageUrl = azureStorageService.uploadFile(image, path);
 
                 UserPlantImage userPlantImage = UserPlantImage.builder()
                         .userPlants(userPlant)
@@ -286,42 +278,32 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                         .build();
 
                 userPlantImages.add(userPlantImage);
-
                 log.info("Saved image: {} -> {}", originalFilename, imageUrl);
             }
+
             if (!userPlantImages.isEmpty()) {
                 userPlant.setImages(userPlantImages);
                 userPlantRepository.save(userPlant);
-
-                log.info("Successfully saved {} images for user plant ID: {}",
-                        userPlantImages.size(), userPlant.getUserPlantId());
+                log.info("Successfully saved {} images for user plant ID: {}", userPlantImages.size(), userPlant.getUserPlantId());
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error saving user plant images: {}", e.getMessage());
             throw new RuntimeException("Failed to save user plant images", e);
         }
     }
 
     private void deleteUserPlantImages(List<UserPlantImage> images) {
-        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-
         for (UserPlantImage image : images) {
             try {
                 String imageUrl = image.getImageUrl();
-                if (imageUrl != null && imageUrl.startsWith("/api/user-plants/")) {
-                    String filename = imageUrl.substring("/api/user-plants/".length());
-                    Path filePath = Paths.get(uploadDir, filename);
-
-                    if (Files.exists(filePath)) {
-                        Files.delete(filePath);
-                        log.info("Deleted image file: {}", filename);
-                    } else {
-                        log.warn("Image file not found: {}", filename);
-                    }
+                if (imageUrl != null) {
+                    // Xóa file từ Azure Storage
+                    azureStorageService.deleteFile(imageUrl);
+                    log.info("Deleted image from Azure: {}", imageUrl);
                 }
-            } catch (IOException e) {
-                log.error("Error deleting image file: {}", image.getImageUrl(), e);
+            } catch (Exception e) {
+                log.error("Error deleting image from Azure: {}", image.getImageUrl(), e);
             }
         }
     }

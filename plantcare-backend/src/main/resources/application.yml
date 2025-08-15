@@ -85,7 +85,7 @@ azure:
     connection-string: ${AZURE_STORAGE_CONNECTION_STRING}
     container-name: ${AZURE_STORAGE_CONTAINER_NAME:plantcare-storage}
     account-name: ${AZURE_STORAGE_ACCOUNT_NAME:plantcarestorage}
-    blob-endpoint: https://plantcarestorage.blob.core.windows.net
+    blob-endpoint: ${AZURE_STORAGE_BLOB_ENDPOINT:https://plantcarestorage.blob.core.windows.net}
     max-connections: 50
     connection-timeout: 30000
     read-timeout: 30000
