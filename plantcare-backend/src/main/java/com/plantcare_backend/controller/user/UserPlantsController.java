@@ -227,7 +227,8 @@ public class UserPlantsController {
             activityLogService.logActivity(userId.intValue(), "UPDATE_USER_PLANT_WITH_IMAGES",
                     "Updated user plant with images, ID: " + requestDTO.getUserPlantId(), request);
 
-            log.info("Successfully updated user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+            log.info("Successfully updated user plant with images for user: {}, plant ID: {}", userId,
+                    requestDTO.getUserPlantId());
             return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully with images");
         } catch (ResourceNotFoundException e) {
             log.warn("User plant not found for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
@@ -236,7 +237,8 @@ public class UserPlantsController {
             log.warn("Validation failed for user plant update: {}", e.getMessage());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         } catch (Exception e) {
-            log.error("Failed to update user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId(), e);
+            log.error("Failed to update user plant with images for user: {}, plant ID: {}", userId,
+                    requestDTO.getUserPlantId(), e);
             return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Failed to update user plant: " + e.getMessage());
         }

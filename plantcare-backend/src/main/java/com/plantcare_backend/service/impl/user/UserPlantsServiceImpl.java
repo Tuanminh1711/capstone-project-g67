@@ -284,7 +284,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
             if (!userPlantImages.isEmpty()) {
                 userPlant.setImages(userPlantImages);
                 userPlantRepository.save(userPlant);
-                log.info("Successfully saved {} images for user plant ID: {}", userPlantImages.size(), userPlant.getUserPlantId());
+                log.info("Successfully saved {} images for user plant ID: {}", userPlantImages.size(),
+                        userPlant.getUserPlantId());
             }
 
         } catch (Exception e) {
@@ -478,7 +479,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                             .userPlants(userPlant)
                             .imageUrl(update.getImageUrl())
                             .description(
-                                    update.getDescription() != null ? update.getDescription() : "User uploaded image")
+                            update.getDescription() != null ? update.getDescription() : "User uploaded image")
+                            .isPrimary(true)
                             .build();
                     userPlant.getImages().add(newImage);
                     log.info("Added new image for user plant: {}", userPlant.getUserPlantId());
