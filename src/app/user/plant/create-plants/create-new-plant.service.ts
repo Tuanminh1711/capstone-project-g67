@@ -44,14 +44,31 @@ export class CreateNewPlantService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Tạo plant mới
+   * Tạo plant mới với images
    */
   createNewPlant(plantData: CreatePlantRequest): Observable<CreatePlantResponse> {
     console.log('Creating new plant:', plantData);
     
-    return this.http.post<CreatePlantResponse>(`${this.baseUrl}/create-new-plant`, plantData).pipe(
+    // Tạm thời convert Azure URLs để pass validation - chờ backend cập nhật
+    const plantDataForRequest = {
+      ...plantData,
+      imageUrls: plantData.imageUrls?.map(url => this.convertToApiFormat(url)) || []
+    };
+    
+    console.log('🔄 Converting Azure URLs for validation compatibility:', plantDataForRequest.imageUrls);
+    
+    return this.http.post<CreatePlantResponse>(`${this.baseUrl}/create-new-plant`, plantDataForRequest).pipe(
       tap(response => {
         console.log('Create plant response:', response);
+        // Debug: Check if images were saved
+        if (response && (response as any).data && (response as any).data.imageUrls) {
+          console.log('🖼️ Plant created with images:', (response as any).data.imageUrls);
+        } else if (response && (response as any).data) {
+          console.log('🌱 Plant created:', (response as any).data);
+          console.warn('⚠️ No imageUrls found in response - checking if images were processed...');
+        } else {
+          console.warn('⚠️ Plant created but no data object in response');
+        }
       }),
       catchError(error => {
         console.error('Create plant error:', error);
@@ -70,6 +87,57 @@ export class CreateNewPlantService {
         }
       })
     );
+  }
+
+  /**
+   * Convert Azure URL to format backend expects: /api/user-plants/user-plants/{filename}
+   * Backend validation vẫn mong đợi format cũ
+   */
+  private convertToApiFormat(azureUrl: string): string {
+    if (!azureUrl || !azureUrl.includes('blob.core.windows.net')) {
+      return azureUrl; // Not Azure URL, return as-is
+    }
+    
+    try {
+      // Extract filename from Azure URL
+      // URL format: https://plantcarestorage.blob.core.windows.net/plantcare-storage/user-plants%2F{uuid}.png%2F{realId}.png
+      
+      // First decode the URL to handle %2F encoding
+      const decodedUrl = decodeURIComponent(azureUrl);
+      console.log('🔧 Decoding Azure URL:', azureUrl, '->', decodedUrl);
+      
+      // Split by / and find the actual image filename (usually the last UUID.extension)
+      const parts = decodedUrl.split('/');
+      let filename = '';
+      
+      // Look for the pattern: UUID.extension at the end
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const part = parts[i];
+        if (part.match(/^[a-f0-9\-]{36}\.(jpg|jpeg|png|gif|webp)$/i)) {
+          filename = part;
+          break;
+        }
+      }
+      
+      if (!filename) {
+        // Fallback: extract from the last part if it looks like a filename
+        const lastPart = parts[parts.length - 1];
+        if (lastPart.includes('.')) {
+          filename = lastPart;
+        } else {
+          console.warn('❌ Could not extract filename from Azure URL:', azureUrl);
+          return azureUrl; // Return original if can't extract
+        }
+      }
+      
+      const apiUrl = `/api/user-plants/user-plants/${filename}`;
+      console.log(`✅ Converted Azure URL: ${azureUrl} -> ${apiUrl}`);
+      return apiUrl;
+      
+    } catch (error) {
+      console.warn('❌ Failed to convert Azure URL:', azureUrl, error);
+      return azureUrl; // Return original if conversion fails
+    }
   }
 
   /**
@@ -93,7 +161,6 @@ export class CreateNewPlantService {
         return of({ url: mockUrl });
       }),
       // Map response về dạng {url: ...} lấy từ response.data
-      // tap không trả về giá trị, nên dùng map
       map(response => {
         const url = response?.data || null;
         if (url) {

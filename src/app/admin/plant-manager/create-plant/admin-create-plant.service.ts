@@ -62,11 +62,41 @@ export class AdminCreatePlantService {
     const url = `${this.baseUrl}/manager/upload-plant-image`;
     const formData = new FormData();
     formData.append('image', file);
-    // Không set Content-Type, để browser tự set multipart/form-data
-    const res: any = await firstValueFrom(this.http.post(url, formData));
-    if (res && res.status === 200 && res.data) {
-      return res.data; // chính là imageUrl trả về từ backend
+    
+    try {
+      console.log('Uploading image to:', url);
+      console.log('File details:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
+      
+      // Không set Content-Type, để browser tự set multipart/form-data
+      const res: any = await firstValueFrom(this.http.post(url, formData));
+      console.log('Upload response:', res);
+      
+      if (res && res.status === 200 && res.data) {
+        return res.data; // chính là imageUrl trả về từ backend
+      }
+      throw new Error(res?.message || 'Upload ảnh thất bại');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      console.error('Error details:', {
+        status: error.status,
+        statusText: error.statusText,
+        message: error.message,
+        error: error.error
+      });
+      
+      if (error.status === 404) {
+        throw new Error('API endpoint không tồn tại. Vui lòng kiểm tra backend server.');
+      } else if (error.status === 500) {
+        throw new Error('Lỗi server. Vui lòng kiểm tra backend logs.');
+      } else if (error.status === 401 || error.status === 403) {
+        throw new Error('Không có quyền truy cập. Vui lòng đăng nhập lại.');
+      }
+      
+      throw new Error(error?.error?.message || error?.message || 'Upload ảnh thất bại');
     }
-    throw new Error(res?.message || 'Upload ảnh thất bại');
   }
 }

@@ -205,8 +205,11 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
   }
 
   uploadImages(files: File[]) {
-    this.isUploadingImages = true;
-    this.cdr.detectChanges(); // Trigger change detection
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.isUploadingImages = true;
+      this.cdr.detectChanges();
+    });
 
     const uploadObservables = files.map(file =>
       this.createPlantService.uploadImage(file).pipe(
@@ -220,7 +223,8 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     forkJoin(uploadObservables).subscribe((results: any[]) => {
       const validUrls = results.map((r: any) => r.url).filter((url: any) => url !== null) as string[];
       this.imageUrls = [...this.imageUrls, ...validUrls];
-      // Sửa lỗi ExpressionChangedAfterItHasBeenCheckedError bằng setTimeout
+      
+      // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
       setTimeout(() => {
         this.isUploadingImages = false;
         this.cdr.detectChanges();
@@ -259,9 +263,17 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSubmitting = true;
-
     const formData = this.createPlantForm.value;
+    
+    // Debug: Log form data for validation
+    console.log('🔍 Form data validation:', formData);
+
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.isSubmitting = true;
+      this.cdr.detectChanges();
+    });
+
     const plantData: CreatePlantRequest = {
       ...formData,
       imageUrls: this.imageUrls
@@ -275,12 +287,18 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
               (response && !isNaN(statusNum) && statusNum >= 400 && response.message) ||
               (response && !isNaN(statusNum) && statusNum === 400)
             ) {
-              this.isSubmitting = false;
+              setTimeout(() => {
+                this.isSubmitting = false;
+                this.cdr.detectChanges();
+              });
               this.toastService.error(response.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại');
               return;
             }
             this.toastService.success('Tạo cây mới thành công!');
-            this.isSubmitting = false;
+            setTimeout(() => {
+              this.isSubmitting = false;
+              this.cdr.detectChanges();
+            });
             // Reset form
             this.createPlantForm.reset();
             this.imageUrls = [];
@@ -289,7 +307,10 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
             this.showSuccessOptions(response);
           },
           error: (error) => {
-            this.isSubmitting = false;
+            setTimeout(() => {
+              this.isSubmitting = false;
+              this.cdr.detectChanges();
+            });
             if (error && error.error && error.error.message) {
               this.toastService.error(error.error.message);
             } else if (error.status === 400) {
