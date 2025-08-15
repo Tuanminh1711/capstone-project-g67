@@ -6,6 +6,7 @@ import com.plantcare_backend.dto.response.auth.UpdateAvatarResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.service.AzureStorageService;
 import com.plantcare_backend.service.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,8 +39,11 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200/")
 public class UserProfileController {
     @Autowired
-    private final UserProfileService userProfileService;
-    private final UserRepository userRepository;
+    private UserProfileService userProfileService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfileRequestDTO> getCurrentUserProfile(@RequestAttribute("userId") Integer userId) {
@@ -124,17 +128,15 @@ public class UserProfileController {
     @GetMapping("/avatars/{filename}")
     public ResponseEntity<Resource> getAvatar(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get("uploads/avatars/").resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
+            String path = "avatars/" + filename;
+            String azureUrl = azureStorageService.generateBlobUrl(path);
 
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // Redirect to Azure Blob Storage URL
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, azureUrl)
+                    .build();
         } catch (Exception e) {
+            log.error("Error serving avatar: {}", filename, e);
             return ResponseEntity.notFound().build();
         }
     }
