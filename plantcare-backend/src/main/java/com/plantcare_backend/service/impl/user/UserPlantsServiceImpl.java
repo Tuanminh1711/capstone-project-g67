@@ -564,17 +564,28 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
         for (int i = 0; i < imageUrls.size(); i++) {
             String url = imageUrls.get(i);
+
+            String azureUrl = convertToAzureUrl(url);
+
             PlantImage image = new PlantImage();
             image.setPlant(plant);
-            image.setImageUrl(url);
+            image.setImageUrl(azureUrl);
             image.setIsPrimary(i == 0);
             plantImages.add(image);
         }
 
         plantImageRepository.saveAll(plantImages);
-
         plant.setImages(plantImages);
         plantRepository.save(plant);
+    }
+
+    private String convertToAzureUrl(String apiUrl) {
+        if (apiUrl != null && apiUrl.startsWith("/api/user-plants/user-plants/")) {
+            String filename = apiUrl.substring("/api/user-plants/user-plants/".length());
+            return azureStorageService.generateBlobUrl("user-plants/" + filename);
+        }
+
+        return apiUrl;
     }
 
     private UserPlantResponseDTO convertToUserPlantResponseDTO(Plants plant, UserPlants userPlant) {
