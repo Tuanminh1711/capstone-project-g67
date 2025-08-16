@@ -130,20 +130,14 @@ export class ReportListComponent implements OnInit, OnDestroy {
   onSearchInputChange(): void {
     clearTimeout(this.searchDebounce);
     this.searchDebounce = setTimeout(() => {
-      const keyword = this.searchText.trim();
-      if (keyword !== this.currentKeyword) {
-        this.pageNo = 0; // Reset về trang đầu khi search
-        this.loadReports();
-      }
+      this.pageNo = 0;
+      this.loadReports();
     }, 300);
   }
 
   onSearch(): void {
-    const keyword = this.searchText.trim();
-    if (keyword !== this.currentKeyword) {
-      this.pageNo = 0; // Reset về trang đầu khi search
-      this.loadReports();
-    }
+    this.pageNo = 0;
+    this.loadReports();
   }
 
   goToPage(page: number): void {

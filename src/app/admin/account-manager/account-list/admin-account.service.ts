@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ConfigService } from '../../../shared/config.service';
 
 export interface Account {
@@ -32,17 +33,19 @@ export class AdminAccountService {
     private configService: ConfigService
   ) {}
 
-  getAccounts(pageNo: number, pageSize: number, keyword: string = ''): Observable<AccountListResponse> {
-    let params = new HttpParams()
-      .set('pageNo', pageNo)
-      .set('pageSize', pageSize);
-    if (keyword && keyword.trim()) {
-      params = params.set('keyword', keyword.trim());
-    }
-    return this.http.post<AccountListResponse>(
-      `${this.apiUrl}/listaccount`,
-      {},
-      { params }
+  searchAccounts(keyword: string): Observable<Account[]> {
+    // Chuẩn bị body đúng chuẩn SearchAccountRequestDTO
+    const body = {
+      keyword: keyword.trim(),
+      pageNo: 0,
+      pageSize: 10000
+    };
+    return this.http.post<any>(
+      `${this.apiUrl}/search-account`,
+      body
+    ).pipe(
+      // Đảm bảo trả về mảng user
+      map((res: any) => res.data || [])
     );
   }
 

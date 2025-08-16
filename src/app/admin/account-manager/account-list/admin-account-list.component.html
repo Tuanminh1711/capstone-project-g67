@@ -9,6 +9,21 @@
         <div class="success-bar message-bar">{{ successMsg }}</div>
       }
     </div>
+    <div class="search-bar-modern">
+      <div class="search-input-wrapper">
+        <input
+          type="text"
+          class="search-input-modern"
+          placeholder="Tìm kiếm tài khoản (tên đăng nhập, email, họ tên...)"
+          [(ngModel)]="searchText"
+          (input)="onSearchInputChange()"
+          autocomplete="off"
+        />
+        <span class="search-icon">
+          <i class="fas fa-search"></i>
+        </span>
+      </div>
+    </div>
     <div class="table-wrapper">
       <table class="account-table">
         <thead>

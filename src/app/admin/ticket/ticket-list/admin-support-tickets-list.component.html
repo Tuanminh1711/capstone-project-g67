@@ -1,24 +1,21 @@
 <div class="admin-ticket-list-container">
   <div class="ticket-list-header">
     <h2>Danh sách phiếu hỗ trợ</h2>
-    <button class="reload-btn" (click)="loadTickets(0)" title="Tải lại danh sách">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
-        <path d="M4 10a6 6 0 1 1 6 6" stroke="#388e3c" stroke-width="2" fill="none"/>
-        <path d="M4 10V6M4 10h4" stroke="#388e3c" stroke-width="2" fill="none"/>
-      </svg>
-      Cập nhật
-    </button>
+  <!-- Đã bỏ nút cập nhật -->
   </div>
 
-  <div class="search-bar">
+  <div class="search-bar" style="position:relative;width:100%;max-width:none;margin:0 auto 18px auto;">
     <input 
       type="text" 
       [(ngModel)]="searchText" 
       (input)="onSearch()"
       placeholder="Tìm kiếm phiếu hỗ trợ..."
       class="search-input"
+      style="width:100%;padding:16px 48px 16px 20px;border-radius:12px;border:2px solid #e9ecef;font-size:1rem;background:#fff;transition:all 0.3s ease;box-shadow:none;outline:none;"
     >
-    <button (click)="onSearch()" class="search-btn">Tìm kiếm</button>
+    <span class="search-icon" style="position:absolute;right:22px;top:50%;transform:translateY(-50%);color:#388e3c;font-size:1.25em;pointer-events:none;background:transparent;z-index:2;">
+      <i class="fas fa-search"></i>
+    </span>
   </div>
 
   <div *ngIf="isLoading" class="loading-container">

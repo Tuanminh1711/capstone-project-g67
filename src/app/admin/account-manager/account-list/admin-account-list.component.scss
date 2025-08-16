@@ -1,5 +1,59 @@
+// Style giống search-input của disease-detection
+.search-input-modern {
+  width: 100%;
+  padding: 16px 48px 16px 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #fff;
+  transition: all 0.3s ease;
+  color: #222;
+  box-shadow: none;
+  outline: none;
+}
+.search-input-modern:focus {
+  border: 2px solid #4caf50;
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+  background: #fff;
+}
+// Modern search bar giống báo cáo
+.search-bar-modern {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 18px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 0 18px 0;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  min-width: 320px;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  background: transparent;
+  box-shadow: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #388e3c;
+  font-size: 1.18em;
+  pointer-events: none;
+  background: transparent;
+  z-index: 2;
+}
+
+// Đã xoá block trùng lặp và dòng lỗi cú pháp
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
   overflow-y: auto; /* hoặc scroll */
@@ -123,6 +177,7 @@ app-admin-sidebar {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  
 /* Responsive: allow cell content to wrap on small screens */
 @media (max-width: 700px) {
   .account-table th,

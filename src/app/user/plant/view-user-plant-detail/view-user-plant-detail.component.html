@@ -7,16 +7,16 @@
           <div class="plant-avatar-with-name">
             <div class="plant-name professional">{{ plant?.nickname || 'Chưa đặt tên' }}</div>
             <div class="plant-avatar-row-all">
-              <div class="plant-avatar big-horizontal professional" *ngFor="let img of [0,1,2]">
-                <ng-container *ngIf="plant?.imageUrls && plant.imageUrls.length > img; else noImages">
-                  <img class="plant-main-img big big-horizontal" [src]="getImageUrl(plant.imageUrls[img])" alt="Ảnh cây" (error)="onImageError($event)" />
-                </ng-container>
-                <ng-template #noImages>
-                  <div class="no-image-placeholder big big-horizontal">
-                    <span class="placeholder-icon">🌱</span>
-                  </div>
-                </ng-template>
-              </div>
+              <ng-container *ngIf="plant?.imageUrls && plant.imageUrls.length > 0; else noImages">
+                <div class="plant-avatar big-horizontal professional" *ngFor="let img of plant.imageUrls.slice(-3)">
+                  <img class="plant-main-img big big-horizontal" [src]="getImageUrl(img)" alt="Ảnh cây" (error)="onImageError($event)" />
+                </div>
+              </ng-container>
+              <ng-template #noImages>
+                <div class="no-image-placeholder big big-horizontal">
+                  <span class="placeholder-icon">🌱</span>
+                </div>
+              </ng-template>
             </div>
           </div>
         </div>

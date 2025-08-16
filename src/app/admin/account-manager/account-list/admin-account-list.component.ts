@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
 import { AdminAccountService, Account } from './admin-account.service';
 import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -14,7 +16,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
 @Component({
   selector: 'app-admin-account-list',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, FormsModule],
   templateUrl: './admin-account-list.component.html',
   styleUrls: ['./admin-account-list.component.scss']
 })
@@ -69,9 +71,9 @@ export class AdminAccountListComponent extends BaseAdminListComponent implements
     this.setError('');
     this.currentKeyword = keyword;
     this.sub.add(
-      this.accountService.getAccounts(0, 10000, keyword).subscribe({ // lấy tối đa 10000 user
-        next: res => {
-          this.allAccounts = res.data || [];
+      this.accountService.searchAccounts(keyword).subscribe({
+        next: (users) => {
+          this.allAccounts = users || [];
           this.totalElements = this.allAccounts.length;
           this.totalPages = Math.ceil(this.totalElements / this.pageSize) || 1;
           this.pageNo = 0;
