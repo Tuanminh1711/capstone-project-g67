@@ -1,0 +1,27 @@
+<div class="care-confirm-container">
+  <div class="confirm-hero">
+    <div class="plant-emoji">🌱</div>
+    <h2>Xác nhận chăm sóc cây</h2>
+  </div>
+  @if (loading) {
+    <div class="loading-block">
+      <div class="loader"></div>
+      <div class="loading-text">Đang xác nhận, vui lòng chờ...</div>
+    </div>
+  }
+  @if (success) {
+    <div class="success-block">
+      <div class="success-icon">🎉</div>
+      <div class="success-message">Bạn đã xác nhận chăm sóc thành công cho cây của mình!</div>
+      <button class="go-garden-btn" (click)="goToGarden()">
+        <i class="fas fa-seedling"></i> Về vườn của tôi
+      </button>
+    </div>
+  }
+  @if (error) {
+    <div class="error-block">
+      <div class="error-icon">😢</div>
+      <div class="error-message">Xác nhận thất bại: {{error}}</div>
+    </div>
+  }
+</div>

@@ -1,0 +1,110 @@
+.care-confirm-container {
+  max-width: 420px;
+  margin: 48px auto;
+  padding: 36px 28px 32px 28px;
+  background: linear-gradient(135deg, #e0ffe7 0%, #f0fff4 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(56,161,105,0.10);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.confirm-hero {
+  margin-bottom: 18px;
+}
+.plant-emoji {
+  font-size: 3.2rem;
+  margin-bottom: 8px;
+  animation: growPlant 1.2s ease;
+}
+@keyframes growPlant {
+  0% { transform: scale(0.2); opacity: 0; }
+  80% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+h2 {
+  font-size: 1.5rem;
+  color: #2f855a;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+.loading-block {
+  margin: 32px 0 16px 0;
+}
+.loader {
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #38a169;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 12px auto;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading-text {
+  color: #4a5568;
+  font-size: 1.08rem;
+}
+.success-block {
+  margin: 32px 0 16px 0;
+  animation: fadeIn 0.7s;
+}
+.success-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  animation: pop 0.7s;
+}
+.success-message {
+  color: #38a169;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.go-garden-btn {
+  background: linear-gradient(90deg, #38a169 0%, #48bb78 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(56,161,105,0.10);
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.go-garden-btn:hover {
+  background: linear-gradient(90deg, #319795 0%, #38a169 100%);
+  transform: translateY(-2px) scale(1.04);
+}
+.go-garden-btn i {
+  font-size: 1.2em;
+}
+.error-block {
+  margin: 32px 0 16px 0;
+  animation: fadeIn 0.7s;
+}
+.error-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+.error-message {
+  color: #dc3545;
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  0% { transform: scale(0.2); opacity: 0; }
+  80% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
+}

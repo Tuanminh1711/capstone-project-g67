@@ -332,6 +332,14 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     const isUpdatingSelf = currentUserId && this.userId === Number(currentUserId);
 
     // Validate form data based on update type
+
+    // Validate họ và tên chỉ chứa ký tự chữ (không số, không ký tự đặc biệt)
+    const namePattern = /^[a-zA-ZÀ-ỹ\s]+$/u;
+    if (!namePattern.test(this.formData.fullName.trim())) {
+      this.toastService.error('Họ và tên chỉ được chứa ký tự chữ, không chứa số hoặc ký tự đặc biệt!');
+      return;
+    }
+
     if (isUpdatingSelf || this.isSelfEdit) {
       // Self-edit: chỉ validate thông tin cơ bản (không cần email)
       if (!this.formData.fullName || !this.formData.phoneNumber) {
