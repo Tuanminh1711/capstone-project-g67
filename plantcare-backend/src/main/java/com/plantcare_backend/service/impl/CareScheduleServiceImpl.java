@@ -115,8 +115,8 @@ public class CareScheduleServiceImpl implements CareScheduleService {
             if (schedule.getNextCareDate().before(now) || schedule.getNextCareDate().equals(now)) {
                 // Kiểm tra thời gian reminder có phù hợp không (trong khoảng ±30 phút)
                 LocalTime reminderTime = schedule.getReminderTime();
-                LocalTime timeWindowStart = reminderTime.minusMinutes(30);
-                LocalTime timeWindowEnd = reminderTime.plusMinutes(30);
+                LocalTime timeWindowStart = reminderTime.minusMinutes(5);
+                LocalTime timeWindowEnd = reminderTime.plusMinutes(1);
 
                 if (currentTime.isAfter(timeWindowStart) && currentTime.isBefore(timeWindowEnd)) {
                     try {
