@@ -141,7 +141,11 @@
       <div *ngFor="let article of getCurrentPageArticles(); let i = index" class="article-card" [class.article-card-1]="i === 0" [class.article-card-2]="i === 1" [class.article-card-3]="i === 2">
         <div class="article-image-container">
           <div class="article-image-wrapper">
-            <img [src]="article.imageUrl || 'assets/image/banner_blog.jpg'" [alt]="article.title" class="article-image" />
+            <img [src]="article.imageUrl || 'assets/image/banner_blog.jpg'" [alt]="article.title" class="article-image" (error)="onArticleImageError($event, i)" />
+            <div *ngIf="articleImageError && articleImageError[i]" class="article-image-error-overlay">
+              <i class="fas fa-image-broken"></i>
+              <span>Ảnh không tồn tại</span>
+            </div>
             <div class="article-overlay">
               <div class="article-overlay-content">
                 <span class="read-more-icon">→</span>

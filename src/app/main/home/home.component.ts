@@ -10,6 +10,7 @@ import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { environment } from '../../../environments/environment';
+import { ImageUrlService } from '../../shared/services/image-url.service';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +21,19 @@ import { environment } from '../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit, OnDestroy {
+
+  // Trạng thái lỗi ảnh cho từng bài viết
+  articleImageError: boolean[] = [];
+
+  // Xử lý lỗi ảnh bài viết: nếu ảnh lỗi thì thay bằng ảnh mặc định và hiển thị overlay
+  onArticleImageError(event: Event, index: number) {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== 'assets/image/banner_blog.jpg') {
+      img.src = 'assets/image/banner_blog.jpg';
+    }
+    this.articleImageError[index] = true;
+    this.cdr.detectChanges();
+  }
   // Format excerpt: tách dòng nhẹ cho Home
   getExcerptFormatted(excerpt: string): string {
     if (!excerpt) return '';
@@ -35,9 +49,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     return excerpt ? excerpt.replace(/#/g, '') : '';
   }
   ngOnInit() {
-    console.log('HomeComponent ngOnInit called');
-    this.checkVnpaySuccess();
-    this.loadArticles();
+  console.log('HomeComponent ngOnInit called');
+  this.checkVnpaySuccess();
+  this.loadArticles();
   }
 
   // Articles slider properties
@@ -70,30 +84,47 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   // Load articles from API
+
   loadArticles() {
     console.log('Loading articles...');
     this.http.get(`${environment.baseUrl}/api/user_articles/get_list_articles?page=0&size=6`).subscribe({
       next: (res: any) => {
         console.log('API response:', res);
         if (res.data && res.data.content) {
-          this.articles = res.data.content.map((article: any) => ({
-            id: article.id,
-            title: article.title,
-            excerpt: article.excerpt || article.content?.substring(0, 150) + '...' || 'Khám phá kiến thức chăm sóc cây cảnh từ chuyên gia...',
-            imageUrl: article.imageUrls && article.imageUrls.length > 0 ? article.imageUrls[0] : 'assets/image/banner_blog.jpg',
-            categoryName: article.categoryName || 'KIẾN THỨC VÀ CÁCH CHĂM SÓC THÔNG TIN VỀ CÂY',
-            createdDate: article.createdDate || article.createdAt || new Date()
-          }));
+          this.articles = res.data.content.map((article: any, idx: number) => {
+            // Kiểm tra phòng thủ cho imageUrls
+            let safeImageUrl = '';
+            if (Array.isArray(article.imageUrls) && article.imageUrls.length > 0 && typeof article.imageUrls[0] === 'string') {
+              safeImageUrl = article.imageUrls[0];
+            } else {
+              if (article.imageUrls && article.imageUrls.length > 0) {
+                console.warn(`[Bài viết #${idx}] imageUrls không hợp lệ:`, article.imageUrls);
+              }
+              safeImageUrl = '';
+            }
+            // Reset trạng thái lỗi ảnh
+            this.articleImageError[idx] = false;
+            return {
+              id: article.id,
+              title: article.title,
+              excerpt: article.excerpt || article.content?.substring(0, 150) + '...' || 'Khám phá kiến thức chăm sóc cây cảnh từ chuyên gia...',
+              imageUrl: this.imageUrlService.getImageUrl(safeImageUrl, 'assets/image/banner_blog.jpg'),
+              categoryName: article.categoryName || 'KIẾN THỨC VÀ CÁCH CHĂM SÓC THÔNG TIN VỀ CÂY',
+              createdDate: article.createdDate || article.createdAt || new Date()
+            };
+          });
           console.log('Articles loaded from API:', this.articles);
           this.currentArticle = 0;
           if (this.articles.length > 0) {
             this.startArticlesAutoSlide();
           }
           this.cdr.detectChanges();
+        } else {
+          console.warn('Không có dữ liệu bài viết hoặc dữ liệu không hợp lệ:', res);
         }
       },
       error: (err) => {
-        console.error('Error loading articles:', err);
+        console.error('Lỗi khi tải bài viết:', err);
         this.articles = [];
         this.cdr.detectChanges();
       }
@@ -209,7 +240,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     public jwtUserUtil: JwtUserUtilService,
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
-    private toast: ToastService
+    private toast: ToastService,
+    private imageUrlService: ImageUrlService
   ) {
     console.log('HomeComponent constructor called');
     this.startBannerAutoSlide();
