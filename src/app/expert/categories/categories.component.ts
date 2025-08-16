@@ -7,6 +7,7 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { filter, takeUntil, switchMap } from 'rxjs/operators';
 import { Subject, of } from 'rxjs';
 import { ExpertService } from './categories.service';
+import { ToastService } from '../../shared/toast/toast.service';
 // Define interfaces for type safety
 interface Category {
   id: number;
@@ -52,7 +53,8 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     private expertService: ExpertService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {
     this.categoryForm = this.fb.group({
       name: ['', Validators.required],
@@ -152,9 +154,20 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       });
     } else {
       this.expertService.createCategory(data).subscribe({
-        next: () => {
+        next: (res) => {
           this.resetForm();
           this.loadCategories();
+          this.isLoading = false;
+          // Dịch message và hiện toast
+          let msg = 'Tạo chuyên mục thành công!';
+          if (res && res.message && res.status === 201) {
+            if (res.message.includes('Create category successfully')) {
+              msg = 'Tạo chuyên mục thành công!';
+            } else {
+              msg = res.message;
+            }
+          }
+          this.toastService.success(msg);
         },
         error: () => {
           this.error = 'Tạo chuyên mục thất bại.';
