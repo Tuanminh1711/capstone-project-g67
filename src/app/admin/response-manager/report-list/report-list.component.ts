@@ -31,9 +31,7 @@ export interface Report {
   styleUrls: ['./report-list.component.scss']
 })
 export class ReportListComponent implements OnInit, OnDestroy {
-  plantName: string = '';
-  reporterName: string = '';
-  status: string = '';
+  searchText: string = '';
   allReports: Report[] = [];
   private reportsSubject = new BehaviorSubject<Report[]>([]);
   reports$ = this.reportsSubject.asObservable();
@@ -43,7 +41,6 @@ export class ReportListComponent implements OnInit, OnDestroy {
   totalElements = 0;
   loading = false;
   errorMsg = '';
-  searchText = '';
   currentKeyword = '';
   searchDebounce: any;
   private sub: Subscription = new Subscription();
@@ -62,9 +59,6 @@ export class ReportListComponent implements OnInit, OnDestroy {
 
 
   constructor() {
-    this.plantName = '';
-    this.reporterName = '';
-    this.status = '';
     this.allReports = [];
     this.reportsSubject = new BehaviorSubject<Report[]>([]);
     this.reports$ = this.reportsSubject.asObservable();
@@ -95,10 +89,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
       page: this.pageNo.toString(),
       size: this.pageSize.toString(),
     };
-    if (this.currentKeyword) params.reason = this.currentKeyword;
-    if (this.plantName && this.plantName.trim()) params.plantName = this.plantName.trim();
-    if (this.reporterName && this.reporterName.trim()) params.reporterName = this.reporterName.trim();
-    if (this.status) params.status = this.status;
+    if (this.currentKeyword) params.keyword = this.currentKeyword;
     this.http.get<any>(`${environment.apiUrl}/manager/report-list`, { params }).subscribe({
       next: (res) => {
         const data = res.data || {};

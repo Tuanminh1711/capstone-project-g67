@@ -1,6 +1,5 @@
 <div class="admin-report-list-container" *ngIf="reports$ | async as reports">
   <div class="report-list-header">
-    <h2>Danh sách báo cáo vi phạm</h2>
   <!-- Đã bỏ nút cập nhật -->
   </div>
   
@@ -9,39 +8,15 @@
     <div *ngIf="successMsg" class="success-bar message-bar">{{ successMsg }}</div>
   </div>
 
-  <div class="search-bar" style="position:relative;width:100%;max-width:none;margin:0 auto 18px auto;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+  <div class="search-bar" style="position:relative;width:100%;max-width:none;margin:0 auto 18px auto;">
     <input 
       type="text" 
       [(ngModel)]="searchText" 
       (input)="onSearchInputChange()"
-      placeholder="Tìm kiếm lý do báo cáo..."
+      placeholder="Tìm kiếm báo cáo..."
       class="search-input"
-      style="flex:2 1 240px;padding:16px 48px 16px 20px;border-radius:12px;border:2px solid #e9ecef;font-size:1rem;background:#fff;transition:all 0.3s ease;box-shadow:none;outline:none;min-width:180px;"
+      style="width:100%;padding:16px 48px 16px 20px;border-radius:12px;border:2px solid #e9ecef;font-size:1rem;background:#fff;transition:all 0.3s ease;box-shadow:none;outline:none;"
     >
-    <input 
-      type="text" 
-      [(ngModel)]="plantName" 
-      (input)="onSearchInputChange()"
-      placeholder="Tên cây..."
-      class="search-input"
-      style="flex:1 1 160px;padding:16px 20px;border-radius:12px;border:2px solid #e9ecef;font-size:1rem;background:#fff;transition:all 0.3s ease;box-shadow:none;outline:none;min-width:120px;"
-    >
-    <input 
-      type="text" 
-      [(ngModel)]="reporterName" 
-      (input)="onSearchInputChange()"
-      placeholder="Người báo cáo..."
-      class="search-input"
-      style="flex:1 1 160px;padding:16px 20px;border-radius:12px;border:2px solid #e9ecef;font-size:1rem;background:#fff;transition:all 0.3s ease;box-shadow:none;outline:none;min-width:120px;"
-    >
-    <select [(ngModel)]="status" (change)="onSearchInputChange()" class="search-input" style="flex:0 1 140px;padding:16px 20px;border-radius:12px;border:2px solid #e9ecef;font-size:1rem;background:#fff;min-width:120px;">
-      <option value="">Tất cả trạng thái</option>
-      <option value="PENDING">Chờ xử lý</option>
-      <option value="CLAIMED">Đã nhận xử lý</option>
-      <option value="APPROVED">Đã duyệt</option>
-      <option value="REJECTED">Từ chối</option>
-      <option value="RESOLVED">Đã giải quyết</option>
-    </select>
     <span class="search-icon" style="position:absolute;right:22px;top:50%;transform:translateY(-50%);color:#388e3c;font-size:1.25em;pointer-events:none;background:transparent;z-index:2;">
       <i class="fas fa-search"></i>
     </span>
