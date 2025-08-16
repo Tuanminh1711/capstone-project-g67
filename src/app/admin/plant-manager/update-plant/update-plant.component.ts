@@ -315,7 +315,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
 
   onSubmit(): void {
     if (!this.validateForm()) {
-      this.setError('Vui lòng kiểm tra lại các trường dữ liệu!');
+      this.toast.error('Vui lòng điền đầy đủ thông tin bắt buộc.');
       return;
     }
     this.isUpdating = true;
@@ -358,41 +358,21 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   }
 
   private validateForm(): boolean {
-    this.validationErrors = [];
-
-    if (!this.updateForm.commonName?.trim()) {
-      this.validationErrors.push('Common name is required');
-    }
-
-    if (!this.updateForm.scientificName?.trim()) {
-      this.validationErrors.push('Scientific name is required');
-    }
-
-    if (!this.updateForm.categoryId || this.updateForm.categoryId <= 0) {
-      this.validationErrors.push('Valid category ID is required');
-    }
-
-    if (!['LOW', 'MEDIUM', 'HIGH'].includes(this.updateForm.lightRequirement)) {
-      this.validationErrors.push('Invalid light requirement');
-    }
-
-    if (!['LOW', 'MEDIUM', 'HIGH'].includes(this.updateForm.waterRequirement)) {
-      this.validationErrors.push('Invalid water requirement');
-    }
-
-    if (!['EASY', 'MODERATE', 'DIFFICULT'].includes(this.updateForm.careDifficulty)) {
-      this.validationErrors.push('Invalid care difficulty');
-    }
-
-    if (!['ACTIVE', 'INACTIVE'].includes(this.updateForm.status)) {
-      this.validationErrors.push('Invalid status');
-    }
-
-    if (this.validationErrors.length > 0) {
-      this.setError('Please fix the validation errors below');
+    // Require all fields, show toast if any is missing/invalid
+    const f = this.updateForm;
+    if (!f.commonName?.trim() ||
+        !f.scientificName?.trim() ||
+        !f.categoryId || f.categoryId <= 0 ||
+        !f.description?.trim() ||
+        !f.careInstructions?.trim() ||
+        !f.lightRequirement || !['LOW','MEDIUM','HIGH'].includes(f.lightRequirement) ||
+        !f.waterRequirement || !['LOW','MEDIUM','HIGH'].includes(f.waterRequirement) ||
+        !f.careDifficulty || !['EASY','MODERATE','DIFFICULT'].includes(f.careDifficulty) ||
+        !f.suitableLocation?.trim() ||
+        !f.commonDiseases?.trim() ||
+        !f.status || !['ACTIVE','INACTIVE'].includes(f.status)) {
       return false;
     }
-
     return true;
   }
 

@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { AuthService } from '../../../auth/auth.service';
+import { AdminPlantService } from './admin-plant.service';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule, NgIf, NgForOf } from '@angular/common';
@@ -8,6 +9,8 @@ import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs';
 import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { environment } from '../../../../environments/environment'; 
+
+
 interface Plant {
   id: number;
   scientificName: string;
@@ -33,8 +36,9 @@ interface Plant {
   templateUrl: './admin-plant-list.component.html',
   styleUrls: ['./admin-plant-list.component.scss'],
   imports: [
-    CommonModule, FormsModule, NgIf, NgForOf]
+    CommonModule, FormsModule]
 })
+
 export class AdminPlantListComponent extends BaseAdminListComponent implements OnInit, AfterViewInit {
   sidebarCollapsed = false;
   plantsSubject = new BehaviorSubject<Plant[]>([]);
@@ -58,10 +62,12 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
     private http: HttpClient, 
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private plantService: AdminPlantService
   ) {
     super();
   }
+
 
   ngOnInit() {
     // Check role before loading data
@@ -91,7 +97,6 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
     if (this.sortField) {
       url += `&sort=${this.sortField},${this.sortDirection}`;
     }
-    // ...existing code...
     return url;
   }
 
@@ -99,23 +104,37 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
     this.setLoading(true);
     this.setError('');
     const url = `${environment.apiUrl}/manager/search-plants`;
-    const body: any = { status: 'ACTIVE', page, size: this.pageSize };
+  const body: any = { page, size: this.pageSize };
     if (keyword && keyword.trim()) {
       body.keyword = keyword.trim();
     }
-    if (this.sortField) {
-      body.sort = `${this.sortField},${this.sortDirection}`;
-    }
+  // Không gửi sort lên backend vì DTO không hỗ trợ
     this.http.post<any>(url, body).subscribe({
       next: (res) => {
         const data = res?.data;
-        const plants = data?.content;
+        let plants = data?.content;
         if (!data || !Array.isArray(plants)) {
           this.plantsSubject.next([]);
           this.setError('Không có dữ liệu cây.');
           this.setLoading(false);
           this.cdr.detectChanges();
           return;
+        }
+        // Sort client-side nếu có sortField
+        if (this.sortField) {
+          plants = [...plants].sort((a, b) => {
+            const field = this.sortField;
+            let aValue = a[field];
+            let bValue = b[field];
+            // Nếu là string thì so sánh không phân biệt hoa thường
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              aValue = aValue.toLowerCase();
+              bValue = bValue.toLowerCase();
+            }
+            if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+          });
         }
         const plantsWithDefaults = plants.map((plant: Plant) => ({
           ...plant,
@@ -322,4 +341,78 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
     }
   }
 
+  // Format ngày không có giây
+  formatDateNoSeconds(dateString: string | null): string {
+    if (!dateString) return '';
+    try {
+      const d = new Date(dateString);
+      return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+        ' ' + d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return dateString;
+    }
+  }
+
+  // Đổi trạng thái cây từ dropdown
+  changePlantStatus(plant: Plant, event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const newStatus = select.value;
+    if (plant.status === newStatus) {
+      return; // No change
+    }
+    // Confirmation dialog
+    const confirmMsg = newStatus === 'ACTIVE' ?
+      'Bạn có chắc chắn muốn mở khóa cây này?' :
+      'Bạn có chắc chắn muốn khóa cây này?';
+    if (!window.confirm(confirmMsg)) {
+      // Revert dropdown selection if cancelled
+      select.value = plant.status;
+      return;
+    }
+    plant.isUpdating = true;
+    // You need to implement changePlantStatus in AdminPlantService
+    // Compose the update request with all required fields
+    const updateRequest = {
+      scientificName: plant.scientificName,
+      commonName: plant.commonName,
+      categoryId: (plant as any).categoryId || 1, // fallback if missing
+      description: plant.description,
+      careInstructions: plant.careInstructions || '',
+      lightRequirement: plant.lightRequirement || 'LOW',
+      waterRequirement: plant.waterRequirement || 'LOW',
+      careDifficulty: plant.careDifficulty || 'EASY',
+      suitableLocation: plant.suitableLocation || '',
+      commonDiseases: plant.commonDiseases || '',
+      status: newStatus
+    };
+    this.plantService.updatePlant(plant.id, updateRequest).subscribe({
+      next: () => {
+        plant.status = newStatus;
+        plant.isUpdating = false;
+        // Update the plants in BehaviorSubject
+        const currentPlants = this.plantsSubject.getValue();
+        const updatedPlants = currentPlants.map((p: Plant) =>
+          p.id === plant.id ? { ...p, status: newStatus, isUpdating: false } : p
+        );
+        this.plantsSubject.next(updatedPlants);
+        this.cdr.detectChanges();
+      },
+      error: (error: any) => {
+        plant.isUpdating = false;
+        let errorMessage = `Không thể đổi trạng thái cây. `;
+        if (error.status === 401) {
+          errorMessage += 'Bạn không có quyền thực hiện thao tác này.';
+        } else if (error.status === 404) {
+          errorMessage += 'Không tìm thấy cây này.';
+        } else if (error.error?.message) {
+          errorMessage += error.error.message;
+        } else {
+          errorMessage += 'Vui lòng thử lại sau.';
+        }
+        alert(errorMessage);
+        // Revert dropdown selection on error
+        select.value = plant.status;
+      }
+    });
+  }
 }

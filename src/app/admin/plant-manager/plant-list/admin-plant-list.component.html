@@ -35,8 +35,8 @@
     <table class="plant-table">
       <thead>
         <tr>
-          <th class="sortable-header" (click)="onSort('id')" [class.active]="sortField === 'id'">
-            ID <i [class]="getSortIcon('id')"></i>
+          <th>
+            STT
           </th>
           <th class="sortable-header" (click)="onSort('commonName')" [class.active]="sortField === 'commonName'">
             Tên thường gọi <i [class]="getSortIcon('commonName')"></i>
@@ -52,24 +52,29 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let plant of plants$ | async; trackBy: trackByPlant">
-          <td>{{ plant.id }}</td>
-          <td>{{ plant.commonName }}</td>
+        <tr *ngFor="let plant of plants$ | async; let i = index; trackBy: trackByPlant">
+          <td>{{ pageNo * pageSize + i + 1 }}</td>
+          <td>
+            <span class="plant-link" (click)="viewPlantDetail(plant)" style="cursor:pointer; color:#1976d2; text-decoration:underline;">
+              {{ plant.commonName }}
+            </span>
+          </td>
           <td>{{ plant.categoryName || '-' }}</td>
           <td>
-            <button 
-              (click)="lockUnlockPlant(plant)" 
-              [class]="getLockButtonClass(plant)"
-              class="lock-btn"
-              [disabled]="plant.isUpdating"
-            >
-              <i [class]="getLockIcon(plant)"></i>
-              {{ getLockButtonText(plant) }}
-            </button>
+            <select class="status-dropdown" [ngClass]="{
+                'active': (plant.status || '').toLowerCase() === 'active',
+                'inactive': (plant.status || '').toLowerCase() === 'inactive'
+              }"
+              [value]="(plant.status || 'ACTIVE').toUpperCase()"
+              (change)="changePlantStatus(plant, $event)"
+              [disabled]="plant.isUpdating">
+              <option value="ACTIVE">Hoạt động</option>
+              <option value="INACTIVE">Đã khóa</option>
+            </select>
           </td>
-          <td>{{ formatDate(plant.createdAt) || '-' }}</td>
+          <td>{{ formatDateNoSeconds(plant.createdAt) || '-' }}</td>
           <td>
-            <button (click)="viewPlantDetail(plant)" class="detail-btn">Chi tiết</button>
+            <button (click)="editPlant(plant)" class="edit-btn">Chỉnh sửa</button>
             <!-- <button (click)="deletePlant(plant)" class="delete-btn">Xóa</button> -->
           </td>
         </tr>

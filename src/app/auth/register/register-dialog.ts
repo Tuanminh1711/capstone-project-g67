@@ -89,8 +89,30 @@ export class RegisterDialogComponent {
   onSubmit() {
     this.errorMsg = '';
     this.successMsg = '';
+    // Validate required
     if (!this.username || !this.fullName || !this.phone || !this.email || !this.password || !this.confirmPassword) {
       this.toast.error('Vui lòng nhập đầy đủ thông tin.');
+      this.loading = false;
+      this.cdRef.detectChanges();
+      return;
+    }
+    // Validate username: không chứa dấu cách
+    if (this.username.includes(' ')) {
+      this.toast.error('Tên đăng nhập không được chứa dấu cách!');
+      this.loading = false;
+      this.cdRef.detectChanges();
+      return;
+    }
+    // Validate phone: chỉ chứa số
+    if (!/^\d{9,15}$/.test(this.phone)) {
+      this.toast.error('Số điện thoại chỉ được chứa số và từ 9-15 ký tự!');
+      this.loading = false;
+      this.cdRef.detectChanges();
+      return;
+    }
+    // Validate fullName: chỉ chứa ký tự chữ và khoảng trắng
+    if (!/^[a-zA-ZÀ-ỹ\s]+$/u.test(this.fullName.trim())) {
+      this.toast.error('Họ và tên chỉ được chứa ký tự chữ, không chứa số hoặc ký tự đặc biệt!');
       this.loading = false;
       this.cdRef.detectChanges();
       return;

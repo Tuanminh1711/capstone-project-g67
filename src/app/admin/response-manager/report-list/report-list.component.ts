@@ -19,6 +19,7 @@ import { Report } from '../../../shared/models/report.model';
   styleUrls: ['./report-list.component.scss']
 })
 export class ReportListComponent implements OnInit, OnDestroy {
+  selectedStatus: string = '';
   searchText: string = '';
   allReports: Report[] = [];
   private reportsSubject = new BehaviorSubject<Report[]>([]);
@@ -72,13 +73,15 @@ export class ReportListComponent implements OnInit, OnDestroy {
   loadReports() {
     this.loading = true;
     this.errorMsg = '';
-    this.currentKeyword = this.searchText.trim();
-    const params: any = {
-      page: this.pageNo.toString(),
-      size: this.pageSize.toString(),
+    const searchValue = this.searchText.trim();
+    const body: any = {
+      plantName: searchValue,
+      reporterName: searchValue,
+      status: this.selectedStatus || '', // nếu có dropdown status thì lấy, không thì để ''
+      page: this.pageNo,
+      size: this.pageSize
     };
-    if (this.currentKeyword) params.keyword = this.currentKeyword;
-    this.http.get<any>(`${environment.apiUrl}/manager/report-list`, { params }).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/manager/report-list`, body).subscribe({
       next: (res) => {
         const data = res.data || {};
         this.allReports = (data.reports || []).map((r: any) => ({
