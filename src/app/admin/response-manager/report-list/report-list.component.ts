@@ -74,14 +74,14 @@ export class ReportListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMsg = '';
     const searchValue = this.searchText.trim();
-    const body: any = {
+    const params: any = {
       plantName: searchValue,
       reporterName: searchValue,
-      status: this.selectedStatus || '', // nếu có dropdown status thì lấy, không thì để ''
+      status: this.selectedStatus || '',
       page: this.pageNo,
       size: this.pageSize
     };
-    this.http.post<any>(`${environment.apiUrl}/manager/report-list`, body).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/manager/report-list`, { params }).subscribe({
       next: (res) => {
         const data = res.data || {};
         this.allReports = (data.reports || []).map((r: any) => ({
