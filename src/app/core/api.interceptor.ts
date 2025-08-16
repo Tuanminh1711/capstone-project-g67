@@ -51,21 +51,21 @@ export class ApiInterceptor implements HttpInterceptor {
         switch (error.status) {
           case 0:
             errorMessage = 'Network error or CORS issue - check your connection and server configuration';
-            console.error('🌐 Network/CORS Error:', errorMessage);
+            console.error('\ud83c\udf10 Network/CORS Error:', errorMessage);
             break;
           case 401:
             errorMessage = 'Authentication required - token may be invalid or expired';
-            console.error('🔒 Authentication Error:', errorMessage);
+            console.error('\ud83d\udd12 Authentication Error:', errorMessage);
             // For SPA, consider using router navigation instead of window.location.href
             break;
           case 403:
             errorMessage = 'Access denied - insufficient permissions or invalid token';
-            console.error('🚫 Authorization Error:', errorMessage);
+            console.error('\ud83d\udeab Authorization Error:', errorMessage);
             break;
           default:
             if (error.status >= 500) {
               errorMessage = 'Server error - please try again later';
-              console.error('🔥 Server Error:', errorMessage);
+              console.error('\ud83d\udd25 Server Error:', errorMessage);
             }
             break;
         }

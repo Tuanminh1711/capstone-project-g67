@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { PlantDataService, Plant } from '../../../shared/plant-data.service';
+import { PlantDataService, Plant } from '../../../shared/services/plant-data.service';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
 import { CookieService } from '../../../auth/cookie.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';

@@ -5,7 +5,7 @@ const ADMIN_ROUTES: Routes = [
   {
     path: '',
     canActivateChild: [AdminAuthGuard],
-    loadComponent: () => import('../shared/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+  loadComponent: () => import('./shared/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { path: '', loadComponent: () => import('./home/admin-home.component').then(m => m.AdminHomeComponent) },
       { path: 'reports', loadComponent: () => import('./response-manager/report-list/report-list.component').then(m => m.ReportListComponent) },

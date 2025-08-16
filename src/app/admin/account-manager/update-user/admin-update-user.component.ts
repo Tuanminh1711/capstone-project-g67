@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { AuthService } from '../../../auth/auth.service';
 import { UserProfileService, UpdateUserProfileRequest } from '../../../user/profile/view-user-profile/user-profile.service';
 

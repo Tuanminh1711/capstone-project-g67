@@ -4,7 +4,7 @@ import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { UrlService } from '../../shared/url.service';
+import { UrlService } from '../../shared/services/url.service';
 import { CookieService } from '../../auth/cookie.service';
 
 export interface ChatMessage {

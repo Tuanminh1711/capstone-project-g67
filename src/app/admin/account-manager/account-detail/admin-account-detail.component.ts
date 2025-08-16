@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { FormsModule } from '@angular/forms';
 
 interface UserDetail {

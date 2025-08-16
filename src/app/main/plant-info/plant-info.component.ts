@@ -7,7 +7,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, filter } from 'rxjs';
-import { PlantDataService } from '../../shared/plant-data.service';
+import { PlantDataService } from '../../shared/services/plant-data.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CookieService } from '../../auth/cookie.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';

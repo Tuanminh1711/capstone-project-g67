@@ -4,7 +4,7 @@ import { AuthDialogService } from './auth/auth-dialog.service';
 import { FooterComponent } from './shared/footer/footer.component';
 import { ToastComponent } from './shared/toast/toast.component';
 import { filter } from 'rxjs';
-import { ConfirmationDialogComponent } from './shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from './shared/components/confirmation-dialog/confirmation-dialog.component';
 import { ChatAiFabComponent } from './user/chat-ai/chat-ai-fab.component';
 
 @Component({

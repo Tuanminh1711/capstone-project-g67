@@ -7,7 +7,7 @@ import { AuthService } from '../../auth/auth.service';
 import { ExpertLayoutComponent } from '../shared/expert-layout/expert-layout.component';
 import { ExpertChatStompService, ChatMessage } from './expert-chat-stomp.service';
 import { Subscription } from 'rxjs';
-import { UrlService } from '../../shared/url.service';
+import { UrlService } from '../../shared/services/url.service';
 import { ChatService } from '../../shared/services/chat.service';
 import { ToastService } from '../../shared/toast/toast.service';
 

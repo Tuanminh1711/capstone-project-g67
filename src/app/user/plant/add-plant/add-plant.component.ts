@@ -5,8 +5,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/index';
-import { Plant, PlantDataService } from '../../../shared/plant-data.service';
-import { PlantDetailLoaderService } from '../../../shared/plant-detail-loader.service';
+import { Plant, PlantDataService } from '../../../shared/services/plant-data.service';
+import { PlantDetailLoaderService } from '../../../shared/services/plant-detail-loader.service';
 import { CookieService } from '../../../auth/cookie.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 

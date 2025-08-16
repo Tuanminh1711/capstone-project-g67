@@ -4,7 +4,7 @@ import { Observable, of, throwError, BehaviorSubject, timer } from 'rxjs';
 import { catchError, map, tap, retryWhen, delay, take } from 'rxjs/operators';
 import { ChatMessage } from '../../vip/chat/chat-stomp.service';
 import { ConversationDTO } from '../../vip/chat/conversation.interface';
-import { UrlService } from '../url.service';
+import { UrlService } from './url.service';
 import { 
   getCurrentChatConfig, 
   CHAT_ERROR_MESSAGES, 

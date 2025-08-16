@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
-import { ConfigService } from '../../../shared/config.service';
+import { ConfigService } from '../../../shared/services/config.service';
 
 // Models cho report-detail theo API thực
 export interface ReportLog {

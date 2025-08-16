@@ -1,16 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminFooterComponent } from '../../../shared/admin-footer/admin-footer.component';
-import { AdminAccountService, Account } from './admin-account.service';
+import { AdminAccountService } from './admin-account.service';
+import { Account } from '../../../shared/models/account.model';
 import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationDialogService } from '../../../shared/services/confirmation-dialog/confirmation-dialog.service';
 import { AuthService } from '../../../auth/auth.service';
-import { AdminPageTitleService } from '../../../shared/admin-page-title.service';
+import { AdminPageTitleService } from '../../shared/admin-page-title.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 
 @Component({

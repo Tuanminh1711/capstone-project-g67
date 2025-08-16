@@ -7,14 +7,14 @@ import { CommonModule } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/index';
 import { CookieService } from '../../auth/cookie.service';
 import { AuthService } from '../../auth/auth.service';
-import { PlantDataService, Plant } from '../../shared/plant-data.service';
-import { PlantDetailLoaderService } from '../../shared/plant-detail-loader.service';
+import { PlantDataService, Plant } from '../../shared/services/plant-data.service';
+import { PlantDetailLoaderService } from '../../shared/services/plant-detail-loader.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../shared/toast/toast.service';
-import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationDialogService } from '../../shared/services/confirmation-dialog/confirmation-dialog.service';
 import { MatDialog } from '@angular/material/dialog';
-import { PlantUiHelperService } from '../../shared/plant-ui-helper.service';
+import { PlantUiHelperService } from '../../shared/services/helpers/plant-ui-helper.service';
 
 /**
  * Component hiển thị chi tiết thông tin của một cây

@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { ConfigService } from '../../../shared/config.service';
+import { ConfigService } from '../../../shared/services/config.service';
 
 export interface PlantCategory {
   id: number;

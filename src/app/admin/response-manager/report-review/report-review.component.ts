@@ -5,7 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { AdminLayoutComponent } from '../../../shared/admin-layout/admin-layout.component';
+import { AdminLayoutComponent } from '../../shared/admin-layout/admin-layout.component';
 
 // Models cho report-review
 export interface ReportReview {

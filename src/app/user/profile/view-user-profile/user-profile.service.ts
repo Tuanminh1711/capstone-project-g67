@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { ConfigService } from '../../../shared/config.service';
+import { ConfigService } from '../../../shared/services/config.service';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 
 export interface UserProfile {

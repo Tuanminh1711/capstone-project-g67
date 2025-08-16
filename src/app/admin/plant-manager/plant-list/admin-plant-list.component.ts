@@ -6,7 +6,7 @@ import { CommonModule, NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { shareReplay } from 'rxjs';
-import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { environment } from '../../../../environments/environment'; 
 interface Plant {
   id: number;

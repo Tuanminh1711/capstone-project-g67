@@ -4,24 +4,12 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationDialogService } from '../../../shared/services/confirmation-dialog/confirmation-dialog.service';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { environment } from '../../../../environments/environment';
 
-export interface Report {
-  reportId: number;
-  plantId: number;
-  plantName: string;
-  scientificName: string;
-  reporterId: number;
-  reporterName: string;
-  reporterEmail: string;
-  reason: string;
-  status: string;
-  adminNotes?: string;
-  createdAt: string;
-}
+import { Report } from '../../../shared/models/report.model';
 
 @Component({
   selector: 'app-report-list',

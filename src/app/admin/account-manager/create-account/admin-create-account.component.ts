@@ -1,5 +1,5 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
-import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminCreateAccountService } from './admin-create-account.service';

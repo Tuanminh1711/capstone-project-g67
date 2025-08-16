@@ -14,7 +14,7 @@ import { AdminViewPlantComponent } from './plant-manager/view-plant/admin-view-p
 import { UpdatePlantComponent } from './plant-manager/update-plant/update-plant.component';
 // Update the import path below to the correct location of ReportListComponent
 import { ReportListComponent } from './response-manager/report-list/report-list.component';
-import { AdminLayoutComponent } from '../shared/admin-layout/admin-layout.component';
+import { AdminLayoutComponent } from './shared/admin-layout/admin-layout.component';
 @NgModule({
   imports: [
     CommonModule,

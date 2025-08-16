@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { ConfirmationDialogService, ConfirmationDialogData } from './confirmation-dialog.service';
+import { ConfirmationDialogService, ConfirmationDialogData } from '../../services/confirmation-dialog/confirmation-dialog.service';
 
 @Component({
   selector: 'app-confirmation-dialog',

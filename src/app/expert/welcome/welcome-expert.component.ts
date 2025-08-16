@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/auth.service';
-import { UrlService } from '../../shared/url.service';
+import { UrlService } from '../../shared/services/url.service';
 
 @Component({
   selector: 'app-welcome-expert',

@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { BaseAdminListComponent } from '../../../shared/base-admin-list.component';
+import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { AuthService } from '../../../auth/auth.service';
 
 interface UpdatePlantRequest {

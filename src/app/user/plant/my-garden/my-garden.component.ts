@@ -19,8 +19,8 @@ declare module './my-garden.service' {
 }
 import { CareReminderService, CareReminderSchedule, CARE_TYPES, getDefaultCareReminders } from './care-reminder.service';
 import { CareReminderDialogComponent } from './care-reminder-dialog.component';
-import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
-import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogService } from '../../../shared/services/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 import { ChangeDetectionStrategy } from '@angular/core';
 @Component({

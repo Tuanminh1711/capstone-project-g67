@@ -1,8 +1,8 @@
-import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
+import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { AuthService } from '../../auth/auth.service';
+import { AuthService } from '../../../auth/auth.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 

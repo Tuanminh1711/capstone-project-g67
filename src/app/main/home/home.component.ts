@@ -3,7 +3,7 @@ import { Component, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, OnDestro
 import { ToastService } from '../../shared/toast/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DialogManager } from '../../shared/dialog-manager.service';
+import { DialogManager } from '../../shared/services/dialog-manager.service';
 import { LoginDialogComponent } from '../../auth/login/login-dialog';
 import { RegisterDialogComponent } from '../../auth/register/register-dialog';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';

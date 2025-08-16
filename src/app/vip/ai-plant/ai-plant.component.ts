@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { ToastService } from '../../shared/toast/toast.service';
-import { ConfigService } from '../../shared/config.service';
+import { ConfigService } from '../../shared/services/config.service';
 import { AuthService } from '../../auth/auth.service';
 import { CookieService } from '../../auth/cookie.service';
 

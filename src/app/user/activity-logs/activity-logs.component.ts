@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TopNavigatorComponent } from '../../shared/top-navigator/top-navigator.component';
 import { HttpClient } from '@angular/common/http';
-import { ConfigService } from '../../shared/config.service';
+import { ConfigService } from '../../shared/services/config.service';
 
 @Component({
   selector: 'app-activity-logs',

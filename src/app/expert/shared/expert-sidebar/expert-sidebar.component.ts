@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { UrlService } from '../../../shared/url.service';
+import { UrlService } from '../../../shared/services/url.service';
 import { ChatService } from '../../../shared/services/chat.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 
