@@ -7,7 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { ConfirmationDialogService } from '../../../shared/confirmation-dialog/confirmation-dialog.service';
 import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { environment } from '../../../../environments/environment'; 
+import { environment } from '../../../../environments/environment';
 
 export interface Report {
   reportId: number;
@@ -31,9 +31,12 @@ export interface Report {
   styleUrls: ['./report-list.component.scss']
 })
 export class ReportListComponent implements OnInit, OnDestroy {
+  plantName: string = '';
+  reporterName: string = '';
+  status: string = '';
+  allReports: Report[] = [];
   private reportsSubject = new BehaviorSubject<Report[]>([]);
   reports$ = this.reportsSubject.asObservable();
-  allReports: Report[] = [];
   pageNo = 0;
   pageSize = 10;
   totalPages = 1;
@@ -45,21 +48,27 @@ export class ReportListComponent implements OnInit, OnDestroy {
   searchDebounce: any;
   private sub: Subscription = new Subscription();
   successMsg = '';
-
   sortField: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-
-  // Giả lập thông tin đăng nhập và role
   isLoggedIn = true;
   userRole: 'admin' | 'staff' | 'user' = 'admin';
-
   private toast = inject(ToastService);
   private confirmationDialog = inject(ConfirmationDialogService);
   private jwtUserUtil = inject(JwtUserUtilService);
   private router = inject(Router);
   private http = inject(HttpClient);
 
-  constructor() {}
+
+
+
+  constructor() {
+    this.plantName = '';
+    this.reporterName = '';
+    this.status = '';
+    this.allReports = [];
+    this.reportsSubject = new BehaviorSubject<Report[]>([]);
+    this.reports$ = this.reportsSubject.asObservable();
+  }
 
   ngOnInit() {
     // Kiểm tra phân quyền thực tế từ JWT
@@ -82,14 +91,15 @@ export class ReportListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMsg = '';
     this.currentKeyword = this.searchText.trim();
-    
-    this.http.get<any>(`${environment.apiUrl}/manager/report-list`, {
-      params: {
-        page: this.pageNo.toString(),
-        size: this.pageSize.toString(),
-        keyword: this.currentKeyword || ''
-      }
-    }).subscribe({
+    const params: any = {
+      page: this.pageNo.toString(),
+      size: this.pageSize.toString(),
+    };
+    if (this.currentKeyword) params.reason = this.currentKeyword;
+    if (this.plantName && this.plantName.trim()) params.plantName = this.plantName.trim();
+    if (this.reporterName && this.reporterName.trim()) params.reporterName = this.reporterName.trim();
+    if (this.status) params.status = this.status;
+    this.http.get<any>(`${environment.apiUrl}/manager/report-list`, { params }).subscribe({
       next: (res) => {
         const data = res.data || {};
         this.allReports = (data.reports || []).map((r: any) => ({
@@ -108,8 +118,6 @@ export class ReportListComponent implements OnInit, OnDestroy {
         this.totalElements = data.totalElements || 0;
         this.totalPages = data.totalPages || 1;
         this.pageNo = data.currentPage || 0;
-        
-        // Cập nhật BehaviorSubject với dữ liệu từ API (không slice)
         this.reportsSubject.next(this.allReports);
         this.loading = false;
       },
