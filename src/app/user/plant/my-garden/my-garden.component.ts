@@ -717,26 +717,19 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     return this.userPlants.length;
   }
 
-  carePlant(plantId: number): void {
-    // Validate plantId trước khi xử lý với kiểm tra chặt chẽ hơn
-    if (!plantId || isNaN(plantId) || plantId <= 0) {
-      console.error('Invalid plantId:', plantId);
-      this.toastService.error('Dữ liệu cây không hợp lệ. Vui lòng refresh trang.');
-      return;
-    }
-
-    // Tìm userPlantId theo plantId với validation
-    const targetPlant = this.userPlants.find(p => p.plantId === plantId);
-    if (!targetPlant) {
-      console.error('Plant not found for plantId:', plantId);
-      this.toastService.error('Không tìm thấy cây này trong vườn của bạn');
-      return;
-    }
-
-    const userPlantId = targetPlant.userPlantId;
+  carePlant(userPlantId: number): void {
+    // Validate userPlantId
     if (!userPlantId || isNaN(userPlantId) || userPlantId <= 0) {
-      console.error('Invalid userPlantId for plant:', targetPlant);
+      console.error('Invalid userPlantId:', userPlantId);
       this.toastService.error('Dữ liệu cây không hợp lệ. Vui lòng refresh trang.');
+      return;
+    }
+
+    // Tìm đúng cây theo userPlantId
+    const plant = this.userPlants.find(p => p.userPlantId === userPlantId);
+    if (!plant) {
+      console.error('Plant not found in current list:', userPlantId);
+      this.toastService.error('Không tìm thấy cây này trong vườn của bạn');
       return;
     }
 

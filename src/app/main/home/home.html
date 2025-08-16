@@ -12,7 +12,7 @@
     </p>
     <div class="home-hero-cta">
   <button *ngIf="!jwtUserUtil.isLoggedIn()" (click)="onConnectExpertClick()" class="cta-btn cta-animate">Đăng nhập</button>
-  <button *ngIf="jwtUserUtil.isLoggedIn()" (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Chăm sóc cùng chuyên gia</button>
+  <button *ngIf="jwtUserUtil.isLoggedIn()" (click)="goToCareExpert()" class="cta-btn cta-vip-btn">Tính năng nâng cao</button>
     </div>
   </div>
   <div class="home-hero-image">
@@ -117,13 +117,13 @@
     <div class="testimonial-item">
       <div class="testimonial-content">
         <p>"Tôi rất thích tính năng hỏi đáp với chuyên gia, mọi thắc mắc về cây đều được giải đáp nhanh chóng."</p>
-        <span class="testimonial-user">- Lan, TP.HCM</span>
+        <span class="testimonial-user">- Lan, Hà Nội</span>
       </div>
     </div>
     <div class="testimonial-item">
       <div class="testimonial-content">
         <p>"Giao diện đẹp, dễ dùng, cộng đồng thân thiện.<br>Tôi đã học hỏi được rất nhiều kinh nghiệm chăm cây."</p>
-        <span class="testimonial-user">- Hùng, Đà Nẵng</span>
+        <span class="testimonial-user">- Hùng, Hà Nội</span>
       </div>
     </div>
   </div>

@@ -1,4 +1,3 @@
-  
 import { Routes } from '@angular/router';
 import { VipAuthGuard } from './auth/vip-auth.guard';
 
@@ -88,5 +87,6 @@ export const routes: Routes = [
   { path: 'my-green-space', redirectTo: 'user/my-garden', pathMatch: 'full' }, // Redirect old path
   { path: 'my-green-space/my-garden', redirectTo: 'user/my-garden', pathMatch: 'full' }, // Redirect old path
   { path: 'update-plant/:id', loadComponent: () => import('./user/plant/update-plant/update-plant.component').then(m => m.UpdatePlantComponent) },
+  { path: 'user/plant/care-confirm', loadComponent: () => import('./user/plant/care-confirm.component').then(m => m.CareConfirmComponent) },
   { path: '**', redirectTo: 'home' } // Wildcard route for any unknown routes
 ];

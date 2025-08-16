@@ -1,9 +1,9 @@
-import { Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { NotificationService } from '../notification.service';
 import { Notification, NotificationType } from '../notification.model';
 import { NotificationBadgeComponent } from '../badge/notification-badge.component';
@@ -16,20 +16,11 @@ import { NotificationBadgeComponent } from '../badge/notification-badge.componen
   styleUrls: ['./notification-dropdown.component.scss']
 })
 export class NotificationDropdownComponent implements OnInit, OnDestroy {
-  /**
-   * Chuyển đổi type về NotificationType (nếu hợp lệ), nếu không thì trả về default
-   */
-  toNotificationType(type: string): NotificationType {
-    if (Object.values(NotificationType).includes(type as NotificationType)) {
-      return type as NotificationType;
-    }
-    return NotificationType.SYSTEM;
-  }
   isOpen = false;
-  notifications: Notification[] = [];
   isLoading = false;
+  notifications: Notification[] = [];
   unreadCount$!: Observable<number>;
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -37,23 +28,11 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     private elementRef: ElementRef,
     private router: Router
   ) {}
-  /**
-   * Xử lý click notification: đánh dấu đã đọc và điều hướng nếu có link
-   */
-  onNotificationClick(notification: Notification, event: Event): void {
-    event.stopPropagation();
-    this.markAsRead(notification, event);
-    if (notification.link) {
-      this.router.navigate([notification.link]);
-      this.isOpen = false;
-    }
-  }
+
+  /* ========== Lifecycle Hooks ========== */
 
   ngOnInit(): void {
-    // Subscribe to unread count changes
     this.unreadCount$ = this.notificationService.unreadCount$;
-    
-    // Load dữ liệu ngay khi component khởi tạo
     this.loadUnreadNotifications();
   }
 
@@ -62,81 +41,29 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Toggle dropdown
-   */
+  /* ========== Event Handlers ========== */
+
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
   }
 
-  /**
-   * Load unread notifications
-   */
-  private loadUnreadNotifications(): void {
-    this.isLoading = true;
-    
-    this.notificationService.getUnreadNotifications()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (notifications) => {
-          // Hiển thị tối đa 5 thông báo gần nhất
-          this.notifications = notifications.slice(0, 5);
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.notifications = [];
-          this.isLoading = false;
-          // Đóng dropdown nếu có lỗi authentication
-          if (error.message?.includes('not authenticated')) {
-            this.isOpen = false;
-          }
-        }
-      });
-  }
-
-  /**
-   * Đánh dấu notification đã đọc
-   */
-  markAsRead(notification: Notification, event: Event): void {
+  onNotificationClick(notification: Notification, event: Event): void {
     event.stopPropagation();
-    
-    if (notification.isRead) return;
+    this.markAsRead(notification, event);
 
-    this.notificationService.markAsRead(notification.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          // Cập nhật local state
-          notification.isRead = true;
-          // Reload unread notifications
-          this.loadUnreadNotifications();
-        },
-        error: (error) => {
-          console.error('Error marking notification as read:', error);
-        }
-      });
+    if (notification.link) {
+      let link = this.mapBackendLink(notification.link);
+      this.router.navigate([link]);
+      this.isOpen = false;
+      return;
+    }
+
+    if (notification.relatedEntityId && notification.relatedEntityType) {
+      this.navigateToRelatedEntity(notification);
+      this.isOpen = false;
+    }
   }
 
-  /**
-   * Đánh dấu tất cả đã đọc
-   */
-  markAllAsRead(): void {
-    this.notificationService.markAllAsRead()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          // Clear unread notifications
-          this.notifications = [];
-        },
-        error: (error) => {
-          console.error('Error marking all notifications as read:', error);
-        }
-      });
-  }
-
-  /**
-   * Close dropdown khi click outside
-   */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
@@ -144,91 +71,145 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Get icon class dựa trên notification type
-   */
+  /* ========== Public Methods ========== */
+
+  markAsRead(notification: Notification, event: Event): void {
+    event.stopPropagation();
+    if (notification.isRead) return;
+
+    this.notificationService.markAsRead(notification.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          notification.isRead = true;
+          this.loadUnreadNotifications();
+        },
+        error: (err) => console.error('Error marking notification as read:', err)
+      });
+  }
+
+  markAllAsRead(): void {
+    this.notificationService.markAllAsRead()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => { this.notifications = []; },
+        error: (err) => console.error('Error marking all notifications as read:', err)
+      });
+  }
+
   getNotificationIcon(type: NotificationType): string {
     switch (type) {
-      case NotificationType.SYSTEM:
-        return 'fas fa-cog';
-      case NotificationType.PLANT_CARE:
-        return 'fas fa-leaf';
-      case NotificationType.EXPERT_RESPONSE:
-        return 'fas fa-user-md';
-      case NotificationType.TICKET_UPDATE:
-        return 'fas fa-ticket-alt';
-      case NotificationType.PROMOTION:
-        return 'fas fa-tag';
-      case NotificationType.REMINDER:
-        return 'fas fa-bell';
-      default:
-        return 'fas fa-info-circle';
+      case NotificationType.SYSTEM: return 'fas fa-cog';
+      case NotificationType.PLANT_CARE: return 'fas fa-leaf';
+      case NotificationType.EXPERT_RESPONSE: return 'fas fa-user-md';
+      case NotificationType.TICKET_UPDATE: return 'fas fa-ticket-alt';
+      case NotificationType.PROMOTION: return 'fas fa-tag';
+      case NotificationType.REMINDER: return 'fas fa-bell';
+      default: return 'fas fa-info-circle';
     }
   }
 
-  /**
-   * Get CSS class dựa trên notification type
-   */
   getNotificationClass(type: NotificationType): string {
     switch (type) {
-      case NotificationType.SYSTEM:
-        return 'system';
-      case NotificationType.PLANT_CARE:
-        return 'plant-care';
-      case NotificationType.EXPERT_RESPONSE:
-        return 'expert';
-      case NotificationType.TICKET_UPDATE:
-        return 'ticket';
-      case NotificationType.PROMOTION:
-        return 'promotion';
-      case NotificationType.REMINDER:
-        return 'reminder';
-      default:
-        return 'default';
+      case NotificationType.SYSTEM: return 'system';
+      case NotificationType.PLANT_CARE: return 'plant-care';
+      case NotificationType.EXPERT_RESPONSE: return 'expert';
+      case NotificationType.TICKET_UPDATE: return 'ticket';
+      case NotificationType.PROMOTION: return 'promotion';
+      case NotificationType.REMINDER: return 'reminder';
+      default: return 'default';
     }
   }
 
-  /**
-   * Format thời gian
-   */
-  formatTime(dateString: string): string {
-    const date = new Date(dateString);
+  formatTime(dateInput: string | number): string {
+    let date: Date;
+    if (typeof dateInput === 'number') {
+      date = new Date(dateInput);
+    } else if (!isNaN(Number(dateInput))) {
+      date = new Date(Number(dateInput));
+    } else {
+      date = new Date(dateInput);
+    }
+    if (isNaN(date.getTime())) return '';
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMinutes < 1) {
-      return 'Vừa xong';
-    } else if (diffMinutes < 60) {
-      return `${diffMinutes}p`;
-    } else if (diffHours < 24) {
-      return `${diffHours}h`;
-    } else if (diffDays < 7) {
-      return `${diffDays}d`;
-    } else {
-      return date.toLocaleDateString('vi-VN', { 
-        day: '2-digit', 
-        month: '2-digit' 
-      });
-    }
+    if (diffMinutes < 1) return 'Vừa xong';
+    if (diffMinutes < 60) return `${diffMinutes}p`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
   }
 
-  /**
-   * Truncate text
-   */
   truncateText(text: string, maxLength: number = 60): string {
-    if (text.length <= maxLength) {
-      return text;
-    }
-    return text.substring(0, maxLength) + '...';
+    return text.length <= maxLength ? text : text.substring(0, maxLength) + '...';
   }
 
-  /**
-   * Track by function cho ngFor
-   */
   trackByNotificationId(index: number, notification: Notification): number {
     return notification.id;
+  }
+
+  /* ========== Private Methods ========== */
+
+  private loadUnreadNotifications(): void {
+    this.isLoading = true;
+
+    this.notificationService.getUnreadNotifications()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (notifications) => {
+          this.notifications = notifications.slice(0, 5);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.notifications = [];
+          this.isLoading = false;
+          if (err.message?.includes('not authenticated')) {
+            this.isOpen = false;
+          }
+        }
+      });
+  }
+
+  private mapBackendLink(link: string): string {
+    if (/^\/user-plants\/(\d+)$/.test(link)) {
+      return link.replace(/^\/user-plants\/(\d+)$/, '/user/user-plant-detail/$1');
+    }
+    if (/^\/ticket\/(\d+)$/.test(link)) {
+      return link.replace(/^\/ticket\/(\d+)$/, '/user/my-tickets/$1');
+    }
+    if (link === '/vip/benefits') {
+      return '/vip/welcome';
+    }
+    return link;
+  }
+
+  private navigateToRelatedEntity(notification: Notification): void {
+    const entityType = notification.relatedEntityType?.toLowerCase();
+    const entityId = notification.relatedEntityId;
+
+    switch (entityType) {
+      case 'plant':
+        this.router.navigate(['/plant-detail', entityId]);
+        break;
+      case 'ticket':
+        this.router.navigate(['/user/ticket', entityId]);
+        break;
+      case 'expert':
+        this.router.navigate(['/user/expert', entityId]);
+        break;
+      default:
+        break;
+    }
+  }
+
+  public toNotificationType(type: string): NotificationType { 
+    return Object.values(NotificationType).includes(type as NotificationType)
+      ? (type as NotificationType)
+      : NotificationType.SYSTEM;
   }
 }
