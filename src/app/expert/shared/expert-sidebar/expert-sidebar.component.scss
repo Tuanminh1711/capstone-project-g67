@@ -1,3 +1,14 @@
+// Highlight nav-link when parent .nav-item is .active (ví dụ mục chat)
+.nav-item.active > .nav-link {
+  background-color: #16a34a;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 8px -2px rgba(22, 163, 74, 0.4);
+
+  .nav-icon {
+    transform: scale(1.1);
+  }
+}
 // Expert Sidebar Styles
 .expert-sidebar {
   width: 260px;

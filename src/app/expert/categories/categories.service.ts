@@ -19,12 +19,11 @@ export class ExpertService {
   }
 
   updateCategory(categoryId: number, data: { name: string; description: string }): Observable<any> {
-    // Map component fields to API fields
-    const apiData = {
-      categoryName: data.name,
-      categoryDescription: data.description
-    };
-    return this.http.put(`/api/expert/update-category/${categoryId}`, apiData);
+    // Gửi đúng field backend yêu cầu
+    return this.http.put(`/api/expert/update-category/${categoryId}`, {
+      name: data.name,
+      description: data.description
+    });
   }
 
   deleteCategory(categoryId: number): Observable<any> {

@@ -29,7 +29,7 @@ export class ArticlesComponent implements OnInit {
   ) {}
 
   viewDetail(article: any): void {
-    this.router.navigate(['/expert/articles-detail', article.id]);
+    this.router.navigate(['/expert/articles/detail', article.id]);
   }
 
   editArticle(article: any): void {

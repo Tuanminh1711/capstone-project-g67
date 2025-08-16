@@ -142,10 +142,16 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     const data = this.categoryForm.value;
     this.isLoading = true;
     if (this.editMode && this.editingCategoryId) {
-      this.expertService.updateCategory(this.editingCategoryId, data).subscribe({
+      // Đảm bảo chỉ gửi đúng field name và description cho API update
+      const updatePayload = {
+        name: data.name,
+        description: data.description
+      };
+      this.expertService.updateCategory(this.editingCategoryId, updatePayload).subscribe({
         next: () => {
           this.resetForm();
-          this.loadCategories();
+          this.toastService.success('Cập nhật chuyên mục thành công!');
+          setTimeout(() => window.location.reload(), 1000);
         },
         error: () => {
           this.error = 'Cập nhật chuyên mục thất bại.';
@@ -156,9 +162,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
       this.expertService.createCategory(data).subscribe({
         next: (res) => {
           this.resetForm();
-          this.loadCategories();
-          this.isLoading = false;
-          // Dịch message và hiện toast
           let msg = 'Tạo chuyên mục thành công!';
           if (res && res.message && res.status === 201) {
             if (res.message.includes('Create category successfully')) {
@@ -168,6 +171,7 @@ export class CategoriesComponent implements OnInit, OnDestroy {
             }
           }
           this.toastService.success(msg);
+          setTimeout(() => window.location.reload(), 1000);
         },
         error: () => {
           this.error = 'Tạo chuyên mục thất bại.';
@@ -191,7 +195,8 @@ export class CategoriesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.expertService.deleteCategory(categoryId).subscribe({
       next: () => {
-        this.loadCategories();
+        this.toastService.success('Xóa chuyên mục thành công!');
+        setTimeout(() => window.location.reload(), 1000);
       },
       error: () => {
         this.error = 'Xóa chuyên mục thất bại.';

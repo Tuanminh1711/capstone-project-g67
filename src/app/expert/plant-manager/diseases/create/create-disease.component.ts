@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -15,7 +15,8 @@ import { ToastService } from '../../../../shared/toast/toast.service';
   templateUrl: './create-disease.component.html',
   styleUrls: ['./create-disease.component.scss']
 })
-export class CreateDiseaseComponent {
+export class CreateDiseaseComponent implements AfterViewInit {
+  @ViewChild('diseaseNameInput') diseaseNameInput!: ElementRef<HTMLInputElement>;
   diseaseForm!: FormGroup;
   loading = false;
 
@@ -27,6 +28,14 @@ export class CreateDiseaseComponent {
   ) {
     this.initForm();
   }
+    ngAfterViewInit(): void {
+      // Focus input đầu tiên sau khi view đã render, tránh xung đột với sidebar
+      setTimeout(() => {
+        if (this.diseaseNameInput) {
+          this.diseaseNameInput.nativeElement.focus();
+        }
+      }, 100);
+    }
 
   private initForm(): void {
     this.diseaseForm = this.fb.group({

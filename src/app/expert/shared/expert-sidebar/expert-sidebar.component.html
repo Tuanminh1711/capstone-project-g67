@@ -17,12 +17,12 @@
           <span class="nav-text">Trang chủ</span>
         </a>
       </li>
-      <li class="nav-item chat-nav" [class.opened]="isChatDropdownOpen">
-        <div class="nav-link chat-link" (click)="toggleChatDropdown()">
+      <li class="nav-item chat-nav" [class.active]="isChatRoute()">
+        <a [routerLink]="['/expert/chat']" class="nav-link chat-link" (click)="toggleChatDropdown()">
           <span class="nav-icon">💬</span>
           <span class="nav-text">Phòng Chat</span>
           <span class="dropdown-arrow" [class.open]="isChatDropdownOpen">▼</span>
-        </div>
+        </a>
         <ul class="chat-dropdown-list" [class.opened]="isChatDropdownOpen">
           <li class="chat-dropdown-item" (click)="navigateToCommunityChat()">Cộng đồng</li>
           @for (user of recentUsers$ | async; track user.userId) {
@@ -60,7 +60,7 @@
         <div class="nav-section-title">Quản lý bệnh cây</div>
       </li>
       <li class="nav-item">
-        <a [routerLink]="['/expert/plant-manager/diseases']" class="nav-link" routerLinkActive="active">
+        <a [routerLink]="['/expert/plant-manager/diseases']" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <span class="nav-icon">🌿</span>
           <span class="nav-text">Danh sách bệnh cây</span>
         </a>

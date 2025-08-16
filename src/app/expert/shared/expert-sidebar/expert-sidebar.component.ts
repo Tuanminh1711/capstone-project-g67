@@ -1,3 +1,4 @@
+
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -112,6 +113,11 @@ export class ExpertSidebarComponent implements OnInit {
   navigateToUserChat(user: any) {
     this.router.navigate(['/expert/private-chat'], { queryParams: { conversationId: user.conversationId } });
     // Dropdown luôn mở
+  }
+
+    isChatRoute(): boolean {
+    const url = this.router.url;
+    return url.startsWith('/expert/chat') || url.startsWith('/expert/private-chat');
   }
 
   logout() {
