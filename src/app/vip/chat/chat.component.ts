@@ -36,6 +36,34 @@ import { ToastService } from '../../shared/toast/toast.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  /**
+   * Định dạng thời gian đẹp cho chat: "Vừa xong", "5 phút trước", "Hôm qua 14:30", "dd/MM 14:30"...
+   */
+  formatTimePretty(timestamp?: string): string {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 10) return 'Vừa xong';
+    if (diffSec < 60) return `${diffSec} giây trước`;
+    if (diffMin < 60) return `${diffMin} phút trước`;
+    if (diffHour < 24 && date.toDateString() === now.toDateString()) {
+      return `${diffHour} giờ trước`;
+    }
+    // Hôm qua
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return `Hôm qua ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+    }
+    // Còn lại: dd/MM HH:mm
+    return `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+  }
   // ...existing code...
   // Lọc tin nhắn theo loại chat để hiển thị đúng
   get filteredMessages(): ChatMessage[] {
@@ -231,8 +259,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   getSenderName(msg: ChatMessage): string {
     if (this.isOwnMessage(msg)) {
-      // For own messages, use a simple label
-      return 'Bạn';
+      // Không hiển thị tên cho tin nhắn của mình
+      return '';
     } else {
       // For other messages in private chat, use the other user's username
       if (this.selectedConversation && this.showPrivateChat) {

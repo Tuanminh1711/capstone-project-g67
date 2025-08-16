@@ -17,7 +17,7 @@
           <span class="nav-text">Trang chủ</span>
         </a>
       </li>
-      <li class="nav-item chat-nav" [class.active]="isChatRoute()">
+      <li class="nav-item chat-nav" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <a [routerLink]="['/expert/chat']" class="nav-link chat-link" (click)="toggleChatDropdown()">
           <span class="nav-icon">💬</span>
           <span class="nav-text">Phòng Chat</span>

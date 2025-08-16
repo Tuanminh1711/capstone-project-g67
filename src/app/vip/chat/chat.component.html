@@ -159,27 +159,20 @@
                [class.other-message]="!isOwnMessage(msg)">
             <!-- Tin nhắn của người khác (bên trái) -->
             <div class="message-row" *ngIf="!isOwnMessage(msg)">
-              <div class="sender-info">
+              <div class="sender-info" *ngIf="getSenderName(msg)">
                 <span class="sender-name">{{ getSenderName(msg) }}</span>
               </div>
               <div class="message-bubble">
                 <div class="message-content">{{ msg.content }}</div>
               </div>
-              <div class="message-time-inline">
-                {{ formatTime(msg.timestamp) }}
-              </div>
+              <div class="message-time-below left">{{ formatTimePretty(msg.timestamp) }}</div>
             </div>
             <!-- Tin nhắn của mình (bên phải) -->
             <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
-              <div class="message-time-inline own-time">
-                {{ formatTime(msg.timestamp) }}
-              </div>
               <div class="message-bubble own-bubble">
-                <div class="sender-info">
-                  <span class="sender-name">{{ getSenderName(msg) }}</span>
-                </div>
                 <div class="message-content">{{ msg.content }}</div>
               </div>
+              <div class="message-time-below right">{{ formatTimePretty(msg.timestamp) }}</div>
             </div>
           </div>
         </div>
@@ -201,23 +194,19 @@
                [class.other-message]="!isOwnMessage(msg)">
             <!-- Tin nhắn của người khác -->
             <div class="message-row" *ngIf="!isOwnMessage(msg)">
-              <div class="sender-info">
+              <div class="sender-info" *ngIf="getSenderName(msg)">
                 <span class="sender-name">{{ getSenderName(msg) }}</span>
               </div>
               <div class="message-bubble">
                 <div class="message-content">{{ msg.content }}</div>
-              </div>
-              <div class="message-time-inline">
-                {{ formatTime(msg.timestamp) }}
+                <div class="message-time-below left">{{ formatTimePretty(msg.timestamp) }}</div>
               </div>
             </div>
             <!-- Tin nhắn của mình -->
             <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
-              <div class="message-time-inline own-time">
-                {{ formatTime(msg.timestamp) }}
-              </div>
               <div class="message-bubble own-bubble">
                 <div class="message-content">{{ msg.content }}</div>
+                <div class="message-time-below right">{{ formatTimePretty(msg.timestamp) }}</div>
               </div>
             </div>
           </div>

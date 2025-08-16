@@ -1,3 +1,25 @@
+// Thời gian dưới bubble chat
+.message-time-below {
+  font-size: 11px;
+  color: #6c757d;
+  margin-top: 2px;
+  margin-bottom: 10px;
+  padding: 0 8px;
+  display: block;
+  width: fit-content;
+  max-width: 80%;
+  opacity: 0.85;
+  &.left {
+    text-align: left;
+    margin-left: 0;
+    margin-right: auto;
+  }
+  &.right {
+    text-align: right;
+    margin-right: 0;
+    margin-left: auto;
+  }
+}
 // ============================================================================
 // Messenger-style Chat Interface
 // ============================================================================
