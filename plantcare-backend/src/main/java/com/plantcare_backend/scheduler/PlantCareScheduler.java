@@ -21,7 +21,7 @@ public class PlantCareScheduler {
     private CareScheduleRepository careScheduleRepository;
 
     // Chạy mỗi giờ để kiểm tra reminders
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void sendReminders() {
         try {
             LocalTime now = LocalTime.now().withSecond(0).withNano(0);
