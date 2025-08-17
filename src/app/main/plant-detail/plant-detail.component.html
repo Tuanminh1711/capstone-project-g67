@@ -38,7 +38,12 @@
             <div class="plant-info-image modern">
               <div class="main-image">
                 <div class="image-wrapper modern">
-                  <img [src]="selectedImage || plant.imageUrls[0] || '/assets/image/logo.png'" [alt]="plant.commonName" class="plant-img modern" />
+                  <img [src]="selectedImage || latestImages[latestImages.length-1] || '/assets/image/logo.png'" [alt]="plant.commonName" class="plant-img modern" />
+                </div>
+              </div>
+              <div class="image-gallery modern" *ngIf="latestImages.length > 1">
+                <div class="gallery-thumbnails">
+                  <img *ngFor="let img of latestImages; let i = index" [src]="img" [alt]="'Ảnh ' + (i+1)" class="gallery-thumb" [class.selected-thumb]="img === selectedImage" (click)="selectImage(img)" />
                 </div>
               </div>
             </div>

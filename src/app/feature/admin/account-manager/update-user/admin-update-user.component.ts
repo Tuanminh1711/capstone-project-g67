@@ -106,10 +106,11 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     // Map role name to role ID
     const roleMap: {[key: string]: number} = {
       'ADMIN': 1,
-      'USER': 2, 
-      'VIP': 3,
-      'EXPERT': 4,
-      'STAFF': 5
+      'STAFF': 2, 
+      'USER': 3,
+      'GUEST': 4,
+      'EXPERT': 5,
+      'VIP': 6
     };
     return roleMap[roleName.toUpperCase()] || 2; // Default to USER
   }

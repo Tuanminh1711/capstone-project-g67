@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -250,6 +248,13 @@ export class PlantDetailComponent implements OnInit {
         this.router.navigate(['/user/report-plant', plantId]);
       }
     });
+  }
+
+  get latestImages(): string[] {
+    if (this.plant?.imageUrls?.length) {
+      return this.plant.imageUrls.slice(-3);
+    }
+    return [];
   }
 
 
