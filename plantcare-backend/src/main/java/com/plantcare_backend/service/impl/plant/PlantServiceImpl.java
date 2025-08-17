@@ -247,10 +247,13 @@ public class PlantServiceImpl implements PlantService {
         plantReportRepository.save(report);
 
         // 4. Đếm số lượng report của plant này
-        int reportCount = plantReportRepository.countByPlantId(plant.getId());
+        int pendingReportCount = plantReportRepository.countByPlantIdAndStatusIn(
+                plant.getId(),
+                List.of(PlantReport.ReportStatus.PENDING)
+        );
 
         // 5. Nếu >= 2, chuyển plant sang INACTIVE
-        if (reportCount >= 3 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
+        if (pendingReportCount >= 3 && plant.getStatus() != Plants.PlantStatus.INACTIVE) {
             plant.setStatus(Plants.PlantStatus.INACTIVE);
             plantRepository.save(plant);
         }
