@@ -17,6 +17,9 @@ import java.util.List;
 @Repository
 public interface UserActivityLogRepository extends JpaRepository<UserActivityLog, Long> {
         Page<UserActivityLog> findByUser_Id(int userId, Pageable pageable);
+        
+        // Method to get user activity logs ordered by timestamp descending
+        Page<UserActivityLog> findByUser_IdOrderByTimestampDesc(int userId, Pageable pageable);
 
         @Query("SELECT DATE(ual.timestamp) as date, COUNT(DISTINCT ual.user.id) as totalActiveUsers " +
                         "FROM UserActivityLog ual " +

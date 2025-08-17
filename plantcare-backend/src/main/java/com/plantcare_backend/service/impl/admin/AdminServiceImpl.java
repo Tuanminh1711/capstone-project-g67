@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -315,7 +316,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<UserActivityLog> logs = userActivityLogRepository.findByUser_Id(userId, pageable);
+        Page<UserActivityLog> logs = userActivityLogRepository.findByUser_IdOrderByTimestampDesc(userId, pageable);
         return logs.map(log -> UserActivityLogRequestDTO.builder()
                 .id(log.getId())
                 .action(log.getAction())
