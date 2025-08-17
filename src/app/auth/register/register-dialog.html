@@ -24,8 +24,7 @@
         <i class="fa" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'" ></i>
       </button>
     </div>
-    <div *ngIf="errorMsg" class="auth-error">{{ errorMsg }}</div>
-    <div *ngIf="successMsg" class="auth-success">{{ successMsg }}</div>
+  <!-- Ẩn message lỗi/thành công, chỉ hiện toast -->
     <button class="auth-btn" type="submit">Đăng ký</button>
   </form>
   <div class="auth-link">

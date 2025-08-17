@@ -1,3 +1,4 @@
+
 import { Component, Optional, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
@@ -13,6 +14,23 @@ import { ToastService } from '../../shared/toast/toast.service';
   styleUrls: ['../login/login.scss']
 })
 export class ForgotPasswordDialogComponent implements OnInit {
+  /**
+   * Dịch message lỗi API trả về sang tiếng Việt thân thiện
+   */
+  private translateApiErrorMessage(message: string): string {
+    if (!message) return 'Đã xảy ra lỗi. Vui lòng thử lại!';
+    const map: { [key: string]: string } = {
+      'Email not found in system': 'Email không tồn tại trong hệ thống',
+      'Invalid email format': 'Email không hợp lệ',
+      'Failed to send email': 'Gửi email thất bại. Vui lòng thử lại!',
+      'Too many requests': 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau!',
+      'Invalid or expired code': 'Mã xác nhận không đúng hoặc đã hết hạn!',
+      'Code not found': 'Không tìm thấy mã xác nhận!',
+      'User not found': 'Không tìm thấy người dùng!',
+      'Password reset failed': 'Đặt lại mật khẩu thất bại!'
+    };
+    return map[message] || message;
+  }
   get codeInputLength(): number {
     return this.codeInputs.map(i => i.value).join('').length;
   }
@@ -83,7 +101,6 @@ export class ForgotPasswordDialogComponent implements OnInit {
       this.isLoading = true;
       this.errorMessage = '';
       const email = this.forgotPasswordForm.value.email;
-      
       this.authDialogService.authService.forgotPassword(email).subscribe({
         next: () => {
           this.toast?.success('Đã gửi mã xác nhận tới email của bạn!');
@@ -94,7 +111,9 @@ export class ForgotPasswordDialogComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err: any) => {
-          this.errorMessage = err?.error?.message || 'Gửi email thất bại!';
+          // Interceptor sẽ throw Error(message) với message là BE trả về
+          const rawMsg = err?.message || 'Gửi email thất bại!';
+          this.errorMessage = this.translateApiErrorMessage(rawMsg);
           this.toast?.error(this.errorMessage);
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -105,27 +124,20 @@ export class ForgotPasswordDialogComponent implements OnInit {
 
   onVerifyCode() {
     const code = this.codeInputs.map(i => i.value).join('');
-    
     if (code.length === 6 && this.emailSent) {
       this.isLoading = true;
       this.errorMessage = '';
-      
       this.authDialogService.authService.verifyResetCode(this.emailSent, code).subscribe({
         next: (response) => {
           this.toast?.success('Mã xác nhận hợp lệ! Bạn có thể đặt lại mật khẩu.');
-          
-          // Chuyển sang bước nhập mật khẩu mới
           this.step = 'password';
           this.isLoading = false;
-          
-          // Reset form mật khẩu
           this.passwordForm.reset();
-          
-          // Force change detection để UI cập nhật
           this.cdr.detectChanges();
         },
         error: (err: any) => {
-          this.errorMessage = err?.error?.message || 'Mã xác nhận không đúng hoặc đã hết hạn!';
+          const rawMsg = err?.message || 'Mã xác nhận không đúng hoặc đã hết hạn!';
+          this.errorMessage = this.translateApiErrorMessage(rawMsg);
           this.toast?.error(this.errorMessage);
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -192,25 +204,21 @@ export class ForgotPasswordDialogComponent implements OnInit {
     if (this.passwordForm.valid && this.emailSent) {
       const newPassword = this.passwordForm.value.newPassword;
       const confirmPassword = this.passwordForm.value.confirmPassword;
-      
       if (newPassword !== confirmPassword) {
         this.toast?.error('Mật khẩu xác nhận không khớp!');
         return;
       }
-      
       this.isLoading = true;
       this.errorMessage = '';
       const code = this.codeInputs.map(i => i.value).join('');
-      
       this.authDialogService.authService.resetPassword(this.emailSent, code, newPassword).subscribe({
         next: () => {
           this.toast?.success('Đặt lại mật khẩu thành công!');
-          
-          // Redirect to login dialog after successful password change
           this.goToLogin();
         },
         error: (err: any) => {
-          this.errorMessage = err?.error?.message || 'Đặt lại mật khẩu thất bại!';
+          const rawMsg = err?.message || 'Đặt lại mật khẩu thất bại!';
+          this.errorMessage = this.translateApiErrorMessage(rawMsg);
           this.toast?.error(this.errorMessage);
           this.isLoading = false;
           this.cdr.detectChanges();

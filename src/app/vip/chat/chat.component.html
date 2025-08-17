@@ -226,7 +226,7 @@
               name="message"
               [placeholder]="getInputPlaceholder()"
               rows="1"
-              maxlength="1000"
+              maxlength="250"
               (keydown)="onEnterPress($event)"
               #messageInput></textarea>
             
@@ -243,8 +243,8 @@
         </form>
         
         <div class="input-footer">
-          <div class="char-counter" [class.warning]="newMessage.length > 800">
-            {{ newMessage.length }}/1000
+          <div class="char-counter" [class.warning]="newMessage.length > 200">
+            {{ newMessage.length }}/250
           </div>
         </div>
       </div>

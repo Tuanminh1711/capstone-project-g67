@@ -11,7 +11,7 @@ import { ToastService } from '../../shared/toast/toast.service';
 @Component({
   selector: 'app-register-dialog',
   standalone: true,
-  imports: [FormsModule, CommonModule, NgIf],
+  imports: [FormsModule, CommonModule],
   templateUrl: './register-dialog.html',
   styleUrls: ['./register.scss']
 })
