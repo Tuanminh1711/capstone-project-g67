@@ -1,6 +1,6 @@
 package com.plantcare_backend.service.impl;
 
-import com.plantcare_backend.service.IpLocationService;
+import com.plantcare_backend.service.external_service.IpLocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

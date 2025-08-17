@@ -13,7 +13,7 @@ import com.plantcare_backend.model.PlantImage;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.repository.PlantImageRepository;
 import com.plantcare_backend.repository.PlantRepository;
-import com.plantcare_backend.service.AzureStorageService;
+import com.plantcare_backend.service.external_service.AzureStorageService;
 import com.plantcare_backend.service.PlantManagementService;
 import com.plantcare_backend.service.PlantService;
 import jakarta.servlet.http.HttpServletRequest;

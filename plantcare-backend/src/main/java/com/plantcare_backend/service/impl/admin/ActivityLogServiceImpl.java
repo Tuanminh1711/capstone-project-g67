@@ -5,7 +5,7 @@ import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.UserActivityLogRepository;
 import com.plantcare_backend.repository.UserRepository;
 import com.plantcare_backend.service.ActivityLogService;
-import com.plantcare_backend.service.IpLocationService;
+import com.plantcare_backend.service.external_service.IpLocationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
