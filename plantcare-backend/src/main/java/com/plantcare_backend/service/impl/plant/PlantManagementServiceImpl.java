@@ -361,7 +361,7 @@ public class PlantManagementServiceImpl implements PlantManagementService {
             String content = "Chào " + user.getUsername() + ",\n\n"
                     + "Báo cáo của bạn về cây \"" + report.getPlant().getCommonName() + "\" đã được xử lý với kết quả: "
                     + report.getStatus().name() + ".\n"
-                    + "Ghi chú từ admin/staff: " + report.getAdminNotes() + "\n\n"
+                    + "Ghi chú từ admin/staff: " + adminNotes + "\n\n"
                     + "Cảm ơn bạn đã đóng góp cho hệ thống PlantCare!";
             emailService.sendEmailAsync(user.getEmail(), subject, content);
         }
@@ -375,18 +375,27 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         log.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         plantReportLogRepository.save(log);
 
-        // Kiểm tra nếu không còn report nào ở trạng thái PENDING hoặc CLAIMED
+        // Cập nhật status plant dựa trên số report PENDING còn lại
         Long plantId = report.getPlant().getId();
         int pendingCount = plantReportRepository.countByPlantIdAndStatusIn(
                 plantId,
-                List.of(PlantReport.ReportStatus.PENDING, PlantReport.ReportStatus.CLAIMED));
-        if (pendingCount == 0) {
-            Plants plant = report.getPlant();
+                List.of(PlantReport.ReportStatus.PENDING));
+
+        Plants plant = report.getPlant();
+        if (pendingCount >= 3) {
+            // Nếu vẫn còn >= 3 report PENDING, giữ plant ở trạng thái INACTIVE
+            if (plant.getStatus() != Plants.PlantStatus.INACTIVE) {
+                plant.setStatus(Plants.PlantStatus.INACTIVE);
+                plantRepository.save(plant);
+            }
+        } else if (pendingCount == 0) {
+            // Nếu không còn report PENDING nào, mở khóa plant
             if (plant.getStatus() == Plants.PlantStatus.INACTIVE) {
                 plant.setStatus(Plants.PlantStatus.ACTIVE);
                 plantRepository.save(plant);
             }
         }
+        // Nếu pendingCount = 1 hoặc 2, giữ nguyên status hiện tại
     }
 
     @Override
