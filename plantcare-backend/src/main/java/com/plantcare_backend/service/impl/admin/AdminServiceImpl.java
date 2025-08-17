@@ -316,7 +316,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public Page<UserActivityLogRequestDTO> getUserActivityLogs(int userId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<UserActivityLog> logs = userActivityLogRepository.findByUser_IdOrderByTimestampDesc(userId, pageable);
+        Page<UserActivityLog> logs = userActivityLogRepository.findByUser_IdOrderByTimestampAsc(userId, pageable);
         return logs.map(log -> UserActivityLogRequestDTO.builder()
                 .id(log.getId())
                 .action(log.getAction())
