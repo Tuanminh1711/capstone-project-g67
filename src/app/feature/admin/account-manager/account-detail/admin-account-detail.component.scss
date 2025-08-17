@@ -314,3 +314,22 @@
     margin-right: 0;
   }
 }
+
+/* Info restriction notice */
+.info-restriction-notice {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #856404;
+  font-size: 0.9em;
+}
+
+.info-restriction-notice i {
+  color: #f39c12;
+  font-size: 1.1em;
+}

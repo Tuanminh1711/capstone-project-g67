@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../auth/auth.service';
 
 interface UserDetail {
   id: number;
@@ -44,12 +45,18 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
   private router = inject(Router);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
 
   constructor() {
     super();
   }
 
   ngOnInit() {
+    // Kiểm tra quyền truy cập trước khi load data
+    if (!this.checkUserPermissions()) {
+      return;
+    }
+
     // Load user detail immediately on component init
     this.loadUserDetailFromRoute();
     
@@ -63,6 +70,25 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
         this.loadUserDetail();
       }
     });
+  }
+
+  private checkUserPermissions(): boolean {
+    // Lấy thông tin user từ token thông qua AuthService
+    const currentUserRole = this.authService.getCurrentUserRole();
+    const currentUserId = this.authService.getCurrentUserId();
+    
+    console.log('Checking permissions - Current user role from token:', currentUserRole);
+    console.log('Checking permissions - Current user ID from token:', currentUserId);
+
+    // Chỉ ADMIN và STAFF mới có thể truy cập trang này
+    if (!currentUserRole || (currentUserRole.toUpperCase() !== 'ADMIN' && currentUserRole.toUpperCase() !== 'STAFF')) {
+      this.canView = false;
+      this.setError('Bạn không có quyền truy cập trang này. Chỉ Admin và Staff mới có thể xem thông tin tài khoản.');
+      this.setLoading(false);
+      return false;
+    }
+
+    return true;
   }
 
   ngAfterViewInit() {
@@ -84,6 +110,81 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
     }
   }
 
+  private determineVisibilityPermissions(currentUserRole: string, currentUserId: number, viewedRole: string, viewedUserId: number) {
+    // Reset flags
+    this.canView = true;
+    this.showAllInfo = false;
+    this.showOnlyUsernameAndRole = false;
+
+    // Debug logging
+    console.log('Determine visibility - Current role:', currentUserRole, 'Current ID:', currentUserId);
+    console.log('Determine visibility - Viewed role:', viewedRole, 'Viewed ID:', viewedUserId);
+
+    // Kiểm tra nếu không có thông tin user hiện tại
+    if (!currentUserRole || !currentUserId) {
+      console.warn('No current user information found');
+      this.canView = false;
+      this.setError('Không thể xác thực thông tin người dùng hiện tại.');
+      return;
+    }
+
+    // Chỉ ADMIN và STAFF mới có thể xem thông tin tài khoản
+    const roleFromToken = currentUserRole.toUpperCase();
+    console.log(`Role check: ${roleFromToken} - Valid roles: ADMIN, STAFF`);
+    
+    if (roleFromToken !== 'ADMIN' && roleFromToken !== 'STAFF') {
+      console.log('❌ Access denied - not admin or staff');
+      this.canView = false;
+      this.setError('Bạn không có quyền truy cập thông tin này.');
+      return;
+    }
+    
+    console.log('✅ Role check passed - user has admin or staff role');
+
+    // Logic theo yêu cầu - sử dụng trực tiếp currentUserRole từ token:
+    const currentRoleFromToken = currentUserRole.toUpperCase();
+    
+    console.log(`Permission logic: ${currentRoleFromToken} viewing ${viewedRole} (ID: ${currentUserId} vs ${viewedUserId})`);
+    
+    if (currentRoleFromToken === 'ADMIN') {
+      if (currentUserId === viewedUserId) {
+        // Admin xem tài khoản của chính mình -> hiển thị hết thông tin
+        this.showAllInfo = true;
+        this.showOnlyUsernameAndRole = false;
+        console.log('✅ Admin viewing own account - show all info');
+      } else if (viewedRole === 'STAFF' || viewedRole === 'EXPERT') {
+        // Admin xem tài khoản của staff hoặc expert -> hiển thị hết thông tin
+        this.showAllInfo = true;
+        this.showOnlyUsernameAndRole = false;
+        console.log('✅ Admin viewing staff/expert account - show all info');
+      } else if (viewedRole === 'USER' || viewedRole === 'VIP') {
+        // Admin xem tài khoản của user hoặc vip -> chỉ hiển thị username và vai trò
+        this.showAllInfo = false;
+        this.showOnlyUsernameAndRole = true;
+        console.log('⚠️ Admin viewing user/vip account - show limited info');
+      } else {
+        // Các trường hợp khác -> chỉ hiển thị username và vai trò
+        this.showAllInfo = false;
+        this.showOnlyUsernameAndRole = true;
+        console.log('⚠️ Admin viewing unknown role - show limited info');
+      }
+    } else if (currentRoleFromToken === 'STAFF') {
+      if (viewedRole === 'USER' || viewedRole === 'VIP') {
+        // Staff xem tài khoản của user hoặc vip -> chỉ hiển thị username và vai trò
+        this.showAllInfo = false;
+        this.showOnlyUsernameAndRole = true;
+        console.log('⚠️ Staff viewing user/vip account - show limited info');
+      } else {
+        // Staff xem các vai trò khác (admin, staff, expert) -> hiển thị hết thông tin
+        this.showAllInfo = true;
+        this.showOnlyUsernameAndRole = false;
+        console.log('✅ Staff viewing admin/staff/expert account - show all info');
+      }
+    }
+    
+    console.log(`Final result: showAllInfo=${this.showAllInfo}, showOnlyUsernameAndRole=${this.showOnlyUsernameAndRole}`);
+  }
+
   loadUserDetail() {
     if (this.loading || !this.userId) return; // Prevent multiple simultaneous requests
     
@@ -99,49 +200,41 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
         if (response && (response.data || response.id)) {
           this.user = response.data || response;
           this.dataLoaded = true;
-          // Lấy thông tin user hiện tại từ localStorage/sessionStorage (giả sử đã lưu)
-          const currentUser = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || '{}');
-          const currentUserId = currentUser.id;
-          const currentUserRole = (currentUser.role || '').toUpperCase();
-          const viewedRole = (this.user && this.user.role ? this.user.role : '').toUpperCase();
-          // Ẩn hết thông tin nếu là VIP
-          if (viewedRole === 'VIP') {
-            // Admin không được xem tài khoản VIP
-            if (currentUserRole === 'ADMIN' && this.user && currentUserId !== this.user.id) {
-              this.canView = false;
-              this.showOnlyUsernameAndRole = false;
-              this.showAllInfo = false;
-              this.setError('Admin không được xem thông tin tài khoản VIP.');
-              this.user = null;
-              this.setLoading(false);
-              return;
-            }
-            // Staff cũng chỉ xem username và vai trò
-            this.showOnlyUsernameAndRole = true;
-            this.showAllInfo = false;
-          } else if (viewedRole === 'USER') {
-            // Admin, staff xem user chỉ hiện username và vai trò
-            this.showOnlyUsernameAndRole = true;
-            this.showAllInfo = false;
-          } else if (currentUserRole === 'ADMIN') {
-            // Admin xem chính mình hoặc staff/expert thì hiện hết
-            if ((this.user && currentUserId === this.user.id) || viewedRole === 'STAFF' || viewedRole === 'EXPERT') {
-              this.showOnlyUsernameAndRole = false;
-              this.showAllInfo = true;
-            } else {
-              this.showOnlyUsernameAndRole = true;
-              this.showAllInfo = false;
-            }
-          } else {
-            // Staff xem staff/expert thì hiện hết
-            if (currentUserRole === 'STAFF' && (viewedRole === 'STAFF' || viewedRole === 'EXPERT')) {
-              this.showOnlyUsernameAndRole = false;
-              this.showAllInfo = true;
-            } else {
-              this.showOnlyUsernameAndRole = true;
-              this.showAllInfo = false;
-            }
+          // Null safety check
+          if (!this.user) {
+            this.setError('Không tìm thấy thông tin người dùng');
+            this.dataLoaded = false;
+            return;
           }
+          
+          // Lấy thông tin từ viewed user trước
+          const viewedUserId = this.user.id;
+          const viewedRole = (this.user.role || '').toUpperCase();
+          
+          // Lấy thông tin user hiện tại từ token thông qua AuthService
+          const currentUserRole = this.authService.getCurrentUserRole();
+          const currentUserId = this.authService.getCurrentUserId();
+          
+          // Debug logging chi tiết
+          console.log('=== USER PERMISSION DEBUG ===');
+          console.log('🔑 Current user role from token:', currentUserRole, '(type:', typeof currentUserRole, ')');
+          console.log('🆔 Current user ID from token:', currentUserId, '(type:', typeof currentUserId, ')');
+          console.log('👤 Viewed user role:', viewedRole, '(type:', typeof viewedRole, ')');
+          console.log('🎯 Viewed user ID:', viewedUserId, '(type:', typeof viewedUserId, ')');
+          
+          // Kiểm tra token validity
+          if (!currentUserRole) {
+            console.log('❌ WARNING: No role found in token!');
+          }
+          if (!currentUserId) {
+            console.log('❌ WARNING: No user ID found in token!');
+          }
+          console.log('===============================');
+          
+          // Convert currentUserId from string to number for comparison
+          const currentUserIdNum = currentUserId ? parseInt(currentUserId, 10) : 0;
+          
+          this.determineVisibilityPermissions(currentUserRole || '', currentUserIdNum, viewedRole, viewedUserId);
         } else {
           this.setError('Không tìm thấy thông tin người dùng');
           this.dataLoaded = false;
