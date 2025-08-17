@@ -17,7 +17,8 @@ export class DialogManager {
     const isLoginDialog = component && component.name === 'LoginDialogComponent';
     const dialogRef = this.dialog.open(component, isLoginDialog ? {
       disableClose: true,
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     } : {
       disableClose: true,
       panelClass: 'dialog-panel-bg'

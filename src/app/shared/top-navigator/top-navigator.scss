@@ -126,7 +126,7 @@ app-top-navigator + * {
   height: 60px;
   margin: 0;
   padding: 0 10px;
-  z-index: 10001 !important; /* Higher than chat container */
+  z-index: 1000 !important; /* Lower than dialog containers */
   background: linear-gradient(90deg, #0d4d2d, #178a4c);
   color: #fff;
   display: flex;
@@ -284,11 +284,11 @@ app-top-navigator + * {
 app-notification-dropdown {
   display: inline-block;
   position: relative;
-  z-index: 10002 !important;
+  z-index: 1001 !important;
   
   .notification-dropdown-container {
     position: relative;
-    z-index: 10002 !important;
+    z-index: 1001 !important;
   }
 }
 
@@ -327,7 +327,7 @@ app-notification-dropdown {
   position: absolute;
   right: 0;
   top: 100%; /* Sát chân thẻ nav */
-  z-index: 10002 !important; /* Ensure dropdown appears above chat */
+  z-index: 1001 !important; /* Ensure dropdown appears above chat */
   background: #357a38;
   border: none;
   border-radius: 10px;
@@ -838,7 +838,7 @@ body, app-root {
   position: absolute;
   right: 0;
   top: 100%;
-  z-index: 10002 !important; /* Ensure dropdown appears above chat */
+  z-index: 1001 !important; /* Ensure dropdown appears above chat */
   background: #357a38;
   border: none;
   border-radius: 10px;

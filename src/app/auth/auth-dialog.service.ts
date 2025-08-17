@@ -51,7 +51,14 @@ export class AuthDialogService {
       width: '420px',
       disableClose: true,
       panelClass: ['dialog-panel-bg', 'high-z-index'],
-      backdropClass: 'high-z-backdrop'
+      backdropClass: 'high-z-backdrop',
+      hasBackdrop: true,
+      closeOnNavigation: false,
+      autoFocus: true,
+      restoreFocus: true,
+      position: {
+        top: '0px'
+      }
     });
     dialogRef.afterClosed().subscribe(() => {
       this.dialogOpened = false;

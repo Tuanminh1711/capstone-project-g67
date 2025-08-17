@@ -63,22 +63,23 @@
 }
 
 
-// Fix z-index to ensure dialog appears above top navigation
+// Fix z-index to ensure dialog appears above top navigation - ABSOLUTE MAXIMUM PRIORITY
 :host ::ng-deep {
   .cdk-overlay-container {
-    z-index: 99999 !important;
+    z-index: 2147483647 !important; /* Maximum possible z-index */
   }
   
   .cdk-overlay-backdrop {
-    z-index: 99998 !important;
+    z-index: 2147483646 !important;
   }
   
-  .mat-dialog-container {
-    z-index: 99999 !important;
+  .mat-dialog-container,
+  .mat-mdc-dialog-container {
+    z-index: 2147483647 !important; /* Maximum possible z-index */
   }
   
   .cdk-overlay-pane {
-    z-index: 99999 !important;
+    z-index: 2147483647 !important; /* Maximum possible z-index */
   }
 }
 

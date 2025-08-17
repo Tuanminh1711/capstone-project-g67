@@ -1,0 +1,142 @@
+/* Global dialog z-index classes - ABSOLUTE HIGHEST PRIORITY */
+.high-z-index {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+.high-z-backdrop {
+  z-index: 2147483646 !important;
+}
+
+/* Ensure Material Dialog overlays appear above ALL elements including toast */
+.cdk-overlay-container {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+.cdk-overlay-backdrop {
+  z-index: 2147483646 !important;
+}
+
+.mat-dialog-container,
+.mat-mdc-dialog-container {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+.cdk-overlay-pane {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+/* Force auth dialogs to highest z-index */
+.dialog-panel-bg {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+/* Additional safety net for all Material Dialog components */
+body .cdk-overlay-container,
+html .cdk-overlay-container {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+body .mat-dialog-container,
+html .mat-dialog-container,
+body .mat-mdc-dialog-container,
+html .mat-mdc-dialog-container {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+/* Ensure backdrop doesn't interfere */
+body .cdk-overlay-backdrop,
+html .cdk-overlay-backdrop {
+  z-index: 2147483646 !important;
+}
+
+/* NUCLEAR OPTION - Force all auth dialogs to absolute top */
+app-root .cdk-overlay-container,
+app-root .mat-dialog-container,
+app-root .mat-mdc-dialog-container,
+app-root .cdk-overlay-pane {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+/* Specific override for auth dialog components */
+app-register-dialog,
+app-login-dialog,
+app-forgot-password-dialog,
+app-verify-email-dialog {
+  z-index: 2147483647 !important; /* Maximum possible z-index */
+}
+
+/* Final safety net */
+* {
+  &.high-z-index,
+  &.dialog-panel-bg {
+    z-index: 2147483647 !important; /* Maximum possible z-index */
+  }
+}
+
+/* ULTIMATE NUCLEAR OVERRIDE - FORCE ALL DIALOGS TO TOP */
+.cdk-overlay-container,
+.mat-dialog-container,
+.mat-mdc-dialog-container,
+.cdk-overlay-pane,
+.cdk-overlay-backdrop {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+}
+
+/* Force specific auth dialog positioning */
+.cdk-overlay-container .mat-dialog-container.dialog-panel-bg,
+.cdk-overlay-container .mat-mdc-dialog-container.dialog-panel-bg {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Override any potential conflicting styles */
+body, html {
+  &.cdk-global-overlay-wrapper {
+    z-index: 2147483647 !important;
+  }
+}
+
+/* Force CDK overlay to appear above everything */
+.cdk-global-overlay-wrapper,
+.cdk-overlay-container {
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+
+/* ABSOLUTE FINAL OVERRIDE - BRUTE FORCE */
+body .cdk-overlay-container,
+body .mat-dialog-container,
+body .mat-mdc-dialog-container,
+body .cdk-overlay-pane,
+html .cdk-overlay-container,
+html .mat-dialog-container,
+html .mat-mdc-dialog-container,
+html .cdk-overlay-pane {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Force all Material Dialog related classes to maximum z-index */
+[class*="cdk-overlay"],
+[class*="mat-dialog"],
+[class*="dialog-panel"] {
+  z-index: 2147483647 !important;
+}
+
+/* Ensure dialog content is always visible */
+.dialog-panel-bg,
+.high-z-index {
+  z-index: 2147483647 !important;
+  position: relative !important;
+  visibility: visible !important;
+  display: block !important;
+  opacity: 1 !important;
+}

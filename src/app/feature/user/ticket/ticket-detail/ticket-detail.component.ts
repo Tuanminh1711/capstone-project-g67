@@ -103,7 +103,8 @@ export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.dialog.open(TicketResponseDialogComponent, {
       data: { ticketId },
       width: '480px',
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     }).afterClosed().subscribe(result => {
       if (result === 'responseAdded') {
         // TODO: reload responses from API if needed

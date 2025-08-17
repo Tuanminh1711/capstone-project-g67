@@ -133,7 +133,8 @@ export class TopNavigatorComponent implements OnInit {
     this.closeSupportDropdown();
     this.dialog.open(SendTicketDialogComponent, {
       width: '500px',
-      panelClass: 'dialog-panel-bg'
+      panelClass: ['dialog-panel-bg', 'high-z-index'],
+      backdropClass: 'high-z-backdrop'
     });
   };
 
