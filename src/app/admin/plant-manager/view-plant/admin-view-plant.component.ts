@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 interface PlantDetail {
@@ -16,7 +17,7 @@ interface PlantDetail {
   status: string;
   statusDisplay: string;
   createdAt: string | null;
-  updatedAt: string | null;
+  updatedAt?: string | null;
   categoryName: string;
   imageUrls: string[];
   images: any;
@@ -28,20 +29,6 @@ interface ApiResponse {
   data: PlantDetail;
 }
 
-interface UpdatePlantRequest {
-  scientificName: string;
-  commonName: string;
-  categoryId: number;
-  description: string;
-  careInstructions: string;
-  lightRequirement: string;
-  waterRequirement: string;
-  careDifficulty: string;
-  suitableLocation: string;
-  commonDiseases: string;
-  status: string;
-}
-
 @Component({
   selector: 'app-admin-view-plant',
   standalone: true,
@@ -50,32 +37,12 @@ interface UpdatePlantRequest {
   styleUrl: './admin-view-plant.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AdminViewPlantComponent implements OnInit, OnDestroy {
   plant: PlantDetail | null = null;
   loading = false;
   error = '';
   plantId: number = 0;
   private routeSubscription: Subscription | null = null;
-  
-  // Edit mode variables
-  isEditMode = false;
-  updating = false;
-  updateError = '';
-  
-  // Form data for editing
-  editForm: UpdatePlantRequest = {
-    scientificName: '',
-    commonName: '',
-    categoryId: 1,
-    description: '',
-    careInstructions: '',
-    lightRequirement: 'MEDIUM',
-    waterRequirement: 'MEDIUM',
-    careDifficulty: 'MODERATE',
-    suitableLocation: '',
-    commonDiseases: '',
-    status: 'ACTIVE'
-  };
 
   constructor(
     private route: ActivatedRoute,
@@ -87,47 +54,14 @@ export class AdminViewPlantComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnInit(): void {
     // Subscribe để handle navigation changes
     this.routeSubscription = this.route.params.subscribe(params => {
-      const newPlantId = +params['id'];
-      if (newPlantId && newPlantId !== this.plantId) {
-        this.plantId = newPlantId;
-        this.initializeComponent();
+      const id = params['id'];
+      if (id && !isNaN(+id)) {
+        this.plantId = +id;
+        this.loadPlantDetail();
+      } else {
+        this.error = 'ID cây không hợp lệ';
       }
     });
-  }
-
-  ngAfterViewInit(): void {
-    // Load data sau khi view đã được khởi tạo hoàn toàn
-    setTimeout(() => {
-      this.initializeComponent();
-      // Debug CSS loading
-      // ...existing code...
-      const element = document.querySelector('app-admin-view-plant');
-      if (element) {
-        // ...existing code...
-        // ...existing code...
-      } else {
-        // ...existing code...
-      }
-    }, 0);
-  }
-
-  private initializeComponent(): void {
-    // Lấy ID từ route
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.plantId = +id;
-      
-      // Reset state
-      this.plant = null;
-      this.error = '';
-      this.loading = false;
-      
-      // Load data ngay lập tức
-      this.loadPlantDetailImmediate();
-    } else {
-      this.error = 'ID cây không hợp lệ';
-      this.loading = false;
-    }
   }
 
   private loadPlantDetailImmediate(): void {

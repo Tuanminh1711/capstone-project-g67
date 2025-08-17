@@ -89,7 +89,10 @@
       <div class="form-row">
         <div class="form-group">
           <label for="suitableLocation">Vị trí phù hợp</label>
-          <input id="suitableLocation" type="text" [(ngModel)]="updateForm.suitableLocation" name="suitableLocation" (ngModelChange)="onFieldChange()" />
+          <select id="suitableLocation" [(ngModel)]="updateForm.suitableLocation" name="suitableLocation" (ngModelChange)="onFieldChange()" required>
+            <option value="">-- Chọn vị trí phù hợp --</option>
+            <option *ngFor="let option of suitableLocationOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
         </div>
       </div>
       <div class="form-row">

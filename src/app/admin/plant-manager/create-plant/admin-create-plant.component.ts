@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AdminCreatePlantService } from './admin-create-plant.service';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { PlantOptionsService, PlantOption } from '../../../shared/services/plant-options.service';
 
 export interface PlantCategory {
   id: number;
@@ -52,27 +53,11 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
   categories: PlantCategory[] = [];
   isSubmitting = false;
 
-  // Light requirement options
-  lightOptions = [
-    { value: 'LOW', label: 'Ánh sáng yếu' },
-    { value: 'MEDIUM', label: 'Ánh sáng trung bình' },
-    { value: 'HIGH', label: 'Ánh sáng mạnh' },
-    { value: 'DIRECT', label: 'Ánh sáng trực tiếp' }
-  ];
-
-  // Water requirement options
-  waterOptions = [
-    { value: 'LOW', label: 'Ít nước' },
-    { value: 'MEDIUM', label: 'Trung bình' },
-    { value: 'HIGH', label: 'Nhiều nước' }
-  ];
-
-  // Care difficulty options
-  difficultyOptions = [
-    { value: 'EASY', label: 'Dễ chăm sóc' },
-    { value: 'MODERATE', label: 'Trung bình' },
-    { value: 'DIFFICULT', label: 'Khó chăm sóc' }
-  ];
+  // Sử dụng service để lấy options
+  lightOptions: PlantOption[] = [];
+  waterOptions: PlantOption[] = [];
+  difficultyOptions: PlantOption[] = [];
+  suitableLocationOptions: PlantOption[] = [];
 
   // trackBy functions for *ngFor
   trackByCategoryId(index: number, item: PlantCategory) {
@@ -88,7 +73,8 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
     private router: Router,
     private createPlantService: AdminCreatePlantService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private plantOptionsService: PlantOptionsService
   ) {
     super();
     this.createPlantForm = this.initializeForm();
@@ -96,6 +82,7 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
 
   ngOnInit(): void {
     this.loadCategories();
+    this.loadPlantOptions();
   }
 
   private initializeForm(): FormGroup {
@@ -146,6 +133,13 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
         this.cdr.markForCheck();
       });
     }
+  }
+
+  private loadPlantOptions(): void {
+    this.lightOptions = this.plantOptionsService.getLightRequirementOptions();
+    this.waterOptions = this.plantOptionsService.getWaterRequirementOptions();
+    this.difficultyOptions = this.plantOptionsService.getCareDifficultyOptions();
+    this.suitableLocationOptions = this.plantOptionsService.getSuitableLocationOptions();
   }
 
   async onSubmit(): Promise<void> {

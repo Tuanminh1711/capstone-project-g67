@@ -197,7 +197,7 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
 
   editPlant(plant: Plant) {
     // Chuyển sang trang sửa plant
-    window.location.href = `/admin/plants/edit/${plant.id}`;
+    this.router.navigate(['/admin/plants/edit', plant.id]);
   }
 
   viewPlantDetail(plant: Plant) {

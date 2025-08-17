@@ -9,6 +9,7 @@ import { Plant, PlantDataService } from '../../../shared/services/plant-data.ser
 import { PlantDetailLoaderService } from '../../../shared/services/plant-detail-loader.service';
 import { CookieService } from '../../../auth/cookie.service';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { PlantOptionsService, PlantOption } from '../../../shared/services/plant-options.service';
 
 
 interface AddPlantRequest {
@@ -42,18 +43,8 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     locationInHouse: ''
   };
 
-  // Location options
-  locationOptions = [
-    'Phòng khách',
-    'Phòng ngủ',
-    'Phòng bếp',
-    'Ban công',
-    'Sân vườn',
-    'Phòng làm việc',
-    'Phòng tắm',
-    'Hành lang',
-    'Khác'
-  ];
+  // Sử dụng service để lấy options
+  locationOptions: PlantOption[] = [];
 
   // Warning popup state
   showLocationWarning = false;
@@ -68,11 +59,13 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     private cookieService: CookieService,
     private toastService: ToastService,
     private plantDetailLoader: PlantDetailLoaderService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private plantOptionsService: PlantOptionsService
   ) {}
 
 
   ngOnInit(): void {
+    this.loadLocationOptions();
     this.initializeForm();
     const plantId = this.route.snapshot.paramMap.get('plantId');
     if (!plantId) {
@@ -91,6 +84,10 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     }
     // Luôn gọi lại API để đảm bảo dữ liệu mới nhất (giống plant-detail)
     this.loadPlantInfo();
+  }
+
+  private loadLocationOptions(): void {
+    this.locationOptions = this.plantOptionsService.getSuitableLocationOptions();
   }
 
   ngOnDestroy(): void {

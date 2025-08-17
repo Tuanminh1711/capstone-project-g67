@@ -110,8 +110,8 @@
                 required
               >
                 <option value="">-- Chọn vị trí --</option>
-                <option *ngFor="let location of locationOptions" [value]="location">
-                  {{ location }}
+                <option *ngFor="let location of locationOptions" [value]="location.value">
+                  {{ location.label }}
                 </option>
               </select>
               <small class="help-text">Cây được đặt ở đâu trong nhà?</small>

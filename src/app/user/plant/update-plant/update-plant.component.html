@@ -178,15 +178,17 @@
                   <label for="locationInHouse" class="form-label">
                     Vị trí trong nhà <span class="required">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <select
                     id="locationInHouse"
                     formControlName="locationInHouse"
                     class="form-input"
                     [class.error]="isFieldInvalid('locationInHouse')"
-                    placeholder="Ví dụ: Phòng khách, Ban công, Phòng ngủ..."
-                    maxlength="50"
-                  />
+                    required>
+                    <option value="">-- Chọn vị trí --</option>
+                    <option *ngFor="let option of locationOptions" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
                   @if (isFieldInvalid('locationInHouse')) {
                     <div class="error-message">
                       {{ getFieldError('locationInHouse') }}

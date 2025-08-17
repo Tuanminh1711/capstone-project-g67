@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CreateNewPlantService, CreatePlantRequest, Category } from './create-new-plant.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
+import { PlantOptionsService, PlantOption } from '../../../shared/services/plant-options.service';
 
 @Component({
   selector: 'app-create-new-plant',
@@ -26,6 +27,12 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
   isUploadingImages = false;
   private subscriptions: Subscription = new Subscription();
   @ViewChild('imageUpload') imageUpload!: ElementRef<HTMLInputElement>;
+
+  // Sử dụng service để lấy options
+  lightRequirements: PlantOption[] = [];
+  waterRequirements: PlantOption[] = [];
+  careDifficulties: PlantOption[] = [];
+  suitableLocationOptions: PlantOption[] = [];
 
   // Custom validators theo backend DTO requirements
   static scientificNameValidator(control: AbstractControl): ValidationErrors | null {
@@ -78,36 +85,31 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  // Options cho dropdowns
-  lightRequirements = [
-    { value: 'LOW', label: 'Ánh sáng yếu' },
-    { value: 'MEDIUM', label: 'Ánh sáng vừa' },
-    { value: 'HIGH', label: 'Ánh sáng mạnh' }
-  ];
-
-  waterRequirements = [
-    { value: 'LOW', label: 'Ít nước' },
-    { value: 'MEDIUM', label: 'Vừa phải' },
-    { value: 'HIGH', label: 'Nhiều nước' }
-  ];
-
-  careDifficulties = [
-    { value: 'EASY', label: 'Dễ chăm sóc' },
-    { value: 'MODERATE', label: 'Trung bình' },
-    { value: 'DIFFICULT', label: 'Khó chăm sóc' }
-  ];
-
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private createPlantService: CreateNewPlantService,
+    private createNewPlantService: CreateNewPlantService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private plantOptionsService: PlantOptionsService
   ) {
-    this.createPlantForm = this.initializeForm();
+    this.createPlantForm = this.fb.group({
+      scientificName: ['', [Validators.required, CreateNewPlantComponent.scientificNameValidator]],
+      commonName: ['', [Validators.required, CreateNewPlantComponent.commonNameValidator]],
+      categoryId: ['', [Validators.required]],
+      description: ['', [Validators.required, CreateNewPlantComponent.descriptionValidator]],
+      careInstructions: ['', [Validators.required, Validators.minLength(10)]],
+      lightRequirement: ['', [Validators.required]],
+      waterRequirement: ['', [Validators.required]],
+      careDifficulty: ['', [Validators.required]],
+      suitableLocation: ['', [Validators.required, CreateNewPlantComponent.suitableLocationValidator]],
+      commonDiseases: ['', [CreateNewPlantComponent.commonDiseasesValidator]],
+      imageUrls: [[]]
+    });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.loadPlantOptions();
     this.loadCategories();
   }
 
@@ -149,7 +151,7 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     this.isLoadingCategories = true;
     // Disable the select while loading
     this.createPlantForm.get('categoryId')?.disable();
-    const sub = this.createPlantService.getCategories().subscribe({
+    const sub = this.createNewPlantService.getCategories().subscribe({
       next: (categories: any) => {
         // Nếu API trả về object, lấy property chứa array; nếu là array thì gán trực tiếp
         if (Array.isArray(categories)) {
@@ -173,6 +175,13 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.add(sub);
+  }
+
+  private loadPlantOptions(): void {
+    this.lightRequirements = this.plantOptionsService.getLightRequirementOptions();
+    this.waterRequirements = this.plantOptionsService.getWaterRequirementOptions();
+    this.careDifficulties = this.plantOptionsService.getCareDifficultyOptions();
+    this.suitableLocationOptions = this.plantOptionsService.getSuitableLocationOptions();
   }
 
   onImageSelect(event: any) {
@@ -212,7 +221,7 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     });
 
     const uploadObservables = files.map(file =>
-      this.createPlantService.uploadImage(file).pipe(
+      this.createNewPlantService.uploadImage(file).pipe(
         catchError((error: any) => {
           this.toastService.error(`Không thể upload ${file.name}`);
           return of({ url: null });
@@ -279,7 +288,7 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
       imageUrls: this.imageUrls
     };
 
-        const sub = this.createPlantService.createNewPlant(plantData).subscribe({
+        const sub = this.createNewPlantService.createNewPlant(plantData).subscribe({
           next: (response) => {
             // Nếu backend trả về status 400 hoặc có message lỗi, không báo thành công
             const statusNum = Number(response?.status);

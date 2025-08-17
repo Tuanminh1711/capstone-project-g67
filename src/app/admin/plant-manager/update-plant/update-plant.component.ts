@@ -9,6 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AdminLayoutComponent } from '../../shared/admin-layout/admin-layout.component';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
+import { PlantOptionsService, PlantOption } from '../../../shared/services/plant-options.service';
 
 interface UpdatePlantRequest {
   scientificName: string;
@@ -66,6 +67,9 @@ interface ApiResponse<T = any> {
   styleUrls: ['./update-plant.scss']
 })
 export class UpdatePlantComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
+  // Toast service instance
+  private toast = inject(ToastService);
+  
   // Helper to get correct image src from BE filename or url
   getPlantImageSrc(imageUrl: string): string {
     if (!imageUrl) return '';
@@ -110,42 +114,26 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     status: 'ACTIVE'
   };
 
-  lightRequirementOptions = [
-    { value: 'LOW', label: 'Ít ánh sáng' },
-    { value: 'MEDIUM', label: 'Ánh sáng vừa phải' },
-    { value: 'HIGH', label: 'Nhiều ánh sáng' }
-  ];
-
-  waterRequirementOptions = [
-    { value: 'LOW', label: 'Ít nước' },
-    { value: 'MEDIUM', label: 'Nước vừa phải' },
-    { value: 'HIGH', label: 'Nhiều nước' }
-  ];
-
-  careDifficultyOptions = [
-    { value: 'EASY', label: 'Dễ chăm sóc' },
-    { value: 'MODERATE', label: 'Trung bình' },
-    { value: 'DIFFICULT', label: 'Khó chăm sóc' }
-  ];
-
-  statusOptions = [
-    { value: 'ACTIVE', label: 'Hoạt động' },
-    { value: 'INACTIVE', label: 'Không hoạt động' }
-  ];
-
-  private toast = inject(ToastService);
+  // Sử dụng service để lấy options
+  lightRequirementOptions: PlantOption[] = [];
+  waterRequirementOptions: PlantOption[] = [];
+  careDifficultyOptions: PlantOption[] = [];
+  statusOptions: PlantOption[] = [];
+  suitableLocationOptions: PlantOption[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone = inject(NgZone)
+    private zone: NgZone = inject(NgZone),
+    private plantOptionsService: PlantOptionsService
   ) {
     super();
   }
 
   ngOnInit(): void {
+    this.loadPlantOptions();
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'];
       if (id && !isNaN(+id)) {
@@ -215,6 +203,13 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       });
   }
 
+  private loadPlantOptions(): void {
+    this.lightRequirementOptions = this.plantOptionsService.getLightRequirementOptions();
+    this.waterRequirementOptions = this.plantOptionsService.getWaterRequirementOptions();
+    this.careDifficultyOptions = this.plantOptionsService.getCareDifficultyOptions();
+    this.statusOptions = this.plantOptionsService.getStatusOptions();
+    this.suitableLocationOptions = this.plantOptionsService.getSuitableLocationOptions();
+  }
 
   // Handle file input change for new image
   onNewImageFileSelected(event: Event): void {

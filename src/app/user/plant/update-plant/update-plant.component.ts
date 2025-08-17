@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
@@ -11,6 +11,7 @@ import { ImageUrlService } from '../../../shared/services/image-url.service';
 import { CookieService } from '../../../auth/cookie.service';
 import { AuthDialogService } from '../../../auth/auth-dialog.service';
 import { environment } from '../../../../environments/environment';
+import { PlantOptionsService, PlantOption } from '../../../shared/services/plant-options.service';
 
 @Component({
   selector: 'app-update-plant',
@@ -38,6 +39,9 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   selectedImages: File[] = [];
   private imagePreviewUrls: Map<File, string> = new Map();
 
+  // Sử dụng service để lấy options
+  locationOptions: PlantOption[] = [];
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -50,7 +54,8 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     private cookieService: CookieService,
     private authDialogService: AuthDialogService,
     private imageUrlService: ImageUrlService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private plantOptionsService: PlantOptionsService
   ) {
     this.updateForm = this.createForm();
     this.currentPlant = null;
@@ -262,6 +267,8 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
           this.initializeComponent();
         }, 300);
       });
+
+    this.loadLocationOptions();
   }
 
   ngOnDestroy(): void {
@@ -752,5 +759,9 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     const processedUrl = this.imageUrlService.getImageUrl(imageUrl);
     console.log('🖼️ [UpdatePlant] Processed URL:', processedUrl);
     return processedUrl;
+  }
+
+  private loadLocationOptions(): void {
+    this.locationOptions = this.plantOptionsService.getSuitableLocationOptions();
   }
 }

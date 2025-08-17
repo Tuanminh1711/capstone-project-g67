@@ -150,12 +150,16 @@
 
           <div class="form-group">
             <label for="suitableLocation">Vị trí phù hợp <span class="required">*</span></label>
-            <input 
-              type="text" 
+            <select 
               id="suitableLocation"
               formControlName="suitableLocation"
               [class.error]="isFieldInvalid('suitableLocation')"
-              placeholder="Ví dụ: Phòng khách, ban công có mái che...">
+              required>
+              <option value="">-- Chọn vị trí phù hợp --</option>
+              <option *ngFor="let option of suitableLocationOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
             <div class="error-message" *ngIf="isFieldInvalid('suitableLocation')">
               {{ getFieldError('suitableLocation') }}
             </div>
