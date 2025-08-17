@@ -286,15 +286,15 @@
               </div>
               <div class="message-bubble">
                 <div class="message-content">{{ msg.content }}</div>
-                <div class="message-time-below left">{{ formatTimePretty(msg.timestamp) }}</div>
               </div>
+              <div class="message-time-below left">{{ formatTimePretty(msg.timestamp) }}</div>
             </div>
             <!-- Tin nhắn của mình -->
             <div class="message-row own-row" *ngIf="isOwnMessage(msg)">
               <div class="message-bubble own-bubble">
                 <div class="message-content">{{ msg.content }}</div>
-                <div class="message-time-below right">{{ formatTimePretty(msg.timestamp) }}</div>
               </div>
+              <div class="message-time-below right">{{ formatTimePretty(msg.timestamp) }}</div>
             </div>
           </div>
         </div>
