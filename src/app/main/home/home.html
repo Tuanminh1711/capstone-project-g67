@@ -39,32 +39,55 @@
 
 <!-- Features Section -->
 <section class="home-features">
-  <h2 class="features-title">Tính năng nổi bật</h2>
-  <div class="features-list">
-    <div class="feature-item">
-      <i class="fas fa-search feature-icon"></i>
-      <h3>Tìm kiếm & Khám phá cây</h3>
-      <p>Tra cứu thông tin, hình ảnh, đặc điểm và điều kiện sống của trăm loại cây cảnh.</p>
+  <div class="features-wrapper">
+    <div class="features-header">
+      <span class="features-badge">Tính năng</span>
+      <h2 class="features-title">Khám phá tính năng nổi bật</h2>
+      <p class="features-description">Những công cụ mạnh mẽ giúp bạn chăm sóc cây cảnh hiệu quả</p>
     </div>
-    <div class="feature-item">
-      <i class="fas fa-seedling feature-icon"></i>
-      <h3>Khu vườn của tôi</h3>
-      <p>Quản lý bộ sưu tập cây cá nhân, đặt tên, ghi chú, theo dõi tình trạng từng cây.</p>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-search"></i>
+        </div>
+        <div class="feature-content">
+          <h3>Tìm kiếm & Khám phá</h3>
+          <p>Tra cứu thông tin chi tiết về hàng trăm loại cây cảnh với hình ảnh và đặc điểm sống động</p>
+        </div>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-seedling"></i>
+        </div>
+        <div class="feature-content">
+          <h3>Khu vườn cá nhân</h3>
+          <p>Quản lý bộ sưu tập cây của bạn, theo dõi tình trạng và ghi chú chi tiết từng cây</p>
+        </div>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-bell"></i>
+        </div>
+        <div class="feature-content">
+          <h3>Nhắc nhở thông minh</h3>
+          <p>Thiết lập lịch chăm sóc tự động và nhận thông báo đúng thời điểm</p>
+        </div>
+      </div>
+      
     </div>
-    <div class="feature-item">
-      <i class="fas fa-bell feature-icon"></i>
-      <h3>Nhắc nhở chăm sóc</h3>
-      <p>Thiết lập lịch tưới nước, bón phân, cắt tỉa... <br>và nhận thông báo tự động.</p>
-    </div>
-    <div class="feature-item">
-      <i class="fas fa-user-md feature-icon"></i>
-      <h3>Chuyên gia tư vấn</h3>
-      <p>Kết nối, trò chuyện và nhận lời khuyên từ chuyên gia cây cảnh giàu kinh nghiệm.</p>
-    </div>
-    <div class="feature-item">
-      <i class="fas fa-comments feature-icon"></i>
-      <h3>Cộng đồng & Hỏi đáp</h3>
-      <p>Tham gia diễn đàn, <br>chia sẻ kinh nghiệm, và nhận hỗ trợ từ cộng đồng.</p>
+    
+    <div class="features-action">
+      <button *ngIf="!jwtUserUtil.isLoggedIn()" (click)="onConnectExpertClick()" class="cta-button">
+        Khám phá ngay
+        <i class="fas fa-arrow-right"></i>
+      </button>
+      <button *ngIf="jwtUserUtil.isLoggedIn()" (click)="goToCareExpert()" class="cta-button">
+        Bắt đầu sử dụng
+        <i class="fas fa-arrow-right"></i>
+      </button>
     </div>
   </div>
 </section>
