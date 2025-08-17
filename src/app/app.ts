@@ -5,7 +5,7 @@ import { FooterComponent } from './shared/footer/footer.component';
 import { ToastComponent } from './shared/toast/toast.component';
 import { filter } from 'rxjs';
 import { ConfirmationDialogComponent } from './shared/components/confirmation-dialog/confirmation-dialog.component';
-import { ChatAiFabComponent } from './user/chat-ai/chat-ai-fab.component';
+import { ChatAiFabComponent } from './feature/user/chat-ai/chat-ai-fab.component';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +13,7 @@ import { ChatAiFabComponent } from './user/chat-ai/chat-ai-fab.component';
     RouterOutlet, 
     FooterComponent, 
     ToastComponent, 
-    ConfirmationDialogComponent, 
+    ConfirmationDialogComponent,
     ChatAiFabComponent
   ],
   templateUrl: './app.html',
@@ -46,6 +46,4 @@ export class App {
       }
     });
   }
-  // Thêm Chat AI FAB vào template app
-  // <app-chat-ai-fab></app-chat-ai-fab>
 }

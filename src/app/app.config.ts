@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { authInterceptor } from './auth/auth.interceptor';
 import { expertOnlyInterceptor } from './auth/expert-only.interceptor';
+import { FeatureModule } from './feature/feature.module';
 
 export const appConfig: ApplicationConfig = {
   providers: [

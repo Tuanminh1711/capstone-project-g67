@@ -1,15 +1,15 @@
 import { Component, HostListener, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { SendTicketDialogComponent } from '../../user/ticket/send-ticket/send-ticket-dialog';
-import { SupportService } from '../../user/ticket/send-ticket/support.service';
+import { SendTicketDialogComponent } from '../../feature/user/ticket/send-ticket/send-ticket-dialog';
+import { SupportService } from '../../feature/user/ticket/send-ticket/support.service';
 import { AuthDialogService } from '../../auth/auth-dialog.service';
 // import { SupportDialogService } from '../../support/shared/support-dialog.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { JwtUserUtilService } from '../../auth/jwt-user-util.service';
 import { ToastService } from '../toast/toast.service';
-import { NotificationDropdownComponent } from '../../user/notification/dropdown/notification-dropdown.component';
+import { NotificationDropdownComponent } from '../../feature/user/notification/dropdown/notification-dropdown.component';
 
 @Component({
   selector: 'app-top-navigator',

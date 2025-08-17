@@ -11,7 +11,7 @@ import { PlantDataService } from './services/plant-data.service';
 import { PlantDetailLoaderService } from './services/plant-detail-loader.service';
 import { PlantUiHelperService } from './services/helpers/plant-ui-helper.service';
 import { DialogManager } from './services/dialog-manager.service';
-import { AdminPageTitleService } from '../admin/shared/admin-page-title.service';
+import { AdminPageTitleService } from '../feature/admin/shared/admin-page-title.service';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';

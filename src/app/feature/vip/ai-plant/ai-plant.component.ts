@@ -1,0 +1,408 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
+import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
+import { ToastService } from '../../../shared/toast/toast.service';
+import { ConfigService } from '../../../shared/services/config.service';
+import { AuthService } from '../../../auth/auth.service';
+import { CookieService } from '../../../auth/cookie.service';
+
+interface PlantIdentificationResult {
+  scientificName: string;
+  commonName: string;
+  vietnameseName: string;
+  confidence: number;
+  description: string;
+  careInstructions: string | null;
+  imageUrl: string | null;
+  isExactMatch: boolean;
+  plantId: number | null;
+}
+
+interface PlantIdentificationResponse {
+  status: number;
+  message: string;
+  data: {
+    requestId: string;
+    results: PlantIdentificationResult[];
+    status: string;
+    message: string;
+  };
+}
+
+@Component({
+  selector: 'app-ai-plant',
+  standalone: true,
+  imports: [CommonModule, FormsModule, TopNavigatorComponent, HttpClientModule],
+  templateUrl: './ai-plant.component.html',
+  styleUrls: ['./ai-plant.component.scss']
+})
+export class AiPlantComponent implements OnInit {
+  selectedFile: File | null = null;
+  searchQuery: string = '';
+  isLoading: boolean = false;
+  isValidating: boolean = false;
+  results: PlantIdentificationResult[] = [];
+  maxResults: number = 5;
+  language: string = 'vi';
+  previewUrl: string | null = null;
+  activeTab: 'upload' | 'search' = 'upload';
+  hasSearched: boolean = false; // Track if user has performed search/identification
+
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService,
+    private configService: ConfigService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private cookieService: CookieService
+  ) {}
+
+  /**
+   * Get correct API endpoint based on environment
+   */
+  private getApiEndpoint(path: string): string {
+    // In development: apiUrl = '/api', so /api + /ai/identify-plant = /api/ai/identify-plant
+    // In production: apiUrl = 'https://plantcare.id.vn', so https://plantcare.id.vn + /api + /ai/identify-plant
+    const baseUrl = this.configService.apiUrl;
+    
+    // If apiUrl already contains '/api' (development), don't add it again
+    if (baseUrl.endsWith('/api')) {
+      return `${baseUrl}${path}`;
+    } else {
+      // Production: add /api prefix
+      return `${baseUrl}/api${path}`;
+    }
+  }
+
+  ngOnInit() {
+    // Check if user is VIP
+    if (!this.authService.isLoggedIn()) {
+      this.toastService.show('Vui lòng đăng nhập để sử dụng tính năng này', 'error');
+      return;
+    }
+
+    // Debug: Check user role and token
+    const role = this.authService.getCurrentUserRole();
+    const userId = this.authService.getCurrentUserId();
+    const token = this.cookieService.getCookie('auth_token');
+    
+    // Decode JWT to check algorithm and claims
+    if (token) {
+      try {
+        const base64Url = token.split('.')[0];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const header = JSON.parse(window.atob(base64));
+        
+        const base64Payload = token.split('.')[1];
+        const base64PayloadDecoded = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64PayloadDecoded));
+        
+        console.log('🔍 [VIP AI Plant] JWT Debug:', {
+          header,
+          payload,
+          algorithm: header.alg,
+          userId: payload.userId,
+          role: payload.role,
+          exp: new Date(payload.exp * 1000),
+          isExpired: Date.now() > payload.exp * 1000
+        });
+      } catch (e) {
+        console.error('JWT decode error:', e);
+      }
+    }
+    
+    console.log('🔍 [VIP AI Plant] Debug info:', {
+      role,
+      userId,
+      hasToken: !!token,
+      tokenLength: token ? token.length : 0
+    });
+
+    if (role !== 'VIP' && role !== 'EXPERT') {
+      this.toastService.show(`Tính năng này chỉ dành cho VIP. Quyền hiện tại: ${role}`, 'error');
+    }
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.cookieService.getCookie('auth_token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  private getAuthHeadersForFormData(): HttpHeaders {
+    const token = this.cookieService.getCookie('auth_token');
+    console.log('🔑 Creating FormData headers with token:', token ? 'Present' : 'Missing');
+    
+    if (!token) {
+      console.error('No auth token found in cookies!');
+      return new HttpHeaders();
+    }
+    
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.isValidating = true; // Start validation immediately
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewUrl = reader.result as string;
+        this.cdr.detectChanges(); // Force change detection
+        
+        // Validate if image contains a plant after preview is loaded
+        this.validatePlantImage();
+        
+        // Fallback: Clear validation after preview is ready
+        setTimeout(() => {
+          if (this.isValidating) {
+            this.isValidating = false;
+            this.cdr.detectChanges();
+            console.log('Fallback: Cleared validation loading state');
+          }
+        }, 2000); // 2 second fallback
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeFile() {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.results = [];
+    this.hasSearched = false; // Reset search state
+    this.cdr.detectChanges(); // Force change detection
+  }
+
+  validatePlantImage() {
+    if (!this.selectedFile) return;
+
+    const formData = new FormData();
+    formData.append('image', this.selectedFile);
+
+    // Set a timeout to clear validation state if API takes too long
+    const timeout = setTimeout(() => {
+      this.isValidating = false;
+      this.cdr.detectChanges();
+      console.log('Validation timeout - clearing loading state');
+    }, 3000); // 3 second timeout - much shorter
+
+    this.http.post<any>(this.getApiEndpoint('/ai/validate-plant-image'), formData, { 
+      headers: this.getAuthHeadersForFormData() 
+    })
+      .subscribe({
+        next: (response) => {
+          clearTimeout(timeout);
+          this.isValidating = false;
+          console.log('Validation response:', response); // Debug log
+          if (!response.data && response.data !== true) {
+            this.toastService.show('Hình ảnh này có thể không chứa cây trồng. Bạn vẫn có thể tiếp tục nhận diện.', 'warning');
+          }
+          this.cdr.detectChanges(); // Ensure UI updates
+        },
+        error: (error) => {
+          clearTimeout(timeout);
+          this.isValidating = false;
+          console.error('Error validating image:', error);
+          // Don't show error for validation failure, just continue
+          this.cdr.detectChanges(); // Ensure UI updates even on error
+        }
+      });
+  }
+
+  identifyPlant() {
+    if (!this.selectedFile) {
+      this.toastService.show('Vui lòng chọn hình ảnh', 'error');
+      return;
+    }
+
+    this.isLoading = true;
+    this.hasSearched = true; // Mark that user has attempted identification
+    const formData = new FormData();
+    formData.append('image', this.selectedFile);
+    formData.append('language', this.language);
+    formData.append('maxResults', this.maxResults.toString());
+    
+    // Add userId from auth service - convert to string for FormData
+    const userId = this.authService.getCurrentUserId();
+    if (userId) {
+      formData.append('userId', userId.toString());
+      console.log('Adding userId to FormData:', userId);
+    } else {
+      console.warn('No userId found for AI plant identification');
+      this.toastService.show('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+      this.isLoading = false;
+      return;
+    }
+
+    // Debug: Log token and headers
+    const token = this.cookieService.getCookie('auth_token');
+    console.log('🔍 [AI Plant] Making request with:', {
+      endpoint: this.getApiEndpoint('/ai/identify-plant'),
+      userId,
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+    });
+
+    this.http.post<any>(this.getApiEndpoint('/ai/identify-plant'), formData, { 
+      headers: this.getAuthHeadersForFormData() 
+    })
+      .subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          console.log('Full response:', response); // Debug log để xem cấu trúc response
+          setTimeout(() => {
+            // Kiểm tra response status và data
+            if (response.status === 200 && response.data && response.data.results) {
+              this.results = response.data.results;
+              if (this.results.length === 0) {
+                this.toastService.show('Không thể nhận diện cây từ hình ảnh này', 'warning');
+              } else {
+                this.toastService.show('Nhận diện cây thành công!', 'success');
+              }
+            } else {
+              console.log('Response not matching expected format:', response);
+              this.toastService.show(response.message || 'Có lỗi xảy ra khi nhận diện cây', 'error');
+            }
+            this.cdr.detectChanges();
+          }, 0);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Error identifying plant:', error);
+          
+          // Log detailed error for debugging
+          console.error('🔍 Detailed error info:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            url: error.url,
+            body: error.error
+          });
+          
+          setTimeout(() => {
+            if (error.status === 403) {
+              // Check if it's JWT/auth issue
+              if (error.error && error.error.message) {
+                this.toastService.show(`Lỗi xác thực: ${error.error.message}`, 'error');
+              } else {
+                this.toastService.show('Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP', 'error');
+              }
+            } else if (error.status === 404) {
+              this.toastService.show('API endpoint không tìm thấy', 'error');
+            } else if (error.status === 401) {
+              this.toastService.show('Token hết hạn hoặc không hợp lệ', 'error');
+            } else if (error.status === 500) {
+              this.toastService.show('Lỗi server, có thể do JWT algorithm không match', 'error');
+            } else {
+              this.toastService.show('Có lỗi xảy ra khi nhận diện cây', 'error');
+            }
+            this.cdr.detectChanges();
+          }, 0);
+        }
+      });
+  }
+
+  searchPlantsInDatabase() {
+    if (!this.searchQuery.trim()) {
+      this.toastService.show('Vui lòng nhập tên cây cần tìm', 'error');
+      return;
+    }
+
+    this.isLoading = true;
+    this.hasSearched = true; // Mark that user has attempted search
+
+    this.http.get<any>(this.getApiEndpoint(`/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`), { 
+      headers: this.getAuthHeaders() 
+    })
+      .subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          console.log('Search response:', response); // Debug log
+          
+          // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+          setTimeout(() => {
+            if (response.status === 200 && response.data) {
+              this.results = response.data.results || [];
+              if (this.results.length === 0) {
+                this.toastService.show('Không tìm thấy cây nào phù hợp', 'warning');
+              } else {
+                this.toastService.show('Tìm kiếm thành công!', 'success');
+              }
+            } else {
+              this.toastService.show(response.message || 'Có lỗi xảy ra khi tìm kiếm', 'error');
+            }
+            this.cdr.detectChanges();
+          }, 0);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          setTimeout(() => {
+            this.toastService.show('Có lỗi xảy ra khi tìm kiếm cây', 'error');
+            console.error('Error searching plants:', error);
+            this.cdr.detectChanges();
+          }, 0);
+        }
+      });
+  }
+
+  setActiveTab(tab: 'upload' | 'search') {
+    this.activeTab = tab;
+    this.results = [];
+    this.hasSearched = false; // Reset search state when switching tabs
+    if (tab === 'search') {
+      this.removeFile();
+    } else {
+      this.searchQuery = '';
+    }
+    this.cdr.detectChanges(); // Force change detection
+  }
+
+  getConfidenceColor(confidence: number): string {
+    if (confidence >= 0.8) return '#4CAF50'; // Green
+    if (confidence >= 0.6) return '#FF9800'; // Orange  
+    return '#F44336'; // Red
+  }
+
+  getConfidenceText(confidence: number): string {
+    if (confidence >= 0.8) return 'Cao';
+    if (confidence >= 0.6) return 'Trung bình';
+    return 'Thấp';
+  }
+
+  shouldShowEmptyState(): boolean {
+    // Only show empty state if user has searched/identified but got no results
+    return this.hasSearched && this.results.length === 0 && !this.isLoading && !this.isValidating;
+  }
+
+  /**
+   * Test JWT validation with backend
+   */
+  testJwtValidation() {
+    const token = this.cookieService.getCookie('auth_token');
+    console.log('🧪 Testing JWT with backend...');
+    
+    this.http.get(this.getApiEndpoint('/ai/test-api-key'), {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ JWT test passed:', response);
+        this.toastService.show('JWT validation thành công', 'success');
+      },
+      error: (error) => {
+        console.error('❌ JWT test failed:', error);
+        this.toastService.show(`JWT validation thất bại: ${error.status}`, 'error');
+      }
+    });
+  }
+}
