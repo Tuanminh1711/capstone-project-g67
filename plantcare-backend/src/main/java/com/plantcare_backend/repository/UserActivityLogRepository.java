@@ -16,7 +16,8 @@ import java.util.List;
  */
 @Repository
 public interface UserActivityLogRepository extends JpaRepository<UserActivityLog, Long> {
-        Page<UserActivityLog> findByUser_Id(int userId, Pageable pageable);
+        @Query("SELECT ual FROM UserActivityLog ual WHERE ual.user.id = :userId ORDER BY ual.timestamp DESC")
+        Page<UserActivityLog> findByUser_Id(@Param("userId") int userId, Pageable pageable);
 
         @Query("SELECT DATE(ual.timestamp) as date, COUNT(DISTINCT ual.user.id) as totalActiveUsers " +
                         "FROM UserActivityLog ual " +
