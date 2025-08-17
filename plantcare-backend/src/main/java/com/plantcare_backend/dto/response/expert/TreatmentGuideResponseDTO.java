@@ -1,6 +1,5 @@
 package com.plantcare_backend.dto.response.expert;
 
-import com.plantcare_backend.model.Article;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +10,16 @@ import java.util.List;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class ArticleResponseDTO {
+@AllArgsConstructor
+public class TreatmentGuideResponseDTO {
     private Long id;
+    private Integer stepNumber;
     private String title;
-    private String categoryName;
-    private String content;
+    private String description;
+    private String duration;
+    private String frequency;
+    private List<String> materials;
+    private String notes;
     private Timestamp createdAt;
-    private List<String> imageUrls;
 }

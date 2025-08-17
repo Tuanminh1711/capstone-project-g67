@@ -16,4 +16,5 @@ public interface EmailService {
     void sendWelcomeEmail(String email, String username, String password);
 
     void sendTicketNotificationEmail(List<String> adminEmails, SupportTicket ticket, String adminPanelUrl);
+
 }

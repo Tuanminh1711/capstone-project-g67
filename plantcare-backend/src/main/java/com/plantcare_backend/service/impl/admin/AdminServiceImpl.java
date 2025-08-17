@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.admin;
 
 import com.plantcare_backend.dto.request.admin.PlantAddedStatisticRequestDTO;
 import com.plantcare_backend.dto.request.admin.UserBrowseStatisticRequestDTO;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -396,6 +397,9 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<UserRegisterStatisticResponseDTO> getUserRegisterStatistics(
             UserRegisterStatisticRequestDTO requestDTO) {
+        if (requestDTO.getStartDate().isAfter(requestDTO.getEndDate())) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
+        }
         List<Object[]> results = userRepository.countUsersRegisteredByDate(
                 requestDTO.getStartDate(), requestDTO.getEndDate());
         List<UserRegisterStatisticResponseDTO> responseList = new ArrayList<>();

@@ -13,6 +13,7 @@ import com.plantcare_backend.model.PlantImage;
 import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.repository.PlantImageRepository;
 import com.plantcare_backend.repository.PlantRepository;
+import com.plantcare_backend.service.AzureStorageService;
 import com.plantcare_backend.service.PlantManagementService;
 import com.plantcare_backend.service.PlantService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,10 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +46,8 @@ public class PlantManagementController {
     private final PlantRepository plantRepository;
     @Autowired
     private final PlantImageRepository plantImageRepository;
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @PostMapping("/create-plant")
     // @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
@@ -96,19 +94,12 @@ public class PlantManagementController {
             }
 
             // 3. Upload file
-            String uploadDir = "uploads/plants/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
             String originalFilename = image.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
-            Path filePath = uploadPath.resolve(newFilename);
-            Files.copy(image.getInputStream(), filePath);
 
-            String imageUrl = "/api/manager/plants/" + newFilename;
+            String path = "plants/" + plantId + "/" + newFilename;
+            String imageUrl = azureStorageService.uploadFile(image, path);
 
             // 4. Add image to plant database
             PlantImage plantImage = PlantImage.builder()
@@ -148,16 +139,17 @@ public class PlantManagementController {
             Plants plant = plantRepository.findById(plantId)
                     .orElseThrow(() -> new ResourceNotFoundException("Plant not found with id: " + plantId));
 
+            // 1. Delete images
             if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
                 List<PlantImage> imagesToDelete = plantImageRepository.findAllById(deleteImageIds);
                 for (PlantImage image : imagesToDelete) {
                     if (image.getPlant().getId().equals(plantId)) {
-                        String filename = image.getImageUrl().substring(image.getImageUrl().lastIndexOf("/") + 1);
-                        Path filePath = Paths.get("uploads/plants/").resolve(filename);
                         try {
-                            Files.deleteIfExists(filePath);
-                        } catch (IOException e) {
-                            log.warn("Could not delete file: {}", filename, e);
+                            // Xóa file từ Azure Storage
+                            azureStorageService.deleteFile(image.getImageUrl());
+                            log.info("Deleted image from Azure: {}", image.getImageUrl());
+                        } catch (Exception e) {
+                            log.warn("Could not delete file from Azure: {}", image.getImageUrl(), e);
                         }
                     }
                 }
@@ -165,6 +157,7 @@ public class PlantManagementController {
                 log.info("Deleted {} images for plant ID: {}", imagesToDelete.size(), plantId);
             }
 
+            // 2. Upload new images
             if (images != null && !images.isEmpty()) {
                 for (MultipartFile image : images) {
                     if (image == null || image.isEmpty()) {
@@ -180,19 +173,13 @@ public class PlantManagementController {
                         continue;
                     }
 
-                    String uploadDir = "uploads/plants/";
-                    Path uploadPath = Paths.get(uploadDir);
-                    if (!Files.exists(uploadPath)) {
-                        Files.createDirectories(uploadPath);
-                    }
-
                     String originalFilename = image.getOriginalFilename();
                     String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
                     String newFilename = UUID.randomUUID().toString() + fileExtension;
-                    Path filePath = uploadPath.resolve(newFilename);
-                    Files.copy(image.getInputStream(), filePath);
 
-                    String imageUrl = "/api/manager/plants/" + newFilename;
+                    // Sử dụng Azure Storage thay vì local
+                    String path = "plants/" + plantId + "/" + newFilename;
+                    String imageUrl = azureStorageService.uploadFile(image, path);
 
                     PlantImage plantImage = PlantImage.builder()
                             .plant(plant)
@@ -205,6 +192,7 @@ public class PlantManagementController {
                 }
             }
 
+            // 3. Set primary image
             if (setPrimaryImageId != null) {
                 List<PlantImage> allImages = plantImageRepository.findByPlantId(plantId);
                 for (PlantImage image : allImages) {
@@ -220,7 +208,7 @@ public class PlantManagementController {
                 }
             }
 
-            // 5. Get updated plant details
+            // 4. Get updated plant details
             PlantDetailResponseDTO updatedPlant = plantManagementService.getPlantDetail(plantId);
 
             return ResponseEntity.ok(new ResponseData<>(200,
@@ -239,16 +227,13 @@ public class PlantManagementController {
     @GetMapping("/plants/{filename}")
     public ResponseEntity<Resource> getPlantImage(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get("uploads/plants/").resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // Sử dụng Azure Storage thay vì local
+            String azureUrl = azureStorageService.generateBlobUrl("plants/" + filename);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, azureUrl)
+                    .build();
         } catch (Exception e) {
+            log.error("Error generating Azure URL for image: {}", filename, e);
             return ResponseEntity.notFound().build();
         }
     }
@@ -362,4 +347,38 @@ public class PlantManagementController {
         }
     }
 
+    @PostMapping("/upload-plant-image")
+    public ResponseEntity<ResponseData<String>> uploadPlantImageForNewPlant(
+            @RequestParam("image") MultipartFile image) {
+        try {
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File is empty", null));
+            }
+
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File must be an image", null));
+            }
+
+            if (image.getSize() > 20 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseData<>(400, "File size must be less than 20MB", null));
+            }
+
+            String originalFilename = image.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + fileExtension;
+
+            String path = "plants/new/" + newFilename;
+            String imageUrl = azureStorageService.uploadFile(image, path);
+
+            return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
+        } catch (Exception e) {
+            log.error("Upload plant image failed", e);
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseData<>(500, "Upload thất bại: " + e.getMessage(), null));
+        }
+    }
 }

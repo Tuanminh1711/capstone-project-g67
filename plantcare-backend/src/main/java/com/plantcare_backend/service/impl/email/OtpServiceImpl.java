@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.email;
 
 import com.plantcare_backend.service.EmailService;
 import com.plantcare_backend.service.OtpService;
@@ -30,6 +30,15 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public void generateAndSendOtp(String email, String type) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        if (type == null || type.trim().isEmpty()) {
+            throw new IllegalArgumentException("OTP type cannot be null or empty");
+        }
         String otp = generateRandomOtp();
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(10);
         OtpData otpData = OtpData.builder()
@@ -47,9 +56,18 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public boolean verifyOtp(String email, String otp) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
         OtpData otpData = otpCache.getIfPresent(email);
         if (otpData == null || otpData.isUsed() || LocalDateTime.now().isAfter(otpData.getExpiredAt())) {
             throw new RuntimeException("Mã OTP không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại mã mới.");
+        }
+        if (otp == null || otp.trim().isEmpty()) {
+            throw new IllegalArgumentException("OTP cannot be null or empty");
         }
         if (!otpData.getOtp().equals(otp)) {
             throw new RuntimeException("Mã OTP không đúng");

@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.plant;
 
 import com.plantcare_backend.dto.response.ai_disease.PlantIdResponse;
 import com.plantcare_backend.service.PlantIdService;

@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.plant;
 
 import com.plantcare_backend.dto.response.Plants.PlantDetailResponseDTO;
 import com.plantcare_backend.dto.response.plantsManager.*;
@@ -152,6 +152,15 @@ public class PlantManagementServiceImpl implements PlantManagementService {
         PlantCategory category = plantCategoryRepository.findById(updateRequest.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
+        if (!plant.getScientificName().equalsIgnoreCase(updateRequest.getScientificName()) &&
+                plantRepository.existsByScientificNameIgnoreCase(updateRequest.getScientificName())) {
+            throw new InvalidDataException("Plat with scientific name already exitsts: "
+                    + updateRequest.getScientificName());
+        }
+        if (!plant.getCommonName().equalsIgnoreCase(updateRequest.getCommonName()) &&
+                plantRepository.existsByCommonNameIgnoreCase(updateRequest.getCommonName())) {
+            throw new InvalidDataException("Plant with common name already exists");
+        }
         plant.setScientificName(updateRequest.getScientificName());
         plant.setCommonName(updateRequest.getCommonName());
         plant.setCategory(category);
@@ -293,12 +302,14 @@ public class PlantManagementServiceImpl implements PlantManagementService {
     @Override
     public void claimReport(Long reportId, Integer userId) {
         PlantReport plantReport = plantReportRepository.findById(reportId)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Report not found"));
+
         if (plantReport.getClaimedBy() != null) {
             throw new IllegalArgumentException("Report đã được nhận sử lý bởi người khác!");
         }
         Users staff = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+                .orElseThrow(() -> new IllegalArgumentException("user not found"));
+
         plantReport.setClaimedBy(staff);
         plantReport.setClaimedAt(new Timestamp(System.currentTimeMillis()));
         plantReport.setStatus(PlantReport.ReportStatus.CLAIMED);
@@ -314,12 +325,27 @@ public class PlantManagementServiceImpl implements PlantManagementService {
 
     @Override
     public void handleReport(Long reportId, String status, String adminNotes, Integer userId) {
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be null or empty");
+        }
+
+        PlantReport.ReportStatus reportStatus;
+        try {
+            reportStatus = PlantReport.ReportStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status + ". Valid values are: PENDING, CLAIMED, APPROVED, REJECTED");
+        }
+
+        if (adminNotes == null || adminNotes.trim().isEmpty()) {
+            throw new IllegalArgumentException("Admin notes cannot be null or empty");
+        }
+
         PlantReport report = plantReportRepository.findById(reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
         if (report.getClaimedBy() == null || report.getClaimedBy().getId() != userId.intValue()) {
             throw new IllegalStateException("Bạn không phải là người nhận xử lý report này!");
         }
-        report.setStatus(PlantReport.ReportStatus.valueOf(status));
+        report.setStatus(reportStatus);
         report.setAdminNotes(adminNotes);
         report.setHandledBy(report.getClaimedBy());
         report.setHandledAt(new Timestamp(System.currentTimeMillis()));

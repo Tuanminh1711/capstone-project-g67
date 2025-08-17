@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.user;
 
 import com.plantcare_backend.dto.request.userPlants.*;
 import com.plantcare_backend.dto.response.userPlants.*;
@@ -13,6 +13,7 @@ import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantImageRepository;
 import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.repository.UserPlantRepository;
+import com.plantcare_backend.service.AzureStorageService;
 import com.plantcare_backend.service.UserPlantsService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +29,6 @@ import com.plantcare_backend.repository.CareTypeRepository;
 import com.plantcare_backend.repository.CareLogRepository;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -59,6 +56,8 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private final CareTypeRepository careTypeRepository;
     @Autowired
     private final CareLogRepository careLogRepository;
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @Override
     public UserPlantsSearchResponseDTO searchUserPlants(UserPlantsSearchRequestDTO request) {
@@ -165,6 +164,21 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
     @Override
     public void addUserPlant(AddUserPlantRequestDTO requestDTO, List<MultipartFile> images, Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("User ID cannot be null or invalid");
+        }
+
+        if (requestDTO.getPlantId() == null) {
+            throw new IllegalArgumentException("Plant ID cannot be null");
+        }
+
+        if (requestDTO.getNickname() == null || requestDTO.getNickname().trim().isEmpty()) {
+            throw new IllegalArgumentException("Nickname cannot be null or empty");
+        }
+
+        if (requestDTO.getLocationInHouse() == null || requestDTO.getLocationInHouse().trim().isEmpty()) {
+            throw new IllegalArgumentException("Location cannot be null or empty");
+        }
         log.info("=== DEBUG SERVICE ADD USER PLANT ===");
         log.info("Request DTO: {}", requestDTO);
         log.info("Plant ID from request: {}", requestDTO.getPlantId());
@@ -225,13 +239,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     private void saveUserPlantImages(UserPlants userPlant, List<MultipartFile> images) {
         log.info("Saving {} images for user plant ID: {}", images.size(), userPlant.getUserPlantId());
 
-        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-        Path uploadPath = Paths.get(uploadDir);
-
         try {
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
             List<UserPlantImage> userPlantImages = new ArrayList<>();
             for (MultipartFile image : images) {
                 if (image == null || image.isEmpty()) {
@@ -259,54 +267,45 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
                 String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-                Path filePath = uploadPath.resolve(newFilename);
-                Files.copy(image.getInputStream(), filePath);
-
-                String imageUrl = "/api/user-plants/" + newFilename;
+                // Sử dụng Azure Storage thay vì local
+                String path = "user-plants/" + userPlant.getUserPlantId() + "/" + newFilename;
+                String imageUrl = azureStorageService.uploadFile(image, path);
 
                 UserPlantImage userPlantImage = UserPlantImage.builder()
                         .userPlants(userPlant)
                         .imageUrl(imageUrl)
                         .description("User uploaded image for plant: " + userPlant.getPlantName())
+                        .isPrimary(true)
                         .build();
 
                 userPlantImages.add(userPlantImage);
-
                 log.info("Saved image: {} -> {}", originalFilename, imageUrl);
             }
+
             if (!userPlantImages.isEmpty()) {
                 userPlant.setImages(userPlantImages);
                 userPlantRepository.save(userPlant);
-
-                log.info("Successfully saved {} images for user plant ID: {}",
-                        userPlantImages.size(), userPlant.getUserPlantId());
+                log.info("Successfully saved {} images for user plant ID: {}", userPlantImages.size(),
+                        userPlant.getUserPlantId());
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error saving user plant images: {}", e.getMessage());
             throw new RuntimeException("Failed to save user plant images", e);
         }
     }
 
     private void deleteUserPlantImages(List<UserPlantImage> images) {
-        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-
         for (UserPlantImage image : images) {
             try {
                 String imageUrl = image.getImageUrl();
-                if (imageUrl != null && imageUrl.startsWith("/api/user-plants/")) {
-                    String filename = imageUrl.substring("/api/user-plants/".length());
-                    Path filePath = Paths.get(uploadDir, filename);
-
-                    if (Files.exists(filePath)) {
-                        Files.delete(filePath);
-                        log.info("Deleted image file: {}", filename);
-                    } else {
-                        log.warn("Image file not found: {}", filename);
-                    }
+                if (imageUrl != null) {
+                    // Xóa file từ Azure Storage
+                    azureStorageService.deleteFile(imageUrl);
+                    log.info("Deleted image from Azure: {}", imageUrl);
                 }
-            } catch (IOException e) {
-                log.error("Error deleting image file: {}", image.getImageUrl(), e);
+            } catch (Exception e) {
+                log.error("Error deleting image from Azure: {}", image.getImageUrl(), e);
             }
         }
     }
@@ -314,6 +313,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
     @Override
     @Transactional
     public void updateUserPlant(UpdateUserPlantRequestDTO requestDTO, Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("User ID cannot be null or invalid");
+        }
         log.info("Updating user plant: {} for user: {}", requestDTO.getUserPlantId(), userId);
 
         validateUpdateUserPlantRequest(requestDTO);
@@ -479,9 +481,29 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                             .imageUrl(update.getImageUrl())
                             .description(
                                     update.getDescription() != null ? update.getDescription() : "User uploaded image")
+                            .isPrimary(update.getSetAsPrimary() != null ? update.getSetAsPrimary() : false)
                             .build();
+                    if (update.getSetAsPrimary() != null && update.getSetAsPrimary()) {
+                        userPlant.getImages().forEach(img -> img.setIsPrimary(false));
+                    }
+
                     userPlant.getImages().add(newImage);
                     log.info("Added new image for user plant: {}", userPlant.getUserPlantId());
+                    break;
+
+                case "SET_PRIMARY":
+                    if (update.getImageId() != null) {
+                        userPlant.getImages().forEach(img -> img.setIsPrimary(false));
+
+                        userPlant.getImages().stream()
+                                .filter(img -> img.getId().equals(update.getImageId()))
+                                .findFirst()
+                                .ifPresent(img -> {
+                                    img.setIsPrimary(true);
+                                    log.info("Set image ID: {} as primary for user plant: {}",
+                                            update.getImageId(), userPlant.getUserPlantId());
+                                });
+                    }
                     break;
 
                 default:
@@ -505,6 +527,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                         .userPlants(userPlant)
                         .imageUrl(imageUrl)
                         .description("User uploaded image")
+                        .isPrimary(true)
                         .build();
                 newImages.add(newImage);
             }
@@ -564,17 +587,28 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
         for (int i = 0; i < imageUrls.size(); i++) {
             String url = imageUrls.get(i);
+
+            String azureUrl = convertToAzureUrl(url);
+
             PlantImage image = new PlantImage();
             image.setPlant(plant);
-            image.setImageUrl(url);
+            image.setImageUrl(azureUrl);
             image.setIsPrimary(i == 0);
             plantImages.add(image);
         }
 
         plantImageRepository.saveAll(plantImages);
-
         plant.setImages(plantImages);
         plantRepository.save(plant);
+    }
+
+    private String convertToAzureUrl(String apiUrl) {
+        if (apiUrl != null && apiUrl.startsWith("/api/user-plants/user-plants/")) {
+            String filename = apiUrl.substring("/api/user-plants/user-plants/".length());
+            return azureStorageService.generateBlobUrl("user-plants/" + filename);
+        }
+
+        return apiUrl;
     }
 
     private UserPlantResponseDTO convertToUserPlantResponseDTO(Plants plant, UserPlants userPlant) {

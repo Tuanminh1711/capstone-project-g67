@@ -1,4 +1,4 @@
-package com.plantcare_backend.service.impl;
+package com.plantcare_backend.service.impl.admin;
 
 import com.plantcare_backend.model.UserActivityLog;
 import com.plantcare_backend.model.Users;

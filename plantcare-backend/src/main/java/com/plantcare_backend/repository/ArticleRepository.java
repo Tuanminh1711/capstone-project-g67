@@ -18,8 +18,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     
     Page<Article> findByAuthorId(Long authorId, Pageable pageable);
     
-    Page<Article> findByCategoryId(Long categoryId, Pageable pageable);
-    
     @Query("SELECT COUNT(a) > 0 FROM Article a WHERE LOWER(a.title) = LOWER(:title)")
     boolean existsByTitleIgnoreCase(@Param("title") String title);
 } 

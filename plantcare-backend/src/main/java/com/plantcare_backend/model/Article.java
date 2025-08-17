@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Getter
@@ -18,7 +19,7 @@ public class Article {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "article_id ")
+    @Column(name = "article_id")
     private Long id;
 
     @Column(name = "title", nullable = false)
@@ -51,8 +52,8 @@ public class Article {
     private String createdBy;
 
     @Column(name = "created_at")
-    private String createdAt;
+    private Timestamp createdAt;
 
     @Column(name = "updated_at")
-    private String updatedAt;
+    private Timestamp updatedAt;
 }

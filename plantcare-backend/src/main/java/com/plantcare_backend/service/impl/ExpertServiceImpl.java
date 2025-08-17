@@ -2,7 +2,6 @@ package com.plantcare_backend.service.impl;
 import com.plantcare_backend.dto.request.expert.CreateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateCategoryRequestDTO;
 import com.plantcare_backend.dto.request.expert.CreateArticleRequestDTO;
-import com.plantcare_backend.dto.request.expert.ChangeArticleStatusRequestDTO;
 import com.plantcare_backend.dto.request.expert.UpdateArticleRequestDTO;
 import com.plantcare_backend.dto.request.expert.ArticleImageUpdateDTO;
 import com.plantcare_backend.dto.response.expert.CategoryDetailResponse;
@@ -26,16 +25,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.web.multipart.MultipartFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -150,8 +145,8 @@ public class ExpertServiceImpl implements ExpertService {
         article.setAuthor(expert);
         article.setStatus(Article.ArticleStatus.PUBLISHED);
         article.setCreatedBy(expertId.toString());
-        article.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        article.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        article.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         Article savedArticle = articleRepository.save(article);
         log.info("Article created successfully with ID: {}", savedArticle.getId());
@@ -185,16 +180,8 @@ public class ExpertServiceImpl implements ExpertService {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Article with id " + articleId + " not found"));
 
-        // Kiểm tra xem article có phải của expert này không (optional)
-        // Có thể thêm logic kiểm tra author nếu cần
-
-        // Validation: Không cho phép chuyển từ DELETED sang status khác
-        if (article.getStatus() == Article.ArticleStatus.DELETED && status != Article.ArticleStatus.DELETED) {
-            throw new InvalidDataException("Cannot change status of deleted article");
-        }
-
         article.setStatus(status);
-        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        article.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
         articleRepository.save(article);
 
         log.info("Article status changed from {} to {} for article ID: {}", article.getStatus(), status, articleId);
@@ -268,7 +255,7 @@ public class ExpertServiceImpl implements ExpertService {
         article.setContent(updateRequest.getContent());
         article.setCategory(category);
         article.setStatus(Article.ArticleStatus.valueOf(updateRequest.getStatus()));
-        article.setUpdatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        article.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         // Cập nhật ảnh - Logic linh hoạt
         if (updateRequest.getImageUpdates() != null && !updateRequest.getImageUpdates().isEmpty()) {

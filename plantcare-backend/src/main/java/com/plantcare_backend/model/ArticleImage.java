@@ -21,7 +21,7 @@ public class ArticleImage {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "article_id", nullable = false)
+    @JoinColumn(name = "article_id", referencedColumnName = "article_id")
     @JsonBackReference
     private Article article;
 
@@ -31,4 +31,7 @@ public class ArticleImage {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
+
+    @Column(name = "is_primary")
+    private Boolean isPrimary = false;
 }

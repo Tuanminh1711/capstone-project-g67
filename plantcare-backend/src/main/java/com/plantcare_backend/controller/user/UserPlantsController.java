@@ -11,6 +11,7 @@ import com.plantcare_backend.dto.response.base.ResponseSuccess;
 import com.plantcare_backend.exception.RateLimitExceededException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.ValidationException;
+import com.plantcare_backend.service.AzureStorageService;
 import com.plantcare_backend.service.UserPlantsService;
 import com.plantcare_backend.service.ActivityLogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,8 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,9 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -43,8 +42,12 @@ import java.util.UUID;
 @Tag(name = "UserPlants Controller", description = "APIs for user plants management")
 @CrossOrigin(origins = "http://localhost:4200/")
 public class UserPlantsController {
-    private final UserPlantsService userPlantsService;
-    private final ActivityLogService activityLogService;
+    @Autowired
+    private UserPlantsService userPlantsService;
+    @Autowired
+    private ActivityLogService activityLogService;
+    @Autowired
+    private AzureStorageService azureStorageService;
 
     @Operation(method = "GET", summary = "Search user plants", description = "Search user plants by various criteria with pagination")
     @GetMapping("/search")
@@ -143,18 +146,13 @@ public class UserPlantsController {
     @GetMapping("/user-plants/{filename}")
     public ResponseEntity<Resource> getUserPlantImage(@PathVariable String filename) {
         try {
-            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-            Path filePath = Paths.get(uploadDir).resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // Sử dụng Azure Storage thay vì local
+            String azureUrl = azureStorageService.generateBlobUrl("user-plants/" + filename);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, azureUrl)
+                    .build();
         } catch (Exception e) {
+            log.error("Error generating Azure URL for image: {}", filename, e);
             return ResponseEntity.notFound().build();
         }
     }
@@ -217,6 +215,7 @@ public class UserPlantsController {
                         imageUpdate.setAction("ADD");
                         imageUpdate.setImageUrl(imageUrl);
                         imageUpdate.setDescription("User uploaded image");
+                        imageUpdate.setSetAsPrimary(true);
                         imageUpdates.add(imageUpdate);
                     }
                 }
@@ -229,7 +228,8 @@ public class UserPlantsController {
             activityLogService.logActivity(userId.intValue(), "UPDATE_USER_PLANT_WITH_IMAGES",
                     "Updated user plant with images, ID: " + requestDTO.getUserPlantId(), request);
 
-            log.info("Successfully updated user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
+            log.info("Successfully updated user plant with images for user: {}, plant ID: {}", userId,
+                    requestDTO.getUserPlantId());
             return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully with images");
         } catch (ResourceNotFoundException e) {
             log.warn("User plant not found for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
@@ -238,7 +238,8 @@ public class UserPlantsController {
             log.warn("Validation failed for user plant update: {}", e.getMessage());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         } catch (Exception e) {
-            log.error("Failed to update user plant with images for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId(), e);
+            log.error("Failed to update user plant with images for user: {}, plant ID: {}", userId,
+                    requestDTO.getUserPlantId(), e);
             return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Failed to update user plant: " + e.getMessage());
         }
@@ -258,20 +259,15 @@ public class UserPlantsController {
             throw new ValidationException("File size must be less than 20MB");
         }
 
-        String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
         String originalFilename = image.getOriginalFilename();
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
         String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-        Path filePath = uploadPath.resolve(newFilename);
-        Files.copy(image.getInputStream(), filePath);
+        // Sử dụng Azure Storage thay vì local
+        String path = "user-plants/" + newFilename;
+        String imageUrl = azureStorageService.uploadFile(image, path);
 
-        return "/api/user-plants/user-plants/" + newFilename;
+        return imageUrl;
     }
 
     @Operation(method = "POST", summary = "Create new plant", description = "Create a new plant and add to user collection")
@@ -354,20 +350,13 @@ public class UserPlantsController {
                         .body(new ResponseData<>(400, "File size must be less than 20MB", null));
             }
 
-            String uploadDir = System.getProperty("file.upload-dir", "uploads/") + "user-plants/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
             String originalFilename = image.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-            Path filePath = uploadPath.resolve(newFilename);
-            Files.copy(image.getInputStream(), filePath);
-
-            String imageUrl = "/api/user-plants/user-plants/" + newFilename;
+            // Sử dụng Azure Storage thay vì local
+            String path = "user-plants/" + newFilename;
+            String imageUrl = azureStorageService.uploadFile(image, path);
 
             return ResponseEntity.ok(new ResponseData<>(200, "Upload thành công", imageUrl));
 
