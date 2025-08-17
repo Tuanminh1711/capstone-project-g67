@@ -12,6 +12,7 @@ import {
   AfterViewChecked,
 } from '@angular/core';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
+import { FooterComponent } from '../../../shared/footer/footer.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -30,12 +31,17 @@ import { ToastService } from '../../../shared/toast/toast.service';
 @Component({
   selector: 'app-vip-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TopNavigatorComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TopNavigatorComponent, FooterComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  // Mobile responsive properties
+  isMobile = window.innerWidth <= 768;
+  sidebarVisible = window.innerWidth > 768;
+  showChatView = false; // New property for mobile chat view
+  
   /**
    * Định dạng thời gian đẹp cho chat: "Vừa xong", "5 phút trước", "Hôm qua 14:30", "dd/MM 14:30"...
    */
@@ -117,9 +123,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private urlService: UrlService,
     private chatService: ChatService,
     private toastService: ToastService
-  ) {}
+  ) {
+    this.checkScreenSize();
+    window.addEventListener('resize', () => this.checkScreenSize());
+  }
 
   ngOnInit(): void {
+    // Initialize mobile state immediately
+    this.checkScreenSize();
+    this.cdr.detectChanges();
+    
     // Environment check for debugging only
     const isProductionDomain = window.location.hostname.includes('plantcare.id.vn');
     console.log('Chat component environment check:', {
@@ -130,12 +143,26 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       deploymentMode: isProductionDomain ? 'production-domain' : 'development-domain',
     });
 
+    // Ensure mobile detection works
+    console.log('Mobile detection:', {
+      windowWidth: window.innerWidth,
+      isMobile: this.isMobile,
+      sidebarVisible: this.sidebarVisible
+    });
+
+    // Force initial state for mobile
+    if (this.isMobile) {
+      this.sidebarVisible = false;
+      this.showPrivateChat = false; // Start with community chat on mobile
+      this.cdr.detectChanges();
+    }
+
     // Kiểm tra quyền truy cập VIP
     const userRole = this.authService.getCurrentUserRole();
     if (userRole !== 'VIP' && userRole !== 'EXPERT') {
       console.error('❌ Unauthorized access to VIP chat. User role:', userRole);
       this.error = 'Bạn cần có tài khoản VIP để truy cập phòng chat này.';
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
       return;
     }
 
@@ -394,6 +421,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.selectedConversation = conversation;
     this.showPrivateChat = true;
     this.chatType = 'PRIVATE';
+    this.showChatView = true; // Show chat view on mobile
     this.loadPrivateMessages(conversation.otherUserId);
   }
 
@@ -485,6 +513,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.conversations.unshift(newConversation);
       this.selectConversation(newConversation);
     }
+  }
+
+  // New methods for mobile chat list
+  openCommunityChat() {
+    this.showPrivateChat = false;
+    this.selectedConversation = null;
+    this.chatType = 'COMMUNITY';
+    this.showChatView = true;
+    this.fetchHistory();
+    this.cdr.detectChanges();
+  }
+
+  goBackToList() {
+    this.showChatView = false;
+    this.selectedConversation = null;
+    this.showPrivateChat = false;
+    this.cdr.detectChanges();
   }
 
   private generateConversationId(user1Id: string, user2Id: number): string {
@@ -605,7 +650,36 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
+  // Mobile responsive methods
+  private checkScreenSize(): void {
+    const isMobileNow = window.innerWidth <= 768;
+    if (isMobileNow !== this.isMobile) {
+      this.isMobile = isMobileNow;
+      if (this.isMobile) {
+        this.sidebarVisible = false; // Hide sidebar by default on mobile
+      } else {
+        this.sidebarVisible = true; // Always show sidebar on desktop
+      }
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleSidebar(): void {
+    if (this.isMobile) {
+      this.sidebarVisible = !this.sidebarVisible;
+      this.cdr.detectChanges();
+    }
+  }
+
+  closeSidebarOnMobile(): void {
+    if (this.isMobile) {
+      this.sidebarVisible = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   ngOnDestroy(): void {
+    window.removeEventListener('resize', () => this.checkScreenSize());
     this.wsSub?.unsubscribe();
     this.wsErrSub?.unsubscribe();
     this.wsPrivateSub?.unsubscribe();

@@ -1,8 +1,15 @@
 <app-top-navigator></app-top-navigator>
 
-<div class="messenger-container">
+<div class="messenger-container" [class.mobile-view]="isMobile">
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" *ngIf="isMobile && sidebarVisible" (click)="closeSidebarOnMobile()"></div>
+  
+
+
   <!-- Messenger-style Sidebar -->
-  <div class="messenger-sidebar">
+  <div class="messenger-sidebar" 
+       [class.sidebar-hidden]="isMobile && !sidebarVisible"
+       [class.sidebar-visible]="!isMobile || sidebarVisible">
     <!-- Sidebar Header -->
     <div class="sidebar-header">
       <h2 class="sidebar-title">
@@ -23,7 +30,7 @@
       <div class="section-header">
         <span class="section-title">Phòng chat chung</span>
       </div>
-      <div class="chat-item community-room" [class.active]="!showPrivateChat && !selectedConversation" (click)="switchToCommunityChat()">
+      <div class="chat-item community-room" [class.active]="!showPrivateChat && !selectedConversation" (click)="switchToCommunityChat(); closeSidebarOnMobile()">
         <div class="chat-avatar community-avatar">
           <i class="fas fa-users"></i>
         </div>
@@ -48,7 +55,7 @@
       <div class="experts-list">
         <div class="chat-item expert-item" 
              *ngFor="let expert of experts" 
-             (click)="startConversationWithExpert(expert)">
+             (click)="startConversationWithExpert(expert); closeSidebarOnMobile()">
           <div class="chat-avatar expert-avatar">
             {{ expert.username.charAt(0).toUpperCase() }}
           </div>
@@ -77,7 +84,7 @@
         <div class="chat-item recent-chat" 
              *ngFor="let conversation of conversations" 
              [class.active]="selectedConversation?.conversationId === conversation.conversationId"
-             (click)="selectConversation(conversation)">
+             (click)="selectConversation(conversation); closeSidebarOnMobile()">
           <div class="chat-avatar">
             {{ conversation.otherUsername.charAt(0).toUpperCase() }}
           </div>
@@ -105,10 +112,82 @@
     </div>
   </div>
 
+  <!-- Mobile Chat List View -->
+  <div class="mobile-chat-list" *ngIf="isMobile && !showChatView">
+    <div class="chat-list-header">
+      <h1>Chats</h1>
+    </div>
+
+    <!-- Chat Categories -->
+    <div class="chat-categories">
+      <!-- Community Chat -->
+      <div class="chat-category-item" (click)="openCommunityChat()">
+        <div class="category-avatar community-avatar">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="category-info">
+          <div class="category-name">VIP Community</div>
+          <div class="category-desc">Phòng chat dành cho thành viên VIP</div>
+        </div>
+      </div>
+
+      <!-- Expert Chats -->
+      <div class="expert-list">
+        <div class="chat-category-item" *ngFor="let expert of experts" (click)="startConversationWithExpert(expert)">
+          <div class="category-avatar expert-avatar">
+            {{ expert.username.charAt(0).toUpperCase() }}
+          </div>
+          <div class="category-info">
+            <div class="category-name">{{ expert.username }}</div>
+            <div class="category-desc expert-badge">Chuyên gia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Conversations -->
+      <div class="recent-conversations" *ngIf="conversations.length > 0">
+        <div class="chat-category-item" *ngFor="let conversation of conversations" (click)="selectConversation(conversation)">
+          <div class="category-avatar">
+            {{ conversation.otherUsername.charAt(0).toUpperCase() }}
+          </div>
+          <div class="category-info">
+            <div class="category-name">{{ conversation.otherUsername }}</div>
+            <div class="category-desc">{{ conversation.lastMessage || 'Nhấn để bắt đầu trò chuyện' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer for chat list -->
+    <div class="mobile-footer">
+      <app-footer></app-footer>
+    </div>
+  </div>
+
   <!-- Main Chat Area -->
-  <div class="messenger-main">
-    <!-- Chat Header -->
-    <div class="chat-header" *ngIf="selectedConversation || !showPrivateChat">
+  <div class="messenger-main" *ngIf="!isMobile || showChatView">
+    <!-- Mobile Chat Header -->
+    <div class="mobile-chat-header" *ngIf="isMobile && showChatView">
+      <button class="back-btn" (click)="goBackToList()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="chat-info">
+        <div class="chat-avatar-small" *ngIf="selectedConversation">
+          {{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}
+        </div>
+        <div class="chat-avatar-small community-avatar" *ngIf="!showPrivateChat && !selectedConversation">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="chat-details">
+          <div class="chat-name">{{ selectedConversation?.otherUsername || 'VIP Community' }}</div>
+          <div class="chat-status">{{ selectedConversation ? 'Chuyên gia' : 'Đang hoạt động' }}</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Desktop Chat Header -->
+    <div class="chat-header" *ngIf="!isMobile && (selectedConversation || !showPrivateChat)">
       <div class="header-left">
         <div class="chat-avatar-header" *ngIf="selectedConversation">
           {{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}
@@ -135,8 +214,16 @@
 
     <!-- Chat Messages Area -->
     <div class="messages-container">
-      <!-- Welcome Screen -->
-      <div *ngIf="!selectedConversation && showPrivateChat" class="welcome-screen">
+      <!-- Mobile Default Screen -->
+      <div *ngIf="isMobile && !selectedConversation && showPrivateChat" class="welcome-screen">
+        <div class="welcome-content">
+          <h3>Chào mừng đến VIP Chat</h3>
+          <p>Nhấn vào nút menu để chọn chuyên gia hoặc cuộc trò chuyện</p>
+        </div>
+      </div>
+      
+      <!-- Desktop Welcome Screen -->
+      <div *ngIf="!isMobile && !selectedConversation && showPrivateChat" class="welcome-screen">
         <div class="welcome-content">
           <h3>Chọn một cuộc trò chuyện</h3>
           <p>Chọn một chuyên gia hoặc cuộc trò chuyện từ danh sách để bắt đầu nhắn tin</p>
@@ -217,7 +304,7 @@
   <!-- ...existing code... -->
 
             <!-- Unified Chat Input Area -->
-      <div class="chat-input-container" *ngIf="selectedConversation || !showPrivateChat">
+      <div class="chat-input-container" *ngIf="selectedConversation || !showPrivateChat || isMobile">
         <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
           <div class="input-wrapper">
             <textarea 
@@ -248,4 +335,6 @@
           </div>
         </div>
       </div>
+      
+
 </div>
