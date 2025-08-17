@@ -9,11 +9,13 @@ import com.plantcare_backend.model.*;
 import com.plantcare_backend.model.CareSchedule;
 import com.plantcare_backend.model.CareLog;
 import com.plantcare_backend.model.UserPlantImage;
+import com.plantcare_backend.model.PlantCategory;
+import com.plantcare_backend.model.Plants;
 import com.plantcare_backend.repository.PlantCategoryRepository;
 import com.plantcare_backend.repository.PlantImageRepository;
 import com.plantcare_backend.repository.PlantRepository;
 import com.plantcare_backend.repository.UserPlantRepository;
-import com.plantcare_backend.service.AzureStorageService;
+import com.plantcare_backend.service.external_service.AzureStorageService;
 import com.plantcare_backend.service.UserPlantsService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -118,6 +120,7 @@ public class UserPlantsServiceImpl implements UserPlantsService {
                 imageDetail.setId(img.getId());
                 imageDetail.setImageUrl(img.getImageUrl());
                 imageDetail.setDescription(img.getDescription());
+                imageDetail.setIsPrimary(img.getIsPrimary());
                 imageDetails.add(imageDetail);
             }
         }
@@ -335,12 +338,132 @@ public class UserPlantsServiceImpl implements UserPlantsService {
 
         userPlantRepository.save(userPlant);
 
+        // Update original plant details if user has permission and provided plant
+        // details
+        updateOriginalPlantDetails(userPlant.getPlantId(), requestDTO, userId);
+
         updateCareScheduleReminders(userPlant.getUserPlantId(), requestDTO.isReminderEnabled());
 
-        log.info(
-                "Successfully updated user plant: {} for user: {}. Changes: nickname='{}'->'{}', date='{}'->'{}', location='{}'->'{}'",
+        // Check if plant details were also updated
+        boolean plantDetailsUpdated = requestDTO.getCategoryId() != null || requestDTO.getCareDifficulty() != null ||
+                requestDTO.getLightRequirement() != null || requestDTO.getWaterRequirement() != null ||
+                requestDTO.getDescription() != null || requestDTO.getCareInstructions() != null ||
+                requestDTO.getSuitableLocation() != null || requestDTO.getCommonDiseases() != null;
+
+        String logMessage = String.format(
+                "Successfully updated user plant: %d for user: %d. Changes: nickname='%s'->'%s', date='%s'->'%s', location='%s'->'%s'%s",
                 requestDTO.getUserPlantId(), userId, oldNickname, requestDTO.getNickname(),
-                oldPlantDate, requestDTO.getPlantingDate(), oldLocation, requestDTO.getLocationInHouse());
+                oldPlantDate, requestDTO.getPlantingDate(), oldLocation, requestDTO.getLocationInHouse(),
+                plantDetailsUpdated ? " + plant details updated" : "");
+
+        log.info(logMessage);
+    }
+
+    /**
+     * Updates the original plant details if the user has permission to do so
+     * (i.e., if the plant was created by the user)
+     */
+    private void updateOriginalPlantDetails(Long plantId, UpdateUserPlantRequestDTO requestDTO, Long userId) {
+        Plants plant = plantRepository.findById(plantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Original plant not found"));
+
+        // Check if user has permission to update this plant
+        if (!plant.isUserCreatedPlant() || !userId.equals(plant.getCreatedBy())) {
+            // Check if user is trying to update plant details
+            boolean hasPlantDetailUpdates = requestDTO.getCategoryId() != null || requestDTO.getCareDifficulty() != null
+                    ||
+                    requestDTO.getLightRequirement() != null || requestDTO.getWaterRequirement() != null ||
+                    requestDTO.getDescription() != null || requestDTO.getCareInstructions() != null ||
+                    requestDTO.getSuitableLocation() != null || requestDTO.getCommonDiseases() != null;
+
+            if (hasPlantDetailUpdates) {
+                log.warn(
+                        "User {} attempted to update plant {} details but lacks permission. Plant createdBy: {}, isUserCreated: {}",
+                        userId, plantId, plant.getCreatedBy(), plant.isUserCreatedPlant());
+            }
+
+            log.info("User {} does not have permission to update plant {} details", userId, plantId);
+            return;
+        }
+
+        log.info("Updating original plant {} details for user {}", plantId, userId);
+
+        // Update category if provided
+        if (requestDTO.getCategoryId() != null) {
+            try {
+                PlantCategory category = plantCategoryRepository.findById(requestDTO.getCategoryId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Category not found with ID: " + requestDTO.getCategoryId()));
+                plant.setCategory(category);
+            } catch (ResourceNotFoundException e) {
+                log.warn("Category not found for plant {} update: {}", plantId, e.getMessage());
+                throw e; // Re-throw to inform user about the invalid category
+            }
+        }
+
+        // Update care difficulty if provided
+        if (requestDTO.getCareDifficulty() != null) {
+            Plants.CareDifficulty careDifficulty = Plants.CareDifficulty
+                    .valueOf(requestDTO.getCareDifficulty().toUpperCase());
+            plant.setCareDifficulty(careDifficulty);
+        }
+
+        // Update light requirement if provided
+        if (requestDTO.getLightRequirement() != null) {
+            Plants.LightRequirement lightRequirement = Plants.LightRequirement
+                    .valueOf(requestDTO.getLightRequirement().toUpperCase());
+            plant.setLightRequirement(lightRequirement);
+        }
+
+        // Update water requirement if provided
+        if (requestDTO.getWaterRequirement() != null) {
+            Plants.WaterRequirement waterRequirement = Plants.WaterRequirement
+                    .valueOf(requestDTO.getWaterRequirement().toUpperCase());
+            plant.setWaterRequirement(waterRequirement);
+        }
+
+        // Update other fields if provided
+        if (requestDTO.getDescription() != null) {
+            plant.setDescription(requestDTO.getDescription());
+        }
+        if (requestDTO.getCareInstructions() != null) {
+            plant.setCareInstructions(requestDTO.getCareInstructions());
+        }
+        if (requestDTO.getSuitableLocation() != null) {
+            plant.setSuitableLocation(requestDTO.getSuitableLocation());
+        }
+        if (requestDTO.getCommonDiseases() != null) {
+            plant.setCommonDiseases(requestDTO.getCommonDiseases());
+        }
+
+        plantRepository.save(plant);
+
+        // Log which fields were updated
+        StringBuilder updatedFields = new StringBuilder();
+        if (requestDTO.getCategoryId() != null)
+            updatedFields.append("category, ");
+        if (requestDTO.getCareDifficulty() != null)
+            updatedFields.append("careDifficulty, ");
+        if (requestDTO.getLightRequirement() != null)
+            updatedFields.append("lightRequirement, ");
+        if (requestDTO.getWaterRequirement() != null)
+            updatedFields.append("waterRequirement, ");
+        if (requestDTO.getDescription() != null)
+            updatedFields.append("description, ");
+        if (requestDTO.getCareInstructions() != null)
+            updatedFields.append("careInstructions, ");
+        if (requestDTO.getSuitableLocation() != null)
+            updatedFields.append("suitableLocation, ");
+        if (requestDTO.getCommonDiseases() != null)
+            updatedFields.append("commonDiseases, ");
+
+        if (updatedFields.length() > 0) {
+            updatedFields.setLength(updatedFields.length() - 2); // Remove last ", "
+            log.info("Successfully updated original plant {} details for user {}: {}", plantId, userId,
+                    updatedFields.toString());
+        } else {
+            log.info("No plant details to update for plant {}", plantId);
+        }
     }
 
     private void validateUpdateUserPlantRequest(UpdateUserPlantRequestDTO requestDTO) {
@@ -365,6 +488,9 @@ public class UserPlantsServiceImpl implements UserPlantsService {
             throw new ValidationException("Planting date cannot be in the future");
         }
 
+        // Validate plant detail fields if provided
+        validatePlantDetailFields(requestDTO);
+
         // Validate image updates if provided
         if (requestDTO.getImageUpdates() != null && !requestDTO.getImageUpdates().isEmpty()) {
             validateImageUpdates(requestDTO.getImageUpdates());
@@ -374,6 +500,19 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         if (requestDTO.getImageUrls() != null && !requestDTO.getImageUrls().isEmpty()) {
             validateImageUrls(requestDTO.getImageUrls());
         }
+    }
+
+    /**
+     * Validates plant detail fields if they are provided
+     */
+    private void validatePlantDetailFields(UpdateUserPlantRequestDTO requestDTO) {
+        // Validate category ID if provided
+        if (requestDTO.getCategoryId() != null && requestDTO.getCategoryId() <= 0) {
+            throw new ValidationException("Category ID must be a positive number");
+        }
+
+        // Note: Enum validation is already handled by @Pattern annotation in DTO
+        // Additional business logic validation can be added here if needed
     }
 
     private void validateImageUpdates(List<UserPlantImageUpdateDTO> imageUpdates) {
@@ -657,8 +796,16 @@ public class UserPlantsServiceImpl implements UserPlantsService {
         dto.setPlantId(userPlant.getPlantId());
         dto.setNickname(userPlant.getPlantName());
         dto.setPlantLocation(userPlant.getPlantLocation());
+
         if (userPlant.getImages() != null && !userPlant.getImages().isEmpty()) {
-            dto.setImageUrl(userPlant.getImages().get(0).getImageUrl());
+            // Tìm ảnh primary trước, nếu không có thì fallback về ảnh đầu tiên
+            String primaryImageUrl = userPlant.getImages().stream()
+                    .filter(img -> img.getIsPrimary() != null && img.getIsPrimary())
+                    .map(UserPlantImage::getImageUrl)
+                    .findFirst()
+                    .orElse(userPlant.getImages().get(0).getImageUrl());
+
+            dto.setImageUrl(primaryImageUrl);
         }
 
         return dto;

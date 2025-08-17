@@ -1,4 +1,4 @@
-package com.plantcare_backend.service;
+package com.plantcare_backend.service.external_service;
 
 import org.springframework.web.multipart.MultipartFile;
 

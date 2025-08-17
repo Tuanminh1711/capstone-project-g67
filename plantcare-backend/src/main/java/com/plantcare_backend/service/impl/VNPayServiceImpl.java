@@ -2,7 +2,7 @@ package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.config.VNPayConfig;
 import com.plantcare_backend.model.VipOrder;
-import com.plantcare_backend.service.VNPayService;
+import com.plantcare_backend.service.external_service.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

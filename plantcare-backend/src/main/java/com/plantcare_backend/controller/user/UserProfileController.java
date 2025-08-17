@@ -6,7 +6,7 @@ import com.plantcare_backend.dto.response.auth.UpdateAvatarResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.UserRepository;
-import com.plantcare_backend.service.AzureStorageService;
+import com.plantcare_backend.service.external_service.AzureStorageService;
 import com.plantcare_backend.service.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,7 +1,7 @@
 package com.plantcare_backend.controller.VIP;
 
 import com.plantcare_backend.model.VipOrder;
-import com.plantcare_backend.service.VNPayService;
+import com.plantcare_backend.service.external_service.VNPayService;
 import com.plantcare_backend.service.vip.VipOrderService;
 import com.plantcare_backend.service.ActivityLogService;
 import org.springframework.beans.factory.annotation.Autowired;

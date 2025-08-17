@@ -15,7 +15,7 @@ import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.InvalidDataException;
 import com.plantcare_backend.service.ActivityLogService;
 import com.plantcare_backend.service.ExpertService;
-import com.plantcare_backend.service.AzureStorageService;
+import com.plantcare_backend.service.external_service.AzureStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,16 +26,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 

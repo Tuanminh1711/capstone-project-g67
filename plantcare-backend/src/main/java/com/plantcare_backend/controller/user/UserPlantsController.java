@@ -11,7 +11,7 @@ import com.plantcare_backend.dto.response.base.ResponseSuccess;
 import com.plantcare_backend.exception.RateLimitExceededException;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.exception.ValidationException;
-import com.plantcare_backend.service.AzureStorageService;
+import com.plantcare_backend.service.external_service.AzureStorageService;
 import com.plantcare_backend.service.UserPlantsService;
 import com.plantcare_backend.service.ActivityLogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -176,7 +176,17 @@ public class UserPlantsController {
                     "Updated user plant with ID: " + requestDTO.getUserPlantId(), request);
 
             log.info("Successfully updated user plant for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
-            return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully");
+
+            // Check if plant details were also updated
+            String message = "User plant updated successfully";
+            if (requestDTO.getCategoryId() != null || requestDTO.getCareDifficulty() != null ||
+                    requestDTO.getLightRequirement() != null || requestDTO.getWaterRequirement() != null ||
+                    requestDTO.getDescription() != null || requestDTO.getCareInstructions() != null ||
+                    requestDTO.getSuitableLocation() != null || requestDTO.getCommonDiseases() != null) {
+                message = "User plant and plant details updated successfully";
+            }
+
+            return new ResponseData<>(HttpStatus.OK.value(), message);
         } catch (ResourceNotFoundException e) {
             log.warn("User plant not found for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
             return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
@@ -230,7 +240,17 @@ public class UserPlantsController {
 
             log.info("Successfully updated user plant with images for user: {}, plant ID: {}", userId,
                     requestDTO.getUserPlantId());
-            return new ResponseData<>(HttpStatus.OK.value(), "User plant updated successfully with images");
+
+            // Check if plant details were also updated
+            String message = "User plant updated successfully with images";
+            if (requestDTO.getCategoryId() != null || requestDTO.getCareDifficulty() != null ||
+                    requestDTO.getLightRequirement() != null || requestDTO.getWaterRequirement() != null ||
+                    requestDTO.getDescription() != null || requestDTO.getCareInstructions() != null ||
+                    requestDTO.getSuitableLocation() != null || requestDTO.getCommonDiseases() != null) {
+                message = "User plant, plant details, and images updated successfully";
+            }
+
+            return new ResponseData<>(HttpStatus.OK.value(), message);
         } catch (ResourceNotFoundException e) {
             log.warn("User plant not found for user: {}, plant ID: {}", userId, requestDTO.getUserPlantId());
             return new ResponseError(HttpStatus.NOT_FOUND.value(), e.getMessage());
