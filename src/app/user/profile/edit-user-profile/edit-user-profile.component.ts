@@ -126,10 +126,18 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
   onAvatarChange(event: Event) {
     const input = event.target as HTMLInputElement;
     this.showAvatarFormatError = false; // Reset lỗi format
-    
+
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
+
+      // Kiểm tra tên file không chứa ký tự đặc biệt và không quá dài
+      const fileName = file.name;
+      if (!/^[\w\-. ]{1,100}$/.test(fileName)) {
+        this.showAvatarFormatError = true;
+        this.toastService.error('Tên file ảnh không hợp lệ hoặc quá dài.');
+        return;
+      }
+
       // Kiểm tra kích thước
       if (file.size > 5 * 1024 * 1024) {
         this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
@@ -138,7 +146,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
         return;
       }
-      
+
       // Kiểm tra định dạng
       if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
         this.toastService.error('Định dạng file không hỗ trợ. Vui lòng chọn file JPG, PNG hoặc GIF.');
@@ -147,7 +155,7 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
         return;
       }
-      
+
       // File hợp lệ - hiển thị cropper
       this.imageChangedEvent = event;
       this.showCropper = true;

@@ -19,21 +19,26 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
 
   private translateErrorMessage(msg: string): string {
     const map: { [key: string]: string } = {
-      'password must be at least 8 characters': 'Mật khẩu phải có ít nhất 8 ký tự',
-      'password must be at least 6 characters': 'Mật khẩu phải có ít nhất 6 ký tự',
-      'passwords do not match': 'Mật khẩu xác nhận không khớp',
-      'username already exists': 'Tên đăng nhập đã tồn tại',
-      'email already exists': 'Email đã được sử dụng',
-      'invalid email format': 'Định dạng email không hợp lệ',
-      'invalid payload': 'Dữ liệu gửi lên không hợp lệ',
-      'user not found': 'Không tìm thấy người dùng',
-      'invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng',
-      'account is not verified': 'Tài khoản chưa được xác thực',
-      'account is locked': 'Tài khoản đã bị khóa',
-      'phone number already exists': 'Số điện thoại đã được sử dụng',
+      'fullname must not contain numbers or special characters': 'Họ và tên không được chứa số hoặc ký tự đặc biệt.',
+      'username must be not blank': 'Tên đăng nhập không được để trống.',
+      'email invalid format! please try again': 'Email không đúng định dạng, vui lòng thử lại.',
+      'password must be at least 8 characters': 'Mật khẩu phải có ít nhất 8 ký tự.',
+      'password must contain at least 8 characters, including uppercase, lowercase, number and special character': 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
+      'fullName must not be blank': 'Họ và tên không được để trống.',
+      'fullName must not contain numbers or special characters': 'Họ và tên không được chứa số hoặc ký tự đặc biệt.',
+      'phone invalid format! please try again': 'Số điện thoại không đúng định dạng, vui lòng thử lại.',
+      'roleId must not be null': 'Bạn phải chọn vai trò cho tài khoản.',
+      'username already exists': 'Tên đăng nhập đã tồn tại.',
+      'email already exists': 'Email đã được sử dụng.',
+      'invalid email format': 'Định dạng email không hợp lệ.',
+      'invalid payload': 'Dữ liệu gửi lên không hợp lệ.',
+      'user not found': 'Không tìm thấy người dùng.',
+      'invalid username or password': 'Tên đăng nhập hoặc mật khẩu không đúng.',
+      'account is not verified': 'Tài khoản chưa được xác thực.',
+      'account is locked': 'Tài khoản đã bị khóa.',
+      'phone number already exists': 'Số điện thoại đã được sử dụng.',
       'password wrong!': 'Mật khẩu không đúng!',
-      'username wrong!': 'Tên đăng nhập không đúng!',
-      'password must contain at least 8 characters, including uppercase, lowercase, number and special character': 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
+      'username wrong!': 'Tên đăng nhập không đúng!'
     };
     const msgNorm = msg.trim().toLowerCase();
     return map[msgNorm] || msg;
@@ -115,33 +120,70 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     };
     this.createAccountService.addUser(body).subscribe({
       next: (res) => {
-        this.isSubmitting = false;
-        this.setLoading(false); // Reset loading state
         console.log('Create account response:', res);
         
-        // Check response để xác định thành công hay thất bại
-        // Nếu có code và code !== 200/201, hoặc có error = true thì là lỗi
-        if (res && ((res.code && res.code !== 200 && res.code !== 201) || res.error === true)) {
-          let msg = res.message || 'Tạo tài khoản thất bại!';
-          this.toastService.error(this.translateErrorMessage(msg));
-          this.setError(this.translateErrorMessage(msg));
-        } else {
-          // Thành công
-          this.toastService.success('Tạo tài khoản thành công!');
-          this.setSuccess('Tạo tài khoản thành công!');
-          this.setError('');
-          this.username = '';
-          this.password = '';
-          this.fullName = '';
-          this.email = '';
-          this.phoneNumber = '';
-          this.gender = 'male';
-          this.roleId = 2; // Reset về Staff
+        // Kiểm tra response từ backend
+        // Nếu status/code không phải 200/201 hoặc có message lỗi thì hiển thị toast lỗi
+        const status = res?.status ?? res?.code;
+        const message = res?.message || '';
+        
+        // Kiểm tra nếu có lỗi từ backend (status lỗi hoặc có message lỗi)
+        if (status !== 200 && status !== 201) {
+          let errorMsg = message || 'Tạo tài khoản thất bại!';
+          const msgNorm = typeof errorMsg === 'string' ? errorMsg.trim().toLowerCase() : '';
+          
+          // Reset trạng thái trước khi hiển thị lỗi
+          this.isSubmitting = false;
+          this.setLoading(false);
+          this.setError(this.translateErrorMessage(msgNorm));
+          
+          // Hiển thị toast lỗi
+          this.toastService.error(this.translateErrorMessage(msgNorm));
           this.cdr.detectChanges();
-          setTimeout(() => {
-            this.router.navigate(['/admin/accounts']);
-          }, 800);
+          return;
         }
+        
+        // Kiểm tra nếu có message lỗi mặc dù status có thể là 200
+        if (message && typeof message === 'string' && 
+            (message.toLowerCase().includes('error') || 
+             message.toLowerCase().includes('fail') || 
+             message.toLowerCase().includes('thất bại') ||
+             message.toLowerCase().includes('lỗi') ||
+             message.toLowerCase().includes('already exists') ||
+             message.toLowerCase().includes('invalid') ||
+             message.toLowerCase().includes('not found') ||
+             message.toLowerCase().includes('unauthorized') ||
+             message.toLowerCase().includes('forbidden'))) {
+          const msgNorm = message.trim().toLowerCase();
+          
+          // Reset trạng thái trước khi hiển thị lỗi
+          this.isSubmitting = false;
+          this.setLoading(false);
+          this.setError(this.translateErrorMessage(msgNorm));
+          
+          // Hiển thị toast lỗi
+          this.toastService.error(this.translateErrorMessage(msgNorm));
+          this.cdr.detectChanges();
+          return;
+        }
+        
+        // Thành công - chỉ khi không có lỗi nào
+        this.isSubmitting = false;
+        this.setLoading(false);
+        this.toastService.success('Tạo tài khoản thành công!');
+        this.setSuccess('Tạo tài khoản thành công!');
+        this.setError('');
+        this.username = '';
+        this.password = '';
+        this.fullName = '';
+        this.email = '';
+        this.phoneNumber = '';
+        this.gender = 'male';
+        this.roleId = 2; // Reset về Staff
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.router.navigate(['/admin/accounts']);
+        }, 800);
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -159,8 +201,9 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
         } else {
           msg = 'Tạo tài khoản thất bại!';
         }
-        this.toastService.error(this.translateErrorMessage(msg));
-        this.setError(this.translateErrorMessage(msg));
+        const msgNorm = typeof msg === 'string' ? msg.trim().toLowerCase() : '';
+        this.toastService.error(this.translateErrorMessage(msgNorm));
+        this.setError(this.translateErrorMessage(msgNorm));
         this.cdr.detectChanges();
       }
     });

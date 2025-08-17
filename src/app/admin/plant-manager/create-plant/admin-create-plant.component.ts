@@ -1,4 +1,4 @@
-// ...
+
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
@@ -190,7 +190,8 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
         throw new Error((response as any).message || 'Server error occurred');
       }
 
-      this.setSuccess('Tạo cây mới thành công!');
+      this.toastService.success(this.translateErrorMessage('Plant created successfully'));
+      this.setSuccess(this.translateErrorMessage('Plant created successfully'));
       this.createPlantForm.reset();
       this.createPlantForm = this.initializeForm();
       this.router.navigate(['/admin/plants']);
@@ -205,6 +206,7 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
 
   private handleApiError(error: any) {
     let errorMessage = error?.error?.message || error?.message || 'Có lỗi xảy ra khi tạo cây mới';
+    errorMessage = this.translateErrorMessage(errorMessage);
     if (error?.status === 403) {
       errorMessage = 'Bạn không có quyền thực hiện hành động này';
     } else if (error?.status === 401) {
@@ -264,5 +266,36 @@ export class AdminCreatePlantComponent extends BaseAdminListComponent implements
       suitableLocation: 'Vị trí phù hợp'
     };
     return labels[fieldName] || fieldName;
+  }
+
+    // Bản đồ dịch lỗi từ backend sang tiếng Việt
+  private errorTranslationMap: { [key: string]: string } = {
+    'Scientific name must not be blank': 'Tên khoa học không được để trống',
+    'Common name must not be blank': 'Tên thường gọi không được để trống',
+    'Category must not null': 'Danh mục không được để trống',
+    'Light requirement must not be null': 'Yêu cầu ánh sáng không được để trống',
+    'Water requirement must be not null': 'Yêu cầu nước không được để trống',
+    'Care difficulty must be not null': 'Độ khó chăm sóc không được để trống',
+    'File is empty': 'Vui lòng chọn file ảnh',
+    'File must be an image': 'File phải là ảnh',
+    'File size must be less than 20MB': 'Dung lượng file phải nhỏ hơn 20MB',
+    'Plant not found with id': 'Không tìm thấy cây với mã này',
+    'Server error occurred': 'Có lỗi máy chủ, vui lòng thử lại sau',
+    'Upload thất bại': 'Tải ảnh lên thất bại',
+    'Upload thành công cho plant': 'Tải ảnh lên thành công cho cây',
+  'Plant created successfully': 'Tạo cây thành công',
+  'Plant with scientific name already exists': 'Tên khoa học này đã tồn tại'
+    // Thêm các lỗi khác nếu cần
+  };
+
+  private translateErrorMessage(message: string): string {
+    if (!message) return '';
+    for (const key in this.errorTranslationMap) {
+      if (message.includes(key)) {
+        // Nếu message chứa key, thay thế bằng bản dịch
+        return message.replace(key, this.errorTranslationMap[key]);
+      }
+    }
+    return message;
   }
 }

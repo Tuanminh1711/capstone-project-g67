@@ -1,16 +1,7 @@
 <div class="admin-activity-logs-container">
   <div class="logs-header">
     <div class="header-left">
-      <button class="back-btn" (click)="goBack()" title="Quay lại danh sách tài khoản">
-        <i class="fas fa-arrow-left"></i>
-        Quay lại
-      </button>
-      <h2>Nhật ký hoạt động người dùng #{{ userId }}</h2>
     </div>
-    <button class="reload-btn" (click)="reloadLogs()" title="Tải lại dữ liệu">
-      <i class="fas fa-sync-alt"></i>
-      Tải lại
-    </button>
   </div>
 
   @if (loading) {

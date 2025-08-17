@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AdminPageTitleService {
-  private titleSubject = new BehaviorSubject<string>('Dashboard');
+  private titleSubject = new BehaviorSubject<string>('DASHBOARD');
   title$ = this.titleSubject.asObservable();
 
   constructor(private ngZone: NgZone) {}

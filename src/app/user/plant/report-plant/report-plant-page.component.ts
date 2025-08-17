@@ -121,6 +121,10 @@ export class ReportPlantPageComponent implements OnInit {
       this.toast.error('Vui lòng nhập lý do báo cáo.');
       return;
     }
+    if (this.reason.trim().length > 500) {
+      this.toast.error('Nội dung báo cáo không được vượt quá 500 ký tự. Vui lòng rút gọn lại!');
+      return;
+    }
     this.submitting = true;
     // Lấy token từ cookie
     const token = this.cookieService.getAuthToken();

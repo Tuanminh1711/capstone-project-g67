@@ -298,13 +298,11 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
-    
     const selectedPlant = this.plantsSubject.value.find(p => p.id === plantId);
     if (!selectedPlant) {
       this.toast.error('Không tìm thấy thông tin cây');
       return;
     }
-
     // Check authentication
     const token = this.cookieService.getAuthToken();
     if (!token) {
@@ -312,10 +310,25 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
       this.toast.error('Vui lòng đăng nhập để báo cáo thông tin cây!');
       return;
     }
-
-    // Set selected plant in service for the report component
-    this.plantDataService.setSelectedPlant(selectedPlant);
-    this.router.navigate(['/user/report-plant', plantId]);
+    // Kiểm tra đã báo cáo chưa bằng cách lấy danh sách báo cáo của mình
+    this.http.get(`/api/plants-report/my-reports?page=0&size=100&status=PENDING`, { headers: { Authorization: `Bearer ${token}` } }).subscribe({
+      next: (res: any) => {
+        const reports = res?.data?.reports || [];
+        const reported = Array.isArray(reports) && reports.some((r: any) => r.plantId === plantId);
+        if (reported) {
+          this.toast.error('Bạn đã báo cáo cây này rồi');
+          return;
+        }
+        // Set selected plant in service for the report component
+        this.plantDataService.setSelectedPlant(selectedPlant);
+        this.router.navigate(['/user/report-plant', plantId]);
+      },
+      error: () => {
+        // Nếu lỗi vẫn cho báo cáo
+        this.plantDataService.setSelectedPlant(selectedPlant);
+        this.router.navigate(['/user/report-plant', plantId]);
+      }
+    });
   }
 
   forceRefresh(): void {

@@ -45,11 +45,13 @@ export class ChangePasswordComponent implements OnInit {
   const map: { [key: string]: string } = {
     'user not found': 'Không tìm thấy người dùng.',
     'current password is incorrect': 'Mật khẩu hiện tại không đúng.',
+    'current password is incorrect. please try again.': 'Mật khẩu hiện tại không đúng.',
     'new password and confirm password do not match': 'Mật khẩu mới và xác nhận mật khẩu không khớp.',
     'new password must be different from current password': 'Mật khẩu mới phải khác mật khẩu cũ.',
     'password strength validation failed': 'Mật khẩu mới không đủ mạnh.',
     'password changed successfully': 'Đổi mật khẩu thành công.',
     'error changing password': 'Có lỗi xảy ra khi đổi mật khẩu.',
+  'rate limit exceeded. please try again later.': 'Bạn đã thay đổi quá nhiều lần trong 5 phút, vui lòng đợi sau 5 phút rồi thử lại.',
   };
 
   const msgNorm = msg.trim().toLowerCase();
@@ -116,9 +118,11 @@ export class ChangePasswordComponent implements OnInit {
       return false;
     }
 
-    if (this.newPassword.length < 6) {
-      this.error = 'Mật khẩu mới phải có ít nhất 6 ký tự';
-      this.toastService.error('Mật khẩu mới phải có ít nhất 6 ký tự');
+    // Validate password strength: tối thiểu 8 ký tự, có hoa, thường, số, ký tự đặc biệt, không khoảng trắng
+    const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$/;
+    if (!passwordRegex.test(this.newPassword)) {
+      this.error = 'Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số, ký tự đặc biệt và không chứa khoảng trắng';
+      this.toastService.error('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số, ký tự đặc biệt và không chứa khoảng trắng');
       setTimeout(() => this.cdr.detectChanges(), 0);
       return false;
     }
@@ -188,25 +192,30 @@ export class ChangePasswordComponent implements OnInit {
         setTimeout(() => this.cdr.detectChanges(), 0);
       }),
      catchError(error => {
-      let errorMessage = 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.';
+      let errorMessage = '';
 
+      // Ưu tiên lấy message từ error.error.message (HttpErrorResponse), nếu không có thì lấy error.message (Error object từ interceptor)
       if (error?.error?.message) {
-    errorMessage = this.translateErrorMessage(error.error.message);
+        errorMessage = this.translateErrorMessage(error.error.message);
+      } else if (error?.message) {
+        errorMessage = this.translateErrorMessage(error.message);
       } else if (error.status === 0) {
-    errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+        errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+      } else {
+        errorMessage = 'Có lỗi xảy ra khi đổi mật khẩu.';
       }
 
       if (error.status === 401) {
-      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-     this.showLoginDialog();
-    }
+        errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+        this.showLoginDialog();
+      }
 
   this.toastService.error(errorMessage);
-  this.error = errorMessage;
+  // Không set this.error để không hiện lỗi dưới chân
   setTimeout(() => this.cdr.detectChanges(), 0);
 
-  return of(null);
-}),
+      return of(null);
+    }),
 
       finalize(() => {
         this.loading = false;

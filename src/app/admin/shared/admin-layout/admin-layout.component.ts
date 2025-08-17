@@ -12,4 +12,10 @@ import { AdminFooterComponent } from '../admin-footer/admin-footer.component';
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent {}
+export class AdminLayoutComponent {
+  sidebarCollapsed = false;
+
+  handleSidebarToggle() {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+}

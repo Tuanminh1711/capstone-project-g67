@@ -192,7 +192,9 @@
                     #phoneInput="ngModel"
                     pattern="[0-9]{10,11}"
                     maxlength="11"
-                    (blur)="validatePhoneNumber()" />
+                    (blur)="validatePhoneNumber()"
+                    readonly
+                    class="readonly-input" />
                   <div *ngIf="phoneInput.invalid && phoneInput.touched" class="field-error">
                     Số điện thoại không hợp lệ (10-11 số)
                   </div>

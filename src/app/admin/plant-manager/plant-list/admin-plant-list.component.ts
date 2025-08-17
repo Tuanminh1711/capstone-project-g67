@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { CommonModule, NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { shareReplay } from 'rxjs';
 import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { environment } from '../../../../environments/environment'; 
@@ -63,7 +64,8 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
     private router: Router,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private plantService: AdminPlantService
+    private plantService: AdminPlantService,
+    private toast: ToastService
   ) {
     super();
   }
@@ -275,22 +277,20 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
         // Update the plant status locally
         plant.status = newStatus;
         plant.isUpdating = false;
-        
         // Update the plants in BehaviorSubject
         const currentPlants = this.plantsSubject.getValue();
         const updatedPlants = currentPlants.map((p: Plant) => 
           p.id === plant.id ? { ...p, status: newStatus, isUpdating: false } : p
         );
         this.plantsSubject.next(updatedPlants);
-        
         this.cdr.detectChanges();
+        // Show success toast
+        this.toast.success(`Đã ${actionText} cây thành công!`);
       },
       error: (error) => {
         // Reset updating state
         plant.isUpdating = false;
-        
         let errorMessage = `Không thể ${actionText} cây. `;
-        
         if (error.status === 401) {
           errorMessage += 'Bạn không có quyền thực hiện thao tác này.';
         } else if (error.status === 404) {
@@ -300,7 +300,6 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
         } else {
           errorMessage += 'Vui lòng thử lại sau.';
         }
-        
         alert(errorMessage);
       }
     });
@@ -386,7 +385,7 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
       status: newStatus
     };
     this.plantService.updatePlant(plant.id, updateRequest).subscribe({
-      next: () => {
+      next: (response: any) => {
         plant.status = newStatus;
         plant.isUpdating = false;
         // Update the plants in BehaviorSubject
@@ -396,6 +395,10 @@ export class AdminPlantListComponent extends BaseAdminListComponent implements O
         );
         this.plantsSubject.next(updatedPlants);
         this.cdr.detectChanges();
+        // Show success toast if BE trả status 200
+        if (response && (response.status === 200 || response.success === true)) {
+          this.toast.success('Thay đổi trạng thái thành công!');
+        }
       },
       error: (error: any) => {
         plant.isUpdating = false;
