@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { AuthDialogService } from './auth/auth-dialog.service';
 import { FooterComponent } from './shared/footer/footer.component';
@@ -27,9 +27,10 @@ export class App {
 
   isAdminPage(): boolean {
     // Kiểm tra url có chứa '/admin', '/expert', hoặc '/login-admin' không
-    return this.router.url.startsWith('/admin') || 
-           this.router.url.startsWith('/expert') || 
-           this.router.url.startsWith('/login-admin');
+    const url = this.router.url;
+    return url.startsWith('/admin') || 
+           url.startsWith('/expert') || 
+           url.startsWith('/login-admin');
   }
 
   constructor() {

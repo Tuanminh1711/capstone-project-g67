@@ -1,6 +1,6 @@
 <router-outlet />
 <app-confirmation-dialog></app-confirmation-dialog>
-<!-- Footer chỉ hiển thị nếu không phải trang admin -->
+<!-- Footer và Chat AI FAB chỉ hiển thị nếu không phải trang admin/expert/login-admin -->
 @if (!isAdminPage()) {
   <app-footer></app-footer>
   <app-chat-ai-fab></app-chat-ai-fab>

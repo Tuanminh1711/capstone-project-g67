@@ -16,11 +16,7 @@
         <i class="fas fa-comments"></i>
         Chats
       </h2>
-      <div class="sidebar-actions">
-        <button class="action-btn" title="Tùy chọn">
-          <i class="fas fa-ellipsis-h"></i>
-        </button>
-      </div>
+  <!-- Đã ẩn dấu ... ở header -->
     </div>
 
 
@@ -38,9 +34,7 @@
           <div class="chat-name">VIP Community</div>
           <div class="chat-preview">Phòng chat dành cho thành viên VIP</div>
         </div>
-        <div class="chat-meta">
-          <div class="online-indicator active"></div>
-        </div>
+  <!-- Đã xóa icon đang hoạt động -->
       </div>
     </div>
 
@@ -65,51 +59,12 @@
               Chuyên gia
             </div>
           </div>
-          <div class="chat-meta">
-            <div class="online-indicator"></div>
-          </div>
+          <!-- Đã xóa icon đang hoạt động -->
         </div>
       </div>
     </div>
 
-    <!-- Recent Chats Section -->
-    <div class="chat-section">
-      <div class="section-header">
-        <span class="section-title">Trò chuyện gần đây</span>
-        <button class="section-action" (click)="loadConversations()" title="Làm mới">
-          Làm mới
-        </button>
-      </div>
-      <div class="recent-chats">
-        <div class="chat-item recent-chat" 
-             *ngFor="let conversation of conversations" 
-             [class.active]="selectedConversation?.conversationId === conversation.conversationId"
-             (click)="selectConversation(conversation); closeSidebarOnMobile()">
-          <div class="chat-avatar">
-            {{ conversation.otherUsername.charAt(0).toUpperCase() }}
-          </div>
-          <div class="chat-info">
-            <div class="chat-name">{{ conversation.otherUsername }}</div>
-            <div class="chat-preview">
-              {{ conversation.lastMessage || '' }}
-            </div>
-          </div>
-          <div class="chat-meta">
-            <div class="chat-time" *ngIf="conversation.lastMessageTime">
-              {{ formatTime(conversation.lastMessageTime) }}
-            </div>
-            <div class="unread-badge" *ngIf="conversation.hasUnreadMessages">
-              •
-            </div>
-          </div>
-        </div>
-        
-        <!-- Empty state for recent chats -->
-        <div class="empty-recent" *ngIf="conversations.length === 0">
-          <span>Chưa có cuộc trò chuyện nào</span>
-        </div>
-      </div>
-    </div>
+  <!-- Đã xóa hoàn toàn phần Trò chuyện gần đây -->
   </div>
 
   <!-- Mobile Chat List View -->
