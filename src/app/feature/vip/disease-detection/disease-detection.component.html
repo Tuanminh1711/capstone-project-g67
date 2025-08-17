@@ -212,13 +212,14 @@
 
     <!-- ==================== HISTORY TAB ==================== -->
     <div *ngIf="activeTab === 'history'" class="tab-panel">
-      <div class="history-header">
+      <!-- Hidden history header section -->
+      <!-- <div class="history-header">
         <h3>📋 Lịch sử phát hiện bệnh</h3>
         <p>Tổng cộng {{ totalHistoryItems }} lần phát hiện</p>
         <button (click)="refreshCurrentTab()" class="btn primary small">
           🔄 Làm mới lịch sử
         </button>
-      </div>
+      </div> -->
 
       <!-- Loading State -->
       <div *ngIf="isLoadingHistory" class="loading-state">
@@ -239,11 +240,14 @@
           <div class="history-card-header">
             <div>
               <span class="history-disease-name">{{ record.detectedDisease }}</span>
-              <span class="history-severity-badge" [ngClass]="'sev-' + record.severity.toLowerCase()">{{ record.severity }}</span>
+              <span class="history-severity-badge" [ngClass]="'sev-' + record.severity.toLowerCase()">
+                {{ getSeverityText(record.severity) }}
+              </span>
             </div>
-            <div class="history-method">
+            <!-- Hidden detection method -->
+            <!-- <div class="history-method">
               {{ record.detectionMethod === 'IMAGE' ? 'Qua ảnh' : 'Qua triệu chứng' }}
-            </div>
+            </div> -->
           </div>
           <div class="history-card-body">
             <div class="history-row">
@@ -258,19 +262,20 @@
               <span class="history-label">Độ tin cậy:</span>
               <span class="history-value">{{ (record.confidenceScore * 100).toFixed(0) }}%</span>
             </div>
-            <div class="history-row">
+            <!-- Hidden status and AI version -->
+            <!-- <div class="history-row">
               <span class="history-label">Trạng thái:</span>
               <span class="history-value">{{ record.status === 'DETECTED' ? 'Đã phát hiện' : record.status }}</span>
               <span *ngIf="record.isConfirmed" class="history-confirmed">Đã xác nhận</span>
-            </div>
+            </div> -->
             <div class="history-row">
               <span class="history-label">Thời gian:</span>
               <span class="history-value">{{ record.detectedAt | date:'dd/MM/yyyy HH:mm' }}</span>
             </div>
-            <div class="history-row">
+            <!-- <div class="history-row">
               <span class="history-label">Phiên bản AI:</span>
               <span class="history-value">{{ record.aiModelVersion }}</span>
-            </div>
+            </div> -->
             <div *ngIf="record.expertNotes" class="history-row">
               <span class="history-label">Ghi chú chuyên gia:</span>
               <span class="history-value">{{ record.expertNotes }}</span>
@@ -340,10 +345,9 @@
           <div class="disease-card-header">
             <div class="disease-title-row">
               <span class="disease-name">{{ disease.name }}</span>
-              <span class="disease-category">{{ disease.category }}</span>
+              <span class="severity-badge" [ngClass]="'sev-' + disease.severity.toLowerCase()">{{ getSeverityText(disease.severity) }}</span>
             </div>
             <div class="disease-meta-row">
-              <span class="severity-badge" [ngClass]="'sev-' + disease.severity.toLowerCase()">{{ disease.severity }}</span>
               <span class="common-badge" *ngIf="disease.commonality === 1">⭐ Phổ biến</span>
             </div>
           </div>
@@ -403,96 +407,124 @@
   
 
 
-  <!-- Treatment Guide Modal -->
-  <div *ngIf="selectedTreatmentGuide" class="modal-overlay" (click)="closeTreatmentGuide()">
-    <div class="modal-content wide-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="font-size: 2rem; color: #388e3c; font-weight: 700;">💊 Hướng dẫn điều trị: {{ selectedTreatmentGuide.diseaseName }}</h3>
-        <button (click)="closeTreatmentGuide()" class="modal-close">×</button>
+  <!-- Treatment Guide Modal - Modern Design -->
+  <div *ngIf="selectedTreatmentGuide" class="treatment-modal-overlay" (click)="closeTreatmentGuide()">
+    <div class="treatment-modal" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="treatment-header">
+        <div class="treatment-header-content">
+          <div class="treatment-icon">💊</div>
+          <div class="treatment-title">
+            <h3>Hướng dẫn điều trị</h3>
+            <p>{{ selectedTreatmentGuide.diseaseName }}</p>
+          </div>
+        </div>
+        <button (click)="closeTreatmentGuide()" class="treatment-close">×</button>
       </div>
-      <div class="modal-body" style="padding: 2rem 2.5rem;">
-        <div *ngIf="selectedTreatmentGuide.severity" class="treatment-section" style="margin-bottom: 2rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #ff9800; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.5rem;">⚠️</span> Mức độ nghiêm trọng:
-            <span class="severity-badge" style="margin-left: 0.5rem; font-size: 1.1rem; padding: 0.2rem 1.2rem;">{{ selectedTreatmentGuide.severity }}</span>
-          </span>
+
+      <!-- Modal Body -->
+      <div class="treatment-body">
+        <!-- Key Info Cards -->
+        <div class="treatment-key-info">
+          <div *ngIf="selectedTreatmentGuide.severity" class="info-card severity-card">
+            <div class="info-icon">⚠️</div>
+            <div class="info-content">
+              <span class="info-label">Mức độ nghiêm trọng</span>
+              <span class="severity-badge-new" [ngClass]="'sev-' + selectedTreatmentGuide.severity.toLowerCase()">
+                {{ selectedTreatmentGuide.severity }}
+              </span>
+            </div>
+          </div>
+          
+          <div *ngIf="selectedTreatmentGuide.estimatedDuration" class="info-card duration-card">
+            <div class="info-icon">⏱️</div>
+            <div class="info-content">
+              <span class="info-label">Thời gian điều trị dự kiến</span>
+              <span class="info-value">{{ selectedTreatmentGuide.estimatedDuration }}</span>
+            </div>
+          </div>
+          
+          <div *ngIf="selectedTreatmentGuide.successRate" class="info-card success-card">
+            <div class="info-icon">📈</div>
+            <div class="info-content">
+              <span class="info-label">Tỷ lệ thành công</span>
+              <span class="info-value success-rate">{{ selectedTreatmentGuide.successRate }}</span>
+            </div>
+          </div>
         </div>
-        <div *ngIf="selectedTreatmentGuide.estimatedDuration" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #6c63ff; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">⏱️</span> Thời gian điều trị dự kiến
-          </span>
-          <div style="margin-left: 2.2rem; margin-top: 0.3rem;">{{ selectedTreatmentGuide.estimatedDuration }}</div>
+
+        <!-- Treatment Steps -->
+        <div *ngIf="selectedTreatmentGuide.steps && selectedTreatmentGuide.steps.length" class="treatment-section">
+          <div class="section-header">
+            <span class="section-icon">🔧</span>
+            <h4>Các bước điều trị</h4>
+          </div>
+          <div class="steps-container">
+            <div *ngFor="let step of selectedTreatmentGuide.steps; let i = index" class="treatment-step">
+              <div class="step-number">{{ i + 1 }}</div>
+              <div class="step-content">{{ step }}</div>
+            </div>
+          </div>
         </div>
-        <div *ngIf="selectedTreatmentGuide.successRate" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #222; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">📈</span> Tỷ lệ thành công
-          </span>
-          <div style="margin-left: 2.2rem; margin-top: 0.3rem;">{{ selectedTreatmentGuide.successRate }}</div>
+
+        <!-- Required Products -->
+        <div *ngIf="selectedTreatmentGuide.requiredProducts && selectedTreatmentGuide.requiredProducts.length" class="treatment-section">
+          <div class="section-header">
+            <span class="section-icon">💊</span>
+            <h4>Sản phẩm/thuốc cần thiết</h4>
+          </div>
+          <div class="products-grid">
+            <div *ngFor="let product of selectedTreatmentGuide.requiredProducts" class="product-item">
+              <span class="product-icon">🧪</span>
+              <span class="product-name">{{ product }}</span>
+            </div>
+          </div>
         </div>
-        <div *ngIf="selectedTreatmentGuide.steps && selectedTreatmentGuide.steps.length" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #009688; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">📝</span> Các bước điều trị
-          </span>
-          <ol style="margin-left: 2.2rem; margin-top: 0.3rem;">
-            <li *ngFor="let step of selectedTreatmentGuide.steps">{{ step }}</li>
-          </ol>
+
+        <!-- Precautions -->
+        <div *ngIf="selectedTreatmentGuide.precautions && selectedTreatmentGuide.precautions.length" class="treatment-section">
+          <div class="section-header">
+            <span class="section-icon">🛡️</span>
+            <h4>Lưu ý/Phòng ngừa</h4>
+          </div>
+          <div class="precautions-list">
+            <div *ngFor="let precaution of selectedTreatmentGuide.precautions" class="precaution-item">
+              <span class="precaution-icon">⚠️</span>
+              <span class="precaution-text">{{ precaution }}</span>
+            </div>
+          </div>
         </div>
-        <div *ngIf="selectedTreatmentGuide.requiredProducts && selectedTreatmentGuide.requiredProducts.length" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #d84315; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">💊</span> Sản phẩm/thuốc cần thiết
-          </span>
-          <ul style="margin-left: 2.2rem; margin-top: 0.3rem;">
-            <li *ngFor="let prod of selectedTreatmentGuide.requiredProducts">{{ prod }}</li>
-          </ul>
-        </div>
-        <div *ngIf="selectedTreatmentGuide.precautions && selectedTreatmentGuide.precautions.length" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #222; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">🛡️</span> Lưu ý/Phòng ngừa
-          </span>
-          <ul style="margin-left: 2.2rem; margin-top: 0.3rem;">
-            <li *ngFor="let p of selectedTreatmentGuide.precautions">{{ p }}</li>
-          </ul>
-        </div>
-        <div *ngIf="selectedTreatmentGuide.followUpSchedule" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #3f51b5; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">📅</span> Lịch kiểm tra lại
-          </span>
-          <div style="margin-left: 2.2rem; margin-top: 0.3rem;">{{ selectedTreatmentGuide.followUpSchedule }}</div>
-        </div>
-        <div *ngIf="selectedTreatmentGuide.expertNotes" class="treatment-section" style="margin-bottom: 1.5rem;">
-          <span style="font-size: 1.1rem; font-weight: 600; color: #607d8b; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.3rem;">👨‍⚕️</span> Ghi chú chuyên gia
-          </span>
-          <div style="margin-left: 2.2rem; margin-top: 0.3rem;">{{ selectedTreatmentGuide.expertNotes }}</div>
+
+        <!-- Follow-up & Expert Notes -->
+        <div class="additional-info">
+          <div *ngIf="selectedTreatmentGuide.followUpSchedule" class="info-section followup-section">
+            <div class="info-section-header">
+              <span class="info-section-icon">📅</span>
+              <h5>Lịch kiểm tra lại</h5>
+            </div>
+            <div class="followup-content">{{ selectedTreatmentGuide.followUpSchedule }}</div>
+          </div>
+
+          <div *ngIf="selectedTreatmentGuide.expertNotes" class="info-section expert-section">
+            <div class="info-section-header">
+              <span class="info-section-icon">👨‍⚕️</span>
+              <h5>Ghi chú chuyên gia</h5>
+            </div>
+            <div class="expert-content">{{ selectedTreatmentGuide.expertNotes }}</div>
+          </div>
         </div>
       </div>
-      <div class="modal-footer" style="padding: 1.5rem 2.5rem;">
-        <button (click)="closeTreatmentGuide()" class="btn primary" style="min-width: 120px; font-size: 1.1rem;">✅ Đã hiểu</button>
-        <button (click)="closeTreatmentGuide()" class="btn secondary" style="min-width: 120px; font-size: 1.1rem;">✕ Đóng</button>
+
+      <!-- Modal Footer -->
+      <div class="treatment-footer">
+        <button (click)="closeTreatmentGuide()" class="btn-treatment primary">
+          ✅ Đã hiểu
+        </button>
+        <button (click)="closeTreatmentGuide()" class="btn-treatment secondary">
+          ✕ Đóng
+        </button>
       </div>
     </div>
   </div>
-<style>
-.wide-modal {
-  max-width: 600px !important;
-  min-width: 420px;
-  border-radius: 18px;
-}
-.modal-content {
-  box-shadow: 0 8px 32px 0 rgba(60, 60, 60, 0.18);
-}
-.severity-badge {
-  border-radius: 16px;
-  border: 1.5px solid #ff9800;
-  background: #fffbe6;
-  color: #ff9800;
-  font-weight: 600;
-  padding: 0.2rem 1.2rem;
-  font-size: 1.1rem;
-  display: inline-block;
-}
-.treatment-section {
-  margin-bottom: 1.5rem;
-}
-</style>
+
 </div>

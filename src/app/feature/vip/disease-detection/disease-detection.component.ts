@@ -364,6 +364,17 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     this.detectionHistory = [];
   }
 
+  // Translate severity levels to Vietnamese
+  getSeverityText(severity: string): string {
+    const severityMap: { [key: string]: string } = {
+      'LOW': 'Thấp',
+      'MEDIUM': 'Trung bình', 
+      'HIGH': 'Cao',
+      'CRITICAL': 'Nghiêm trọng'
+    };
+    return severityMap[severity?.toUpperCase()] || severity;
+  }
+
   // ==================== DISEASE LIBRARY ====================
   private initializeFilters(): void {
     this.categories = ['Nấm', 'Côn trùng', 'Sinh lý', 'Vi khuẩn', 'Virus'];
@@ -522,6 +533,22 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
   // ==================== TREATMENT GUIDE ====================
   async loadTreatmentGuide(diseaseName: string): Promise<void> {
+    // Show modal immediately with loading state
+    this.selectedTreatmentGuide = {
+      diseaseName: diseaseName,
+      severity: '',
+      steps: [],
+      requiredProducts: [],
+      estimatedDuration: '',
+      successRate: '',
+      precautions: [],
+      followUpSchedule: '',
+      expertNotes: ''
+    };
+    
+    // Force UI update
+    this.cdr.detectChanges();
+    
     try {
       const guide = await firstValueFrom(
         this.http.get<TreatmentGuide>(
@@ -531,10 +558,16 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
       if (guide) {
         this.selectedTreatmentGuide = guide;
+        // Translate severity if needed
+        if (guide.severity) {
+          this.selectedTreatmentGuide.severity = this.getSeverityText(guide.severity);
+        }
+        this.cdr.detectChanges();
       }
     } catch (error: any) {
       console.error('Error loading treatment guide:', error);
       this.showError('Không thể tải hướng dẫn điều trị');
+      this.selectedTreatmentGuide = null;
     }
   }
 

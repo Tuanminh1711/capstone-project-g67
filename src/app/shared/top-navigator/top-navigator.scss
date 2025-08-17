@@ -104,47 +104,17 @@ app-top-navigator + * {
 /* Responsive cho global fix */
 @media (max-width: 900px) {
   app-top-navigator + * {
-    margin-top: 50px !important;
+    margin-top: 56px !important;
   }
 }
 
 @media (max-width: 480px) {
   app-top-navigator + * {
-    margin-top: 45px !important;
+    margin-top: 52px !important;
   }
 }
 
-@media (max-width: 360px) {
-  app-top-navigator + * {
-    margin-top: 42px !important;
-  }
-}
-
-/* Mobile first - tránh overflow */
-@media (max-width: 320px) {
-  .top-nav {
-    padding: 0 5px; /* Giảm padding trên mobile nhỏ */
-  }
-
-  .logo {
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-  }
-
-  .logo-img {
-    width: 18px;
-    height: 18px;
-  }
-
-  .nav-icon .material-icons {
-    font-size: 18px;
-  }
-
-  .user-dropdown {
-    min-width: 100px;
-    max-width: 85vw;
-  }
-}
+/* Simplified responsive - remove overly complex breakpoints */
 
 .top-nav {
   position: fixed;
@@ -502,13 +472,13 @@ app-notification-dropdown {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive */
+/* Responsive - Optimized for better mobile experience */
 @media (max-width: 900px) {
   .top-nav {
-    height: 50px;
-    padding: 0 8px;
+    height: 56px !important;
+    padding: 0 12px !important;
     justify-content: space-between;
-    position: relative;
+    position: fixed;
     width: 100%;
     box-sizing: border-box;
     overflow: visible;
@@ -520,12 +490,14 @@ app-notification-dropdown {
     align-items: center;
     justify-content: center;
     order: 1;
-    flex: 0 0 32px;
-    width: 32px;
-    height: 32px;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
     padding: 0;
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    border-radius: 8px;
+    transition: background 0.2s ease;
   }
 
   /* Logo ở giữa */
@@ -533,15 +505,26 @@ app-notification-dropdown {
     order: 2;
     flex: 1;
     justify-content: center;
-    margin: 0 6px;
-    font-size: 0.9rem;
+    margin: 0 8px;
+    font-size: 1.1rem;
     min-width: 0;
+    max-width: calc(100% - 160px); /* Reserve space for menu + actions */
   }
 
   .logo-img {
-    width: 32px;
-    height: 32px;
-    margin-right: 4px;
+    width: 36px;
+    height: 36px;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-size: 1.1rem !important;
+    letter-spacing: 0.1em;
+    margin-left: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Nav actions (thông báo + user) - bên phải */
@@ -549,7 +532,23 @@ app-notification-dropdown {
     order: 3;
     flex: 0 0 auto;
     padding-right: 0;
-    margin-left: 6px;
+    margin-left: 8px;
+    min-width: fit-content;
+  }
+
+  /* Nav actions container */
+  .top-nav .nav-actions {
+    gap: 8px;
+    margin-left: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  /* User avatar sizing */
+  .user-avatar {
+    width: 34px;
+    height: 34px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
   }
 
   /* Ẩn nav-links trên mobile, chỉ hiện nav-actions */
@@ -669,183 +668,89 @@ app-notification-dropdown {
   }
 }
 
-/* Very small mobile devices */
+/* Tablet responsive */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .top-nav {
+    height: 58px;
+    padding: 0 16px;
+  }
+
+  .top-nav .logo {
+    font-size: 1.3rem;
+    letter-spacing: 0.2em;
+  }
+
+  .logo-img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .top-nav .nav-link {
+    font-size: 0.8rem;
+    padding: 10px 12px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-dropdown,
+  .support-dropdown-menu {
+    min-width: 150px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Small mobile devices */
 @media (max-width: 480px) {
   .top-nav {
-    padding: 0 4px;
-    height: 45px;
+    height: 52px !important;
+    padding: 0 8px !important;
   }
   
-  /* Mobile menu toggle cho màn hình nhỏ */
   .mobile-menu-toggle {
-    width: 28px;
-    height: 28px;
-    flex: 0 0 28px;
-    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    font-size: 1.2rem;
   }
   
   .top-nav .logo {
-    font-size: 0.8rem;
-    margin: 0 4px;
-  }
-  
-  .top-nav .logo span {
-    display: none;
+    font-size: 1rem;
+    margin: 0 6px;
+    max-width: calc(100% - 140px);
   }
   
   .logo-img {
+    width: 32px;
+    height: 32px;
+    margin-right: 4px;
+  }
+  
+  .logo-text {
+    font-size: 1rem !important;
+    letter-spacing: 0.05em;
+  }
+  
+  .user-avatar {
     width: 28px;
     height: 28px;
-    margin-right: 0;
-  }
-  
-  .nav-icon {
-    font-size: 1rem;
-    padding: 2px;
-  }
-  
-  .nav-icon.user .material-icons {
-    font-size: 0.9rem;
-    padding: 1px;
-  }
-  
-  .nav-icon.notification {
-    margin-right: 3px;
-  }
-  
-  .nav-icon.user {
-    min-width: 24px;
-    min-height: 24px;
   }
   
   .top-nav .nav-actions {
-    gap: 2px;
+    gap: 4px;
   }
   
-  .user-dropdown {
-    right: -3px;
-    min-width: 120px;
-    font-size: 0.75rem;
+  .user-dropdown,
+  .support-dropdown-menu {
+    right: 0;
+    min-width: 140px;
+    font-size: 0.85rem;
   }
 }
 
-/* Extra small mobile devices */
-@media (max-width: 360px) {
-  .top-nav {
-    padding: 0 3px;
-    height: 42px;
-  }
-  
-  .mobile-menu-toggle {
-    width: 26px;
-    height: 26px;
-    flex: 0 0 26px;
-    font-size: 1rem;
-  }
-  
-  .top-nav .logo {
-    font-size: 0.75rem;
-    margin: 0 3px;
-  }
-  
-  .logo-img {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .nav-icon {
-    font-size: 0.9rem;
-    padding: 1px;
-  }
-  
-  .nav-icon.user {
-    min-width: 22px;
-    min-height: 22px;
-  }
-  
-  .nav-icon.user .material-icons {
-    font-size: 0.8rem;
-    padding: 1px;
-  }
-  
-  .nav-icon.notification {
-    margin-right: 2px;
-  }
-  
-  .top-nav .nav-actions {
-    gap: 1px;
-  }
-  
-  .user-dropdown {
-    right: -2px;
-    min-width: 110px;
-    font-size: 0.7rem;
-  }
-  
-  .dropdown-item {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-  }
-}
 
-/* Ensure no overflow on very small screens */
-@media (max-width: 320px) {
-  .top-nav {
-    height: 40px;
-    padding: 0 2px;
-  }
-  
-  .mobile-menu-toggle {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
-    font-size: 0.9rem;
-  }
-  
-  .top-nav .logo {
-    font-size: 0.7rem;
-    margin: 0 2px;
-  }
-  
-  .logo-img {
-    width: 22px;
-    height: 22px;
-  }
-  
-  .nav-icon {
-    font-size: 0.8rem;
-    padding: 1px;
-  }
-  
-  .nav-icon.user {
-    min-width: 20px;
-    min-height: 20px;
-  }
-  
-  .nav-icon.user .material-icons {
-    font-size: 0.75rem;
-    padding: 0;
-  }
-  
-  .nav-icon.notification {
-    margin-right: 1px;
-  }
-  
-  .top-nav .nav-actions {
-    gap: 0;
-  }
-  
-  .user-dropdown {
-    right: -1px;
-    min-width: 100px;
-    font-size: 0.65rem;
-  }
-  
-  .dropdown-item {
-    padding: 3px 6px;
-    font-size: 0.65rem;
-  }
-}
 
 @media (max-width: 768px) {
   .user-dropdown {
