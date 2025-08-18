@@ -179,11 +179,17 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
       timestamp: new Date().toISOString(),
       chatType: 'COMMUNITY' // Đảm bảo tin nhắn được phân loại đúng
     };
-    
+
+    this.messages.push(msg);
     this.ws.sendMessage(msg);
+
     this.newMessage = '';
     this.error = ''; // Clear any previous errors
     this.cdr.markForCheck();
+
+    setTimeout(() => {
+      this.scrollToBottom();
+    }, 100);  
   }
 
   // UI Helper methods

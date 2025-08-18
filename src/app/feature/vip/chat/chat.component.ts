@@ -73,15 +73,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ...existing code...
   // Lọc tin nhắn theo loại chat để hiển thị đúng
   get filteredMessages(): ChatMessage[] {
-    if (this.showPrivateChat && this.selectedConversation && this.currentUserId) {
-      // Hiển thị tin nhắn PRIVATE của conversation hiện tại
-      const otherUserId = this.selectedConversation.otherUserId;
-      const currentUserId = +this.currentUserId;
+    if (this.showPrivateChat && this.selectedConversation && this.selectedConversation.conversationId) {
+      // Hiển thị tin nhắn PRIVATE của conversation hiện tại (so sánh conversationId)
       return (this.messages || []).filter(
-        (m: any) =>
-          m.chatType === 'PRIVATE' &&
-          ((m.senderId === otherUserId && m.receiverId === currentUserId) ||
-           (m.receiverId === otherUserId && m.senderId === currentUserId))
+        (m: any) => m.chatType === 'PRIVATE' && m.conversationId === this.selectedConversation!.conversationId
       );
     } else {
       // Hiển thị tin nhắn COMMUNITY
@@ -196,11 +191,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     // Subscription cho tin nhắn cộng đồng
     this.wsSub = this.ws.onCommunityMessage().subscribe((msg: ChatMessage) => {
       this.zone.run(() => {
-        // Chỉ thêm tin nhắn cộng đồng khi đang ở chế độ cộng đồng
-        if (!this.showPrivateChat && msg.chatType === 'COMMUNITY') {
-          console.log('📨 Received community message:', msg);
-          // Reload lại lịch sử chat để đồng bộ
-          this.fetchHistory();
+        // Push trực tiếp vào messages nếu là COMMUNITY
+        if (!this.showChatView && msg.chatType === 'COMMUNITY') {
+          this.messages.push(msg);
           this.cdr.markForCheck();
           this.scrollToBottom();
         }
@@ -213,28 +206,21 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         // Nếu đang ở đúng conversation và chế độ chat riêng thì push trực tiếp vào messages để realtime
         // Log mọi message nhận được
         console.log('📨 [Socket] Received private message:', msg, 'Current conversation:', this.selectedConversation, 'Current user:', this.currentUserId);
-        if (
-          this.selectedConversation &&
-          this.currentUserId &&
-          msg.chatType === 'PRIVATE' &&
-          (
-            msg.senderId === this.selectedConversation.otherUserId ||
-            msg.receiverId === this.selectedConversation.otherUserId
-          ) &&
-          (
-            msg.senderId === +this.currentUserId ||
-            msg.receiverId === +this.currentUserId
-          )
-        ) {
-          console.log('📨 [Socket] Push to messages:', msg);
-          this.messages = [...this.messages, msg];
-          this.cdr.markForCheck();
+        if (msg.chatType === 'PRIVATE' && this.currentUserId) {
+          const currentUserId = +this.currentUserId;
+          if (msg.senderId === currentUserId || msg.receiverId === currentUserId) {
+            this.messages.push(msg);
+            this.cdr.markForCheck();
+          }
         }
-        // Luôn reload lại danh sách conversation để cập nhật preview/thông báo, kể cả khi đang ở community chat
-        this.loadConversations();
+
+        if (this.showPrivateChat) {
+          this.loadConversations();
+        }
       });
     });
 
+    // Luôn reload lại danh sách conversation để cập nhật preview/thông báo, kể cả khi đang ở community chat
     this.wsErrSub = this.ws.onError().subscribe((err: string) => {
       this.zone.run(() => {
         this.error = err;
@@ -242,7 +228,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       });
     });
   }
-
+    
   // Utility methods for template
   trackMessage(index: number, message: ChatMessage): any {
     return message.timestamp || index;
@@ -578,11 +564,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       // Private chat
       msg.conversationId = this.selectedConversation.conversationId;
       msg.receiverId = this.selectedConversation.otherUserId;
+      this.messages.push(msg); // Add to local messages for immediate feedback
+
       this.ws.sendPrivateMessage(msg).catch(err => {
         this.error = 'Không thể gửi tin nhắn: ' + err;
         this.cdr.markForCheck();
       });
     } else {
+
+      this.messages.push
       // Community chat
       this.ws.sendMessage(msg).catch(err => {
         this.error = 'Không thể gửi tin nhắn: ' + err;

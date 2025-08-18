@@ -277,6 +277,8 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
       conversationId: this.selectedConversation.conversationId
     };
     
+    this.messages.push(msg); // Add to local messages for immediate feedback
+
     this.ws.sendPrivateMessage(msg).catch(err => {
       this.error = 'Không thể gửi tin nhắn: ' + err;
       this.cdr.markForCheck();
@@ -285,6 +287,10 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
     this.newMessage = '';
     this.error = '';
     this.cdr.markForCheck();
+
+    setTimeout(() => {
+      this.scrollToBottom();
+    } , 100);
   }
 
   // Message ownership detection
