@@ -32,14 +32,14 @@ import java.util.stream.Collectors;
 public class ChatController {
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
     public ChatController(UserRepository userRepository, ChatMessageRepository chatMessageRepository
-            ,SimpMessagingTemplate messagingTemplate) {
+            ,SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
         this.chatMessageRepository = chatMessageRepository;
-        this.messagingTemplate = messagingTemplate;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @MessageMapping("/chat.sendMessage")
@@ -166,6 +166,7 @@ public class ChatController {
     }
 
     @MessageMapping("/chat.sendPrivateMessage")
+    // THAY ĐỔI: Gửi tin nhắn đến cả người gửi và người nhận
     public void sendPrivateMessage(@Payload ChatMessage chatMessage) throws AccessDeniedException {
         log.info("Received private chat message: {}", chatMessage);
 
@@ -215,23 +216,21 @@ public class ChatController {
             chatMessage.setSenderRole(sender.getRole().getRoleName().name());
             chatMessage.setConversationId(conversationId);
 
-            // ✅ SỬA: Gửi tin nhắn về cho cả sender và receiver
-            // Gửi tin nhắn về cho sender
-            messagingTemplate.convertAndSendToUser(
-                    chatMessage.getSenderId().toString(),
-                    "/queue/private-messages",
-                    chatMessage
-            );
-
-            // Gửi tin nhắn về cho receiver
-            messagingTemplate.convertAndSendToUser(
+            // Gửi tin nhắn đến người nhận
+            simpMessagingTemplate.convertAndSendToUser(
                     chatMessage.getReceiverId().toString(),
                     "/queue/private-messages",
                     chatMessage
             );
 
-            log.info("Private message sent to both users: sender={}, receiver={}",
-                    chatMessage.getSenderId(), chatMessage.getReceiverId());
+            // Gửi tin nhắn về người gửi (để confirm)
+            simpMessagingTemplate.convertAndSendToUser(
+                    chatMessage.getSenderId().toString(),
+                    "/queue/private-messages",
+                    chatMessage
+            );
+
+            log.info("Private message sent to both sender and receiver successfully");
 
         } catch (Exception e) {
             log.error("Error processing private chat message: {}", e.getMessage(), e);
