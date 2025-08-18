@@ -73,7 +73,7 @@ jwt:
 # File Upload Configuration
 file:
   upload-dir: /var/www/uploads/
-  max-size: 10MB
+  max-size: 20MB
 
 # Logging Configuration
 logging:

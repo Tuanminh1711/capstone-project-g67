@@ -47,7 +47,7 @@ public class AIPlantController {
                 return new ResponseError(HttpStatus.BAD_REQUEST.value(), "File must be an image");
             }
 
-            if (image.getSize() > 50 * 1024 * 1024) { // 20MB limit
+            if (image.getSize() > 20 * 1024 * 1024) { // 20MB limit
                 return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Image size must be less than 20MB");
             }
 
