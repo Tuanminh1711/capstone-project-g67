@@ -410,8 +410,14 @@ public class PlantServiceImpl implements PlantService {
 
         dto.setStatus(plant.getStatus());
         dto.setCreatedAt(plant.getCreatedAt());
-        int reportCount = plantReportRepository.countByPlantId(plant.getId());
-        dto.setReportCount(reportCount);
+
+        // SỬA: Chỉ đếm report PENDING thay vì tất cả report
+        int pendingReportCount = plantReportRepository.countByPlantIdAndStatusIn(
+                plant.getId(),
+                List.of(PlantReport.ReportStatus.PENDING)
+        );
+        dto.setReportCount(pendingReportCount);  // ← Giữ nguyên tên field để không ảnh hưởng frontend
+
         if (plant.getImages() != null && !plant.getImages().isEmpty()) {
             List<String> imageUrls = plant.getImages().stream()
                     .map(image -> image.getImageUrl())
