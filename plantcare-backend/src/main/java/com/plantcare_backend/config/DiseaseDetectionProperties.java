@@ -24,7 +24,7 @@ public class DiseaseDetectionProperties {
     @Data
     public static class AiModel {
         private String version = "2.0.0";
-        private int maxImageSize = 10 * 1024 * 1024; // 10MB
+        private int maxImageSize = 20 * 1024 * 1024; // 10MB
         private String[] supportedImageFormats = { "jpg", "jpeg", "png", "webp" };
         private int requestTimeout = 30000; // 30 seconds
     }
