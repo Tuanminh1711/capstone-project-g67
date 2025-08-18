@@ -2,29 +2,23 @@
 <div class="user-plant-detail-container professional">
   <div class="plant-detail-grid professional">
     <div class="plant-detail-left professional">
-      <div class="plant-avatar-block professional multi-horizontal" style="position:relative;">
-        <div class="plant-avatar-row">
-          <div class="plant-avatar-with-name">
-            <div class="plant-name professional">{{ plant?.nickname || 'Chưa đặt tên' }}</div>
-            <div class="plant-avatar-row-all">
-              <ng-container *ngIf="plant?.imageUrls && plant.imageUrls.length > 0; else noImages">
-                <div class="plant-avatar big-horizontal professional" *ngFor="let img of plant.imageUrls.slice(-3)">
-                  <img class="plant-main-img big big-horizontal" [src]="getImageUrl(img)" alt="Ảnh cây" (error)="onImageError($event)" />
-                </div>
-              </ng-container>
-              <ng-template #noImages>
-                <div class="no-image-placeholder big big-horizontal">
-                  <span class="placeholder-icon">🌱</span>
-                </div>
-              </ng-template>
-            </div>
+      <div class="plant-nickname-title">{{ plant?.nickname || 'Chưa đặt tên' }}</div>
+      <div class="plant-avatar-row-all plant-avatar-row-all-center plant-avatar-row-no-bg">
+        <ng-container *ngIf="plant?.imageUrls && plant.imageUrls.length > 0; else noImages">
+          <div class="plant-avatar big-horizontal professional plant-avatar-no-bg" *ngFor="let img of plant.imageUrls.slice(-3)">
+            <img class="plant-main-img big big-horizontal plant-main-img-no-bg" [src]="getImageUrl(img)" alt="Ảnh cây" (error)="onImageError($event)" />
           </div>
-        </div>
-        <div class="plant-info-inline professional bottom-right">
-          <span class="info-label">Ngày trồng:</span>
-          <span class="info-value">{{ plant?.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span>
-          <span class="info-value location">{{ plant?.locationInHouse || 'Chưa cập nhật' }}</span>
-        </div>
+        </ng-container>
+        <ng-template #noImages>
+          <div class="no-image-placeholder big big-horizontal plant-avatar-no-bg">
+            <span class="placeholder-icon">🌱</span>
+          </div>
+        </ng-template>
+      </div>
+      <div class="plant-date-location-row">
+        <span class="plant-date-row-item">{{ plant?.plantingDate ? (plant.plantingDate | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}</span>
+        <span class="plant-date-row-sep" *ngIf="plant?.locationInHouse">|</span>
+        <span class="plant-date-row-item" *ngIf="plant?.locationInHouse">{{ plant.locationInHouse }}</span>
       </div>
     </div>
     <div class="plant-detail-right professional">
