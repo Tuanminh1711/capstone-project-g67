@@ -218,6 +218,11 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   onImageSelected(event: any): void {
     const file = event.target.files[0];
     if (file && file.type.startsWith('image/')) {
+      const maxFileSize = 20 * 1024 * 1024; // 20MB
+      if (file.size > maxFileSize) {
+        this.showError('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.');
+        return;
+      }
       this.selectedImage = file;
       this.createImagePreview(file);
       this.clearMessages();

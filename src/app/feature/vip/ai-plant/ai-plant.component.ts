@@ -151,18 +151,20 @@ export class AiPlantComponent implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      const maxFileSize = 20 * 1024 * 1024; // 20MB
+      if (file.size > maxFileSize) {
+        this.toastService.show('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.', 'error');
+        return;
+      }
       this.selectedFile = file;
       this.isValidating = true; // Start validation immediately
-      
       // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         this.previewUrl = reader.result as string;
         this.cdr.detectChanges(); // Force change detection
-        
         // Validate if image contains a plant after preview is loaded
         this.validatePlantImage();
-        
         // Fallback: Clear validation after preview is ready
         setTimeout(() => {
           if (this.isValidating) {

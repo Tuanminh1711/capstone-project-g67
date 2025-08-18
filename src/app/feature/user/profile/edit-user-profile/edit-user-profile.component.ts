@@ -139,8 +139,8 @@ export class EditUserProfileComponent implements OnInit, AfterViewInit {
       }
 
       // Kiểm tra kích thước
-      if (file.size > 5 * 1024 * 1024) {
-        this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
+      if (file.size > 20 * 1024 * 1024) {
+        this.toastService.error('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 20MB.');
         this.selectedAvatarFile = null;
         this.showAvatarFormatError = true;
         this.cdr.detectChanges();

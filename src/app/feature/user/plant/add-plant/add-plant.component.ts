@@ -292,7 +292,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     this.clearImagePreviews();
     this.selectedImages = [];
     
-    const maxFileSize = 5 * 1024 * 1024; // 5MB
+  const maxFileSize = 20 * 1024 * 1024; // 20MB
     const maxImages = 5;
     
     for (let i = 0; i < Math.min(files.length, maxImages); i++) {
@@ -306,7 +306,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
       
       // Validate file size
       if (file.size > maxFileSize) {
-        this.toastService.error(`Ảnh "${file.name}" quá lớn. Kích thước tối đa là 5MB.`);
+        this.toastService.error(`Ảnh "${file.name}" quá lớn. Kích thước tối đa là 20MB.`);
         continue;
       }
       

@@ -192,7 +192,7 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
     // Validate file types and sizes
     const validFiles = files.filter(file => {
       const isValidType = file.type.startsWith('image/');
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB max
+      const isValidSize = file.size <= 20 * 1024 * 1024; // 20MB max
       
       if (!isValidType) {
         this.toastService.error(`${file.name} không phải là file ảnh`);
@@ -200,7 +200,7 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
       }
       
       if (!isValidSize) {
-        this.toastService.error(`${file.name} có kích thước quá lớn (tối đa 5MB)`);
+        this.toastService.error(`${file.name} có kích thước quá lớn (tối đa 20MB)`);
         return false;
       }
       

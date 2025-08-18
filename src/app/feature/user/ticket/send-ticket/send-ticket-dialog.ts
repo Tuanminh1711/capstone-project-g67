@@ -46,6 +46,15 @@ export class SendTicketDialogComponent {
   onImageSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      const maxFileSize = 20 * 1024 * 1024; // 20MB
+      if (file.size > maxFileSize) {
+        this.toastService.error('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.');
+        this.selectedFileName = '';
+        this.imagePreview = '';
+        this.selectedImage = null;
+        this.cdr.detectChanges();
+        return;
+      }
       this.selectedImage = file;
       this.selectedFileName = file.name;
       const reader = new FileReader();
