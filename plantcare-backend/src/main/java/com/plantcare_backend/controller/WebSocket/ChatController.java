@@ -13,8 +13,8 @@ import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,11 +32,14 @@ import java.util.stream.Collectors;
 public class ChatController {
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public ChatController(UserRepository userRepository, ChatMessageRepository chatMessageRepository) {
+    public ChatController(UserRepository userRepository, ChatMessageRepository chatMessageRepository
+            ,SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.chatMessageRepository = chatMessageRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @MessageMapping("/chat.sendMessage")
@@ -163,8 +166,7 @@ public class ChatController {
     }
 
     @MessageMapping("/chat.sendPrivateMessage")
-    @SendToUser("/queue/private-messages")
-    public ChatMessage sendPrivateMessage(@Payload ChatMessage chatMessage) throws AccessDeniedException {
+    public void sendPrivateMessage(@Payload ChatMessage chatMessage) throws AccessDeniedException {
         log.info("Received private chat message: {}", chatMessage);
 
         try {
@@ -213,7 +215,23 @@ public class ChatController {
             chatMessage.setSenderRole(sender.getRole().getRoleName().name());
             chatMessage.setConversationId(conversationId);
 
-            return chatMessage;
+            // ✅ SỬA: Gửi tin nhắn về cho cả sender và receiver
+            // Gửi tin nhắn về cho sender
+            messagingTemplate.convertAndSendToUser(
+                    chatMessage.getSenderId().toString(),
+                    "/queue/private-messages",
+                    chatMessage
+            );
+
+            // Gửi tin nhắn về cho receiver
+            messagingTemplate.convertAndSendToUser(
+                    chatMessage.getReceiverId().toString(),
+                    "/queue/private-messages",
+                    chatMessage
+            );
+
+            log.info("Private message sent to both users: sender={}, receiver={}",
+                    chatMessage.getSenderId(), chatMessage.getReceiverId());
 
         } catch (Exception e) {
             log.error("Error processing private chat message: {}", e.getMessage(), e);
