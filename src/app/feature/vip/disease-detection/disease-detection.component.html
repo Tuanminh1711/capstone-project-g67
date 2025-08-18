@@ -426,20 +426,10 @@
       <div class="treatment-body">
         <!-- Key Info Cards -->
         <div class="treatment-key-info">
-          <div *ngIf="selectedTreatmentGuide.severity" class="info-card severity-card">
-            <div class="info-icon">⚠️</div>
-            <div class="info-content">
-              <span class="info-label">Mức độ nghiêm trọng</span>
-              <span class="severity-badge-new" [ngClass]="'sev-' + selectedTreatmentGuide.severity.toLowerCase()">
-                {{ selectedTreatmentGuide.severity }}
-              </span>
-            </div>
-          </div>
-          
           <div *ngIf="selectedTreatmentGuide.estimatedDuration" class="info-card duration-card">
             <div class="info-icon">⏱️</div>
             <div class="info-content">
-              <span class="info-label">Thời gian điều trị dự kiến</span>
+              <span class="info-label">Thời gian điều trị</span>
               <span class="info-value">{{ selectedTreatmentGuide.estimatedDuration }}</span>
             </div>
           </div>
@@ -518,10 +508,7 @@
       <!-- Modal Footer -->
       <div class="treatment-footer">
         <button (click)="closeTreatmentGuide()" class="btn-treatment primary">
-          ✅ Đã hiểu
-        </button>
-        <button (click)="closeTreatmentGuide()" class="btn-treatment secondary">
-          ✕ Đóng
+          Đóng
         </button>
       </div>
     </div>

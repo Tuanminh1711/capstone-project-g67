@@ -260,10 +260,10 @@ export class ChatAiFabComponent implements OnInit, OnDestroy, AfterViewInit {
     
     if (this.portalElement) {
       const rect = this.portalElement.getBoundingClientRect();
-      this.dragOffset = {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-      };
+    this.dragOffset = {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
       
       // Add dragging class for visual feedback
       const button = this.portalElement.querySelector('button');
