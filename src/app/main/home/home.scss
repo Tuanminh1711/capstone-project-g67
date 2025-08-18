@@ -54,6 +54,13 @@
     color: #1b5e20;
     margin-bottom: 6px;
     display: block;
+    margin-top: 0;
+  }
+
+  @media (max-width: 600px) {
+    .brand-name {
+      margin-top: 56px;
+    }
   }
   
   .hero-subtitle {

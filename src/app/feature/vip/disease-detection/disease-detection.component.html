@@ -183,7 +183,7 @@
             <div class="result-header">
               <h4>{{ symptomsDetectionResult.detectedDisease }}</h4>
               <span class="confidence-badge">
-                Độ tin cậy: {{ (symptomsDetectionResult.confidenceScore * 100).toFixed(0) }}%
+                Độ tin cậy: {{ (symptomsDetectionResult.confidenceScore * 100) | number:'1.0-0' }}%
               </span>
             </div>
             
@@ -191,7 +191,7 @@
               <div class="detail-item">
                 <strong>Mức độ nghiêm trọng:</strong>
                 <span class="severity-badge" [style.background-color]="getSeverityColor(symptomsDetectionResult.severity)">
-                  {{ symptomsDetectionResult.severity }}
+                  {{ getSeverityText(symptomsDetectionResult.severity) }}
                 </span>
               </div>
               
