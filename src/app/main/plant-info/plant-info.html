@@ -30,6 +30,7 @@
             }
           }
         </mat-expansion-panel>
+
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <span>Ánh sáng</span>
@@ -39,6 +40,7 @@
           <a href="#" class="sidebar-item" [class.active]="selectedLightRequirement === 'MEDIUM'" (click)="handleLightFilter('MEDIUM'); $event.preventDefault()">Ánh sáng vừa phải</a>
           <a href="#" class="sidebar-item" [class.active]="selectedLightRequirement === 'HIGH'" (click)="handleLightFilter('HIGH'); $event.preventDefault()">Nhiều ánh sáng</a>
         </mat-expansion-panel>
+
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <span>Nước</span>
@@ -48,6 +50,7 @@
           <a href="#" class="sidebar-item" [class.active]="selectedWaterRequirement === 'MEDIUM'" (click)="handleWaterFilter('MEDIUM'); $event.preventDefault()">Nước vừa phải</a>
           <a href="#" class="sidebar-item" [class.active]="selectedWaterRequirement === 'HIGH'" (click)="handleWaterFilter('HIGH'); $event.preventDefault()">Nhiều nước</a>
         </mat-expansion-panel>
+
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <span>Độ khó</span>
@@ -81,140 +84,107 @@
           Các thông tin chăm sóc chỉ mang tính chất tham khảo, vui lòng cẩn thận khi sử dụng với các cây quý và những cây có giá trị cao
         </div>
 
-        <!-- Loading -->
-
         @if (loading) {
           <div class="status-msg">Đang tải dữ liệu...</div>
         }
 
-        <!-- Error -->
         @if (!loading && error) {
           <div class="status-msg error">
             {{ error }}
           </div>
         }
 
-
-        <!-- Nội dung chính -->
         @if (!loading && !error) {
           @if (plants$ | async; as plants) {
             
-            <!-- Không có cây -->
             @if (plants.length === 0) {
               <div class="status-msg empty">
                 Không có cây nào phù hợp.
               </div>
             }
 
-            <!-- Danh sách cây -->
             @if (plants.length > 0) {
               <div class="plant-list">
                 @for (plant of plants; track trackByPlantId($index, plant)) {
-                  @if (plant.status === 'INACTIVE' || (plant.reportCount && plant.reportCount >= 3)) {
-                    <div class="plant-card plant-locked">
-                      <div class="plant-info plant-info-locked">
-                        <div class="plant-title">
-                          <span class="plant-common-name" title="{{ plant.commonName }}">
-                            {{ plant.commonName.length > 32 ? (plant.commonName | slice:0:32) + '…' : plant.commonName }}
-                          </span>
-                          <span class="plant-scientific" title="{{ plant.scientificName }}">
-                            ({{ plant.scientificName.length > 32 ? (plant.scientificName | slice:0:32) + '…' : plant.scientificName }})
-                          </span>
-                        </div>
-                        <div class="plant-locked-msg">
-                          <i class="fas fa-lock"></i> Cây đang bị khóa để kiểm tra bởi hệ thống
-                        </div>
-                      </div>
-                    </div>
-                  } @else {
-                    <div class="plant-card">
+                  <div class="plant-card">
+                    @if (plant.imageUrls && plant.imageUrls.length > 0 && !plant.imageError) {
                       <img
-                        *ngIf="plant.imageUrls && plant.imageUrls.length > 0 && !plant.imageError"
                         [src]="getPlantImageSrc(plant.imageUrls[0])"
                         [alt]="plant.commonName"
                         class="plant-img"
                         (click)="viewPlantDetail(plant.id)"
                         (error)="plant.imageError = true"
                       />
-                      <div
-                        *ngIf="!plant.imageUrls || plant.imageUrls.length === 0 || plant.imageError"
-                        class="no-image-placeholder"
-                        (click)="viewPlantDetail(plant.id)"
-                      >
+                    }
+                    @if (!plant.imageUrls || plant.imageUrls.length === 0 || plant.imageError) {
+                      <div class="no-image-placeholder" (click)="viewPlantDetail(plant.id)">
                         <i class="fas fa-seedling"></i>
                         <span>Chưa có ảnh</span>
                       </div>
-                      <div class="plant-info" (click)="viewPlantDetail(plant.id)">
-                        <div class="plant-title">
-                          <span class="plant-common-name" title="{{ plant.commonName }}">
-                            {{ plant.commonName.length > 32 ? (plant.commonName | slice:0:32) + '…' : plant.commonName }}
-                          </span>
-                          <span class="plant-scientific" title="{{ plant.scientificName }}">
-                            ({{ plant.scientificName.length > 32 ? (plant.scientificName | slice:0:32) + '…' : plant.scientificName }})
-                            @if (plant.reportCount && plant.reportCount > 0) {
-                              <span class="plant-warning-icon tooltip-container">
-                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-                                  <circle cx="10" cy="10" r="10" [attr.fill]="getWarningColor(plant.reportCount)"/>
-                                  <path d="M10 5v5.5" stroke="#bfa100" stroke-width="1.6" stroke-linecap="round"/>
-                                  <circle cx="10" cy="14.2" r="1.1" fill="#bfa100"/>
-                                </svg>
-                                <span class="plant-warning-tooltip">Cây này đã bị báo cáo {{ plant.reportCount }} lần</span>
-                              </span>
-                            }
-                          </span>
-                        </div>
-                        <div class="plant-category">
-                          Phân loại: {{ plant.categoryName }}
-                        </div>
-                        <div class="plant-meta-simple">
-                          <span class="meta-item">
-                            <span class="meta-label">Ánh sáng:</span>
-                            <span class="meta-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
-                          </span>
-                          <span class="meta-item">
-                            <span class="meta-label">Nước:</span>
-                            <span class="meta-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
-                          </span>
-                          <span class="meta-item">
-                            <span class="meta-label">Độ khó:</span>
-                            <span class="meta-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
-                          </span>
-                        </div>
-                        <div class="plant-actions">
-                          <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">
-                            Xem chi tiết
-                          </button>
-                          <button class="report-btn" (click)="onReportPlant(plant.id, $event)" title="Báo cáo thông tin sai">
-                            Báo cáo
-                          </button>
-                        </div>
+                    }
+
+                    <div class="plant-info" (click)="viewPlantDetail(plant.id)">
+                      <div class="plant-title">
+                        <span class="plant-common-name" title="{{ plant.commonName }}">
+                          {{ plant.commonName.length > 32 ? (plant.commonName | slice:0:32) + '…' : plant.commonName }}
+                        </span>
+                        <span class="plant-scientific" title="{{ plant.scientificName }}">
+                          ({{ plant.scientificName.length > 32 ? (plant.scientificName | slice:0:32) + '…' : plant.scientificName }})
+                          @if (plant.reportCount && plant.reportCount > 0) {
+                            <span class="plant-warning-icon tooltip-container">
+                              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                <circle cx="10" cy="10" r="10" [attr.fill]="getWarningColor(plant.reportCount)"/>
+                                <path d="M10 5v5.5" stroke="#bfa100" stroke-width="1.6" stroke-linecap="round"/>
+                                <circle cx="10" cy="14.2" r="1.1" fill="#bfa100"/>
+                              </svg>
+                              <span class="plant-warning-tooltip">Cây này đã bị báo cáo {{ plant.reportCount }} lần</span>
+                            </span>
+                          }
+                        </span>
+                      </div>
+
+                      <div class="plant-category">
+                        Phân loại: {{ plant.categoryName }}
+                      </div>
+
+                      <div class="plant-meta-simple">
+                        <span class="meta-item">
+                          <span class="meta-label">Ánh sáng:</span>
+                          <span class="meta-value">{{ translateLightRequirement(plant.lightRequirement) }}</span>
+                        </span>
+                        <span class="meta-item">
+                          <span class="meta-label">Nước:</span>
+                          <span class="meta-value">{{ translateWaterRequirement(plant.waterRequirement) }}</span>
+                        </span>
+                        <span class="meta-item">
+                          <span class="meta-label">Độ khó:</span>
+                          <span class="meta-value">{{ translateCareDifficulty(plant.careDifficulty) }}</span>
+                        </span>
+                      </div>
+
+                      <div class="plant-actions">
+                        <button class="detail-btn" (click)="viewPlantDetail(plant.id); $event.stopPropagation()">
+                          Xem chi tiết
+                        </button>
+                        <button class="report-btn" (click)="onReportPlant(plant.id, $event)" title="Báo cáo thông tin sai">
+                          Báo cáo
+                        </button>
                       </div>
                     </div>
-                  }
+                  </div>
                 }
               </div>
             }
 
-            <!-- Pagination -->
             @if (totalPages > 1) {
               <div class="pagination">
-                <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
-                  &laquo;
-                </button>
+                <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">&laquo;</button>
                 @for (page of [].constructor(totalPages); track $index; let i = $index) {
-                  <button
-                    (click)="goToPage(i)"
-                    [class.active]="i === currentPage"
-                  >
+                  <button (click)="goToPage(i)" [class.active]="i === currentPage">
                     {{ i + 1 }}
                   </button>
                 }
-                <button
-                  (click)="goToPage(currentPage + 1)"
-                  [disabled]="currentPage === totalPages - 1"
-                >
-                  &raquo;
-                </button>
+                <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">&raquo;</button>
               </div>
             }
 

@@ -210,19 +210,28 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     // Subscription cho tin nhắn riêng tư
     this.wsPrivateSub = this.ws.onPrivateMessage().subscribe((msg: ChatMessage) => {
       this.zone.run(() => {
-        // Chỉ thêm tin nhắn riêng tư khi đang ở chế độ riêng tư và đúng conversation
-        if (this.showPrivateChat && 
-            this.selectedConversation && 
-            this.currentUserId &&
-            msg.chatType === 'PRIVATE' &&
-            ((msg.senderId === this.selectedConversation.otherUserId && msg.receiverId === +this.currentUserId) ||
-             (msg.receiverId === this.selectedConversation.otherUserId && msg.senderId === +this.currentUserId))) {
-          console.log('📨 Received private message:', msg);
-          // Reload lại lịch sử chat 1-1 để đồng bộ
-          this.loadPrivateMessages(this.selectedConversation.otherUserId);
+        // Nếu đang ở đúng conversation và chế độ chat riêng thì push trực tiếp vào messages để realtime
+        // Log mọi message nhận được
+        console.log('📨 [Socket] Received private message:', msg, 'Current conversation:', this.selectedConversation, 'Current user:', this.currentUserId);
+        if (
+          this.selectedConversation &&
+          this.currentUserId &&
+          msg.chatType === 'PRIVATE' &&
+          (
+            msg.senderId === this.selectedConversation.otherUserId ||
+            msg.receiverId === this.selectedConversation.otherUserId
+          ) &&
+          (
+            msg.senderId === +this.currentUserId ||
+            msg.receiverId === +this.currentUserId
+          )
+        ) {
+          console.log('📨 [Socket] Push to messages:', msg);
+          this.messages = [...this.messages, msg];
           this.cdr.markForCheck();
-          this.scrollToBottom();
         }
+        // Luôn reload lại danh sách conversation để cập nhật preview/thông báo, kể cả khi đang ở community chat
+        this.loadConversations();
       });
     });
 

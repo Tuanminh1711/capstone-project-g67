@@ -1,0 +1,126 @@
+/* ============================================================================
+ * STANDARDIZED Z-INDEX LAYER SYSTEM
+ * ============================================================================
+ * 
+ * Quy tắc: Càng cao càng quan trọng, tránh overlap
+ * 
+ * LAYER 0-9: Base Content
+ * LAYER 10-99: UI Components  
+ * LAYER 100-999: Overlays & Dropdowns
+ * LAYER 1000-9999: Modals & Dialogs
+ * LAYER 10000+: System Critical (Auth, Emergency)
+ */
+
+// ============================================================================
+// BASE CONTENT LAYERS (0-9)
+// ============================================================================
+$z-base: 0;                    // Background, static content
+$z-content: 1;                 // Main content
+$z-content-overlay: 2;         // Content overlays
+$z-navigation: 3;              // Basic navigation
+
+// ============================================================================
+// UI COMPONENT LAYERS (10-99) 
+// ============================================================================
+$z-ui-base: 10;               // Basic UI elements
+$z-ui-elevated: 20;           // Elevated UI (cards, etc)
+$z-ui-floating: 30;           // Floating elements
+$z-ui-sticky: 40;             // Sticky elements
+$z-ui-fixed: 50;              // Fixed positioned elements
+
+// ============================================================================
+// OVERLAY & DROPDOWN LAYERS (100-999)
+// ============================================================================
+$z-dropdown: 100;             // Basic dropdowns
+$z-dropdown-elevated: 200;    // Important dropdowns
+$z-tooltip: 300;              // Tooltips
+$z-popover: 400;              // Popovers
+$z-overlay: 500;              // General overlays
+$z-top-nav: 600;              // Top navigation bar
+$z-top-nav-dropdown: 700;     // Top navigation dropdowns
+
+// ============================================================================
+// MODAL & DIALOG LAYERS (1000-9999)
+// ============================================================================
+$z-modal-backdrop: 1000;      // Modal backdrops
+$z-modal: 1100;               // Standard modals
+$z-modal-elevated: 1200;      // Important modals
+$z-dialog-backdrop: 1300;     // Dialog backdrops  
+$z-dialog: 1400;              // Standard dialogs
+$z-dialog-elevated: 1500;     // Important dialogs
+
+// ============================================================================
+// NOTIFICATION & TOAST LAYERS (3000-3999)
+// ============================================================================
+$z-notification: 3000;        // Notifications
+$z-toast: 3100;               // Toast messages
+$z-alert: 3200;               // Alert messages
+
+// ============================================================================
+// FLOATING ACTION & CHAT LAYERS (9000-9999) - Above everything except dialogs
+// ============================================================================
+$z-fab: 9999;                 // Floating Action Buttons - Above everything except dialogs
+$z-chat-widget: 9998;         // Chat widgets
+$z-chat-overlay: 9997;        // Chat overlays
+
+// ============================================================================
+// SYSTEM CRITICAL LAYERS (10000+)
+// ============================================================================
+$z-auth-backdrop: 10000;      // Auth dialog backdrops
+$z-auth-dialog: 10100;        // Auth dialogs (login/register)
+$z-emergency: 10200;          // Emergency overlays
+$z-debug: 10300;              // Debug overlays
+
+// ============================================================================
+// HELPER MIXINS
+// ============================================================================
+@mixin z-layer($layer) {
+  z-index: $layer;
+  position: relative;
+}
+
+@mixin z-layer-fixed($layer) {
+  z-index: $layer;
+  position: fixed;
+}
+
+@mixin z-layer-absolute($layer) {
+  z-index: $layer;
+  position: absolute;
+}
+
+// Export variables for TypeScript usage
+:export {
+  zBase: #{$z-base};
+  zContent: #{$z-content};
+  zContentOverlay: #{$z-content-overlay};
+  zNavigation: #{$z-navigation};
+  zUiBase: #{$z-ui-base};
+  zUiElevated: #{$z-ui-elevated};
+  zUiFloating: #{$z-ui-floating};
+  zUiSticky: #{$z-ui-sticky};
+  zUiFixed: #{$z-ui-fixed};
+  zDropdown: #{$z-dropdown};
+  zDropdownElevated: #{$z-dropdown-elevated};
+  zTooltip: #{$z-tooltip};
+  zPopover: #{$z-popover};
+  zOverlay: #{$z-overlay};
+  zTopNav: #{$z-top-nav};
+  zTopNavDropdown: #{$z-top-nav-dropdown};
+  zModalBackdrop: #{$z-modal-backdrop};
+  zModal: #{$z-modal};
+  zModalElevated: #{$z-modal-elevated};
+  zDialogBackdrop: #{$z-dialog-backdrop};
+  zDialog: #{$z-dialog};
+  zDialogElevated: #{$z-dialog-elevated};
+  zNotification: #{$z-notification};
+  zToast: #{$z-toast};
+  zAlert: #{$z-alert};
+  zFab: #{$z-fab};
+  zChatWidget: #{$z-chat-widget};
+  zChatOverlay: #{$z-chat-overlay};
+  zAuthBackdrop: #{$z-auth-backdrop};
+  zAuthDialog: #{$z-auth-dialog};
+  zEmergency: #{$z-emergency};
+  zDebug: #{$z-debug};
+}
