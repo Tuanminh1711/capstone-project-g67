@@ -303,6 +303,10 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
       this.toast.error('Không tìm thấy thông tin cây');
       return;
     }
+    if (selectedPlant.status === 'INACTIVE') {
+      this.toast.show('Cây này đang bị khóa để kiểm tra bởi hệ thống', 'warning');
+      return;
+    }
     // Check authentication
     const token = this.cookieService.getAuthToken();
     if (!token) {
