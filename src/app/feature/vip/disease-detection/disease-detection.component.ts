@@ -133,6 +133,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  showDebugInfo = false; // Debug info toggle
 
   constructor(
     private http: HttpClient,
@@ -222,12 +223,80 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.showError('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.');
         return;
       }
-      this.selectedImage = file;
-      this.createImagePreview(file);
-      this.clearMessages();
+      
+      // Log thông tin file để debug
+      console.log('Selected file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: new Date(file.lastModified)
+      });
+      
+      // Kiểm tra và xử lý ảnh từ điện thoại
+      this.processImageForUpload(file);
     } else {
       this.showError('Vui lòng chọn file ảnh hợp lệ');
     }
+  }
+
+  private async processImageForUpload(file: File): Promise<void> {
+    try {
+      // Kiểm tra nếu là ảnh từ điện thoại (HEIC, WebP, etc.)
+      if (file.type === 'image/heic' || file.type === 'image/heif' || file.type === 'image/webp') {
+        // Convert sang JPEG
+        const convertedFile = await this.convertImageToJpeg(file);
+        this.selectedImage = convertedFile;
+        this.createImagePreview(convertedFile);
+      } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
+        // Ảnh đã đúng định dạng
+        this.selectedImage = file;
+        this.createImagePreview(file);
+      } else {
+        // Thử convert sang JPEG
+        const convertedFile = await this.convertImageToJpeg(file);
+        this.selectedImage = convertedFile;
+        this.createImagePreview(convertedFile);
+      }
+      
+      this.clearMessages();
+    } catch (error) {
+      console.error('Error processing image:', error);
+      this.showError('Không thể xử lý ảnh. Vui lòng chọn ảnh khác.');
+    }
+  }
+
+  private async convertImageToJpeg(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Set canvas size
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw image to canvas
+        ctx?.drawImage(img, 0, 0);
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Create new file with JPEG type
+            const convertedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(convertedFile);
+          } else {
+            reject(new Error('Failed to convert image'));
+          }
+        }, 'image/jpeg', 0.9); // 90% quality
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   private createImagePreview(file: File): void {
@@ -248,6 +317,14 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     this.clearMessages();
 
     try {
+      // Log thông tin file để debug
+      console.log('File info:', {
+        name: this.selectedImage.name,
+        size: this.selectedImage.size,
+        type: this.selectedImage.type,
+        lastModified: new Date(this.selectedImage.lastModified)
+      });
+
       const formData = new FormData();
       formData.append('image', this.selectedImage);
 
@@ -267,7 +344,52 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.loadDetectionHistory(); // Refresh history
       }
     } catch (error: any) {
-      this.showError('Có lỗi xảy ra khi phát hiện bệnh. Vui lòng thử lại.');
+      console.error('Disease detection error:', error);
+      
+      // Hiển thị lỗi chi tiết hơn
+      let errorMessage = 'Có lỗi xảy ra khi phát hiện bệnh. ';
+      
+      if (error.status === 413) {
+        errorMessage += 'Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
+      } else if (error.status === 415) {
+        errorMessage += 'Định dạng ảnh không được hỗ trợ. Vui lòng chọn ảnh JPG hoặc PNG.';
+      } else if (error.status === 400) {
+        // Kiểm tra response từ backend
+        if (error.error && error.error.symptoms) {
+          errorMessage += error.error.symptoms;
+        } else {
+          errorMessage += error.error?.message || 'Dữ liệu ảnh không hợp lệ.';
+        }
+      } else if (error.status === 500) {
+        // Kiểm tra response từ backend
+        if (error.error && error.error.symptoms) {
+          errorMessage += error.error.symptoms;
+        } else {
+          errorMessage += 'Lỗi server. Vui lòng thử lại sau.';
+        }
+      } else if (error.status === 0) {
+        errorMessage += 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+      } else if (error.name === 'TimeoutError') {
+        errorMessage += 'Yêu cầu bị timeout. Vui lòng thử lại.';
+      } else {
+        // Kiểm tra response từ backend
+        if (error.error && error.error.symptoms) {
+          errorMessage += error.error.symptoms;
+        } else {
+          errorMessage += `Lỗi: ${error.message || 'Không xác định'}`;
+        }
+      }
+      
+      this.showError(errorMessage);
+      
+      // Log chi tiết lỗi để debug
+      console.log('Error details:', {
+        status: error.status,
+        statusText: error.statusText,
+        message: error.message,
+        error: error.error,
+        url: error.url
+      });
     } finally {
       this.isDetectingFromImage = false;
     }
@@ -599,6 +721,10 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       'Critical': '#dc3545'
     };
     return colors[severity] || '#6c757d';
+  }
+
+  toggleDebugInfo(): void {
+    this.showDebugInfo = !this.showDebugInfo;
   }
 
   getCategoryIcon(category: string): string {

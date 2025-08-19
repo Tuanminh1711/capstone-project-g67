@@ -104,6 +104,35 @@
           </button>
         </div>
 
+        <!-- Debug Information (chỉ hiển thị trong development) -->
+        <div *ngIf="selectedImage && showDebugInfo" class="debug-info">
+          <h4>🔧 Thông tin Debug</h4>
+          <div class="debug-grid">
+            <div class="debug-item">
+              <strong>Tên file:</strong> {{selectedImage.name}}
+            </div>
+            <div class="debug-item">
+              <strong>Kích thước:</strong> {{(selectedImage.size / (1024 * 1024)).toFixed(2)}} MB
+            </div>
+            <div class="debug-item">
+              <strong>Loại file:</strong> {{selectedImage.type}}
+            </div>
+            <div class="debug-item">
+              <strong>Ngày sửa đổi:</strong> {{selectedImage.lastModified | date:'dd/MM/yyyy HH:mm:ss'}}
+            </div>
+          </div>
+          <button (click)="toggleDebugInfo()" class="btn secondary small">
+            Ẩn Debug Info
+          </button>
+        </div>
+
+        <!-- Show Debug Info Button (chỉ hiển thị khi có ảnh) -->
+        <div *ngIf="selectedImage && !showDebugInfo" class="debug-toggle">
+          <button (click)="toggleDebugInfo()" class="btn secondary small">
+            🔧 Hiển thị Debug Info
+          </button>
+        </div>
+
         <!-- Detection Result -->
         <div *ngIf="imageDetectionResult" class="detection-result">
           <h3>🎯 Kết quả phát hiện</h3>
