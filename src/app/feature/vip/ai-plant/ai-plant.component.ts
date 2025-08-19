@@ -49,6 +49,7 @@ export class AiPlantComponent implements OnInit {
   previewUrl: string | null = null;
   activeTab: 'upload' | 'search' = 'upload';
   hasSearched: boolean = false; // Track if user has performed search/identification
+  showDebugInfo = false; // Debug info toggle
 
   constructor(
     private http: HttpClient,
@@ -142,26 +143,90 @@ export class AiPlantComponent implements OnInit {
         this.toastService.show('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.', 'error');
         return;
       }
-      this.selectedFile = file;
-      this.isValidating = true; // Start validation immediately
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewUrl = reader.result as string;
-        this.cdr.detectChanges(); // Force change detection
-        // Validate if image contains a plant after preview is loaded
-        this.validatePlantImage();
-        // Fallback: Clear validation after preview is ready
-        setTimeout(() => {
-          if (this.isValidating) {
-            this.isValidating = false;
-            this.cdr.detectChanges();
-            // Fallback: Cleared validation loading state
-          }
-        }, 2000); // 2 second fallback
-      };
-      reader.readAsDataURL(file);
+      
+      // Log thông tin file để debug
+      console.log('Selected file for plant identification:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: new Date(file.lastModified)
+      });
+      
+      // Kiểm tra và xử lý ảnh từ điện thoại
+      this.processImageForUpload(file);
     }
+  }
+
+  private async processImageForUpload(file: File): Promise<void> {
+    try {
+      // Kiểm tra nếu là ảnh từ điện thoại (HEIC, WebP, etc.)
+      if (file.type === 'image/heic' || file.type === 'image/heif' || file.type === 'image/webp') {
+        // Convert sang JPEG
+        const convertedFile = await this.convertImageToJpeg(file);
+        this.selectedFile = convertedFile;
+        this.createImagePreview(convertedFile);
+      } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
+        // Ảnh đã đúng định dạng
+        this.selectedFile = file;
+        this.createImagePreview(file);
+      } else {
+        // Thử convert sang JPEG
+        const convertedFile = await this.convertImageToJpeg(file);
+        this.selectedFile = convertedFile;
+        this.createImagePreview(convertedFile);
+      }
+      
+      // Start validation after processing
+      this.isValidating = true;
+      this.validatePlantImage();
+      
+    } catch (error) {
+      console.error('Error processing image for plant identification:', error);
+      this.toastService.show('Không thể xử lý ảnh. Vui lòng chọn ảnh khác.', 'error');
+    }
+  }
+
+  private async convertImageToJpeg(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Set canvas size
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw image to canvas
+        ctx?.drawImage(img, 0, 0);
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Create new file with JPEG type
+            const convertedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(convertedFile);
+          } else {
+            reject(new Error('Failed to convert image'));
+          }
+        }, 'image/jpeg', 0.9); // 90% quality
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  private createImagePreview(file: File): void {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+      this.cdr.detectChanges(); // Force change detection
+    };
+    reader.readAsDataURL(file);
   }
 
   removeFile() {
@@ -215,6 +280,15 @@ export class AiPlantComponent implements OnInit {
 
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted identification
+    
+    // Log thông tin file trước khi gửi
+    console.log('Sending file for plant identification:', {
+      name: this.selectedFile.name,
+      size: this.selectedFile.size,
+      type: this.selectedFile.type,
+      lastModified: new Date(this.selectedFile.lastModified)
+    });
+    
     const formData = new FormData();
     formData.append('image', this.selectedFile);
     formData.append('language', this.language);
@@ -224,21 +298,27 @@ export class AiPlantComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     if (userId) {
       formData.append('userId', userId.toString());
-      // Adding userId to FormData
+      console.log('Added userId to request:', userId);
     } else {
       this.toastService.show('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
       this.isLoading = false;
       return;
     }
 
-    // Making request with auth headers
+    // Log API endpoint
+    const apiEndpoint = this.getApiEndpoint('/ai/identify-plant');
+    console.log('Making request to:', apiEndpoint);
+    console.log('Request headers:', this.getAuthHeadersForFormData());
 
-    this.http.post<any>(this.getApiEndpoint('/ai/identify-plant'), formData, { 
+    // Making request with auth headers
+    this.http.post<any>(apiEndpoint, formData, { 
       headers: this.getAuthHeadersForFormData() 
     })
       .subscribe({
         next: (response) => {
           this.isLoading = false;
+          console.log('Plant identification response:', response);
+          
           // Full response received
           setTimeout(() => {
             // Kiểm tra response status và data
@@ -258,23 +338,62 @@ export class AiPlantComponent implements OnInit {
         error: (error) => {
           this.isLoading = false;
           
+          console.error('Plant identification error:', error);
+          console.error('Error details:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            error: error.error,
+            url: error.url
+          });
+          
           setTimeout(() => {
+            let errorMessage = 'Có lỗi xảy ra khi nhận diện cây. ';
+            
             if (error.status === 403) {
               // Check if it's JWT/auth issue
               if (error.error && error.error.message) {
-                this.toastService.show(`Lỗi xác thực: ${error.error.message}`, 'error');
+                errorMessage += `Lỗi xác thực: ${error.error.message}`;
               } else {
-                this.toastService.show('Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP', 'error');
+                errorMessage += 'Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP';
               }
             } else if (error.status === 404) {
-              this.toastService.show('API endpoint không tìm thấy', 'error');
+              errorMessage += 'API endpoint không tìm thấy';
             } else if (error.status === 401) {
-              this.toastService.show('Token hết hạn hoặc không hợp lệ', 'error');
+              errorMessage += 'Token hết hạn hoặc không hợp lệ';
+            } else if (error.status === 413) {
+              errorMessage += 'Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
+            } else if (error.status === 415) {
+              errorMessage += 'Định dạng ảnh không được hỗ trợ. Vui lòng chọn ảnh JPG hoặc PNG.';
+            } else if (error.status === 400) {
+              // Kiểm tra response từ backend
+              if (error.error && error.error.message) {
+                errorMessage += error.error.message;
+              } else {
+                errorMessage += 'Dữ liệu ảnh không hợp lệ.';
+              }
             } else if (error.status === 500) {
-              this.toastService.show('Lỗi server, có thể do JWT algorithm không match', 'error');
+              // Kiểm tra response từ backend
+              if (error.error && error.error.message) {
+                errorMessage += error.error.message;
+              } else {
+                errorMessage += 'Lỗi server. Vui lòng thử lại sau.';
+              }
+            } else if (error.status === 0) {
+              errorMessage += 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else if (error.name === 'TimeoutError') {
+              errorMessage += 'Yêu cầu bị timeout. Vui lòng thử lại.';
             } else {
-              this.toastService.show('Có lỗi xảy ra khi nhận diện cây', 'error');
+              // Kiểm tra response từ backend
+              if (error.error && error.error.message) {
+                errorMessage += error.error.message;
+              } else {
+                errorMessage += `Lỗi: ${error.message || 'Không xác định'}`;
+              }
             }
+            
+            this.toastService.show(errorMessage, 'error');
+            
             this.cdr.detectChanges();
           }, 0);
         }
@@ -325,14 +444,11 @@ export class AiPlantComponent implements OnInit {
 
   setActiveTab(tab: 'upload' | 'search') {
     this.activeTab = tab;
-    this.results = [];
-    this.hasSearched = false; // Reset search state when switching tabs
-    if (tab === 'search') {
-      this.removeFile();
-    } else {
-      this.searchQuery = '';
-    }
-    this.cdr.detectChanges(); // Force change detection
+    this.cdr.detectChanges();
+  }
+
+  toggleDebugInfo(): void {
+    this.showDebugInfo = !this.showDebugInfo;
   }
 
   getConfidenceColor(confidence: number): string {
@@ -368,6 +484,30 @@ export class AiPlantComponent implements OnInit {
       },
       error: (error) => {
         this.toastService.show(`JWT validation thất bại: ${error.status}`, 'error');
+      }
+    });
+  }
+
+  /**
+   * Test API connection for debugging
+   */
+  testApiConnection() {
+    console.log('Testing API connection...');
+    
+    // Test basic connectivity
+    const testEndpoint = this.getApiEndpoint('/ai/test-connection');
+    console.log('Testing endpoint:', testEndpoint);
+    
+    this.http.get(testEndpoint, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: (response) => {
+        console.log('API connection test successful:', response);
+        this.toastService.show('API connection test thành công', 'success');
+      },
+      error: (error) => {
+        console.error('API connection test failed:', error);
+        this.toastService.show(`API connection test thất bại: ${error.status} - ${error.message}`, 'error');
       }
     });
   }

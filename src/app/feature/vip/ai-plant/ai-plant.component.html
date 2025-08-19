@@ -57,6 +57,35 @@
           <p><strong>Kích thước:</strong> {{(selectedFile.size / 1024 / 1024).toFixed(2)}} MB</p>
         </div>
 
+        <!-- Debug Information -->
+        <div *ngIf="selectedFile && showDebugInfo" class="debug-info">
+          <h4>🔧 Thông tin Debug</h4>
+          <div class="debug-grid">
+            <div class="debug-item">
+              <strong>Tên file:</strong> {{selectedFile.name}}
+            </div>
+            <div class="debug-item">
+              <strong>Kích thước:</strong> {{(selectedFile.size / (1024 * 1024)).toFixed(2)}} MB
+            </div>
+            <div class="debug-item">
+              <strong>Loại file:</strong> {{selectedFile.type}}
+            </div>
+            <div class="debug-item">
+              <strong>Ngày sửa đổi:</strong> {{selectedFile.lastModified | date:'dd/MM/yyyy HH:mm:ss'}}
+            </div>
+          </div>
+          <button (click)="toggleDebugInfo()" class="btn secondary small">
+            Ẩn Debug Info
+          </button>
+        </div>
+
+        <!-- Show Debug Info Button -->
+        <div *ngIf="selectedFile && !showDebugInfo" class="debug-toggle">
+          <button (click)="toggleDebugInfo()" class="btn secondary small">
+            🔧 Hiển thị Debug Info
+          </button>
+        </div>
+
         <div class="identification-options">
           <div class="option-group">
             <label>Số kết quả tối đa:</label>
@@ -85,6 +114,14 @@
             <div class="spinner-small"></div>
             Đang nhận diện...
           </span>
+        </button>
+
+        <!-- Test API Button for Debug -->
+        <button 
+          class="btn secondary small" 
+          (click)="testApiConnection()" 
+          style="margin-top: 10px; width: 100%;">
+          🔧 Test API Connection
         </button>
       </div>
     </div>

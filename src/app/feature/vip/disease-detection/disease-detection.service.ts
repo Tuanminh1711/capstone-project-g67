@@ -363,28 +363,56 @@ export class DiseaseDetectionService {
    */
   private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
+      console.error(`Error in ${operation}:`, error);
+      
       // Check if this is a JSON parsing error
       if (error.message && error.message.includes('JSON')) {
-        return throwError(() => new Error(`JSON parsing error in ${operation}`));
+        console.error('JSON parsing error details:', error);
+        return throwError(() => new Error(`JSON parsing error in ${operation}: ${error.message}`));
       }
       
       // Check for network errors
       if (error.status === 0 || error.status === 404) {
-        return throwError(() => new Error(`Network error in ${operation}`));
+        console.error('Network error details:', error);
+        return throwError(() => new Error(`Network error in ${operation}: ${error.message || 'Connection failed'}`));
       }
       
       // Check for server errors
       if (error.status >= 500) {
-        return throwError(() => new Error(`Server error in ${operation}`));
+        console.error('Server error details:', error);
+        const serverMessage = error.error?.message || error.message || 'Internal server error';
+        return throwError(() => new Error(`Server error in ${operation}: ${serverMessage}`));
+      }
+      
+      // Check for client errors (4xx)
+      if (error.status >= 400 && error.status < 500) {
+        console.error('Client error details:', error);
+        let clientMessage = 'Client error';
+        
+        if (error.status === 413) {
+          clientMessage = 'File too large';
+        } else if (error.status === 415) {
+          clientMessage = 'Unsupported media type';
+        } else if (error.status === 400) {
+          clientMessage = error.error?.message || 'Bad request';
+        } else if (error.status === 401) {
+          clientMessage = 'Unauthorized - please login again';
+        } else if (error.status === 403) {
+          clientMessage = 'Forbidden - insufficient permissions';
+        }
+        
+        return throwError(() => new Error(`${clientMessage} in ${operation}`));
       }
       
       // Check for timeout errors
       if (error.name === 'TimeoutError' || error.message?.includes('timeout')) {
-        return throwError(() => new Error(`Timeout error in ${operation}`));
+        console.error('Timeout error details:', error);
+        return throwError(() => new Error(`Timeout error in ${operation}: ${error.message || 'Request timed out'}`));
       }
       
-      // For other HTTP errors, pass them through
-      return throwError(() => error);
+      // For other errors, log and pass them through
+      console.error('Unknown error details:', error);
+      return throwError(() => new Error(`Unknown error in ${operation}: ${error.message || 'Unknown error occurred'}`));
     };
   }
 

@@ -1,3 +1,4 @@
+
 import {
   Component,
   OnInit,
@@ -36,6 +37,8 @@ import { FooterComponent } from '../../../shared/footer/footer.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  // Đánh dấu đã scroll lần đầu để không scroll lại khi không cần thiết
+  private _hasScrolledOnce = false;
   // Mobile responsive properties for template
   public isMobile = window.innerWidth <= 768;
   public sidebarVisible = window.innerWidth > 768;
@@ -255,7 +258,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   public loadPrivateMessages(otherUserId: number): void {
     this.loading = true;
-    
+    this._hasScrolledOnce = false; // Reset scroll flag khi load lại tin nhắn
     this.chatService.getPrivateMessages(otherUserId).subscribe({
       next: (data) => {
         const privateMessages = (data || []).filter(
@@ -263,7 +266,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         );
         this.messagesSubject.next(privateMessages);
         this.loading = false;
-        this.checkIfShouldScroll();
+        // Không scroll xuống cuối khi load, để mặc định ở đầu trang
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -648,6 +651,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
       this.shouldScrollToBottom = false;
+    } else if (this.messagesContainer && this.messages.length > 0 && !this._hasScrolledOnce) {
+      // Khi load lần đầu, scroll về đầu trang (top)
+      const element = this.messagesContainer.nativeElement;
+      element.scrollTop = 0;
+      this._hasScrolledOnce = true;
     }
   }
 

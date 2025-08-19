@@ -1,83 +1,58 @@
 /* Chat AI FAB Styles */
 :host {
   display: block !important;
-  position: fixed !important;
-  z-index: 9999 !important; /* FAB layer - above everything except dialogs */
+  z-index: 2147483647 !important;
   pointer-events: none !important;
 }
 
-/* Global styles for chat AI FAB portal */
-:global(.chat-ai-portal) {
+.chat-ai-fab-container {
   position: fixed !important;
-  z-index: 9999 !important;
+  z-index: 2147483647 !important;
+  right: 20px !important;
+  bottom: 20px !important;
   pointer-events: auto !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
   width: 56px !important;
   height: 56px !important;
+  
+  &.custom-position {
+    right: auto !important;
+    bottom: auto !important;
+  }
 }
 
-:global(.chat-ai-fab-portal) {
-  position: relative !important;
-  z-index: 9999 !important;
-  pointer-events: auto !important;
+.chat-ai-fab-button {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #178a4c, #a8e063) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(30, 174, 96, 0.18) !important;
   display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 2rem !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none !important;
   
-  /* Ensure it's always on top */
-  transform: translateZ(0) !important;
-  will-change: transform !important;
+  &:hover {
+    background: linear-gradient(135deg, #388e3c, #4a7c35) !important;
+    box-shadow: 0 8px 24px rgba(30, 174, 96, 0.28) !important;
+    transform: scale(1.05) !important;
+  }
   
-  /* Make it more visible */
-  box-shadow: 0 4px 16px rgba(30, 174, 96, 0.18), 
-              0 8px 32px rgba(30, 174, 96, 0.12) !important;
-  
-  /* Ensure it doesn't get hidden by other elements */
-  isolation: isolate !important;
-}
-
-/* Force visibility on all chat AI elements */
-:global([id*="chat-ai"]),
-:global([class*="chat-ai"]) {
-  z-index: 9999 !important;
-  visibility: visible !important;
-  display: block !important;
-  opacity: 1 !important;
-}
-
-/* Force button inside portal to be visible */
-:global(.chat-ai-portal button) {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: relative !important;
-  z-index: 10000 !important;
-  width: 56px !important;
-  height: 56px !important;
-}
-
-/* ULTIMATE OVERRIDE - Bypass ALL global styles */
-:global([id*="chat-ai-fab-portal"]) {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: fixed !important;
-  z-index: 9999 !important;
-  width: 56px !important;
-  height: 56px !important;
-  right: 32px !important;
-  bottom: 32px !important;
-  pointer-events: auto !important;
-  transform: none !important;
-  filter: none !important;
-  clip: auto !important;
-  overflow: visible !important;
-  max-width: none !important;
-  max-height: none !important;
-  min-width: none !important;
-  min-height: none !important;
+  &.dragging {
+    cursor: grabbing !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 12px 32px rgba(30, 174, 96, 0.4) !important;
+    transition: none !important;
+  }
 }
 
 
