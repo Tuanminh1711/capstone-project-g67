@@ -254,11 +254,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     
     // Bỏ tính năng mark messages as read để tránh lỗi
     // this.markMessagesAsRead();
+  // Scroll tới cuối khi vào phòng chat
+  setTimeout(() => this.scrollToBottom(), 200);
   }
 
   public loadPrivateMessages(otherUserId: number): void {
     this.loading = true;
-    this._hasScrolledOnce = false; // Reset scroll flag khi load lại tin nhắn
+  this._hasScrolledOnce = false; // Reset scroll flag khi load lại tin nhắn
     this.chatService.getPrivateMessages(otherUserId).subscribe({
       next: (data) => {
         const privateMessages = (data || []).filter(
@@ -266,8 +268,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         );
         this.messagesSubject.next(privateMessages);
         this.loading = false;
-        // Không scroll xuống cuối khi load, để mặc định ở đầu trang
-        this.cdr.markForCheck();
+  // Scroll tới cuối khi load tin nhắn
+  setTimeout(() => this.scrollToBottom(), 200);
+  this.cdr.markForCheck();
       },
       error: (err) => {
         this.error = 'Không thể tải tin nhắn';
@@ -317,6 +320,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   public onTouchEnd(event: TouchEvent, expert: ExpertDTO): void {
     event.preventDefault();
     this.startConversationWithExpert(expert);
+    // Ensure mobile switches to chat view
+    if (this.isMobile) {
+      this.showChatView = true;
+      this.showPrivateChat = true;
+    }
   }
 
   public onTouchStartConversation(event: TouchEvent, conversation: ConversationDTO): void {
@@ -326,6 +334,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   public onTouchEndConversation(event: TouchEvent, conversation: ConversationDTO): void {
     event.preventDefault();
     this.selectConversation(conversation);
+    // Ensure mobile switches to chat view
+    if (this.isMobile) {
+      this.showChatView = true;
+      this.showPrivateChat = true;
+    }
   }
 
   // Enhanced message sending
@@ -379,7 +392,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.error = '';
     // Scroll to bottom after sending message
     setTimeout(() => {
-      this.scrollToBottomSmooth();
+      this.scrollToBottom();
     }, 100);
     this.cdr.markForCheck();
   }
@@ -521,6 +534,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.loadExperts();
     this.loadConversations();
     this.fetchHistory();
+  this.shouldScrollToBottom = true;
   }
 
   // Data loading methods
@@ -533,7 +547,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         const messages = Array.isArray(data) ? data : data?.data || [];
         this.messagesSubject.next(messages);
         this.loading = false;
-        this.checkIfShouldScroll();
+  this.shouldScrollToBottom = true;
         this.cdr.markForCheck();
       },
               error: (err) => {
@@ -651,11 +665,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
       this.shouldScrollToBottom = false;
-    } else if (this.messagesContainer && this.messages.length > 0 && !this._hasScrolledOnce) {
-      // Khi load lần đầu, scroll về đầu trang (top)
-      const element = this.messagesContainer.nativeElement;
-      element.scrollTop = 0;
-      this._hasScrolledOnce = true;
     }
   }
 
@@ -667,20 +676,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     } catch (err) {
       // Error scrolling to bottom
-    }
-  }
-
-  private scrollToBottomSmooth(): void {
-    try {
-      if (this.messagesContainer) {
-        const element = this.messagesContainer.nativeElement;
-        element.scrollTo({
-          top: element.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    } catch (err) {
-      // Error smooth scrolling to bottom
     }
   }
 

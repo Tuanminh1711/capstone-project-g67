@@ -1,3 +1,61 @@
+// Modern chat input styles (override for new UI)
+.modern-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0 2px 12px rgba(30, 174, 96, 0.10), 0 1.5px 4px rgba(0,0,0,0.04);
+  padding: 8px 16px 8px 16px;
+  margin: 8px 0 0 0;
+  border: 1.5px solid #e4e6ea;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.modern-message-input {
+  flex: 1 1 auto;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1.08rem;
+  font-family: inherit;
+  padding: 8px 0 8px 0;
+  resize: none;
+  min-height: 32px;
+  max-height: 80px;
+  color: #222;
+}
+.modern-send-button {
+  background: linear-gradient(135deg, #178a4c, #a8e063);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 8px rgba(30, 174, 96, 0.12);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.modern-send-button:disabled {
+  background: #e4e6ea;
+  color: #bdbdbd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.modern-send-button.active {
+  background: linear-gradient(135deg, #178a4c, #a8e063);
+  color: #fff;
+}
+.modern-input-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6c757d;
+}
 // Thời gian dưới bubble chat
 .message-time-below {
   font-size: 11px;
@@ -42,24 +100,6 @@
   overflow: visible !important;
 }
 
-// Ensure app-top-navigator has higher z-index
-::ng-deep app-top-navigator {
-  position: relative !important;
-  z-index: 10001 !important;
-}
-
-// Force top-nav and its dropdowns to appear above everything
-::ng-deep app-top-navigator .top-nav {
-  position: fixed !important;
-  z-index: 10001 !important;
-}
-
-::ng-deep app-top-navigator .user-dropdown,
-::ng-deep app-top-navigator .support-dropdown-menu,
-::ng-deep app-top-navigator app-notification-dropdown {
-  z-index: 10002 !important;
-  position: fixed !important;
-}
 
 // Ensure body doesn't interfere
 ::ng-deep body {

@@ -1,6 +1,32 @@
 @use '../../../styles/variables' as *;
 @use 'sass:color';
 
+
+// Ensure support dropdown always overlays and is visible on mobile
+.support-dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+  right: 0;
+  min-width: 180px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  padding: 8px 0;
+  display: none;
+}
+.support-dropdown.show-dropdown .support-dropdown-menu {
+  display: block;
+}
+.support-dropdown-menu.mobile-visible {
+  display: block !important;
+  left: 0;
+  right: 0;
+  min-width: unset;
+  width: 100vw;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
 // Style cho logo-text (link chữ PLANTCARE)
 .logo-text {
   color: #fff !important;

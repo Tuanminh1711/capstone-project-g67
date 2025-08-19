@@ -1,3 +1,4 @@
+import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +21,9 @@ import { ToastService } from '../../../shared/toast/toast.service';
   templateUrl: './expert-chat.component.html',
   styleUrls: ['./expert-chat.component.scss']
 })
-export class ExpertChatComponent implements OnInit, OnDestroy {
+export class ExpertChatComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef;
+  private shouldScrollToBottom = false;
   // Chat cộng đồng state
   messages: ChatMessage[] = [];
   newMessage = '';
@@ -69,7 +72,7 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
         this.connectToChat();
-        setTimeout(() => this.scrollToBottom(), 100);
+  this.shouldScrollToBottom = true;
       },
       error: (err) => {
         this.error = 'Không thể tải lịch sử chat cộng đồng';
@@ -78,6 +81,16 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
         this.connectToChat();
       }
     });
+  }
+  ngAfterViewInit(): void {
+    // Đảm bảo scroll đúng sau khi view khởi tạo
+    setTimeout(() => this.scrollToBottom(), 200);
+  }
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
   }
 
 
@@ -134,12 +147,10 @@ export class ExpertChatComponent implements OnInit, OnDestroy {
 
 
   scrollToBottom(): void {
-    setTimeout(() => {
-      const container = document.querySelector('.chat-messages');
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }, 100);
+    if (this.messagesContainer && this.messages.length > 0) {
+      const element = this.messagesContainer.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    }
   }
 
 

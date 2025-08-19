@@ -267,9 +267,9 @@
             <!-- Unified Chat Input Area -->
       <div class="chat-input-container" *ngIf="selectedConversation || !showPrivateChat || isMobile">
         <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
-          <div class="input-wrapper">
+          <div class="input-wrapper modern-input-wrapper">
             <textarea 
-              class="message-input" 
+              class="message-input modern-message-input" 
               [(ngModel)]="newMessage" 
               name="message"
               [placeholder]="getInputPlaceholder()"
@@ -277,20 +277,18 @@
               maxlength="250"
               (keydown)="onEnterPress($event)"
               #messageInput></textarea>
-            
             <button 
               type="submit" 
-              class="send-button"
+              class="send-button modern-send-button"
               [class.active]="newMessage.trim().length > 0"
               [disabled]="newMessage.trim().length === 0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
               </svg>
             </button>
           </div>
         </form>
-        
-        <div class="input-footer">
+        <div class="input-footer modern-input-footer">
           <div class="char-counter" [class.warning]="newMessage.length > 200">
             {{ newMessage.length }}/250
           </div>
