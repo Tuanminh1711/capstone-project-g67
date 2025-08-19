@@ -412,16 +412,38 @@ public class AIDiseaseDetectionServiceImpl implements AIDiseaseDetectionService 
             throw new IllegalArgumentException("Image file is required");
         }
 
-        // Kiểm tra định dạng file
+        // Log thông tin file để debug
+        log.info("Validating image: name={}, size={}, contentType={}, originalFilename={}", 
+                image.getName(), image.getSize(), image.getContentType(), image.getOriginalFilename());
+
+        // Kiểm tra định dạng file - hỗ trợ nhiều định dạng từ điện thoại
         String contentType = image.getContentType();
-        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
-            throw new IllegalArgumentException("Chỉ chấp nhận file JPG hoặc PNG");
+        if (contentType == null) {
+            // Nếu không có contentType, kiểm tra extension
+            String filename = image.getOriginalFilename();
+            if (filename != null) {
+                String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+                if (!extension.matches("(jpg|jpeg|png|heic|heif|webp)")) {
+                    throw new IllegalArgumentException("Chỉ chấp nhận file JPG, PNG, HEIC, HEIF hoặc WebP");
+                }
+            } else {
+                throw new IllegalArgumentException("Không thể xác định định dạng file");
+            }
+        } else {
+            // Kiểm tra content type
+            String lowerContentType = contentType.toLowerCase();
+            if (!lowerContentType.matches("image/(jpeg|jpg|png|heic|heif|webp)")) {
+                log.warn("Unsupported content type: {}", contentType);
+                throw new IllegalArgumentException("Chỉ chấp nhận file JPG, PNG, HEIC, HEIF hoặc WebP. Nhận được: " + contentType);
+            }
         }
 
         // Kiểm tra kích thước file (max 20MB)
         if (image.getSize() > 20 * 1024 * 1024) {
-            throw new IllegalArgumentException("File quá lớn (tối đa 20MB)");
+            throw new IllegalArgumentException("File quá lớn (tối đa 20MB). Kích thước hiện tại: " + (image.getSize() / (1024 * 1024)) + "MB");
         }
+
+        log.info("Image validation passed successfully");
     }
 
     // ==================== PRIVATE METHODS - DATABASE OPERATIONS

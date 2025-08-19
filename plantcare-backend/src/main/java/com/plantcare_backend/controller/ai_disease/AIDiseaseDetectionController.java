@@ -41,15 +41,37 @@ public class AIDiseaseDetectionController {
             @RequestAttribute("userId") Long userId) {
 
         try {
+            log.info("Received disease detection request from user: {} with image: name={}, size={}, contentType={}", 
+                    userId, image.getOriginalFilename(), image.getSize(), image.getContentType());
+
             DiseaseDetectionResultDTO result = aiDiseaseDetectionService.detectDiseaseFromImage(image, userId);
 
             activityLogService.logActivity(Math.toIntExact(userId), "DISEASE_DETECTION",
                     "Detected disease: " + result.getDetectedDisease() + " with confidence: " + result.getConfidenceScore());
 
             return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in disease detection for user {}: {}", userId, e.getMessage());
+            return ResponseEntity.badRequest().body(DiseaseDetectionResultDTO.builder()
+                    .detectedDisease("Validation Error")
+                    .confidenceScore(0.0)
+                    .severity("LOW")
+                    .symptoms("Lỗi validation: " + e.getMessage())
+                    .recommendedTreatment("Vui lòng kiểm tra lại ảnh và thử lại")
+                    .detectionMethod("ERROR")
+                    .aiModelVersion("2.0.0")
+                    .build());
         } catch (Exception e) {
-            log.error("Error in disease detection from image", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error in disease detection from image for user {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(DiseaseDetectionResultDTO.builder()
+                    .detectedDisease("System Error")
+                    .confidenceScore(0.0)
+                    .severity("LOW")
+                    .symptoms("Lỗi hệ thống: " + e.getMessage())
+                    .recommendedTreatment("Vui lòng thử lại sau hoặc liên hệ hỗ trợ")
+                    .detectionMethod("ERROR")
+                    .aiModelVersion("2.0.0")
+                    .build());
         }
     }
 
