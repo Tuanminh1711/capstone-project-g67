@@ -2,6 +2,13 @@ spring:
   config:
     activate:
       on-profile: test
+  # Cấu hình file upload cho test
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+      enabled: true
+      file-size-threshold: 2KB
 
 springdoc:
   api-docs:
