@@ -2,7 +2,10 @@
 
 ## Vấn đề thường gặp
 
-Khi chụp ảnh trực tiếp từ điện thoại, AI nhận diện có thể gặp lỗi trong khi file tải từ máy tính hoạt động bình thường.
+Khi chụp ảnh trực tiếp từ điện thoại, các tính năng AI có thể gặp lỗi trong khi file tải từ máy tính hoạt động bình thường:
+
+1. **AI Disease Detection** (Nhận diện bệnh cây)
+2. **AI Plant Identification** (Nhận diện loại cây)
 
 ## Nguyên nhân có thể
 
@@ -15,13 +18,15 @@ Khi chụp ảnh trực tiếp từ điện thoại, AI nhận diện có thể 
 
 ### 1. Sử dụng Debug Info
 
+#### AI Disease Detection:
 - Chọn ảnh từ điện thoại
 - Click "🔧 Hiển thị Debug Info" để xem thông tin chi tiết
-- Kiểm tra:
-  - Tên file
-  - Kích thước (MB)
-  - Loại file (MIME type)
-  - Ngày sửa đổi
+- Kiểm tra: tên file, kích thước, loại file, ngày sửa đổi
+
+#### AI Plant Identification:
+- Chọn ảnh từ điện thoại
+- Click "🔧 Hiển thị Debug Info" để xem thông tin chi tiết
+- Kiểm tra: tên file, kích thước, loại file, ngày sửa đổi
 
 ### 2. Kiểm tra Console
 
@@ -33,7 +38,8 @@ Mở Developer Tools (F12) và xem Console tab:
 ### 3. Kiểm tra Network Tab
 
 Trong Developer Tools > Network:
-- Xem request POST đến `/api/vip/disease-detection/detect-from-image`
+- **Disease Detection**: Xem request POST đến `/api/vip/disease-detection/detect-from-image`
+- **Plant Identification**: Xem request POST đến `/api/ai/identify-plant`
 - Kiểm tra request payload
 - Xem response status và error messages
 
@@ -66,6 +72,14 @@ Lỗi server. Vui lòng thử lại sau.
 ## Cải thiện đã thực hiện
 
 ### Frontend
+
+#### AI Disease Detection:
+- ✅ Thêm debug info hiển thị thông tin file
+- ✅ Cải thiện error handling với messages chi tiết
+- ✅ Tự động convert ảnh sang JPEG
+- ✅ Logging chi tiết cho debugging
+
+#### AI Plant Identification:
 - ✅ Thêm debug info hiển thị thông tin file
 - ✅ Cải thiện error handling với messages chi tiết
 - ✅ Tự động convert ảnh sang JPEG
@@ -79,22 +93,19 @@ Lỗi server. Vui lòng thử lại sau.
 
 ## Cách test
 
-1. **Chụp ảnh từ điện thoại**:
-   - Mở camera app
-   - Chụp ảnh cây
+### 1. **AI Disease Detection**:
+   - Chụp ảnh cây bị bệnh từ điện thoại
    - Upload vào hệ thống
+   - Kiểm tra debug info và console logs
 
-2. **Kiểm tra debug info**:
-   - Xem thông tin file
-   - Kiểm tra console logs
+### 2. **AI Plant Identification**:
+   - Chụp ảnh cây cần nhận diện từ điện thoại
+   - Upload vào hệ thống
+   - Kiểm tra debug info và console logs
 
-3. **Xem error messages**:
-   - Nếu có lỗi, sẽ hiển thị message chi tiết
-   - Kiểm tra network tab
-
-4. **So sánh với file từ máy tính**:
+### 3. **So sánh với file từ máy tính**:
    - Tải ảnh tương tự từ máy tính
-   - So sánh thông tin file
+   - So sánh thông tin file và kết quả
 
 ## Troubleshooting
 
@@ -116,9 +127,10 @@ Lỗi server. Vui lòng thử lại sau.
 ## Logs cần thu thập
 
 Khi báo cáo lỗi, cung cấp:
-1. Thông tin file (từ debug info)
-2. Console logs
-3. Network request/response
-4. Error message hiển thị
-5. Loại điện thoại và OS version
-6. Browser và version
+1. **Tính năng gặp lỗi**: Disease Detection hoặc Plant Identification
+2. Thông tin file (từ debug info)
+3. Console logs
+4. Network request/response
+5. Error message hiển thị
+6. Loại điện thoại và OS version
+7. Browser và version
