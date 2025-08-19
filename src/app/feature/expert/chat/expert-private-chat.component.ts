@@ -91,52 +91,37 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
   private initializeChat(): void {
     this.currentUserId = this.authService.getCurrentUserId();
     this.currentUserRole = this.authService.getCurrentUserRole();
-    
     if (!this.currentUserId) {
       this.error = 'Không thể xác định người dùng. Vui lòng đăng nhập lại.';
       return;
     }
-
-    // Subscribe to chat API availability
     this.chatService.chatApisAvailable$.subscribe(available => {
       if (!available && this.urlService.isProduction()) {
         this.toastService.warning('Chat APIs are temporarily unavailable. Some features may not work properly.', 8000);
       }
     });
-
-    // Lấy conversationId từ queryParams nếu có
     this.route.queryParams.subscribe(params => {
       const conversationId = params['conversationId'];
       this.loadConversationsWithSelect(conversationId);
     });
-    
-    // Connect WebSocket
     this.connectToChat();
   }
 
   private setupWebSocketSubscriptions(): void {
-    // Private messages subscription
     this.wsPrivateSub = this.ws.onPrivateMessage().subscribe((msg: ChatMessage) => {
       this.zone.run(() => {
         if (msg.chatType === 'PRIVATE' && 
             this.currentUserId &&
             (msg.senderId === +this.currentUserId || msg.receiverId === +this.currentUserId)) {
-          // Expert received private message
-          
-          // Add message to chat if it's in the current conversation
           if (this.selectedConversation && this.isMessageInCurrentConversation(msg)) {
             this.addMessageToChat(msg);
             this.cdr.markForCheck();
             this.scrollToBottom();
           }
-          
-          // Update conversation list
           this.updateConversationWithMessage(msg);
         }
       });
     });
-    
-    // Error subscription
     this.wsErrSub = this.ws.onError().subscribe((err: string) => {
       this.zone.run(() => {
         this.error = err;
@@ -261,15 +246,11 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
 
   // Touch event handlers cho mobile
   public onTouchStart(event: TouchEvent, conversation: PrivateConversation): void {
-    // Touch start event handled
-    // Prevent default để tránh double-tap zoom trên mobile
     event.preventDefault();
   }
 
   public onTouchEnd(event: TouchEvent, conversation: PrivateConversation): void {
-    // Touch end event handled
     event.preventDefault();
-    // Trigger conversation selection
     this.selectConversation(conversation);
   }
 
@@ -405,34 +386,7 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  // Bỏ tính năng mark messages as read để tránh lỗi
-  // private markMessagesAsRead(): void {
-  //   if (this.selectedConversation) {
-  //     this.chatService.markMessagesAsRead().subscribe({
-  //       next: (result) => {
-  //         console.log('Messages marked as read successfully:', result);
-  //         // Update conversation unread status
-  //         const conversations = this.conversationsSubject.value;
-  //         const conversationIndex = conversations.findIndex(c => c.conversationId === this.selectedConversation!.conversationId);
-  //         
-  //         if (this.selectedConversation!.conversationId);
-  //           
-  //         if (conversationIndex !== -1) {
-  //           const updatedConversations = [...conversations];
-  //           updatedConversations[conversationIndex] = {
-  //             ...updatedConversations[conversationIndex],
-  //             hasUnreadMessages: false
-  //           };
-  //           this.conversationsSubject.next(updatedConversations);
-  //         }
-  //       },
-  //       error: (err) => {
-  //         console.error('Error marking messages as read:', err);
-  //         // Không cần throw error vì đây không phải lỗi nghiêm trọng
-  //       }
-  //     });
-  //   }
-  // }
+
 
   // Message ownership detection
   public isOwnMessage(message: ChatMessage): boolean {

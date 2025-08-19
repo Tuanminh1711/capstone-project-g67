@@ -1,14 +1,7 @@
 <div class="expert-private-chat-container">
     <!-- Conversation List -->
     <div class="conversation-list" *ngIf="showConversationList">
-      <!-- Debug Info -->
-      <div style="background: #e8f4fd; padding: 10px; margin: 10px; border-radius: 5px; font-size: 12px;">
-        <strong>DEBUG INFO:</strong><br>
-        showConversationList: {{ showConversationList }}<br>
-        selectedConversation: {{ selectedConversation ? 'YES' : 'NO' }}<br>
-        conversations count: {{ conversations.length }}<br>
-        loading: {{ loading }}
-      </div>
+
       
       <div class="conversation-header">
         <h2>Tin nhắn riêng tư</h2>
@@ -64,14 +57,7 @@
 
     <!-- Chat Interface Messenger Style -->
     <div class="messenger-main" *ngIf="!showConversationList && selectedConversation">
-      <!-- Debug Info -->
-      <div style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px; font-size: 12px;">
-        <strong>DEBUG INFO:</strong><br>
-        showConversationList: {{ showConversationList }}<br>
-        selectedConversation: {{ selectedConversation ? 'YES' : 'NO' }}<br>
-        selectedConversation ID: {{ selectedConversation ? selectedConversation.conversationId : 'N/A' }}<br>
-        messages count: {{ messages.length }}
-      </div>
+
       
       <!-- Chat Header -->
       <div class="chat-header">

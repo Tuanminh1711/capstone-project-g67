@@ -356,10 +356,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       // Private chat
       message.conversationId = this.selectedConversation.conversationId;
       message.receiverId = this.selectedConversation.otherUserId;
-      
-      // Add message locally for immediate feedback
+      // Add message locally for immediate feedback (giống logic community ở expert)
       this.addMessageToChat(message);
-      
       this.ws.sendPrivateMessage(message).catch(err => {
         this.error = 'Không thể gửi tin nhắn: ' + err;
         this.toastService.error(this.error, 5000);
@@ -367,8 +365,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       });
     } else {
       // Community chat
-      this.addMessageToChat(message);
-      
       this.ws.sendMessage(message).catch(err => {
         this.error = 'Không thể gửi tin nhắn: ' + err;
         this.toastService.error(this.error, 5000);
@@ -378,12 +374,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.newMessage = '';
     this.error = '';
-    
     // Scroll to bottom after sending message
     setTimeout(() => {
       this.scrollToBottomSmooth();
     }, 100);
-    
     this.cdr.markForCheck();
   }
 

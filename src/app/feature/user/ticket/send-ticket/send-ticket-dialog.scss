@@ -4,6 +4,31 @@
     padding: 0 !important;
     border-radius: 16px !important;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    outline: none !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    
+    @media (max-width: 480px) {
+      border-radius: 12px !important;
+      margin: 0 !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+      max-width: 100vw !important;
+      width: 100vw !important;
+      overflow-x: hidden !important;
+    }
+    
+    @media (max-width: 360px) {
+      border-radius: 10px !important;
+      margin: 0 !important;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1) !important;
+      max-width: 100vw !important;
+      width: 100vw !important;
+      overflow-x: hidden !important;
+    }
   }
 }
 
@@ -14,6 +39,38 @@
   max-width: 500px;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  box-sizing: border-box;
+  
+  @media (max-width: 600px) {
+    max-width: 100vw;
+    width: 100vw;
+    border-radius: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 480px) {
+    border-radius: 0;
+    max-width: 100vw;
+    width: 100vw;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    border-radius: 0;
+    max-width: 100vw;
+    width: 100vw;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
 }
 
 // Simple Header
@@ -23,6 +80,35 @@
   padding: 16px 24px;
   text-align: center;
   position: relative;
+  overflow: hidden;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 600px) {
+    border-radius: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 14px 16px;
+    min-height: 56px;
+    border-radius: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 12px 12px;
+    min-height: 52px;
+    border-radius: 0;
+    width: 100%;
+    overflow: hidden;
+  }
 }
 
 .close-button {
@@ -40,15 +126,43 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  z-index: 1000;
+  overflow: hidden;
   
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: scale(1.1);
   }
   
+  @media (max-width: 600px) {
+    right: 16px;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 480px) {
+    width: 24px;
+    height: 24px;
+    top: 10px;
+    right: 12px;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    width: 22px;
+    height: 22px;
+    top: 8px;
+    right: 10px;
+    overflow: hidden;
+  }
+  
   svg {
     width: 16px;
     height: 16px;
+    
+    @media (max-width: 480px) {
+      width: 14px;
+      height: 14px;
+    }
   }
 }
 
@@ -56,29 +170,93 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
+  
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
+  
+  @media (max-width: 360px) {
+    font-size: 16px;
+  }
 }
 
 // Simple Form Body  
 .dialog-body {
   padding: 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 600px) {
+    padding: 20px 20px;
+    max-height: calc(100vh - 100px);
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+    max-height: calc(100vh - 100px);
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 16px 12px;
+    max-height: calc(100vh - 90px);
+    width: 100%;
+    overflow-x: hidden;
+  }
 }
 
 .support-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
+  overflow-x: hidden;
+  
+  @media (max-width: 480px) {
+    gap: 16px;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    gap: 14px;
+    width: 100%;
+    overflow-x: hidden;
+  }
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  overflow-x: hidden;
+  
+  @media (max-width: 360px) {
+    gap: 6px;
+    width: 100%;
+    overflow-x: hidden;
+  }
 }
 
 .form-label {
   font-weight: 600;
   color: #374151;
   font-size: 14px;
+  
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
+  
+  @media (max-width: 360px) {
+    font-size: 12px;
+  }
 }
 
 .form-input, .form-textarea {
@@ -92,16 +270,41 @@
   transition: border-color 0.2s;
   outline: none;
   box-sizing: border-box;
+  box-shadow: none;
+  overflow: hidden;
+  word-wrap: break-word;
   
   &:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: 1.5px solid #e5e7eb;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
   }
 }
 
 .form-textarea {
   min-height: 100px;
   resize: vertical;
+  
+  @media (max-width: 480px) {
+    min-height: 80px;
+  }
+  
+  @media (max-width: 360px) {
+    min-height: 70px;
+  }
 }
 
 // Simple File Upload
@@ -112,10 +315,30 @@
   text-align: center;
   background: #f9fafb;
   transition: all 0.2s;
+  box-shadow: none;
+  outline: none;
+  width: 100%;
+  overflow-x: hidden;
   
   &:hover {
     border-color: #667eea;
     background: #f0f4ff;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+    border-radius: 10px;
+    border: 1.5px dashed #d1d5db;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 16px 12px;
+    border-radius: 8px;
+    border: 1px dashed #d1d5db;
+    width: 100%;
+    overflow-x: hidden;
   }
 }
 
@@ -131,11 +354,27 @@
 .upload-title {
   font-weight: 600;
   margin-bottom: 4px;
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+  
+  @media (max-width: 360px) {
+    font-size: 13px;
+  }
 }
 
 .upload-subtitle {
   font-size: 14px;
   color: #9ca3af;
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+  
+  @media (max-width: 360px) {
+    font-size: 11px;
+  }
 }
 
 // Simple Image Preview
@@ -147,6 +386,28 @@
   background: #f8fafc;
   border-radius: 8px;
   border: 2px solid #e5e7eb;
+  box-shadow: none;
+  outline: none;
+  width: 100%;
+  overflow-x: hidden;
+  
+  @media (max-width: 480px) {
+    padding: 12px;
+    gap: 12px;
+    flex-direction: column;
+    text-align: center;
+    border: 1.5px solid #e5e7eb;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 10px;
+    gap: 10px;
+    border: 1px solid #e5e7eb;
+    width: 100%;
+    overflow-x: hidden;
+  }
 }
 
 .image-preview img {
@@ -154,6 +415,16 @@
   height: 80px;
   object-fit: cover;
   border-radius: 8px;
+  
+  @media (max-width: 480px) {
+    width: 70px;
+    height: 70px;
+  }
+  
+  @media (max-width: 360px) {
+    width: 60px;
+    height: 60px;
+  }
 }
 
 .remove-image-btn {
@@ -167,15 +438,36 @@
   position: absolute;
   top: -8px;
   right: -8px;
+  
+  @media (max-width: 480px) {
+    width: 20px;
+    height: 20px;
+    top: -6px;
+    right: -6px;
+  }
 }
 
 .image-info {
   flex: 1;
+  
+  @media (max-width: 480px) {
+    text-align: center;
+  }
 }
 
 .file-name {
   font-weight: 500;
   margin-bottom: 8px;
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  
+  @media (max-width: 360px) {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
 }
 
 .change-image-btn {
@@ -184,6 +476,14 @@
   color: #667eea;
   cursor: pointer;
   text-decoration: underline;
+  
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
+  
+  @media (max-width: 360px) {
+    font-size: 12px;
+  }
 }
 
 // Simple Submit Button
@@ -198,6 +498,9 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  outline: none;
+  box-shadow: none;
+  overflow-x: hidden;
   
   &:hover:not(:disabled) {
     transform: translateY(-1px);
@@ -208,14 +511,33 @@
     background: #e5e7eb;
     color: #9ca3af;
     cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 20px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    overflow-x: hidden;
   }
 }
 
-// Mobile responsive
+// Enhanced Mobile responsive
 @media (max-width: 600px) {
   .modern-support-dialog {
-    margin: 16px;
-    max-width: calc(100vw - 32px);
+    margin: 0;
+    max-width: 100vw;
   }
   
   .dialog-header {
@@ -228,5 +550,97 @@
   
   .dialog-body {
     padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-support-dialog {
+    margin: 0;
+    max-width: 100vw;
+  }
+  
+  .dialog-header {
+    padding: 14px 16px;
+  }
+  
+  .dialog-title {
+    font-size: 17px;
+  }
+  
+  .dialog-body {
+    padding: 18px 16px;
+  }
+  
+  .support-form {
+    gap: 15px;
+  }
+  
+  .form-input, .form-textarea {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  
+  .file-upload-area {
+    padding: 18px 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .modern-support-dialog {
+    margin: 0;
+    max-width: 100vw;
+  }
+  
+  .dialog-header {
+    padding: 12px 12px;
+  }
+  
+  .dialog-title {
+    font-size: 16px;
+  }
+  
+  .dialog-body {
+    padding: 16px 12px;
+  }
+  
+  .support-form {
+    gap: 12px;
+  }
+  
+  .form-input, .form-textarea {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .file-upload-area {
+    padding: 16px 12px;
+  }
+  
+  .image-preview-container {
+    padding: 10px;
+  }
+}
+
+// Landscape orientation fixes
+@media (max-height: 500px) and (orientation: landscape) {
+  .modern-support-dialog {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .dialog-body {
+    padding: 16px 20px;
+  }
+  
+  .support-form {
+    gap: 12px;
+  }
+  
+  .form-textarea {
+    min-height: 60px;
+  }
+  
+  .file-upload-area {
+    padding: 16px 20px;
   }
 }
