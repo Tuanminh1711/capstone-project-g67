@@ -653,23 +653,55 @@ body, .plant-info-layout {
   }
 
   .sidebar {
-    order: 2;
+    order: 1; // Để danh mục ở trên phần tìm kiếm
     border-radius: 12px;
     margin-bottom: 16px;
     padding: 16px;
+    background: #ffffff; // Đảm bảo nền trắng
+    border: 1px solid #e2e8f0; // Thêm border để dễ nhìn
     
     .sidebar-title {
       font-size: 1.2rem;
       margin-bottom: 12px;
+      color: #1e293b; // Đảm bảo text có màu
     }
     
     .sidebar-menu {
       gap: 8px;
+      
+      .mat-expansion-panel {
+        background: #ffffff; // Đảm bảo panel có nền trắng
+        border: 1px solid #e2e8f0; // Thêm border cho panel
+        
+        .mat-expansion-panel-header {
+          background: #f8fafc; // Nền nhẹ cho header
+          color: #059669; // Màu xanh cho text
+          
+          span {
+            color: #059669; // Đảm bảo text có màu
+            font-weight: 600;
+          }
+        }
+        
+        .mat-expansion-panel-body {
+          background: #ffffff; // Nền trắng cho body
+        }
+      }
     }
     
     .sidebar-item {
       padding: 8px;
       font-size: 0.95rem;
+      color: #475569; // Đảm bảo text có màu
+      
+      &:hover {
+        background: #f1f5f9; // Màu hover
+      }
+      
+      &.active {
+        background: #e0f2fe; // Màu active
+        color: #0284c7;
+      }
       
       .sidebar-icon {
         width: 24px;
@@ -679,7 +711,7 @@ body, .plant-info-layout {
   }
   
   .plant-search-section {
-    order: 1;
+    order: 2; // Để phần tìm kiếm ở dưới danh mục
   }
 
   .plant-search-card {
@@ -794,22 +826,40 @@ body, .plant-info-layout {
   }
   
   .sidebar {
+    order: 2; // Đảm bảo danh mục vẫn ở dưới
     padding: 12px;
     margin-bottom: 12px;
+    background: #ffffff; // Đảm bảo nền trắng
+    border: 1px solid #e2e8f0; // Thêm border
     
     .sidebar-title {
       font-size: 1.1rem;
+      color: #1e293b; // Đảm bảo text có màu
     }
     
     .sidebar-item {
       padding: 6px 8px;
       font-size: 0.9rem;
+      color: #475569; // Đảm bảo text có màu
+      
+      &:hover {
+        background: #f1f5f9;
+      }
+      
+      &.active {
+        background: #e0f2fe;
+        color: #0284c7;
+      }
       
       .sidebar-icon {
         width: 20px;
         height: 20px;
       }
     }
+  }
+  
+  .plant-search-section {
+    order: 2; // Để phần tìm kiếm ở dưới danh mục
   }
 
   .plant-card {
@@ -876,6 +926,58 @@ body, .plant-info-layout {
 @media (max-width: 360px) {
   .plant-info-layout {
     margin: 60px 2px 0;
+  }
+  
+  .plant-info-inner {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin-top: 70px;
+  }
+  
+  .sidebar {
+    order: 2; // Để danh mục ở dưới phần tìm kiếm
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #ffffff; // Đảm bảo nền trắng
+    border: 1px solid #e2e8f0; // Thêm border
+    
+    .mat-expansion-panel {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      
+      .mat-expansion-panel-header {
+        background: #f8fafc;
+        color: #059669;
+        
+        span {
+          color: #059669;
+          font-weight: 600;
+        }
+      }
+      
+      .mat-expansion-panel-body {
+        background: #ffffff;
+      }
+    }
+    
+    .sidebar-item {
+      color: #475569;
+      
+      &:hover {
+        background: #f1f5f9;
+      }
+      
+      &.active {
+        background: #e0f2fe;
+        color: #0284c7;
+      }
+    }
+  }
+  
+  .plant-search-section {
+    order: 2; // Để phần tìm kiếm ở dưới danh mục
   }
   
   .plant-search-card {

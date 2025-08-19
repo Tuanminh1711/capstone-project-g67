@@ -40,48 +40,7 @@
           </div>
         }
       </div>
-      
-      <div class="sidebar">
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">Danh mục bài viết</h3>
-          <div class="category-dropdown">
-            <button class="dropdown-btn" (click)="toggleDropdown()">
-              @if (selectedCategory) {
-                <span>{{ selectedCategory.name }}</span>
-              }
-              @if (!selectedCategory) {
-                <span>Chọn danh mục</span>
-              }
-              <span class="dropdown-arrow" [class.open]="isDropdownOpen">▼</span>
-            </button>
-            <div class="dropdown-content" [class.show]="isDropdownOpen">
-              @for (category of categories; track category) {
-                <div class="dropdown-item" (click)="selectCategory(category)">
-                  <span class="category-name">{{ category.name }}</span>
-                  <span class="category-count">({{ category.count }})</span>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">Bài viết liên quan</h3>
-          <div class="related-articles">
-            @for (related of relatedArticles; track related) {
-              <div class="related-article">
-                <div class="related-article-image">
-                  <img [src]="related.imageUrl || 'assets/image/default-plant.jpg'" [alt]="related.title" />
-                </div>
-                <div class="related-article-content">
-                  <h4>{{ related.title }}</h4>
-                  <p>{{ related.excerpt }}</p>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
+
     </div>
   </div>
 </div>

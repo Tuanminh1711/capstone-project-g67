@@ -1,7 +1,7 @@
 .articles-list-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 120px 1rem 2rem 1rem;
   font-family: 'Quicksand', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -272,7 +272,7 @@
 // Responsive design
 @media (max-width: 768px) {
   .articles-list-page {
-    padding: 1rem 0.5rem;
+    padding: 100px 0.5rem 1rem 0.5rem;
   }
   
   .page-header {
@@ -332,6 +332,10 @@
 }
 
 @media (max-width: 480px) {
+  .articles-list-page {
+    padding: 90px 0.5rem 1rem 0.5rem;
+  }
+  
   .page-header h1 {
     font-size: 2rem;
     letter-spacing: 1px;
