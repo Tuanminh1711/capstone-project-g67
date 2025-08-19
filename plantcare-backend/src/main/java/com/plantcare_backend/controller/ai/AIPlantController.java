@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
+
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
@@ -38,17 +40,11 @@ public class AIPlantController {
         log.info("AI Plant identification request received for image: {}", image.getOriginalFilename());
 
         try {
-            // Validate image
-            if (image.isEmpty()) {
-                return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Image file is required");
-            }
-
-            if (!image.getContentType().startsWith("image/")) {
-                return new ResponseError(HttpStatus.BAD_REQUEST.value(), "File must be an image");
-            }
-
-            if (image.getSize() > 20 * 1024 * 1024) { // 20MB limit
-                return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Image size must be less than 20MB");
+            // Enhanced image validation for mobile devices
+            ValidationResult validationResult = validateImageForMobile(image);
+            if (!validationResult.isValid()) {
+                log.warn("Image validation failed: {}", validationResult.getErrorMessage());
+                return new ResponseError(HttpStatus.BAD_REQUEST.value(), validationResult.getErrorMessage());
             }
 
             PlantIdentificationResponseDTO result = aiPlantService.identifyPlant(image, language, maxResults);
@@ -76,8 +72,11 @@ public class AIPlantController {
         log.info("Plant image validation request received for image: {}", image.getOriginalFilename());
 
         try {
-            if (image.isEmpty()) {
-                return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Image file is required");
+            // Enhanced validation for mobile images
+            ValidationResult validationResult = validateImageForMobile(image);
+            if (!validationResult.isValid()) {
+                log.warn("Image validation failed during plant validation: {}", validationResult.getErrorMessage());
+                return new ResponseError(HttpStatus.BAD_REQUEST.value(), validationResult.getErrorMessage());
             }
 
             Boolean isValid = aiPlantService.validatePlantImage(image);
@@ -93,32 +92,32 @@ public class AIPlantController {
         }
     }
 
-        /**
+    /**
      * Tìm kiếm cây trong database
      */
     @Operation(summary = "Search plants in database", description = "Search for plants in database by name")
     @GetMapping("/search-plants")
     public ResponseData<PlantIdentificationResponseDTO> searchPlantsInDatabase(
             @RequestParam("plantName") String plantName) {
-        
+
         log.info("Database plant search request received for: {}", plantName);
-        
+
         try {
             if (plantName == null || plantName.trim().isEmpty()) {
                 return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Plant name is required");
             }
-            
+
             PlantIdentificationResponseDTO result = aiPlantService.searchPlantsInDatabase(plantName.trim());
-            
+
             if ("SUCCESS".equals(result.getStatus())) {
                 return new ResponseData<>(HttpStatus.OK.value(), "Plant search completed successfully", result);
             } else {
                 return new ResponseError(HttpStatus.BAD_REQUEST.value(), result.getMessage());
             }
-            
+
         } catch (Exception e) {
             log.error("Error during plant search", e);
-            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), 
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Plant search failed: " + e.getMessage());
         }
     }
@@ -130,7 +129,7 @@ public class AIPlantController {
     @GetMapping("/test-api-key")
     public ResponseData<String> testApiKey() {
         log.info("Testing API key configuration");
-        
+
         try {
             // Cast to implementation để gọi test method
             if (aiPlantService instanceof AIPlantServiceImpl) {
@@ -141,8 +140,113 @@ public class AIPlantController {
             }
         } catch (Exception e) {
             log.error("Error testing API key", e);
-            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(), 
+            return new ResponseError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "API key test failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Enhanced image validation for mobile devices
+     */
+    private ValidationResult validateImageForMobile(MultipartFile image) {
+        // Check if file is empty
+        if (image.isEmpty()) {
+            return ValidationResult.invalid("Image file is required");
+        }
+
+        // Check file size with more flexible limit for mobile
+        long maxSize = 25 * 1024 * 1024; // 25MB for mobile images
+        if (image.getSize() > maxSize) {
+            return ValidationResult.invalid("Image size must be less than 25MB");
+        }
+
+        // Enhanced content type validation
+        String contentType = image.getContentType();
+        if (contentType == null) {
+            // Try to determine content type from file extension
+            String filename = image.getOriginalFilename();
+            if (filename != null) {
+                String extension = getFileExtension(filename);
+                if (isValidImageExtension(extension)) {
+                    contentType = "image/" + extension;
+                    log.info("Inferred content type from extension: {} -> {}", extension, contentType);
+                }
+            }
+        }
+
+        if (contentType == null || !isValidImageContentType(contentType)) {
+            log.warn("Invalid content type: {}", contentType);
+            return ValidationResult.invalid("File must be a valid image (JPEG, PNG, GIF, WebP, HEIC)");
+        }
+
+        // Check file extension
+        String filename = image.getOriginalFilename();
+        if (filename != null) {
+            String extension = getFileExtension(filename);
+            if (!isValidImageExtension(extension)) {
+                log.warn("Invalid file extension: {}", extension);
+                return ValidationResult.invalid("File extension not supported. Please use JPEG, PNG, GIF, WebP, or HEIC");
+            }
+        }
+
+        log.info("Image validation passed for: {} (type: {}, size: {} bytes)",
+                filename, contentType, image.getSize());
+        return ValidationResult.valid();
+    }
+
+    /**
+     * Get file extension from filename
+     */
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.lastIndexOf(".") == -1) {
+            return "";
+        }
+        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+    }
+
+    /**
+     * Check if file extension is valid
+     */
+    private boolean isValidImageExtension(String extension) {
+        return Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "heic", "heif").contains(extension);
+    }
+
+    /**
+     * Check if content type is valid
+     */
+    private boolean isValidImageContentType(String contentType) {
+        return contentType.startsWith("image/") &&
+                (contentType.contains("jpeg") || contentType.contains("png") ||
+                        contentType.contains("gif") || contentType.contains("webp") ||
+                        contentType.contains("heic") || contentType.contains("heif"));
+    }
+
+    /**
+     * Validation result class
+     */
+    private static class ValidationResult {
+        private final boolean valid;
+        private final String errorMessage;
+
+        private ValidationResult(boolean valid, String errorMessage) {
+            this.valid = valid;
+            this.errorMessage = errorMessage;
+        }
+
+        public static ValidationResult valid() {
+            return new ValidationResult(true, null);
+        }
+
+        public static ValidationResult invalid(String errorMessage) {
+            return new ValidationResult(false, errorMessage);
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
     }
 }
