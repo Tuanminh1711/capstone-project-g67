@@ -48,11 +48,6 @@ export class ExpertChatStompService {
     const websocketUrl = this.getWebSocketUrl();
     const token = this.cookieService.getAuthToken();
 
-    console.log('Initializing Expert WebSocket connection:', {
-      websocketUrl,
-      hasToken: !!token,
-    });
-
     this.client = new Client({
       webSocketFactory: () => {
         return new SockJS(websocketUrl);
@@ -63,7 +58,9 @@ export class ExpertChatStompService {
           }
         : {},
       reconnectDelay: 5000,
-      debug: (str) => console.log('Expert STOMP:', str),
+      debug: (str) => {
+        // Expert STOMP debug
+      },
     });
 
     this.client.onConnect = () => {
@@ -109,13 +106,11 @@ export class ExpertChatStompService {
   connect(): Promise<void> {
     const token = this.cookieService.getAuthToken();
     if (!token) {
-      console.warn('No auth token found for Expert WebSocket connection');
       this.errorSubject.next('Cần đăng nhập để sử dụng chat');
       return Promise.reject('No authentication token');
     }
 
     if (!this.connected && this.client) {
-      console.log('Activating Expert WebSocket client...');
       this.client.activate();
     }
     return Promise.resolve();
@@ -123,7 +118,6 @@ export class ExpertChatStompService {
 
   disconnect(): void {
     if (this.client && this.connected) {
-      console.log('Disconnecting Expert WebSocket...');
       this.client.deactivate();
     }
     this.connected = false;

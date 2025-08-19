@@ -153,8 +153,6 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    console.log('onSubmit called, pendingSubmit:', this.pendingSubmit);
-    
     // Validate form before processing
     if (!this.isFormValid()) {
       this.toastService.error('Vui lòng điền đầy đủ thông tin bắt buộc');
@@ -162,20 +160,12 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     }
 
     // Check location compatibility before submitting
-    console.log('Checking location compatibility...');
-    console.log('Plant suitable location:', this.plant?.suitableLocation);
-    console.log('Selected location:', this.formData.locationInHouse);
-    
     const shouldWarn = this.shouldShowLocationWarning();
-    console.log('Should show warning:', shouldWarn);
     
     if (!this.pendingSubmit && shouldWarn) {
-      console.log('Showing location warning popup - blocking submit');
       this.showLocationWarningPopup();
       return; // Stop form submission
     }
-
-    console.log('Proceeding with form submission...');
 
     // Check authentication
     const token = this.cookieService.getAuthToken();
@@ -231,8 +221,6 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   }
 
   private sendAddPlantRequest(formData: FormData): void {
-    console.log('Sending add plant request...');
-    
     this.http.post<any>(`${environment.apiUrl}/user-plants/add`, formData).subscribe({
       next: (response) => this.handleAddPlantSuccess(response),
       error: (error) => this.handleAddPlantError(error)
@@ -240,7 +228,6 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   }
 
   private handleAddPlantSuccess(response: any): void {
-    console.log('Add plant success:', response);
     
     // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
@@ -255,8 +242,6 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   }
 
   private handleAddPlantError(error: any): void {
-    console.error('Add plant error:', error);
-    
     // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
       this.loading = false;
@@ -320,7 +305,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
       this.toastService.warning(`Chỉ được chọn tối đa ${maxImages} ảnh.`);
     }
     
-    console.log(`Selected ${this.selectedImages.length} valid images`);
+    // Selected valid images
   }
 
   // Trigger file input click
@@ -353,7 +338,7 @@ export class AddPlantComponent implements OnInit, OnDestroy {
       }
       
       this.selectedImages.splice(index, 1);
-      console.log('Removed image, remaining:', this.selectedImages.length);
+      // Image removed
     }
   }
 
@@ -444,26 +429,19 @@ export class AddPlantComponent implements OnInit, OnDestroy {
   // Location warning methods
   private shouldShowLocationWarning(): boolean {
     if (!this.plant || !this.plant.suitableLocation || !this.formData.locationInHouse) {
-      console.log('No plant data or location info');
       return false;
     }
 
     const suitableLocation = this.plant.suitableLocation.toLowerCase();
     const selectedLocation = this.formData.locationInHouse.toLowerCase();
     
-    console.log('Checking compatibility:', { suitableLocation, selectedLocation });
-
     // Simple and effective check: if suitable location doesn't contain selected location
     const suitableLocations = suitableLocation.split(',').map(loc => loc.trim());
     const isLocationSuitable = suitableLocations.some(loc => 
       loc.includes(selectedLocation) || selectedLocation.includes(loc.replace(/góc\s*/g, ''))
     );
 
-    console.log('Suitable locations list:', suitableLocations);
-    console.log('Is location suitable:', isLocationSuitable);
-
     if (!isLocationSuitable) {
-      console.log('Location not suitable based on direct match');
       return true;
     }
 
@@ -494,13 +472,11 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     for (const [suitableKeyword, incompatibleLocations] of Object.entries(incompatibleMappings)) {
       if (suitableLocation.includes(suitableKeyword)) {
         if (incompatibleLocations.some(loc => selectedLocation.includes(loc))) {
-          console.log(`Found incompatibility: ${suitableKeyword} with ${selectedLocation}`);
           return true;
         }
       }
     }
 
-    console.log('No incompatibility found');
     return false;
   }
 
@@ -510,9 +486,6 @@ export class AddPlantComponent implements OnInit, OnDestroy {
     
     this.locationWarningMessage = `Lưu ý: Vị trí bạn chọn "${selectedLocation}" có thể không phù hợp với khuyến nghị cho loại cây này "${suitableLocation}". Bạn có muốn tiếp tục không?`;
     this.showLocationWarning = true;
-    
-    console.log('Warning popup should be visible now:', this.showLocationWarning);
-    console.log('Warning message:', this.locationWarningMessage);
     
     // Force change detection to ensure popup appears immediately
     this.cdr.markForCheck();

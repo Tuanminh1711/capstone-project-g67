@@ -101,7 +101,7 @@ export class AiPlantComponent implements OnInit {
         
         // JWT Debug info removed for security
       } catch (e) {
-        console.error('JWT decode error:', e);
+        // JWT decode error handled
       }
     }
     
@@ -125,7 +125,6 @@ export class AiPlantComponent implements OnInit {
     // Creating FormData headers with token
     
     if (!token) {
-      console.error('No auth token found in cookies!');
       return new HttpHeaders();
     }
     
@@ -202,7 +201,6 @@ export class AiPlantComponent implements OnInit {
         error: (error) => {
           clearTimeout(timeout);
           this.isValidating = false;
-          console.error('Error validating image:', error);
           // Don't show error for validation failure, just continue
           this.cdr.detectChanges(); // Ensure UI updates even on error
         }
@@ -228,7 +226,6 @@ export class AiPlantComponent implements OnInit {
       formData.append('userId', userId.toString());
       // Adding userId to FormData
     } else {
-      console.warn('No userId found for AI plant identification');
       this.toastService.show('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
       this.isLoading = false;
       return;
@@ -253,7 +250,6 @@ export class AiPlantComponent implements OnInit {
                 this.toastService.show('Nhận diện cây thành công!', 'success');
               }
             } else {
-              console.log('Response not matching expected format:', response);
               this.toastService.show(response.message || 'Có lỗi xảy ra khi nhận diện cây', 'error');
             }
             this.cdr.detectChanges();
@@ -261,16 +257,6 @@ export class AiPlantComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('Error identifying plant:', error);
-          
-          // Log detailed error for debugging
-          console.error('🔍 Detailed error info:', {
-            status: error.status,
-            statusText: error.statusText,
-            message: error.message,
-            url: error.url,
-            body: error.error
-          });
           
           setTimeout(() => {
             if (error.status === 403) {
@@ -331,7 +317,6 @@ export class AiPlantComponent implements OnInit {
           this.isLoading = false;
           setTimeout(() => {
             this.toastService.show('Có lỗi xảy ra khi tìm kiếm cây', 'error');
-            console.error('Error searching plants:', error);
             this.cdr.detectChanges();
           }, 0);
         }
@@ -382,7 +367,6 @@ export class AiPlantComponent implements OnInit {
         this.toastService.show('JWT validation thành công', 'success');
       },
       error: (error) => {
-        console.error('❌ JWT test failed:', error);
         this.toastService.show(`JWT validation thất bại: ${error.status}`, 'error');
       }
     });

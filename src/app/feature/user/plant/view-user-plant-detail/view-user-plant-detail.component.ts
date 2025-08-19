@@ -221,9 +221,7 @@ export class ViewUserPlantDetailComponent implements OnInit, OnDestroy, AfterVie
   }
 
   getImageUrl(imageUrl: string): string {
-    console.log('🖼️ [ViewUserPlantDetail] Processing image URL:', imageUrl);
     const processedUrl = this.imageUrlService.getImageUrl(imageUrl);
-    console.log('🖼️ [ViewUserPlantDetail] Processed URL:', processedUrl);
     return processedUrl;
   }
 

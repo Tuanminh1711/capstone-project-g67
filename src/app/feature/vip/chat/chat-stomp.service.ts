@@ -116,9 +116,6 @@ export class ChatStompService {
     // Check authentication before connecting
     const token = this.cookieService.getAuthToken();
     if (!token) {
-      console.warn(
-        '[ChatStompService] No auth token found for WebSocket connection'
-      );
       this.errorSubject.next('Cần đăng nhập để sử dụng chat');
       return Promise.reject('No authentication token');
     }

@@ -81,13 +81,6 @@ export class ArticlesService {
   changeArticleStatus(articleId: number, status: string): Observable<any> {
     const data: ChangeArticleStatusRequest = { status };
     const url = `${this.apiUrl}/change-article-status/${articleId}`;
-    console.log('ChangeArticleStatus API call:', {
-      url: url,
-      method: 'PATCH',
-      data: data,
-      articleId: articleId,
-      status: status
-    });
     return this.http.patch(url, data);
   }
 

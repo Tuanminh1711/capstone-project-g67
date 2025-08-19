@@ -51,9 +51,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         !ignoredEndpoints.some(endpoint => apiReq.url.includes(endpoint));
       
       if (shouldLog) {
-        console.error('API Error:', error);
-        // Detailed error logging removed for security
-        // Only log essential error information
+        // API Error handled
       }
       
       // Xử lý thông báo lỗi - cải thiện để xử lý cả JSON và text responses

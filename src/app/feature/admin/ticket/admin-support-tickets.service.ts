@@ -41,7 +41,6 @@ export class AdminSupportTicketsService {
   }
 
   handleTicket(ticketId: number, note: string): Observable<any> {
-    console.log('[HANDLE DEBUG] Calling handle API with:', { ticketId, note });
     // Use correct handle endpoint as per backend API
     const requestBody: HandleTicketRequestDTO = { note: note };
     return this.http.post(`/api/admin/support/tickets/${ticketId}/handle`, requestBody);

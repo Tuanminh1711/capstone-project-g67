@@ -135,7 +135,6 @@ export class CreateDiseaseComponent implements AfterViewInit {
         },
         error: (error) => {
           this.loading = false;
-          console.error('Error creating disease:', error);
           this.toastService.error('❌ Lỗi khi tạo bệnh cây. Vui lòng thử lại!');
         }
       });

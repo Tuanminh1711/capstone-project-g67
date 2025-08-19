@@ -68,15 +68,13 @@ export class NotificationService {
     return this.http.get<any>(`${this.apiUrl}`, { params, headers })
       .pipe(
         map(response => {
-          console.log('Raw API response:', response);
-          
           // Handle different response structures
           if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
             const notificationPage = response.data as NotificationPage;
-            console.log('Parsed notification page:', notificationPage);
             
             // Đảm bảo content luôn là array
             const content = notificationPage.content || [];
+            
             this.notificationsSubject.next(content);
             
             return {
@@ -90,7 +88,6 @@ export class NotificationService {
             } as NotificationPage;
           } else if (response && Array.isArray(response)) {
             // Direct array response
-            console.log('Direct array response:', response);
             const mockPage: NotificationPage = {
               content: response,
               totalElements: response.length,
@@ -104,7 +101,6 @@ export class NotificationService {
             return mockPage;
           } else {
             // Empty or unexpected response - don't throw error, return empty page
-            console.log('Empty or unexpected response format, returning empty page');
             const emptyPage: NotificationPage = {
               content: [],
               totalElements: 0,
@@ -141,7 +137,6 @@ export class NotificationService {
             // Direct array response
             return response;
           } else {
-            console.error('Unexpected response format for unread notifications:', response);
             return [];
           }
         })
@@ -165,7 +160,11 @@ export class NotificationService {
             // Cập nhật trạng thái notification trong danh sách
             const notifications = this.notificationsSubject.value;
             const updatedNotifications = notifications.map(notif => 
-              notif.id === notificationId ? { ...notif, isRead: true } : notif
+              notif.id === notificationId ? { 
+                ...notif, 
+                isRead: true,
+                status: 'READ' as const
+              } : notif
             );
             this.notificationsSubject.next(updatedNotifications);
             
@@ -200,7 +199,13 @@ export class NotificationService {
           if (response.code === 200) {
             // Cập nhật tất cả notification thành đã đọc
             const notifications = this.notificationsSubject.value;
-            const updatedNotifications = notifications.map(notif => ({ ...notif, isRead: true }));
+            
+            const updatedNotifications = notifications.map(notif => ({ 
+              ...notif, 
+              isRead: true,
+              status: 'READ' as const
+            }));
+            
             this.notificationsSubject.next(updatedNotifications);
             
             // Reset unread count về 0
@@ -248,7 +253,6 @@ export class NotificationService {
           } else if (response && typeof response.count === 'number') {
             return response.count;
           } else {
-            console.error('Unexpected response format for unread count:', response);
             return 0;
           }
         })
@@ -320,7 +324,7 @@ export class NotificationService {
         // Count đã được update trong getUnreadCount()
       },
       error: (error) => {
-        console.error('Error loading unread count:', error);
+        // Error loading unread count
       }
     });
   }
@@ -333,7 +337,7 @@ export class NotificationService {
     if (this.isUserLoggedIn()) {
       this.getUserNotifications(0, 10).subscribe({
         error: (error) => {
-          console.error('Error refreshing notifications:', error);
+          // Error refreshing notifications
         }
       });
     }
@@ -351,5 +355,19 @@ export class NotificationService {
    */
   getCurrentUnreadCount(): number {
     return this.unreadCountSubject.value;
+  }
+
+  /**
+   * Reset unread count to zero
+   */
+  resetUnreadCount(): void {
+    this.unreadCountSubject.next(0);
+  }
+
+  /**
+   * Force refresh unread count from server
+   */
+  forceRefreshUnreadCount(): void {
+    this.loadUnreadCountIfLoggedIn();
   }
 }

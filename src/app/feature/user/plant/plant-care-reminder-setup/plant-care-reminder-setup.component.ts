@@ -99,11 +99,6 @@ export class PlantCareReminderSetupComponent {
         this.cdr.detectChanges();
       },
       error: err => {
-        console.error('Save schedule error:', err);
-        console.error('Request URL:', `${environment.apiUrl}/plant-care/${this.userPlantId}/care-reminders`);
-        console.error('Payload:', payload);
-        console.error('UserPlantId:', this.userPlantId);
-        
         if (err.status === 404) {
           this.toast.error('Không tìm thấy endpoint API. Vui lòng kiểm tra backend.');
         } else if (err.status === 401 || err.status === 403) {
@@ -374,7 +369,6 @@ export class PlantCareReminderSetupComponent {
       setTimeout(() => this.router.navigate(['/user/my-garden']), 1200);
     },
     error: err => {
-      console.error('Submit error:', err);
       if (err.status === 403) {
         this.toast.error('Bạn không có quyền thực hiện thao tác này!');
       } else if (err.status === 401) {

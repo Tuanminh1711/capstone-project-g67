@@ -75,7 +75,6 @@ export class ExpertSidebarComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.log('Could not load user profile:', error);
         this.fullUserName = 'Expert';
         this.currentUserName = 'Expert'; // Giữ giá trị mặc định
       }
@@ -111,8 +110,6 @@ export class ExpertSidebarComponent implements OnInit {
   }
 
   navigateToUserChat(user: any) {
-    console.log('🎯 [DEBUG] navigateToUserChat called with user:', user);
-    console.log('🔄 [DEBUG] Navigating to /expert/private-chat with conversationId:', user.conversationId);
     this.router.navigate(['/expert/private-chat'], { queryParams: { conversationId: user.conversationId } });
     // Dropdown luôn mở
   }

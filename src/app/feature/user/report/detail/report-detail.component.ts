@@ -63,7 +63,6 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges(); // Force change detection
         },
         error: (error) => {
-          console.error('Error loading report detail:', error);
           this.report = null;
           
           if (error.status === 404) {

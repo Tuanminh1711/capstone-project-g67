@@ -84,11 +84,8 @@ export class TreatmentGuideCreateComponent implements OnInit {
         this.diseases = diseaseArray;
         this.isLoadingDiseases = false;
         this.cdr.detectChanges();
-        
-        console.log('🌿 Loaded diseases:', this.diseases.length);
       },
       error: (error) => {
-        console.error('Error loading diseases:', error);
         this.toastService.error('❌ Lỗi khi tải danh sách bệnh cây');
         this.diseases = [];
         this.isLoadingDiseases = false;
@@ -105,19 +102,13 @@ export class TreatmentGuideCreateComponent implements OnInit {
     }
 
     this.isLoadingGuides = true;
-    console.log('🔄 Loading guides for disease:', this.selectedDiseaseId);
     
     // Tìm tên bệnh đã chọn
     const selectedDisease = this.diseases.find(d => d.id === Number(this.selectedDiseaseId));
-    if (selectedDisease) {
-      console.log('🦠 Selected disease:', selectedDisease.diseaseName);
-    }
 
     // Load existing treatment guides cho bệnh này
     this.treatmentGuideService.getTreatmentGuidesByDisease(this.selectedDiseaseId).subscribe({
       next: (response) => {
-        console.log('📋 Existing treatment guides response:', response);
-        
         // Parse response data
         if (response && response.data && Array.isArray(response.data)) {
           this.existingTreatmentGuides = response.data;
@@ -128,22 +119,15 @@ export class TreatmentGuideCreateComponent implements OnInit {
         }
 
         this.isLoadingGuides = false;
-        console.log('📝 Found existing treatment guides:', this.existingTreatmentGuides.length);
         
         // Auto-suggest next step number
         this.suggestNextStepNumber();
         
         if (this.existingTreatmentGuides.length > 0) {
-          console.log('⚠️ Existing guides to avoid duplication:');
-          this.existingTreatmentGuides.forEach((guide, index) => {
-            console.log(`   ${index + 1}. Step ${guide.stepNumber}: ${guide.title}`);
-          });
-          
           setTimeout(() => {
             this.toastService.info(`📋 Đã có ${this.existingTreatmentGuides.length} hướng dẫn cho bệnh này. Hãy kiểm tra để tránh trùng lặp!`);
           }, 300);
         } else {
-          console.log('✅ No existing treatment guides found');
           setTimeout(() => {
             this.toastService.success('✅ Chưa có hướng dẫn nào cho bệnh này');
           }, 300);
@@ -153,7 +137,6 @@ export class TreatmentGuideCreateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Error loading existing treatment guides:', error);
         this.existingTreatmentGuides = [];
         this.isLoadingGuides = false;
         this.cdr.detectChanges();
@@ -174,8 +157,6 @@ export class TreatmentGuideCreateComponent implements OnInit {
     
     // Suggest step tiếp theo
     this.treatmentGuide.stepNumber = maxStep + 1;
-    
-    console.log(`💡 Suggested next step: ${this.treatmentGuide.stepNumber} (existing steps: ${existingSteps.join(', ')})`);
   }
 
   // Method để check xem step number có hợp lệ không
@@ -274,22 +255,18 @@ ${materials.length > 0 ? `🧰 Vật liệu cần thiết: ${materials.join(', '
       notes: this.treatmentGuide.notes || `Hướng dẫn bước ${this.treatmentGuide.stepNumber} cho bệnh ID: ${this.selectedDiseaseId}`
     };
 
-    console.log('🚀 Creating treatment guide for disease:', this.selectedDiseaseId);
-    console.log('📋 Treatment guide data:', treatmentGuideData);
-    console.log('🔢 Step number value:', this.treatmentGuide.stepNumber, 'Type:', typeof this.treatmentGuide.stepNumber);
+
 
     this.toastService.info('⏳ Đang tạo hướng dẫn điều trị...');
 
     this.treatmentGuideService.createTreatmentGuide(this.selectedDiseaseId, treatmentGuideData).subscribe({
       next: (response) => {
-        console.log('✅ Treatment guide created:', response);
         this.toastService.success('✅ Tạo hướng dẫn điều trị thành công!');
         setTimeout(() => {
           this.router.navigate(['/expert/plant-manager/treatment-guides/list']);
         }, 1500);
       },
       error: (error) => {
-        console.error('❌ Error creating treatment guide:', error);
         this.toastService.error('❌ Lỗi khi tạo hướng dẫn điều trị');
       }
     });

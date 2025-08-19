@@ -57,7 +57,6 @@ export class DiseaseDetailComponent implements OnInit {
         Promise.resolve().then(() => this.cdr.detectChanges());
       },
       error: (error) => {
-        console.error('Error loading disease:', error);
         this.snackBar.open('Lỗi khi tải thông tin bệnh cây', 'Đóng', {
           duration: 3000
         });

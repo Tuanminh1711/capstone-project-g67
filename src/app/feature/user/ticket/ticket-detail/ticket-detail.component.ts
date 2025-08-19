@@ -78,7 +78,6 @@ export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Failed to load image:', error);
         this.imageObjectUrl = null;
         this.cdr.detectChanges();
       }

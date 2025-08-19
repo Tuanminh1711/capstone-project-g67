@@ -135,7 +135,6 @@ export class VerifyEmailDialogComponent implements AfterViewInit, OnDestroy {
       },
       error: (err: any) => {
         this.loading = false;
-        console.error('API Verify Email Error:', err);
         if (err && err.error && err.error.message) {
           this.toast.error(err.error.message);
         } else if (err && err.error && typeof err.error === 'string') {
@@ -181,7 +180,6 @@ export class VerifyEmailDialogComponent implements AfterViewInit, OnDestroy {
       },
       error: (err: any) => {
         this.resendLoading = false;
-        console.error('Resend OTP Error:', err);
         
         let errorMessage = 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.';
         if (err && err.error && err.error.message) {

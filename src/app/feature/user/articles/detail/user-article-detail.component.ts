@@ -57,7 +57,6 @@ export class UserArticleDetailComponent implements OnInit {
     this.selectedCategory = category;
     this.isDropdownOpen = false;
     // Có thể thêm logic lọc bài viết theo danh mục ở đây
-    console.log('Selected category:', category);
   }
 
   constructor(

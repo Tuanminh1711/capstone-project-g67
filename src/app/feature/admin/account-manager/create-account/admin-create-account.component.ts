@@ -120,8 +120,6 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
     };
     this.createAccountService.addUser(body).subscribe({
       next: (res) => {
-        console.log('Create account response:', res);
-        
         // Kiểm tra response từ backend
         // Nếu status/code không phải 200/201 hoặc có message lỗi thì hiển thị toast lỗi
         const status = res?.status ?? res?.code;
@@ -188,7 +186,6 @@ export class AdminCreateAccountComponent extends BaseAdminListComponent {
       error: (err) => {
         this.isSubmitting = false;
         this.setLoading(false); // Reset loading state
-        console.error('Create account error:', err);
         
         let msg = '';
         // Ưu tiên lấy message từ backend

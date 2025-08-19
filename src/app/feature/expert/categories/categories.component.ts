@@ -126,7 +126,6 @@ export class CategoriesComponent implements OnInit, OnDestroy {
         }, 0);
       },
       error: (err) => {
-        console.error('Error loading categories:', err);
         this.error = 'Không thể tải danh sách chuyên mục.';
         this.isLoading = false;
         this.categories = [];

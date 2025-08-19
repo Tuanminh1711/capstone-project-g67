@@ -92,12 +92,10 @@ export class SendTicketDialogComponent {
       let imageUrl = '';
       // Upload image if selected
       if (this.selectedImage) {
-        console.log('Uploading image:', this.selectedImage.name);
         const uploadResponse = await this.supportService.uploadImage(this.selectedImage).toPromise();
         
         if (uploadResponse && uploadResponse.status === 200) {
           imageUrl = uploadResponse.data; // Backend trả về URL trong field 'data'
-          console.log('Image uploaded successfully, URL:', imageUrl);
         } else {
           throw new Error('Upload ảnh thất bại');
         }
@@ -109,8 +107,6 @@ export class SendTicketDialogComponent {
         description: this.description.trim(),
         imageUrl: imageUrl
       };
-
-      console.log('Sending ticket data:', ticketData);
       const created = await this.supportService.createTicket(ticketData).toPromise();
 
       if (created) {
@@ -126,7 +122,6 @@ export class SendTicketDialogComponent {
         }, 100);
       }
     } catch (error: any) {
-      console.error('Error submitting ticket:', error);
       this.errorMessage = error.message || 'Có lỗi xảy ra khi gửi ticket. Vui lòng thử lại.';
       this.toastService.show('Không thể gửi ticket. Vui lòng thử lại.', 'error');
       this.cdr.detectChanges();

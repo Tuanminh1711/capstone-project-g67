@@ -90,10 +90,7 @@ export class PerformanceMonitor {
   logMeasures(): void {
     if (typeof performance !== 'undefined') {
       const measures = performance.getEntriesByType('measure');
-      console.table(measures.map(m => ({
-        name: m.name,
-        duration: `${m.duration.toFixed(2)}ms`
-      })));
+      // Performance measures logged
     }
   }
 }

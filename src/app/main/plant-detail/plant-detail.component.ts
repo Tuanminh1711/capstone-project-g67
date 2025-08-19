@@ -97,7 +97,6 @@ export class PlantDetailComponent implements OnInit {
    */
   private checkAuthStatus(): void {
     this.isGuest = !this.authService.isLoggedIn();
-    console.log('[PLANT DETAIL] User auth status - isGuest:', this.isGuest);
   }
 
   /**

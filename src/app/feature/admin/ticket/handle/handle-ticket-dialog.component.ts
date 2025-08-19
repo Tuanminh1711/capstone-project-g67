@@ -55,7 +55,6 @@ export class HandleTicketDialogComponent {
         this.loading = false;
         this.error = 'Xử lý ticket thất bại!';
         this.toast.error('Xử lý ticket thất bại!');
-        console.error('Handle ticket error:', err);
       }
     });
   }

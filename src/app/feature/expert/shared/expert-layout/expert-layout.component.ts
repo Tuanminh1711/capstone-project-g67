@@ -65,7 +65,6 @@ export class ExpertLayoutComponent implements OnInit {
       this.isExpertRole = true;
     } else {
       this.isExpertRole = false;
-      console.log('[EXPERT LAYOUT] Access denied for role:', userRole);
       this.toast.error('Bạn không có quyền truy cập khu vực Expert!');
       
       // Tự động chuyển hướng sau 2 giây

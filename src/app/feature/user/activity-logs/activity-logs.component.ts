@@ -61,12 +61,11 @@ export class ActivityLogsComponent implements OnInit {
     
     const apiUrl = `${this.configService.apiUrl}/personal/activity-logs`;
     
-    console.log('Making API call to:', apiUrl);
-    console.log('Request body:', JSON.stringify(requestBody));
+    // Making API call to activity logs
     
     this.http.post<any>(apiUrl, requestBody).subscribe({
       next: (res) => {
-        console.log('Personal activity logs response:', res);
+        // Personal activity logs response received
         if (res?.data) {
           this.logs = res.data.content || [];
           this.totalElements = res.data.totalElements || 0;
@@ -77,7 +76,6 @@ export class ActivityLogsComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Personal activity logs error:', err);
         this.error = 'Không thể tải nhật ký hoạt động.';
         this.loading = false;
         this.cdr.detectChanges();

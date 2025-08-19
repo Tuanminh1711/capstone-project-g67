@@ -61,14 +61,36 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('NotificationListComponent initialized, loading notifications...');
     // Load notifications ngay khi component khởi tạo
     this.loadNotifications();
+    
+    // Subscribe vào notifications updates từ service
+    this.notificationService.notifications$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(notifications => {
+      if (notifications && notifications.length > 0) {
+        // Cập nhật local notifications nếu có thay đổi từ service
+        this.notifications = notifications.map(n => ({
+          ...n,
+          isRead: n.status === 'READ' || n.isRead === true,
+          status: n.status || (n.isRead ? 'READ' : 'UNREAD')
+        }));
+        
+        this.cdr.detectChanges();
+      }
+    });
+
+    // Subscribe vào unread count updates từ service
+    this.notificationService.unreadCount$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(count => {
+      // Badge count sẽ tự động cập nhật thông qua service
+      this.cdr.detectChanges();
+    });
     
     // Nếu sau 1 giây vẫn chưa có dữ liệu và không loading, thử lại
     setTimeout(() => {
       if (!this.isLoading && this.notifications.length === 0 && !this.error) {
-        console.log('Retrying to load notifications...');
         this.loadNotifications();
       }
     }, 1000);
@@ -83,7 +105,6 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    * Load danh sách notification
    */
   loadNotifications(page: number = 0): void {
-    console.log('Loading notifications for page:', page);
     this.isLoading = true;
     this.error = null;
     
@@ -91,14 +112,17 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: NotificationPage) => {
-          console.log('Notification response:', response);
-          
           // Đảm bảo content luôn là array
           // Đồng bộ trạng thái đã đọc/chưa đọc từ API (status: 'READ'/'UNREAD')
-          this.notifications = (response.content || []).map(n => ({
-            ...n,
-            isRead: n.status === 'READ'
-          }));
+          this.notifications = (response.content || []).map(n => {
+            const mappedNotification = {
+              ...n,
+              isRead: n.status === 'READ' || n.isRead === true,
+              status: n.status || (n.isRead ? 'READ' : 'UNREAD')
+            };
+            return mappedNotification;
+          });
+          
           this.currentPage = response.number || 0;
           this.totalElements = response.totalElements || 0;
           this.totalPages = response.totalPages || 0;
@@ -106,14 +130,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
           // Tắt loading state
           this.isLoading = false;
           
-          console.log(`Successfully loaded ${this.notifications.length} notifications`);
-          
           // Trigger change detection để đảm bảo UI cập nhật
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error loading notifications:', error);
-          
           // Reset data
           this.notifications = [];
           this.currentPage = 0;
@@ -128,6 +148,9 @@ export class NotificationListComponent implements OnInit, OnDestroy {
             this.error = 'Không thể tải danh sách thông báo. Vui lòng thử lại.';
           }
           this.isLoading = false;
+          
+          // Trigger change detection để đảm bảo UI cập nhật
+          this.cdr.detectChanges();
         }
       });
   }
@@ -137,64 +160,92 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    */
   markAsRead(notification: Notification): void {
     if (notification.isRead) {
-      console.log('Notification already read:', notification.id);
       return;
     }
 
-    console.log('Marking notification as read:', notification.id);
     // Cập nhật UI ngay lập tức để tránh lag
     const originalState = notification.isRead;
     notification.isRead = true;
+    notification.status = 'READ';
+
+    // Trigger change detection ngay lập tức để UI cập nhật
+    this.cdr.detectChanges();
 
     this.notificationService.markAsRead(notification.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('Successfully marked notification as read:', notification.id);
-          // Reload lại danh sách để hiển thị trạng thái đã đọc từ backend
-          this.loadNotifications(this.currentPage);
+          // Reload lại danh sách để đảm bảo đồng bộ với backend
+          setTimeout(() => {
+            this.loadNotifications(this.currentPage);
+          }, 100);
+          
+          // Trigger change detection để đảm bảo UI cập nhật
+          this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error marking notification as read:', error);
           // Revert lại trạng thái nếu có lỗi
           notification.isRead = originalState;
+          notification.status = originalState ? 'READ' : 'UNREAD';
+          
+          // Trigger change detection để đảm bảo UI cập nhật
+          this.cdr.detectChanges();
         }
       });
   }
 
   /**
-   * Đánh dấu tất cả đã đọc
+   * Đánh dấu tất cả đã đọc (tự động force update nếu cần)
    */
   markAllAsRead(): void {
     const unreadNotifications = this.notifications.filter(n => !n.isRead);
-    
     if (unreadNotifications.length === 0) {
-      console.log('No unread notifications to mark');
       return;
     }
     
-    console.log('Marking all notifications as read:', unreadNotifications.length);
+    // 1. Cập nhật UI ngay lập tức để tránh lag
+    unreadNotifications.forEach(notification => {
+      notification.isRead = true;
+      notification.status = 'READ';
+    });
     
-    // Cập nhật UI ngay lập tức
-    const originalStates = unreadNotifications.map(n => ({ id: n.id, isRead: n.isRead }));
-    unreadNotifications.forEach(notification => notification.isRead = true);
+    // 2. Reset badge count ngay lập tức
+    this.notificationService.resetUnreadCount();
     
+    // 3. Trigger change detection ngay lập tức để UI cập nhật
+    this.cdr.detectChanges();
+    
+    // 4. Gọi API để đánh dấu tất cả đã đọc
     this.notificationService.markAllAsRead()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('Successfully marked all notifications as read');
-          // UI đã được cập nhật rồi
+          // 5. Đảm bảo tất cả notifications đều được đánh dấu đã đọc
+          this.notifications.forEach(notification => {
+            notification.isRead = true;
+            notification.status = 'READ';
+          });
+          
+          // 6. Force update ngay lập tức để đảm bảo UI nhất quán
+          this.forceUpdateAllAsRead();
+          
+          // 7. Reload từ backend để đồng bộ (sau 500ms)
+          setTimeout(() => {
+            this.loadNotifications(this.currentPage);
+          }, 500);
+          
+          // 8. Force refresh badge count từ server
+          setTimeout(() => {
+            this.notificationService.forceRefreshUnreadCount();
+          }, 600);
+          
+          // 9. Trigger change detection để đảm bảo UI cập nhật
+          this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error marking all notifications as read:', error);
-          // Revert lại trạng thái nếu có lỗi
-          originalStates.forEach(state => {
-            const notification = this.notifications.find(n => n.id === state.id);
-            if (notification) {
-              notification.isRead = state.isRead;
-            }
-          });
+          // Nếu API gặp lỗi, vẫn giữ UI đã cập nhật
+          // Không revert lại để đảm bảo trải nghiệm người dùng
+          this.cdr.detectChanges();
         }
       });
   }
@@ -213,9 +264,8 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('Deleted notification:', notification.id);
-          
-          // Xóa khỏi local state ngay lập tức
+          // Service sẽ tự động cập nhật notifications và unread count
+          // Chỉ cần cập nhật local state và trigger change detection
           this.notifications = this.notifications.filter(n => n.id !== notification.id);
           this.totalElements = Math.max(0, this.totalElements - 1);
           
@@ -226,9 +276,13 @@ export class NotificationListComponent implements OnInit, OnDestroy {
             // Cập nhật lại totalPages
             this.totalPages = Math.ceil(this.totalElements / this.pageSize);
           }
+          
+          this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error deleting notification:', error);
+          // Error deleting notification
+          // Trigger change detection để đảm bảo UI cập nhật
+          this.cdr.detectChanges();
         }
       });
   }
@@ -394,8 +448,27 @@ export class NotificationListComponent implements OnInit, OnDestroy {
    * Refresh danh sách
    */
   refresh(): void {
-    console.log('Refreshing notifications for page:', this.currentPage);
     this.loadNotifications(this.currentPage);
+  }
+
+  /**
+   * Force update tất cả notifications thành đã đọc (fallback nếu backend có vấn đề)
+   * Được gọi tự động trong markAllAsRead nếu cần
+   */
+  private forceUpdateAllAsRead(): void {
+    // Cập nhật tất cả notifications thành đã đọc
+    this.notifications.forEach(notification => {
+      notification.isRead = true;
+      notification.status = 'READ';
+    });
+    
+    // Đảm bảo UI cập nhật ngay lập tức
+    this.cdr.detectChanges();
+    
+    // Force refresh một lần nữa để đảm bảo
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
   }
 
   /**

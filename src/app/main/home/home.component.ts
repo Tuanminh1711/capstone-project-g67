@@ -49,7 +49,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     return excerpt ? excerpt.replace(/#/g, '') : '';
   }
   ngOnInit() {
-  console.log('HomeComponent ngOnInit called');
   this.checkVnpaySuccess();
   this.loadArticles();
   }
@@ -86,10 +85,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Load articles from API
 
   loadArticles() {
-    console.log('Loading articles...');
     this.http.get(`${environment.baseUrl}/api/user_articles/get_list_articles?page=0&size=6`).subscribe({
       next: (res: any) => {
-        console.log('API response:', res);
         if (res.data && res.data.content) {
           this.articles = res.data.content.map((article: any, idx: number) => {
             // Kiểm tra phòng thủ cho imageUrls
@@ -98,7 +95,7 @@ export class HomeComponent implements OnInit, OnDestroy {
               safeImageUrl = article.imageUrls[0];
             } else {
               if (article.imageUrls && article.imageUrls.length > 0) {
-                console.warn(`[Bài viết #${idx}] imageUrls không hợp lệ:`, article.imageUrls);
+                // imageUrls không hợp lệ
               }
               safeImageUrl = '';
             }
@@ -113,18 +110,16 @@ export class HomeComponent implements OnInit, OnDestroy {
               createdDate: article.createdDate || article.createdAt || new Date()
             };
           });
-          console.log('Articles loaded from API:', this.articles);
           this.currentArticle = 0;
           if (this.articles.length > 0) {
             this.startArticlesAutoSlide();
           }
           this.cdr.detectChanges();
         } else {
-          console.warn('Không có dữ liệu bài viết hoặc dữ liệu không hợp lệ:', res);
+          // Không có dữ liệu bài viết hoặc dữ liệu không hợp lệ
         }
       },
       error: (err) => {
-        console.error('Lỗi khi tải bài viết:', err);
         this.articles = [];
         this.cdr.detectChanges();
       }
@@ -152,8 +147,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToArticleDetail(articleId: number) {
-    console.log('goToArticleDetail called with articleId:', articleId);
-    console.log('Navigating to:', `/user/articles/${articleId}`);
     this.router.navigate(['/user/articles', articleId]);
   }
 
@@ -243,7 +236,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     private toast: ToastService,
     private imageUrlService: ImageUrlService
   ) {
-    console.log('HomeComponent constructor called');
     this.startBannerAutoSlide();
   }
 

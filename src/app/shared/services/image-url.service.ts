@@ -136,7 +136,7 @@ export class ImageUrlService {
       // If no issues found, return the decoded URL (which should work)
       return decodedUrl;
     } catch (error) {
-      console.warn('Error fixing Azure URL:', originalUrl, error);
+      // Error fixing Azure URL
       return originalUrl;
     }
   }
@@ -184,7 +184,7 @@ export class ImageUrlService {
               // Using local fallback
         return localPath;
     } catch (error) {
-      console.warn('Failed to create local fallback for:', originalUrl, error);
+      // Failed to create local fallback
       return this.defaultPlantImage;
     }
   }
@@ -232,7 +232,6 @@ export class ImageUrlService {
     
     // Only change to default if not already showing default
     if (failedUrl !== this.defaultPlantImage) {
-      console.warn('Image failed to load:', failedUrl);
       imgElement.src = this.defaultPlantImage;
     }
   }

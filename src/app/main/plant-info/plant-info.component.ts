@@ -153,7 +153,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
       );
       if (found) {
         categoryIdToSearch = found.id;
-        console.log('🔍 Found category match:', found.name, 'ID:', found.id);
+        // Found category match
       }
     } else if (this.selectedCategoryId) {
       // Nếu không có keyword nhưng có chọn category, search theo categoryId
@@ -172,17 +172,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     if (this.selectedCareDifficulty) params.careDifficulty = this.selectedCareDifficulty;
     if (this.selectedStatus) params.status = this.selectedStatus;
 
-    console.log('🔍 Search params built:', {
-      ...params,
-      filters: {
-        keyword: trimmedKeyword,
-        categoryId: categoryIdToSearch,
-        lightReq: this.selectedLightRequirement,
-        waterReq: this.selectedWaterRequirement,
-        difficulty: this.selectedCareDifficulty,
-        status: this.selectedStatus
-      }
-    });
+    // Search params built successfully
 
     return params;
   }
@@ -192,13 +182,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
     this.error = '';
     const params = this.buildSearchParams(page, keyword);
 
-    // Debug logging để so sánh với Postman
-    console.log('🔍 Frontend API Call:', {
-      url: '/api/plants/search',
-      params: params,
-      pageSize: params.pageSize,
-      keyword: keyword
-    });
+    // Making API call to search plants
 
     this.http.get<any>('/api/plants/search', { params }).subscribe({
       next: (res) => {
@@ -206,15 +190,7 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.pageState.currentKeyword = keyword.trim();
 
-        // Debug response
-        console.log('🔍 Frontend API Response:', {
-          totalElements: data?.totalElements,
-          totalPages: data?.totalPages,
-          currentPage: data?.currentPage || page,
-          pageSize: data?.pageSize,
-          plantsLength: data?.plants?.length,
-          plantsReceived: data?.plants?.length || 0
-        });
+        // API response received successfully
 
         if (!Array.isArray(data?.plants)) {
           this.resetResults();
@@ -238,7 +214,6 @@ export class PlantInfoComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('🔍 Frontend API Error:', err);
         this.loading = false;
         this.error = 'Không thể tải dữ liệu cây.';
         this.plantsSubject.next([]);

@@ -67,7 +67,6 @@ export class ChatService {
         )
       ),
       catchError(error => {
-        console.warn('Chat history API not available, using fallback:', error);
         this.updateApiAvailability(false);
         // Return empty array as fallback
         return of([]);
@@ -87,7 +86,6 @@ export class ChatService {
         )
       ),
       catchError(error => {
-        console.warn('Private messages API not available, using fallback:', error);
         this.updateApiAvailability(false);
         // Return empty array as fallback
         return of([]);
@@ -107,7 +105,6 @@ export class ChatService {
         )
       ),
       catchError(error => {
-        console.warn('Conversations API not available, using fallback:', error);
         this.updateApiAvailability(false);
         // Return empty array as fallback for production
         if (this.urlService.isProduction()) {
@@ -131,7 +128,6 @@ export class ChatService {
         )
       ),
       catchError(error => {
-        console.warn('Experts API not available, using fallback:', error);
         this.updateApiAvailability(false);
         // Return mock experts data as fallback for production
         if (this.urlService.isProduction()) {
@@ -245,7 +241,6 @@ export class ChatService {
   private updateApiAvailability(available: boolean): void {
     if (this.chatApisAvailable.value !== available) {
       this.chatApisAvailable.next(available);
-      console.log(`Chat APIs ${available ? 'are now available' : 'are not available'}`);
     }
   }
 

@@ -84,7 +84,9 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
           notification.isRead = true;
           this.loadUnreadNotifications();
         },
-        error: (err) => console.error('Error marking notification as read:', err)
+        error: (err) => {
+          // Error marking notification as read
+        }
       });
   }
 
@@ -93,7 +95,9 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => { this.notifications = []; },
-        error: (err) => console.error('Error marking all notifications as read:', err)
+        error: (err) => {
+          // Error marking all notifications as read
+        }
       });
   }
 

@@ -202,11 +202,7 @@ export class DiseaseDetectionService {
     const params = new HttpParams().set('diseaseName', diseaseName);
     const url = `${this.apiUrl}/treatment-guide`;
     
-    console.log(`[DiseaseDetectionService] Calling treatment guide API:`, {
-      url,
-      diseaseName,
-      fullUrl: `${this.apiUrl}/treatment-guide?diseaseName=${encodeURIComponent(diseaseName)}`
-    });
+    // Calling treatment guide API
     
     return this.http.get<TreatmentGuide>(url, { 
       params,
@@ -367,29 +363,23 @@ export class DiseaseDetectionService {
    */
   private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
-      console.error(`${operation} failed:`, error);
-      
       // Check if this is a JSON parsing error
       if (error.message && error.message.includes('JSON')) {
-        console.log(`JSON parsing error in ${operation}, returning fallback error`);
         return throwError(() => new Error(`JSON parsing error in ${operation}`));
       }
       
       // Check for network errors
       if (error.status === 0 || error.status === 404) {
-        console.log(`Network error in ${operation}, returning fallback error`);
         return throwError(() => new Error(`Network error in ${operation}`));
       }
       
       // Check for server errors
       if (error.status >= 500) {
-        console.log(`Server error in ${operation}, returning fallback error`);
         return throwError(() => new Error(`Server error in ${operation}`));
       }
       
       // Check for timeout errors
       if (error.name === 'TimeoutError' || error.message?.includes('timeout')) {
-        console.log(`Timeout error in ${operation}, returning fallback error`);
         return throwError(() => new Error(`Timeout error in ${operation}`));
       }
       

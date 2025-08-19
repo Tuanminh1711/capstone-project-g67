@@ -281,8 +281,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         this.cdr.detectChanges();
       },
       error: (error: any) => {
-        console.error('Error loading user detail:', error);
-        
         // Handle different error types like user profile component
         if (error.status === 0) {
           this.setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
@@ -404,19 +402,13 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         gender: this.formData.gender ? this.formData.gender.toUpperCase() : 'MALE'
       };
       
-      console.log('Self-edit mode: Trying UserProfileService first with data:', updateProfileData);
-      console.log('Current user ID:', this.userId, 'User object:', this.user);
-      
       // Thử UserProfileService trước, nếu lỗi thì fallback về admin endpoint
       this.userProfileService.updateUserProfile(updateProfileData).subscribe({
         next: (response: any) => {
-          console.log('Update profile response:', response);
-          
           // Backend trả về ResponseData wrapper, cần extract data
           let profileData = response;
           if (response && response.data) {
             profileData = response.data;
-            console.log('Extracted profile data from ResponseData wrapper:', profileData);
           }
           
           this.toastService.success('✅ Cập nhật thông tin cá nhân thành công!');
@@ -430,23 +422,14 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
           }, 1000);
         },
         error: (error: any) => {
-          console.error('Error updating profile via UserProfileService:', error);
-          console.error('Error details:', {
-            status: error.status,
-            message: error.message,
-            error: error.error
-          });
-          
           // Nếu lỗi 404 (Profile not found) hoặc endpoint không tồn tại, fallback về admin endpoint
           if (error.status === 404 || error.status === 0 || error.status === 500) {
-            console.log('Profile endpoint not available or user profile not found, falling back to admin endpoint...');
-            // Bỏ warning toast để tránh spam user với quá nhiều thông báo
+            // Profile endpoint not available or user profile not found, falling back to admin endpoint
             
             this.performFallbackUpdate();
           } else if (error.status === 400) {
             // Lỗi validation từ backend (ví dụ: livingEnvironment không hợp lệ)
-            console.log('Backend validation error, falling back to admin endpoint...');
-            // Bỏ warning toast để tránh spam user với quá nhiều thông báo
+            // Backend validation error, falling back to admin endpoint
             
             this.performFallbackUpdate();
           } else {
@@ -472,19 +455,10 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     };
     const apiUrl = `/api/admin/updateuser/${this.userId}`;
     
-    console.log('Admin-edit mode: Using admin endpoint with data:', updateData);
-
-    // Log request data để debug
-    console.log('Updating user with data:', updateData);
-    console.log('Using API endpoint:', apiUrl);
-
     // Xử lý API call cho admin-edit
-    console.log('API Strategy: Admin User Update');
     
     this.http.put<any>(apiUrl, updateData, { withCredentials: true }).subscribe({
       next: (response: any) => {
-        console.log('Update user response:', response);
-        
         this.toastService.success('✅ Cập nhật thông tin người dùng thành công!');
         
         this.updating = false;
@@ -495,7 +469,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         }, 1000);
       },
       error: (error: any) => {
-        console.error('Error updating user:', error);
         this.handleUpdateError(error);
       }
     });
@@ -612,12 +585,9 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
     };
     
     const fallbackUrl = `/api/admin/updateuser/${this.userId}`;
-    console.log('Fallback: Using admin endpoint with data:', fallbackData);
     
     this.http.put<any>(fallbackUrl, fallbackData, { withCredentials: true }).subscribe({
       next: (fallbackResponse: any) => {
-        console.log('Fallback update response:', fallbackResponse);
-        
         this.toastService.success('✅ Cập nhật thông tin cá nhân thành công!');
         
         this.updating = false;
@@ -629,7 +599,6 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
         }, 1000);
       },
       error: (fallbackError: any) => {
-        console.error('Fallback update also failed:', fallbackError);
         this.handleUpdateError(fallbackError);
       }
     });

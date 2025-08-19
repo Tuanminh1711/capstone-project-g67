@@ -165,7 +165,6 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error loading ticket:', err);
         this.error = 'Không tìm thấy phiếu hỗ trợ hoặc có lỗi xảy ra.';
         this.loading = false;
         this.ticket = null;
@@ -198,7 +197,6 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Failed to load image:', error);
         this.imageObjectUrl = null;
         this.cdr.markForCheck();
       }
@@ -380,7 +378,6 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
               this.loadTicketDetail(); // Reload to get updated status
             },
             error: (err) => {
-              console.error('Release ticket error:', err);
               this.toastService.error('Trả lại phiếu hỗ trợ thất bại!');
             }
           });
@@ -435,7 +432,6 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.loading = false;
-          console.error('Error closing ticket:', error);
           this.toastService.error('Có lỗi xảy ra khi đóng phiếu hỗ trợ');
         }
       });
@@ -466,7 +462,6 @@ export class AdminSupportTicketDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.loading = false;
-          console.error('Error reopening ticket:', error);
           this.toastService.error('Có lỗi xảy ra khi mở lại phiếu hỗ trợ');
         }
       });

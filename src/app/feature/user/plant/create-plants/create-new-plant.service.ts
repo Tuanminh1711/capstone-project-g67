@@ -47,32 +47,24 @@ export class CreateNewPlantService {
    * Tạo plant mới với images
    */
   createNewPlant(plantData: CreatePlantRequest): Observable<CreatePlantResponse> {
-    console.log('Creating new plant:', plantData);
-    
     // Tạm thời convert Azure URLs để pass validation - chờ backend cập nhật
     const plantDataForRequest = {
       ...plantData,
       imageUrls: plantData.imageUrls?.map(url => this.convertToApiFormat(url)) || []
     };
     
-    console.log('🔄 Converting Azure URLs for validation compatibility:', plantDataForRequest.imageUrls);
-    
     return this.http.post<CreatePlantResponse>(`${this.baseUrl}/create-new-plant`, plantDataForRequest).pipe(
       tap(response => {
-        console.log('Create plant response:', response);
         // Debug: Check if images were saved
         if (response && (response as any).data && (response as any).data.imageUrls) {
-          console.log('🖼️ Plant created with images:', (response as any).data.imageUrls);
+          // Plant created with images
         } else if (response && (response as any).data) {
-          console.log('🌱 Plant created:', (response as any).data);
-          console.warn('⚠️ No imageUrls found in response - checking if images were processed...');
+          // Plant created
         } else {
-          console.warn('⚠️ Plant created but no data object in response');
+          // Plant created but no data object in response
         }
       }),
       catchError(error => {
-        console.error('Create plant error:', error);
-        
         // Provide better error handling
         if (error.status === 0) {
           throw new Error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
@@ -104,7 +96,6 @@ export class CreateNewPlantService {
       
       // First decode the URL to handle %2F encoding
       const decodedUrl = decodeURIComponent(azureUrl);
-      console.log('🔧 Decoding Azure URL:', azureUrl, '->', decodedUrl);
       
       // Split by / and find the actual image filename (usually the last UUID.extension)
       const parts = decodedUrl.split('/');
@@ -125,17 +116,14 @@ export class CreateNewPlantService {
         if (lastPart.includes('.')) {
           filename = lastPart;
         } else {
-          console.warn('❌ Could not extract filename from Azure URL:', azureUrl);
           return azureUrl; // Return original if can't extract
         }
       }
       
       const apiUrl = `/api/user-plants/user-plants/${filename}`;
-      console.log(`✅ Converted Azure URL: ${azureUrl} -> ${apiUrl}`);
       return apiUrl;
       
     } catch (error) {
-      console.warn('❌ Failed to convert Azure URL:', azureUrl, error);
       return azureUrl; // Return original if conversion fails
     }
   }
@@ -156,16 +144,12 @@ export class CreateNewPlantService {
     formData.append('image', file); // Backend yêu cầu field là 'image'
     return this.http.post<any>('/api/user-plants/upload-plant-image', formData).pipe(
       catchError(error => {
-        console.warn('Image upload API not available, using mock URL:', error.message);
         const mockUrl = this.createMockImageUrl(file);
         return of({ url: mockUrl });
       }),
       // Map response về dạng {url: ...} lấy từ response.data
       map(response => {
         const url = response?.data || null;
-        if (url) {
-          console.info('Image upload result:', url);
-        }
         return { url };
       })
     );

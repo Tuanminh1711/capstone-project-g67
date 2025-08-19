@@ -17,7 +17,6 @@ export const expertOnlyInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, 
     
     // Chỉ cho phép EXPERT role
     if (userRole !== 'EXPERT') {
-      console.log('[EXPERT INTERCEPTOR] Blocked API request to expert endpoint. Role:', userRole);
       toast.error('Bạn không có quyền truy cập chức năng này!');
       
       // Chuyển hướng về trang phù hợp

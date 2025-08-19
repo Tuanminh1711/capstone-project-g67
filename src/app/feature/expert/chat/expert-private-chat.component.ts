@@ -93,7 +93,6 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
     this.currentUserRole = this.authService.getCurrentUserRole();
     
     if (!this.currentUserId) {
-      console.warn('⚠️ No current user ID found! User might not be logged in properly.');
       this.error = 'Không thể xác định người dùng. Vui lòng đăng nhập lại.';
       return;
     }
@@ -228,12 +227,11 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
           if (found) {
             this.selectConversation(found);
           } else {
-            console.warn('⚠️ [DEBUG] Conversation not found with ID:', conversationId);
+            // Conversation not found
           }
         }
       },
       error: (err) => {
-        console.error('❌ [DEBUG] Error loading conversations:', err);
         this.error = 'Không thể tải danh sách trò chuyện';
         this.loading = false;
         this.cdr.detectChanges();
@@ -254,7 +252,6 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error loading conversations:', err);
         this.error = 'Không thể tải danh sách trò chuyện';
         this.loading = false;
         this.cdr.markForCheck();
@@ -314,7 +311,6 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy {
         }, 100);
       },
       error: (err) => {
-        console.error('❌ [DEBUG] Error loading private messages:', err);
         this.error = 'Không thể tải tin nhắn';
         this.loading = false;
         this.cdr.detectChanges();

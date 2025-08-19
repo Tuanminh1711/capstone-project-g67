@@ -152,7 +152,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   // Force change detection to update UI
   private forceChangeDetection(): void {
     this.cdr.detectChanges();
-    console.log('Change detection forced');
   }
 
   ngOnInit(): void {
@@ -183,7 +182,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       }, 200);
       
     } catch (error) {
-      console.error('Error in loadInitialData:', error);
+      // Error in loadInitialData handled
     }
   }
 
@@ -268,7 +267,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.loadDetectionHistory(); // Refresh history
       }
     } catch (error: any) {
-      console.error('Error detecting disease from image:', error);
       this.showError('Có lỗi xảy ra khi phát hiện bệnh. Vui lòng thử lại.');
     } finally {
       this.isDetectingFromImage = false;
@@ -302,7 +300,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         detectionMethod: 'SYMPTOMS' as const
       };
 
-      console.log('Sending symptoms detection request:', request);
+      // Sending symptoms detection request
 
       const result = await firstValueFrom(
         this.http.post<DiseaseDetectionResult>(
@@ -320,7 +318,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.loadDetectionHistory(); // Refresh history
       }
     } catch (error: any) {
-      console.error('Error detecting disease from symptoms:', error);
       this.showError('Có lỗi xảy ra khi phân tích triệu chứng. Vui lòng thử lại.');
     } finally {
       this.isDetectingFromSymptoms = false;
@@ -354,7 +351,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       
     } catch (error: any) {
-      console.error('Error loading detection history:', error);
       this.detectionHistory = [];
       this.totalHistoryItems = 0;
     } finally {
@@ -419,7 +415,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       this.updatePagedDiseases();
       this.cdr.markForCheck();
     } catch (error) {
-      console.error('Error loading diseases by category:', error);
       this.allDiseases = [];
       this.filteredDiseases = [];
       this.totalItems = 0;
@@ -465,9 +460,8 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
       return [...(fungalDiseases || []), ...(bacterialDiseases || [])];
     } catch (error) {
-      console.error('Error fetching diseases:', error);
       // Return mock data as fallback
-  return [];
+      return [];
     }
   }
 
@@ -570,7 +564,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     } catch (error: any) {
-      console.error('Error loading treatment guide:', error);
       this.showError('Không thể tải hướng dẫn điều trị');
       this.selectedTreatmentGuide = null;
     }

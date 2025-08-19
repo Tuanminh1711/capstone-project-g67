@@ -455,21 +455,11 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   }
 
   private handleApiError(err: any): void {
-    console.error('My Garden API Error:', err);
-    console.error('Error details:', {
-      status: err.status,
-      message: err.error?.message,
-      url: err.url,
-      timestamp: new Date().toISOString()
-    });
-    
     // Xử lý lỗi đặc biệt về null plantId - lỗi backend data integrity
     if (err.error?.message?.includes('Cannot invoke "java.lang.Long.longValue()"') || 
         err.error?.message?.includes('getPlantId()') || 
         err.error?.message?.includes('getUserPlantId()') ||
         err.error?.message?.includes('Get user plants failed')) {
-      
-      console.warn('Backend null pointer detected - Database has records with null plantId');
       
       // Thông báo rõ ràng về vấn đề database và hướng dẫn giải quyết
       this.errorMessage = '⚠️ Database có dữ liệu không hợp lệ (null plantId)\n\n' +
@@ -546,7 +536,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
           this.processUserPlantsResponse(response);
         },
         error: (err) => {
-          console.error('Fallback request also failed:', err);
           this.toastService.error('Vẫn gặp lỗi database. Cần admin khắc phục.');
         }
       });
@@ -565,20 +554,10 @@ export class MyGardenComponent implements OnInit, OnDestroy {
         const validPlants = plants.filter((p: any) => {
           // Kiểm tra cả plantId và userPlantId
           if (!p.plantId || !p.userPlantId) {
-            console.warn('Plant with null ID found:', {
-              userPlantId: p.userPlantId,
-              plantId: p.plantId,
-              nickname: p.nickname
-            });
             return false;
           }
           // Đảm bảo plantId và userPlantId là số dương
           if (isNaN(p.plantId) || isNaN(p.userPlantId) || p.plantId <= 0 || p.userPlantId <= 0) {
-            console.warn('Plant with invalid ID found:', {
-              userPlantId: p.userPlantId,
-              plantId: p.plantId,
-              nickname: p.nickname
-            });
             return false;
           }
           return true;
@@ -622,7 +601,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   viewPlantDetail(userPlantId: number): void {
     // Validate userPlantId với kiểm tra chặt chẽ hơn
     if (!userPlantId || isNaN(userPlantId) || userPlantId <= 0) {
-      console.error('Invalid userPlantId:', userPlantId);
       this.toastService.error('Dữ liệu cây không hợp lệ. Vui lòng refresh trang.');
       return;
     }
@@ -630,7 +608,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     // Double check plant exists in current list
     const plant = this.userPlants.find(p => p.userPlantId === userPlantId);
     if (!plant) {
-      console.error('Plant not found in current list:', userPlantId);
       this.toastService.error('Không tìm thấy cây này trong vườn của bạn');
       return;
     }
@@ -750,7 +727,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   carePlant(userPlantId: number): void {
     // Validate userPlantId
     if (!userPlantId || isNaN(userPlantId) || userPlantId <= 0) {
-      console.error('Invalid userPlantId:', userPlantId);
       this.toastService.error('Dữ liệu cây không hợp lệ. Vui lòng refresh trang.');
       return;
     }
@@ -758,7 +734,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     // Tìm đúng cây theo userPlantId
     const plant = this.userPlants.find(p => p.userPlantId === userPlantId);
     if (!plant) {
-      console.error('Plant not found in current list:', userPlantId);
       this.toastService.error('Không tìm thấy cây này trong vườn của bạn');
       return;
     }
@@ -787,7 +762,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   // Sửa lại: truyền đúng userPlantId cho nút sửa với validation
   editPlant(userPlantId: number, plantName?: string): void {
     if (!userPlantId || isNaN(userPlantId) || userPlantId <= 0) {
-      console.error('Invalid userPlantId for edit:', userPlantId);
       this.toastService.error('Không thể chỉnh sửa cây này - dữ liệu không hợp lệ');
       return;
     }
@@ -795,7 +769,6 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     // Verify plant exists in current list
     const plant = this.userPlants.find(p => p.userPlantId === userPlantId);
     if (!plant) {
-      console.error('Plant not found for edit:', userPlantId);
       this.toastService.error('Không tìm thấy cây này trong danh sách');
       return;
     }

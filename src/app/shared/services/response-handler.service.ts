@@ -55,7 +55,6 @@ export class ResponseHandlerService {
         }
       }),
       catchError(error => {
-        console.warn('POST request failed, returning error response:', error);
         return of({
           success: false,
           error: error.message || 'Request failed',
@@ -101,7 +100,6 @@ export class ResponseHandlerService {
         }
       }),
       catchError(error => {
-        console.warn('GET request failed, returning error response:', error);
         return of({
           success: false,
           error: error.message || 'Request failed',

@@ -66,67 +66,56 @@ export class AdminTopNavigatorComponent implements OnInit, OnDestroy {
   private updatePageTitle(url: string): void {
     // Loại bỏ query parameters và fragments
     const cleanUrl = url.split('?')[0].split('#')[0];
-    console.log('updatePageTitle - URL:', url, 'Clean URL:', cleanUrl);
     
     // Tìm exact match trước
     if (this.routeTitleMap[cleanUrl]) {
       this.currentPageTitle = this.routeTitleMap[cleanUrl];
-      console.log('Exact match found:', this.currentPageTitle);
       return;
     }
     
     // Xử lý các trường hợp đặc biệt với ID TRƯỚC (ưu tiên cao)
     if (cleanUrl.includes('/admin/support/tickets/') && cleanUrl !== '/admin/support/tickets') {
       this.currentPageTitle = 'Chi tiết ticket';
-      console.log('Special case - ticket detail:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/plants/view/')) {
       this.currentPageTitle = 'Chi tiết cây';
-      console.log('Special case - plant view:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/plants/edit/') || cleanUrl.includes('/admin/plants/update/')) {
       this.currentPageTitle = 'Chỉnh sửa cây';
-      console.log('Special case - plant edit/update:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/accounts/detail/')) {
       this.currentPageTitle = 'Chi tiết tài khoản';
-      console.log('Special case - account detail:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/accounts/update/')) {
       this.currentPageTitle = 'Chỉnh sửa tài khoản';
-      console.log('Special case - account update:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/accounts/activity-logs/')) {
       this.currentPageTitle = 'Nhật ký hoạt động';
-      console.log('Special case - activity logs:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/reports/detail/')) {
       this.currentPageTitle = 'Chi tiết báo cáo';
-      console.log('Special case - report detail:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/reports/review/')) {
       this.currentPageTitle = 'Duyệt báo cáo';
-      console.log('Special case - report review:', this.currentPageTitle);
       return;
     }
     
     if (cleanUrl.includes('/admin/response-manager/approve-report/')) {
       this.currentPageTitle = 'Phê duyệt báo cáo';
-      console.log('Special case - approve report:', this.currentPageTitle);
       return;
     }
     
@@ -134,14 +123,12 @@ export class AdminTopNavigatorComponent implements OnInit, OnDestroy {
     for (const route in this.routeTitleMap) {
       if (cleanUrl.startsWith(route) && route !== '/admin') {
         this.currentPageTitle = this.routeTitleMap[route];
-        console.log('Partial match found:', route, '->', this.currentPageTitle);
         return;
       }
     }
     
     // Fallback
     this.currentPageTitle = 'Dashboard';
-    console.log('Fallback to Dashboard');
   }
 
   toggleSidebar() {

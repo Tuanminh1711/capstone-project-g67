@@ -103,7 +103,7 @@ export class AdminUserActivityLogsComponent implements OnInit {
     this.cdr.detectChanges();
     
     const apiUrl = `/api/admin/activity-logs-user/${this.userId}?pageNo=${this.currentPage}&pageSize=${this.pageSize}&_t=${Date.now()}`;
-    console.log(`Loading page ${this.currentPage} from:`, apiUrl);
+    // Loading page from API
     
     this.http.get<ActivityLogsResponse>(apiUrl, {
       headers: {
@@ -112,7 +112,7 @@ export class AdminUserActivityLogsComponent implements OnInit {
       }
     }).subscribe({
       next: (response: any) => {
-        console.log('API Response for page', this.currentPage, ':', response);
+        // API Response received
         
         if (response && response.data) {
           this.logs = response.data.content || [];
@@ -121,22 +121,15 @@ export class AdminUserActivityLogsComponent implements OnInit {
           
           // Bây giờ API sẽ trả về đúng page number
           const apiPageNumber = response.data.number || 0;
-          console.log(`Expected page: ${this.currentPage}, API returned page: ${apiPageNumber}`);
-          
           // Verify that API returned the correct page
           if (apiPageNumber === this.currentPage) {
-            console.log('✅ Pagination working correctly');
+            // Pagination working correctly
           } else {
-            console.warn(`⚠️ Page mismatch: expected ${this.currentPage}, got ${apiPageNumber}`);
-            // Update currentPage to match API response
+            // Page mismatch - update currentPage to match API response
             this.currentPage = apiPageNumber;
           }
           
-          console.log(`Loaded ${this.logs.length} logs for page ${this.currentPage}`);
-          if (this.logs.length > 0) {
-            console.log('First log ID:', this.logs[0].id);
-            console.log('Last log ID:', this.logs[this.logs.length - 1].id);
-          }
+          // Logs loaded successfully
           
           // Đảm bảo currentPage không vượt quá bounds
           if (this.currentPage >= this.totalPages && this.totalPages > 0) {
@@ -150,7 +143,6 @@ export class AdminUserActivityLogsComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error: any) => {
-        console.error('Error loading user activity logs:', error);
         
         if (error.status === 0) {
           this.errorMsg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
@@ -178,28 +170,22 @@ export class AdminUserActivityLogsComponent implements OnInit {
   }
 
   nextPage() {
-    console.log(`nextPage called: current=${this.currentPage}, total=${this.totalPages}, loading=${this.loading}`);
     if (this.currentPage + 1 < this.totalPages && !this.loading) {
       this.currentPage++;
-      console.log(`Moving to next page: ${this.currentPage}`);
       this.loadUserActivityLogs();
     }
   }
 
   prevPage() {
-    console.log(`prevPage called: current=${this.currentPage}, loading=${this.loading}`);
     if (this.currentPage > 0 && !this.loading) {
       this.currentPage--;
-      console.log(`Moving to prev page: ${this.currentPage}`);
       this.loadUserActivityLogs();
     }
   }
 
   goToPage(page: number) {
-    console.log(`goToPage called: target=${page}, current=${this.currentPage}, total=${this.totalPages}, loading=${this.loading}`);
     if (page >= 0 && page < this.totalPages && page !== this.currentPage && !this.loading) {
       this.currentPage = page;
-      console.log(`Moving to page: ${this.currentPage}`);
       this.loadUserActivityLogs();
     }
   }

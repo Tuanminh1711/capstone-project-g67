@@ -164,10 +164,9 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
         this.isLoadingCategories = false;
         this.createPlantForm.get('categoryId')?.enable();
         this.cdr.detectChanges();
-        console.info('Loaded', this.categories.length, 'categories successfully');
+        // Categories loaded successfully
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
         this.toastService.error('Không thể tải danh mục cây. Vui lòng thử lại sau.');
         this.isLoadingCategories = false;
         this.createPlantForm.get('categoryId')?.enable();
@@ -274,8 +273,7 @@ export class CreateNewPlantComponent implements OnInit, OnDestroy {
 
     const formData = this.createPlantForm.value;
     
-    // Debug: Log form data for validation
-    console.log('🔍 Form data validation:', formData);
+    // Form data validation
 
     // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {

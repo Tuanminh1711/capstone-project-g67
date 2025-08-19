@@ -71,16 +71,13 @@ export class ChangePasswordComponent implements OnInit {
   ngOnInit() {
     // Không tự động hiển thị login dialog
     // Chỉ kiểm tra authentication khi user thực sự thực hiện action
-    console.log('Change password component initialized');
   }
 
   private showLoginDialog() {
-    console.log('Opening login dialog');
     this.authDialogService.openLoginDialog();
     
     // Không tự động redirect, để user quyết định
     // Nếu user đăng nhập thành công, họ có thể tiếp tục sử dụng trang này
-    console.log('Login dialog opened, waiting for user action');
   }
 
   togglePasswordVisibility(field: 'old' | 'new' | 'confirm') {

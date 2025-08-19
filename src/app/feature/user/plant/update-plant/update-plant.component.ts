@@ -94,27 +94,21 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   // Lấy tất cả URL ảnh của cây từ API response
   getAllPlantImageUrls(): string[] {
     if (!this.currentPlant) {
-      console.log('🚫 No currentPlant data');
       return [];
     }
-    
-    console.log('🌿 Current plant data:', this.currentPlant);
     
     // Ưu tiên trường imageUrls từ API chi tiết
     let imageUrls: string[] = [];
     if (Array.isArray(this.currentPlant.imageUrls)) {
       imageUrls = this.currentPlant.imageUrls.filter(url => !!url);
-      console.log('📸 Image URLs from imageUrls field:', imageUrls);
     } 
     // Fallback cho trường images nếu imageUrls không có
     else if (Array.isArray(this.currentPlant.images)) {
       imageUrls = this.currentPlant.images
         .map((img: any) => img?.imageUrl)
         .filter((url: string) => !!url);
-      console.log('📸 Image URLs from images field:', imageUrls);
     }
     
-    console.log('✅ Final image URLs:', imageUrls);
     return imageUrls.length > 0 ? imageUrls : [];
   }
 
@@ -162,7 +156,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       this.toastService.warning(`Chỉ được chọn tối đa ${maxImages} ảnh.`);
     }
     
-    console.log(`Selected ${this.selectedImages.length} valid images for update`);
+    // Selected images for update
   }
 
   // Trigger file input click
@@ -195,7 +189,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       }
       
       this.selectedImages.splice(index, 1);
-      console.log('Removed image from update selection, remaining:', this.selectedImages.length);
+      // Image removed from selection
     }
   }
 
@@ -220,7 +214,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     
     this.selectedImages = [];
     this.imagePreviewUrls.clear();
-    console.log('Cleared all selected images');
+    // All images cleared
   }
 
   // Get total file size of selected images
@@ -298,7 +292,6 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       const token = this.cookieService.getAuthToken();
       return token !== null && token.trim().length > 0;
     } catch (error) {
-      console.warn('Error checking authentication:', error);
       return false;
     }
   }
@@ -455,11 +448,9 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         if (!isNaN(date.getTime())) {
           plantingDateFormatted = date.toISOString().split('T')[0];
         } else {
-          console.warn('Invalid planting date from API:', this.currentPlant.plantingDate);
           plantingDateFormatted = new Date().toISOString().split('T')[0];
         }
       } catch (error) {
-        console.warn('Error parsing planting date:', error);
         plantingDateFormatted = new Date().toISOString().split('T')[0];
       }
     } else {
@@ -489,14 +480,10 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     // Process and normalize data in component
     const processedData = this.processFormData(formValues);
 
-    console.log('Updating plant with processed data:', processedData);
-
     // Check if there are new images to upload
     if (this.selectedImages && this.selectedImages.length > 0) {
-      console.log('Updating plant with new images using new API...');
       this.updatePlantWithImages(processedData);
     } else {
-      console.log('Updating plant info only (no new images)...');
       this.updatePlantInfo(processedData);
     }
   }
@@ -514,7 +501,6 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         dateObj = new Date(dateValue);
       }
       if (isNaN(dateObj.getTime())) {
-        console.warn('Invalid date provided, using current date');
         dateObj = new Date();
       }
       // Format for java.sql.Timestamp: yyyy-MM-dd HH:mm:ss.SSS
@@ -532,30 +518,22 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       reminderEnabled: Boolean(formValues.reminderEnabled)
     };
 
-    console.log('Form data processing:');
-    console.log('- Original date:', formValues.plantingDate);
-    console.log('- Formatted (java.sql.Timestamp):', plantingDateFormatted);
-    console.log('- Processed data:', processedData);
+    // Form data processed
     return processedData;
   }
 
   private updatePlantWithImages(updateData: UpdatePlantRequest): void {
-    console.log('Using new update-with-images API...');
     this.myGardenService.updateUserPlantWithImages(updateData, this.selectedImages)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Plant updated with images successfully:', response);
-          
           if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
             this.handleSuccessfulUpdate();
           } else {
-            console.error('Unexpected response format:', response);
             this.handleUpdateError('Phản hồi từ server không đúng định dạng');
           }
         },
         error: (error) => {
-          console.error('Error updating plant with images:', error);
           this.handleUpdateError(this.extractErrorMessage(error));
         }
       });
@@ -564,10 +542,8 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   private async uploadImagesAndUpdatePlant(updateData: UpdatePlantRequest): Promise<void> {
     try {
       // This method is now deprecated in favor of updatePlantWithImages
-      console.warn('uploadImagesAndUpdatePlant is deprecated, use updatePlantWithImages instead');
       this.updatePlantWithImages(updateData);
     } catch (error) {
-      console.error('Error in deprecated uploadImagesAndUpdatePlant:', error);
       this.handleUpdateError('Có lỗi xảy ra khi cập nhật thông tin cây');
     }
   }
@@ -608,8 +584,6 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private extractErrorMessage(error: any): string {
-    console.error('Full error object:', error);
-    
     let errorMessage = 'Không thể cập nhật thông tin cây';
     
     // More detailed error handling
@@ -641,17 +615,13 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Plant info updated successfully:', response);
-          
           if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
             this.handleSuccessfulUpdate();
           } else {
-            console.error('Unexpected response format:', response);
             this.handleUpdateError('Phản hồi từ server không đúng định dạng');
           }
         },
         error: (error) => {
-          console.error('Error updating plant info:', error);
           this.handleUpdateError(this.extractErrorMessage(error));
         }
       });
@@ -755,9 +725,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
    * Get processed image URL using ImageUrlService
    */
   getImageUrl(imageUrl: string): string {
-    console.log('🖼️ [UpdatePlant] Processing image URL:', imageUrl);
     const processedUrl = this.imageUrlService.getImageUrl(imageUrl);
-    console.log('🖼️ [UpdatePlant] Processed URL:', processedUrl);
     return processedUrl;
   }
 

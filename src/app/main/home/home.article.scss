@@ -60,6 +60,7 @@
       line-height: 1.7;
       text-align: center;
       position: relative;
+      white-space: nowrap; // Ngăn text xuống dòng
       
       &::before {
         content: '✨';
@@ -602,10 +603,22 @@
 
       .articles-subtitle {
         font-size: 1.2rem;
+        white-space: normal; // Cho phép xuống dòng trên tablet
         
         &::before, &::after {
           display: none;
         }
+      }
+    }
+
+    // Ẩn category và read-time trên tablet
+    .article-card {
+      .article-category-badge {
+        display: none; // Ẩn category badge
+      }
+      
+      .article-content .article-meta .article-read-time {
+        display: none; // Ẩn "5 phút đọc"
       }
     }
 
@@ -661,11 +674,24 @@
         font-size: 1.1rem;
         max-width: 100%;
         padding: 0 20px;
+        white-space: normal; // Cho phép xuống dòng trên mobile
+        line-height: 1.5; // Giảm line-height trên mobile
       }
     }
 
-    .article-card .article-content {
-      padding: 20px;
+    .article-card {
+      .article-content {
+        padding: 20px;
+      }
+      
+      // Ẩn category và read-time trên mobile nhỏ
+      .article-category-badge {
+        display: none; // Ẩn category badge
+      }
+      
+      .article-content .article-meta .article-read-time {
+        display: none; // Ẩn "5 phút đọc"
+      }
     }
 
     .articles-navigation {
@@ -685,6 +711,45 @@
 
     .articles-cta {
       padding: 24px 20px;
+    }
+  }
+
+  // Responsive cho màn hình rất nhỏ
+  @media (max-width: 360px) {
+    padding: 30px 12px;
+    
+    .articles-header {
+      .articles-title {
+        font-size: 1.8rem;
+        letter-spacing: 0.5px;
+        
+        &::after {
+          width: 60px;
+          height: 3px;
+        }
+      }
+      
+      .articles-subtitle {
+        font-size: 1rem;
+        padding: 0 16px;
+        white-space: normal; // Cho phép xuống dòng trên mobile nhỏ
+        line-height: 1.4; // Giảm line-height trên mobile nhỏ
+      }
+    }
+
+    .article-card {
+      .article-content {
+        padding: 16px;
+      }
+      
+      // Ẩn category và read-time trên màn hình rất nhỏ
+      .article-category-badge {
+        display: none; // Ẩn category badge
+      }
+      
+      .article-content .article-meta .article-read-time {
+        display: none; // Ẩn "5 phút đọc"
+      }
     }
   }
 

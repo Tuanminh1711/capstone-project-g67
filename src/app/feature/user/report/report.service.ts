@@ -57,11 +57,8 @@ export class ReportService {
     return this.http.get<any>(`${this.apiUrl}/my-reports`, { params, headers })
       .pipe(
         map(response => {
-          console.log('Raw API response:', response);
-          
           if (response && (response.status === 200 || response.code === 200) && response.data) {
             const reportData = response.data as UserReportListResponse;
-            console.log('Parsed report data:', reportData);
             
             // Transform to match expected structure if needed
             return {
@@ -76,7 +73,6 @@ export class ReportService {
           }
         }),
         catchError(error => {
-          console.error('Error getting user reports:', error);
           return throwError(() => error);
         })
       );
@@ -102,7 +98,6 @@ export class ReportService {
           }
         }),
         catchError(error => {
-          console.error('Error getting report detail:', error);
           return throwError(() => error);
         })
       );

@@ -89,20 +89,13 @@ export class LoginAdminPageComponent {
             // Đảm bảo token đã set xong mới chuyển trang
             setTimeout(() => {
               this.successMsg = res.message || 'Đăng nhập thành công!';
-              // Debug: log role, res và userId từ token
-              console.log('[DEBUG] Login response:', res);
+              // Get role from response
               let role = '';
               if (res.role) {
                 role = res.role.toLowerCase();
               } else if (res.user && res.user.role) {
                 role = res.user.role.toLowerCase();
               }
-              import('../../auth/jwt-user-util.service').then(({ JwtUserUtilService }) => {
-                const jwtUtil = new JwtUserUtilService(cookieService);
-                const userIdFromToken = jwtUtil.getUserIdFromToken();
-                console.log('[DEBUG] userId from token:', userIdFromToken);
-              });
-              console.log('[DEBUG] Role:', role);
               this.cdr.detectChanges();
               this.toast.success(this.successMsg);
               this.loading = false;

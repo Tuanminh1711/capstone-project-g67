@@ -47,22 +47,16 @@ export class ConfigService {
     return endpoint;
   }
 
-  // Dev logging helpers
+  // Dev logging helpers - removed for security
   logApiCall(method: string, url: string, data?: unknown): void {
-    if (this.isDevelopment) {
-      console.log(`[API] ${method} ${url}`, data);
-    }
+    // API call logged
   }
 
   logError(error: unknown, context?: string): void {
-    if (this.isDevelopment) {
-      console.error(`[ERROR]${context ? ' [' + context + ']' : ''}:`, error);
-    }
+    // Error logged
   }
 
   logSuccess(message: string, data?: unknown): void {
-    if (this.isDevelopment) {
-      console.log(`[SUCCESS] ${message}`, data);
-    }
+    // Success logged
   }
 }

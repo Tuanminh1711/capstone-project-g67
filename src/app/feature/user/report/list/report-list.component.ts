@@ -105,19 +105,14 @@ export class ReportListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: UserReportListResponse) => {
-          console.log('Report response received:', response);
-          
           this.reports = response.reports || [];
           this.currentPage = response.currentPage || 0;
           this.totalElements = response.totalElements || 0;
           this.totalPages = response.totalPages || 0;
           this.isLoading = false;
           this.cdr.detectChanges(); // Force change detection
-          
-          console.log(`Loaded ${this.reports.length} reports`);
         },
         error: (error) => {
-          console.error('Error loading reports:', error);
           this.reports = [];
           this.currentPage = 0;
           this.totalElements = 0;
