@@ -134,11 +134,11 @@ export class AuthService {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: (response: any) => {
-          console.log('Logout successful:', response);
+          // Logout successful
           doLogout();
         },
         error: (error: any) => {
-          console.error('Logout API error:', error);
+          // Logout API error - still logout locally
           doLogout(); // Vẫn logout dù API fail
         }
       });
@@ -171,11 +171,11 @@ export class AuthService {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: (response: any) => {
-          console.log('Admin logout successful:', response);
+          // Admin logout successful
           doAdminLogout();
         },
         error: (error: any) => {
-          console.error('Admin logout API error:', error);
+          // Admin logout API error - still logout locally
           doAdminLogout(); // Vẫn logout dù API fail
         }
       });
@@ -208,11 +208,11 @@ export class AuthService {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: (response: any) => {
-          console.log('Expert logout successful:', response);
+          // Expert logout successful
           doExpertLogout();
         },
         error: (error: any) => {
-          console.error('Expert logout API error:', error);
+          // Expert logout API error - still logout locally
           doExpertLogout(); // Vẫn logout dù API fail
         }
       });

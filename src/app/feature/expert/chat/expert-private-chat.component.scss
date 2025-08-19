@@ -121,10 +121,23 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  
+  /* Mobile touch improvements */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 
   &:hover {
     background: #f8f9fa;
     border-color: #e9ecef;
+  }
+
+  &:active {
+    background: #e9ecef;
+    transform: scale(0.98);
   }
 
   &.active {
@@ -720,5 +733,52 @@
 
   .input-actions {
     display: none;
+  }
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+  .conversation-item {
+    padding: 20px 16px; /* Tăng padding để dễ touch hơn */
+    min-height: 80px; /* Đảm bảo đủ kích thước để touch */
+    
+    /* Mobile touch optimizations */
+    -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
+    touch-action: manipulation;
+    
+    &:active {
+      background: #007bff;
+      color: white;
+      transform: scale(0.95);
+    }
+  }
+  
+  .conversation-avatar {
+    width: 56px; /* Tăng kích thước avatar trên mobile */
+    height: 56px;
+    font-size: 20px;
+  }
+  
+  .conversation-content {
+    min-height: 56px; /* Đảm bảo content có đủ chiều cao */
+  }
+}
+
+/* Touch device specific styles */
+@media (hover: none) and (pointer: coarse) {
+  .conversation-item {
+    /* Tối ưu cho touch devices */
+    cursor: default;
+    
+    &:hover {
+      background: transparent; /* Bỏ hover effect trên touch devices */
+      border-color: transparent;
+    }
+    
+    &:active {
+      background: #007bff;
+      color: white;
+      transform: scale(0.95);
+    }
   }
 }

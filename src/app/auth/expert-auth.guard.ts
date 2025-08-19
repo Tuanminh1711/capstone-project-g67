@@ -16,23 +16,18 @@ export class ExpertAuthGuard implements CanActivate, CanActivateChild {
 
   private checkExpertOrLogin(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const role = this.authService.getCurrentUserRole();
-    const url = state && state.url ? state.url : (this.router.url || '');
-    console.log('[EXPERT GUARD DEBUG] role:', role, '| url:', url);
     
     // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập admin
     if (!role) {
-      console.log('[EXPERT GUARD] No role - redirecting to login');
       return this.router.createUrlTree(['/login-admin']);
     }
     
     // CHỈ cho phép Expert truy cập các route expert
     if (role === 'EXPERT') {
-      console.log('[EXPERT GUARD] Expert role - access granted');
       return true;
     }
     
     // Tất cả các role khác (ADMIN, STAFF, USER, VIP, GUEST) đều không được phép truy cập
-    console.log('[EXPERT GUARD] Role', role, '- access denied, redirecting to appropriate page');
     
     // Chuyển hướng dựa trên role
     switch (role) {

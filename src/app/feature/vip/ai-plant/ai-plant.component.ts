@@ -99,26 +99,13 @@ export class AiPlantComponent implements OnInit {
         const base64PayloadDecoded = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
         const payload = JSON.parse(window.atob(base64PayloadDecoded));
         
-        console.log('🔍 [VIP AI Plant] JWT Debug:', {
-          header,
-          payload,
-          algorithm: header.alg,
-          userId: payload.userId,
-          role: payload.role,
-          exp: new Date(payload.exp * 1000),
-          isExpired: Date.now() > payload.exp * 1000
-        });
+        // JWT Debug info removed for security
       } catch (e) {
         console.error('JWT decode error:', e);
       }
     }
     
-    console.log('🔍 [VIP AI Plant] Debug info:', {
-      role,
-      userId,
-      hasToken: !!token,
-      tokenLength: token ? token.length : 0
-    });
+    // Debug info removed for security
 
     if (role !== 'VIP' && role !== 'EXPERT') {
       this.toastService.show(`Tính năng này chỉ dành cho VIP. Quyền hiện tại: ${role}`, 'error');
@@ -135,7 +122,7 @@ export class AiPlantComponent implements OnInit {
 
   private getAuthHeadersForFormData(): HttpHeaders {
     const token = this.cookieService.getCookie('auth_token');
-    console.log('🔑 Creating FormData headers with token:', token ? 'Present' : 'Missing');
+    // Creating FormData headers with token
     
     if (!token) {
       console.error('No auth token found in cookies!');
@@ -170,7 +157,7 @@ export class AiPlantComponent implements OnInit {
           if (this.isValidating) {
             this.isValidating = false;
             this.cdr.detectChanges();
-            console.log('Fallback: Cleared validation loading state');
+            // Fallback: Cleared validation loading state
           }
         }, 2000); // 2 second fallback
       };
@@ -196,7 +183,7 @@ export class AiPlantComponent implements OnInit {
     const timeout = setTimeout(() => {
       this.isValidating = false;
       this.cdr.detectChanges();
-      console.log('Validation timeout - clearing loading state');
+      // Validation timeout - clearing loading state
     }, 3000); // 3 second timeout - much shorter
 
     this.http.post<any>(this.getApiEndpoint('/ai/validate-plant-image'), formData, { 
@@ -206,7 +193,7 @@ export class AiPlantComponent implements OnInit {
         next: (response) => {
           clearTimeout(timeout);
           this.isValidating = false;
-          console.log('Validation response:', response); // Debug log
+          // Validation response received
           if (!response.data && response.data !== true) {
             this.toastService.show('Hình ảnh này có thể không chứa cây trồng. Bạn vẫn có thể tiếp tục nhận diện.', 'warning');
           }
@@ -239,7 +226,7 @@ export class AiPlantComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     if (userId) {
       formData.append('userId', userId.toString());
-      console.log('Adding userId to FormData:', userId);
+      // Adding userId to FormData
     } else {
       console.warn('No userId found for AI plant identification');
       this.toastService.show('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
@@ -247,14 +234,7 @@ export class AiPlantComponent implements OnInit {
       return;
     }
 
-    // Debug: Log token and headers
-    const token = this.cookieService.getCookie('auth_token');
-    console.log('🔍 [AI Plant] Making request with:', {
-      endpoint: this.getApiEndpoint('/ai/identify-plant'),
-      userId,
-      hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-    });
+    // Making request with auth headers
 
     this.http.post<any>(this.getApiEndpoint('/ai/identify-plant'), formData, { 
       headers: this.getAuthHeadersForFormData() 
@@ -262,7 +242,7 @@ export class AiPlantComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.isLoading = false;
-          console.log('Full response:', response); // Debug log để xem cấu trúc response
+          // Full response received
           setTimeout(() => {
             // Kiểm tra response status và data
             if (response.status === 200 && response.data && response.data.results) {
@@ -330,7 +310,7 @@ export class AiPlantComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.isLoading = false;
-          console.log('Search response:', response); // Debug log
+          // Search response received
           
           // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
           setTimeout(() => {
@@ -392,13 +372,13 @@ export class AiPlantComponent implements OnInit {
    */
   testJwtValidation() {
     const token = this.cookieService.getCookie('auth_token');
-    console.log('🧪 Testing JWT with backend...');
+    // Testing JWT with backend
     
     this.http.get(this.getApiEndpoint('/ai/test-api-key'), {
       headers: this.getAuthHeaders()
     }).subscribe({
       next: (response) => {
-        console.log('✅ JWT test passed:', response);
+        // JWT test passed
         this.toastService.show('JWT validation thành công', 'success');
       },
       error: (error) => {

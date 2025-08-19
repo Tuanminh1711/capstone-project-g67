@@ -17,7 +17,6 @@ export class AdminAuthGuard implements CanActivate, CanActivateChild {
   private checkAdminOrLogin(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const role = this.authService.getCurrentUserRole();
     const url = state && state.url ? state.url : (this.router.url || '');
-    console.log('[GUARD DEBUG] role:', role, '| url:', url);
     // Nếu đã đăng nhập (admin, staff, hoặc expert) mà vào /login-admin thì redirect về trang tương ứng
     if ((role === 'ADMIN' || role === 'STAFF') && url === '/login-admin') {
       return this.router.createUrlTree(['/admin']);

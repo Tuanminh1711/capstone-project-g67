@@ -16,6 +16,12 @@ export interface ChatMessage {
   chatType?: 'COMMUNITY' | 'PRIVATE';
 }
 
+export interface TypingIndicator {
+  conversationId: string;
+  isTyping: boolean;
+  userId?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -157,13 +163,28 @@ export class ExpertChatStompService {
 
   sendPrivateMessage(message: ChatMessage): Promise<void> {
     if (this.connected && this.client) {
+      const token = this.cookieService.getAuthToken();
       this.client.publish({
         destination: '/app/chat.sendPrivateMessage',
         body: JSON.stringify(message),
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       return Promise.resolve();
     }
+    this.errorSubject.next('WebSocket chưa kết nối');
+    return Promise.reject('WebSocket not connected');
+  }
 
+  sendTypingIndicator(typingIndicator: TypingIndicator): Promise<void> {
+    if (this.connected && this.client) {
+      const token = this.cookieService.getAuthToken();
+      this.client.publish({
+        destination: '/app/chat.typingIndicator',
+        body: JSON.stringify(typingIndicator),
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      return Promise.resolve();
+    }
     this.errorSubject.next('WebSocket chưa kết nối');
     return Promise.reject('WebSocket not connected');
   }

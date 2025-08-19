@@ -138,10 +138,10 @@
                       </div>
                       <!-- Nhắc nhở chăm sóc: chuyển lên góc trên bên phải -->
                       <div class="reminder-floating-btns">
-                        <button type="button" class="reminder-icon-btn" [class.active]="reminderEnabledMap[plant.userPlantId] === true" (click)="toggleAllReminders(plant); $event.stopPropagation()" title="{{ reminderEnabledMap[plant.userPlantId] === true ? 'Tắt tất cả nhắc nhở' : 'Bật tất cả nhắc nhở' }}">
+                        <button type="button" class="reminder-icon-btn" [class.active]="reminderEnabledMap[plant.userPlantId] === true" (click)="toggleAllReminders(plant); $event.stopPropagation()" title="{{ reminderEnabledMap[plant.userPlantId] === true ? 'Tắt tất cả nhắc nhở' : 'Thiết lập lịch nhắc nhở mặc định (8h sáng, 1 ngày/lần)' }}">
                           <i class="fas" [ngClass]="reminderEnabledMap[plant.userPlantId] === true ? 'fa-bell' : 'fa-bell-slash'"></i>
                         </button>
-                        <button type="button" class="reminder-icon-btn outline" (click)="openReminderTypeDialog(plant); $event.stopPropagation()" title="Tuỳ chỉnh nhắc nhở">
+                        <button type="button" class="reminder-icon-btn outline" (click)="openReminderTypeDialog(plant); $event.stopPropagation()" title="Chọn những loại nhắc nhở muốn bật (những loại không chọn sẽ bị tắt)">
                           <i class="fas fa-sliders-h"></i>
                         </button>
                       </div>

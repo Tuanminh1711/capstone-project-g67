@@ -51,7 +51,6 @@ export class AdminSupportTicketsListComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error checking ticket access:', error);
         this.toast.error('Có lỗi xảy ra khi kiểm tra quyền truy cập ticket');
       }
     });
@@ -91,7 +90,6 @@ export class AdminSupportTicketsListComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   openClaimDialog(ticket: AdminSupportTicket) {
-    console.log(`[DEBUG] openClaimDialog called for ticket ${ticket.ticketId} with status ${ticket.status}`);
     const dialogRef = this.dialog.open(ClaimTicketDialogComponent, {
       data: { ticketId: ticket.ticketId },
       width: '400px',
@@ -169,11 +167,7 @@ export class AdminSupportTicketsListComponent implements OnInit {
         this.totalPages = res.totalPages;
         this.page = res.number;
         
-        // Debug: log ticket statuses
-        console.log(`[DEBUG] Loaded ${this.tickets.length} tickets:`);
-        this.tickets.forEach((ticket, index) => {
-          console.log(`  ${index + 1}. Ticket ${ticket.ticketId}: status = "${ticket.status}"`);
-        });
+        // Tickets loaded successfully
         
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -240,7 +234,7 @@ export class AdminSupportTicketsListComponent implements OnInit {
 
   // Check if ticket can be claimed (only when OPEN)
   canClaimTicket(ticket: AdminSupportTicket): boolean {
-    console.log(`[DEBUG] canClaimTicket for ticket ${ticket.ticketId}: status = ${ticket.status}, can claim = ${ticket.status === 'OPEN'}`);
+    // canClaimTicket check completed
     return ticket.status === 'OPEN';
   }
 
@@ -281,7 +275,6 @@ export class AdminSupportTicketsListComponent implements OnInit {
         }, 0);
       },
       error: (error) => {
-        console.error('Error reopening ticket:', error);
         this.toast.error('Có lỗi xảy ra khi mở lại ticket');
       }
     });

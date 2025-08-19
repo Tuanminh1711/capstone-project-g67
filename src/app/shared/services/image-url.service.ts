@@ -35,13 +35,11 @@ export class ImageUrlService {
 
     // If it's a full HTTP/HTTPS URL (Azure Blob), use as-is since avatar works fine
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      console.log('🌐 Using original Azure URL:', imageUrl);
       return imageUrl;
     }
 
     // If it's an API path (/api/user-plants/...), use it directly through proxy
     if (imageUrl.startsWith('/api/')) {
-      console.log('🔗 Using API URL through proxy:', imageUrl);
       return imageUrl;
     }
 
@@ -51,7 +49,6 @@ export class ImageUrlService {
       return this.constructAzureUrl(imageUrl);
     } else {
       // In development, try to construct API path first
-      console.log('🔄 Creating fallback for:', imageUrl);
       return this.getLocalFallback(imageUrl);
     }
   }
@@ -82,19 +79,17 @@ export class ImageUrlService {
       // Decode the entire URL first to handle %2F encoding
       const decodedUrl = decodeURIComponent(originalUrl);
       
-      console.log('🔧 Original URL:', originalUrl);
-      console.log('🔧 Decoded URL:', decodedUrl);
+      // URL processing for malformed Azure blob URLs
       
       const url = new URL(decodedUrl);
       const pathname = url.pathname; // Already decoded now
       
       // Check if the URL has malformed structure like /container/user-plants/{id}.jpg/{realId}.jpg
       if (pathname.includes('/user-plants/') && pathname.includes('.jpg/')) {
-        console.log('🔧 Detected malformed path structure:', pathname);
+        // Detected malformed path structure
         
         // Split the path and find the real image filename
         const pathSegments = pathname.split('/').filter(s => s.length > 0);
-        console.log('🔧 Path segments:', pathSegments);
         
         // Find the segment that looks like a UUID or real filename (usually the last one)
         let realImageName = '';
@@ -111,14 +106,13 @@ export class ImageUrlService {
         if (realImageName) {
           const containerName = pathSegments[1] || 'plantcare-storage';
           const fixedUrl = `${url.protocol}//${url.host}/${containerName}/${realImageName}`;
-          console.log('🔧 Fixed Azure URL:', fixedUrl);
           return fixedUrl;
         }
       }
       
       // Check if URL has avatars path structure (similar issue might exist)
       if (pathname.includes('/avatars/') && pathname.includes('.png/')) {
-        console.log('🔧 Detected malformed avatar path structure:', pathname);
+        // Detected malformed avatar path structure
         
         const pathSegments = pathname.split('/').filter(s => s.length > 0);
         let realImageName = '';
@@ -135,7 +129,6 @@ export class ImageUrlService {
         if (realImageName) {
           const containerName = pathSegments[1] || 'plantcare-storage';
           const fixedUrl = `${url.protocol}//${url.host}/${containerName}/${realImageName}`;
-          console.log('🔧 Fixed Avatar URL:', fixedUrl);
           return fixedUrl;
         }
       }
@@ -188,8 +181,8 @@ export class ImageUrlService {
       // Create simple local asset path
       const localPath = this.localImagePrefix + filename;
       
-      console.log(`🔄 Using local fallback: ${originalUrl} → ${localPath}`);
-      return localPath;
+              // Using local fallback
+        return localPath;
     } catch (error) {
       console.warn('Failed to create local fallback for:', originalUrl, error);
       return this.defaultPlantImage;
@@ -221,7 +214,7 @@ export class ImageUrlService {
     const containerName = 'plantcare-storage';
     const azureUrl = `https://${storageAccount}.blob.core.windows.net/${containerName}/${cleanImagePath}`;
     
-    console.log(`🔗 Constructed Azure URL: ${imagePath} → ${azureUrl}`);
+    // Constructed Azure URL
     return azureUrl;
   }
 
@@ -261,7 +254,7 @@ export class ImageUrlService {
    */
   clearFailedImagesCache(): void {
     this.failedImages.clear();
-    console.log('🧹 Cleared failed images cache');
+    // Cleared failed images cache
   }
 
   /**
@@ -289,12 +282,10 @@ export class ImageUrlService {
       "user-plants/some-id.jpg/real-image.jpg"
     ];
 
-    console.log('🧪 Testing URL fixes:');
+    // Testing URL fixes
     testUrls.forEach(url => {
       const fixed = this.getImageUrl(url);
-      console.log(`  Input:  ${url}`);
-      console.log(`  Output: ${fixed}`);
-      console.log('  -----');
+      // URL fix test completed
     });
   }
 }

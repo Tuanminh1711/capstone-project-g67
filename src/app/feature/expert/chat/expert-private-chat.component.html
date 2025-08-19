@@ -1,6 +1,15 @@
 <div class="expert-private-chat-container">
     <!-- Conversation List -->
     <div class="conversation-list" *ngIf="showConversationList">
+      <!-- Debug Info -->
+      <div style="background: #e8f4fd; padding: 10px; margin: 10px; border-radius: 5px; font-size: 12px;">
+        <strong>DEBUG INFO:</strong><br>
+        showConversationList: {{ showConversationList }}<br>
+        selectedConversation: {{ selectedConversation ? 'YES' : 'NO' }}<br>
+        conversations count: {{ conversations.length }}<br>
+        loading: {{ loading }}
+      </div>
+      
       <div class="conversation-header">
         <h2>Tin nhắn riêng tư</h2>
         <p class="subtitle">Quản lý các cuộc trò chuyện với VIP users</p>
@@ -24,9 +33,11 @@
       <div *ngIf="!loading && conversations.length > 0" class="conversations">
         <div *ngFor="let conversation of conversations" 
              class="conversation-item"
-             [class.active]="selectedConversation?.conversationId === conversation.conversationId"
+             [class.active]="selectedConversation && selectedConversation.conversationId === conversation.conversationId"
              [class.unread]="conversation.hasUnreadMessages"
-             (click)="selectConversation(conversation)">
+             (click)="selectConversation(conversation)"
+             (touchstart)="onTouchStart($event, conversation)"
+             (touchend)="onTouchEnd($event, conversation)">
           
           <div class="conversation-avatar">
             <span>{{ conversation.otherUsername.charAt(0).toUpperCase() }}</span>
@@ -53,6 +64,15 @@
 
     <!-- Chat Interface Messenger Style -->
     <div class="messenger-main" *ngIf="!showConversationList && selectedConversation">
+      <!-- Debug Info -->
+      <div style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px; font-size: 12px;">
+        <strong>DEBUG INFO:</strong><br>
+        showConversationList: {{ showConversationList }}<br>
+        selectedConversation: {{ selectedConversation ? 'YES' : 'NO' }}<br>
+        selectedConversation ID: {{ selectedConversation ? selectedConversation.conversationId : 'N/A' }}<br>
+        messages count: {{ messages.length }}
+      </div>
+      
       <!-- Chat Header -->
       <div class="chat-header">
         <button class="back-btn" (click)="backToConversations()">

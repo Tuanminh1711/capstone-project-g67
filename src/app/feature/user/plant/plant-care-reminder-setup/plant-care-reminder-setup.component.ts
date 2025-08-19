@@ -289,12 +289,29 @@ export class PlantCareReminderSetupComponent {
   // Hàm bật tất cả nhắc nhở với trạng thái mặc định 8h sáng ngày hôm sau
   enableAllRemindersDefaultTomorrow8h() {
     this.schedules.clear();
-    // Tạo schedule cho tất cả loại chăm sóc
+    
+    // Lấy ngày mai
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const startDate = tomorrow.toISOString().slice(0, 10); // yyyy-MM-dd
+    
+    // Tạo schedule cho tất cả loại chăm sóc với thông tin mặc định đầy đủ
     for (const type of this.careTypes) {
-      this.addSchedule(type.id, true);
+      this.schedules.push(this.fb.group({
+        careTypeId: [type.id, Validators.required],
+        enabled: [true],
+        frequencyDays: [1, [Validators.required, Validators.min(1)]],
+        reminderTime: ['08:00', Validators.required],
+        customMessage: ['Đã tới giờ chăm sóc cây', [Validators.maxLength(100), this.customMessageValidator]],
+        startDate: [startDate, Validators.required]
+      }));
     }
+    
     // Hiện tất cả
     this.selectedCareTypeId = 0;
+    
+    // Hiển thị thông báo
+    this.toast.success('Đã thiết lập lịch nhắc nhở mặc định: 8h sáng, 1 ngày/lần, bắt đầu từ ngày mai!');
   }
 
   getCareTypeName(id: number): string {

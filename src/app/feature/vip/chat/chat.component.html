@@ -88,7 +88,10 @@
 
       <!-- Expert Chats -->
       <div class="expert-list">
-        <div class="chat-category-item" *ngFor="let expert of experts" (click)="startConversationWithExpert(expert)">
+        <div class="chat-category-item" *ngFor="let expert of experts" 
+             (click)="startConversationWithExpert(expert)"
+             (touchstart)="onTouchStart($event, expert)"
+             (touchend)="onTouchEnd($event, expert)">
           <div class="category-avatar expert-avatar">
             {{ expert.username.charAt(0).toUpperCase() }}
           </div>
@@ -101,7 +104,10 @@
 
       <!-- Recent Conversations -->
       <div class="recent-conversations" *ngIf="conversations.length > 0">
-        <div class="chat-category-item" *ngFor="let conversation of conversations" (click)="selectConversation(conversation)">
+        <div class="chat-category-item" *ngFor="let conversation of conversations" 
+             (click)="selectConversation(conversation)"
+             (touchstart)="onTouchStartConversation($event, conversation)"
+             (touchend)="onTouchEndConversation($event, conversation)">
           <div class="category-avatar">
             {{ conversation.otherUsername.charAt(0).toUpperCase() }}
           </div>

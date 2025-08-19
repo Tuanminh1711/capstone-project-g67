@@ -84,6 +84,11 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   validationErrors: string[] = [];
   sidebarCollapsed = false;
 
+  // --- IMAGE UPLOAD LOGIC ---
+  selectedNewImageFile: File | null = null;
+  newImagePreviewUrl: string | null = null;
+  isUploadingImage: boolean = false;
+
   updateForm: UpdatePlantRequest = {
     scientificName: '',
     commonName: '',
@@ -107,6 +112,91 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
 
   private toast = inject(ToastService);
   private authService = inject(AuthService);
+
+  // Helper to get correct image src from BE filename or url
+  getPlantImageSrc(imageUrl: string): string {
+    if (!imageUrl) return '';
+    if (/^https?:\/\//.test(imageUrl)) {
+      if (imageUrl.includes('plantcarestorage.blob.core.windows.net')) {
+        return imageUrl;
+      }
+      return imageUrl;
+    }
+    let filename = imageUrl;
+    if (imageUrl.includes('/')) filename = imageUrl.split('/').pop() || imageUrl;
+    return `/api/manager/plants/${filename}`;
+  }
+  // Handle file input change for new image
+  onNewImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedNewImageFile = input.files[0];
+      // Hiện preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.newImagePreviewUrl = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(this.selectedNewImageFile);
+    } else {
+      this.selectedNewImageFile = null;
+      this.newImagePreviewUrl = null;
+    }
+  }
+
+  // Upload new image for plant (max 3 images, if 3 then remove first, set new as primary)
+  onUploadNewImage(): void {
+    if (!this.plantId || !this.selectedNewImageFile) {
+      this.toast.error('Vui lòng chọn ảnh để tải lên.');
+      return;
+    }
+    if (!this.plant) return;
+    const images = Array.isArray(this.plant.images) ? this.plant.images : [];
+    const formData = new FormData();
+    formData.append('images', this.selectedNewImageFile);
+    let deleteImageIds: number[] = [];
+    // Nếu đã đủ 3 ảnh, xóa ảnh đầu tiên
+    if (images.length >= 3) {
+      deleteImageIds = [images[0].id];
+    }
+    this.isUploadingImage = true;
+    this.setError('');
+    this.setSuccess('');
+    const apiUrl = `/api/manager/update-plant-images/${this.plantId}`;
+    formData.append('deleteImageIds', deleteImageIds.join(','));
+    this.http.put<ApiResponse>(apiUrl, formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.zone.run(() => {
+            this.isUploadingImage = false;
+            if (response && (response.success === true || response.status === 200)) {
+              this.toast.success('Tải ảnh lên thành công!');
+              this.setSuccess('Tải ảnh lên thành công!');
+              this.selectedNewImageFile = null;
+              this.newImagePreviewUrl = null;
+              this.loadPlantData();
+            } else {
+              this.toast.error(response.message || 'Tải ảnh lên thất bại!');
+              this.setError(response.message || 'Tải ảnh lên thất bại!');
+            }
+            this.cdr.detectChanges();
+          });
+        },
+        error: (error) => {
+          this.zone.run(() => {
+            this.isUploadingImage = false;
+            let msg = 'Có lỗi xảy ra khi tải ảnh lên!';
+            if (error && error.error && error.error.message) {
+              msg = error.error.message;
+            }
+            this.toast.error(msg);
+            this.setError(msg);
+            this.cdr.detectChanges();
+          });
+        }
+      });
+  }
 
   constructor(
     private route: ActivatedRoute,

@@ -111,6 +111,8 @@ export class ExpertSidebarComponent implements OnInit {
   }
 
   navigateToUserChat(user: any) {
+    console.log('🎯 [DEBUG] navigateToUserChat called with user:', user);
+    console.log('🔄 [DEBUG] Navigating to /expert/private-chat with conversationId:', user.conversationId);
     this.router.navigate(['/expert/private-chat'], { queryParams: { conversationId: user.conversationId } });
     // Dropdown luôn mở
   }

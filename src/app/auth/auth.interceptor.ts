@@ -25,12 +25,10 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const isAuthApi = ['/api/auth/login', '/api/auth/register'].some(url => request.url.includes(url));
   if (token && !isAuthApi) {
     headers = headers.set('Authorization', `Bearer ${token}`);
-    // Debug log for add plant endpoint
-    if (request.url.includes('/user-plants/add')) {
-      console.log('Interceptor - Adding Authorization header for add plant:', `Bearer ${token.substring(0, 20)}...`);
-    }
+    // Authorization header added for add plant endpoint
+    // Debug logging removed for security
   } else if (request.url.includes('/user-plants/add')) {
-    console.log('Interceptor - No token found for add plant request');
+    // No token found for add plant request
   }
 
   // Chuẩn bị URL cho môi trường production
@@ -54,22 +52,18 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       
       if (shouldLog) {
         console.error('API Error:', error);
-        console.log('Interceptor - Error details:');
-        console.log('- Status:', error.status);
-        console.log('- StatusText:', error.statusText);
-        console.log('- URL:', error.url);
-        console.log('- Error object type:', typeof error.error);
-        console.log('- Error object value:', error.error);
-        
-        if (error.error && typeof error.error === 'object') {
-          console.log('- Error object keys:', Object.keys(error.error));
-          console.log('- Error object JSON:', JSON.stringify(error.error, null, 2));
-        }
+        // Detailed error logging removed for security
+        // Only log essential error information
       }
       
-      // Xử lý thông báo lỗi
+      // Xử lý thông báo lỗi - cải thiện để xử lý cả JSON và text responses
       let errorMessage = 'An unknown error occurred';
-      if (error.error) {
+      
+      // Kiểm tra nếu error.error là SyntaxError (JSON parsing failed)
+      if (error.error instanceof SyntaxError) {
+        // JSON parsing failed, response might be plain text
+        errorMessage = 'Response format error - server returned non-JSON data';
+      } else if (error.error) {
         if (typeof error.error === 'string') {
           errorMessage = error.error;
         } else if (error.error.message) {
@@ -81,7 +75,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         errorMessage = error.message;
       }
       
-      console.log('Final error message to throw:', errorMessage);
+      // Final error message prepared
       return throwError(() => new Error(errorMessage));
     })
   );

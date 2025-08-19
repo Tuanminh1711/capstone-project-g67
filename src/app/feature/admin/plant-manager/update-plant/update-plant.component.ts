@@ -64,7 +64,7 @@ interface ApiResponse<T = any> {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './update-plant.component.html',
-  styleUrls: ['./update-plant.scss']
+  styleUrls: ['./update-plant.component.scss']
 })
 export class UpdatePlantComponent extends BaseAdminListComponent implements OnInit, OnDestroy {
   // Toast service instance

@@ -1,102 +1,105 @@
-/* Style cho khung ảnh upload mới - Thiết kế đẹp và vừa vặn */
-.plant-image-upload-block {
+// Approve report title and workflow
+// Dùng chung cho các nút bị disable
+.btn-disabled, .btn:disabled, .btn.primary.disabled {
+  background: #bdbdbd !important;
+  color: #fff !important;
+  border: 1.5px solid #bdbdbd !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+  box-shadow: none !important;
+  pointer-events: auto;
+}
+// Required star style
+.required-star {
+  color: #e53935;
+  font-size: 1.1em;
+  margin-left: 2px;
+  font-weight: bold;
+}
+.loading-section {
+  text-align: center;
+  margin: 32px 0;
+}
+.alert {
+  border-radius: 6px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  font-size: 1rem;
+}
+.alert.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1.5px solid #ffcdd2;
+}
+.alert.success {
+  background: #e8f5e9;
+  color: #218a5a;
+  border: 1.5px solid #43b06d;
+}
+.alert.warning {
+  background: #fffde7;
+  color: #fbc02d;
+  border: 1.5px solid #ffe082;
+}
+.update-plant-content {
+  display: flex;
+  gap: 36px;
+  align-items: flex-start;
+}
+.plant-image-block {
+  flex: 0 0 180px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  width: 140px;
-  margin: 20px 0 24px 0;
-  padding-left: 20px;
-  border-left: 2px solid #e0e0e0;
+  min-width: 160px;
 }
-
-.upload-center {
+.plant-image-gallery {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 140px;
+  flex-direction: row;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
 }
-
-.image-upload-plus {
+.upload-btn-abs {
+  margin-top: 16px;
+  width: 140px;
   display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  background: linear-gradient(90deg, #43b06d 60%, #218a5a 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px #e0e0e0;
   cursor: pointer;
-  margin: 0;
-  position: relative;
-  width: 140px;
-  height: 140px;
-  transition: all 0.3s ease;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+  letter-spacing: 0.5px;
 }
-
-.image-upload-plus .upload-img-frame {
-  width: 140px;
-  height: 140px;
-  border: 2px solid #43b06d;
-  border-radius: 12px;
-  background: #fafafa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 16px rgba(67, 176, 109, 0.15);
-  margin: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.upload-btn-abs:hover:not(:disabled) {
+  background: linear-gradient(90deg, #218a5a 60%, #43b06d 100%);
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 4px 16px #b2dfdb;
 }
-
-.image-upload-plus:hover .upload-img-frame {
-  border-color: #218a5a;
-  background: #f8f9fa;
-  box-shadow: 0 6px 20px rgba(67, 176, 109, 0.25);
-  transform: translateY(-2px);
-}
-
-.image-upload-plus.disabled .upload-img-frame {
-  opacity: 0.6;
-  pointer-events: none;
+.upload-btn-abs:disabled {
+  background: #bdbdbd;
+  color: #fff;
   cursor: not-allowed;
-  background: #f5f5f5;
-  border-color: #bdbdbd;
+  opacity: 0.7;
 }
-
-.upload-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.upload-img-icon {
-  width: 48px;
-  height: 48px;
+.plant-image-gallery img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #e0e0e0;
+  background: #fafafa;
+  border: 1.5px solid #43b06d;
   display: block;
-  margin-bottom: 8px;
-  opacity: 0.9;
-  filter: drop-shadow(0 2px 4px rgba(67, 176, 109, 0.2));
-  transition: all 0.3s ease;
-}
-
-.image-upload-plus:hover .upload-img-icon {
-  transform: scale(1.1);
-  filter: drop-shadow(0 4px 8px rgba(67, 176, 109, 0.3));
-}
-
-.upload-placeholder-text {
-  font-size: 1rem;
-  color: #43b06d;
-  font-weight: 600;
-  text-align: center;
-  user-select: none;
-  line-height: 1.3;
-  transition: all 0.3s ease;
-}
-
-.image-upload-plus:hover .upload-placeholder-text {
-  color: #218a5a;
-  transform: scale(1.05);
+  margin-right: 0;
 }
 
 .preview-img {
@@ -104,144 +107,154 @@
   height: 140px;
   object-fit: cover;
   border-radius: 10px;
-  display: block;
+  box-shadow: 0 2px 8px #e0e0e0;
   background: #fafafa;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1.5px solid #43b06d;
+  display: block;
 }
-
-.image-upload-plus:hover .preview-img {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.no-image {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 10px;
+  color: #bdbdbd;
+  font-size: 1rem;
+  border: 1.5px dashed #43b06d;
 }
-
-.upload-btn-abs {
-  margin-top: 16px;
-  width: 130px;
-  height: 40px;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #43b06d 0%, #38a169 100%);
-  color: white;
+.plant-form-block {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+.form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.form-group {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+label {
+  font-weight: 600;
+  color: #218a5a;
+  margin-bottom: 2px;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1.5px solid #43b06d;
+  font-size: 1rem;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border 0.18s;
+  color: #222;
+}
+input:focus, textarea:focus, select:focus {
+  border: 1.5px solid #218a5a;
+  outline: none;
+}
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+.btn {
+  padding: 7px 18px;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 600;
-  box-shadow: 0 3px 12px rgba(67, 176, 109, 0.3);
-  position: relative;
-  overflow: hidden;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
-
-.upload-btn-abs::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+.btn.ghost {
+  background: #f5f5f5;
+  color: #218a5a;
+  border: 1.5px solid #43b06d;
 }
-
-.upload-btn-abs:hover::before {
-  left: 100%;
+.btn.secondary {
+  background: #e0f7ef;
+  color: #218a5a;
+  border: 1.5px solid #43b06d;
 }
-
-.upload-btn-abs:hover {
-  background: linear-gradient(135deg, #218a5a 0%, #1a5f3a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(67, 176, 109, 0.4);
+.btn.primary {
+  background: #43b06d;
+  color: #fff;
+  border: 1.5px solid #218a5a;
 }
-
-.upload-btn-abs:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 12px rgba(67, 176, 109, 0.3);
-}
-
-.upload-btn-abs:disabled {
-  background: linear-gradient(135deg, #bdbdbd 0%, #a0a0a0 100%);
+.btn.primary:disabled {
+  background: #bdbdbd;
+  color: #fff;
+  border: 1.5px solid #bdbdbd;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: 0 2px 8px rgba(189, 189, 189, 0.3);
 }
 
-.upload-btn-abs:disabled::before {
-  display: none;
+.btn.primary.disabled {
+  background: #bdbdbd;
+  color: #fff;
+  border: 1.5px solid #bdbdbd;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-/* Responsive design cho khung ảnh upload */
-@media (max-width: 768px) {
-  .plant-image-upload-block {
-    width: 120px;
-    margin: 16px 0 20px 0;
-    padding-left: 16px;
-  }
+// Enhanced tooltips
+.btn[title] {
+  position: relative;
   
-  .upload-center {
-    width: 120px;
-  }
-  
-  .image-upload-plus {
-    width: 120px;
-    height: 120px;
-  }
-  
-  .image-upload-plus .upload-img-frame {
-    width: 120px;
-    height: 120px;
-    border-radius: 10px;
-  }
-  
-  .preview-img {
-    width: 120px;
-    height: 120px;
-  }
-  
-  .upload-btn-abs {
-    width: 110px;
-    height: 36px;
+  &:hover::before {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
     font-size: 0.85rem;
-    margin-top: 14px;
+    font-weight: 400;
+    z-index: 1000;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   
-  .upload-img-icon {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .upload-placeholder-text {
-    font-size: 0.9rem;
-  }
-}
-
-/* Animation cho khung upload */
-.image-upload-plus {
-  animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  &:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 1001;
+    margin-bottom: 2px;
   }
 }
 
-/* Hiệu ứng loading */
-.image-upload-plus.uploading .upload-img-frame {
-  animation: pulse 1.5s ease-in-out infinite;
+.update-plant-header {
+  margin-top: 32px;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
+@media (max-width: 768px) {
+  .update-plant-header {
+    margin-top: 20px;
   }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
-  }
+}
+
+.update-plant-page {
+  padding-top: 32px;
 }

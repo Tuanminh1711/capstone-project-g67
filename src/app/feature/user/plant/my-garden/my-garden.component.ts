@@ -130,19 +130,26 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   toggleAllReminders(plant: UserPlant): void {
     if (!plant) return;
     const enable = !this.reminderEnabledMap[plant.userPlantId];
-    // Lấy schedules mặc định (có message và giờ) và set enabled theo trạng thái mong muốn
-    const schedules = getDefaultCareReminders().map(s => ({
-      ...s,
-      enabled: enable
-    }));
-    this.careReminderService.updateCareReminders(plant.userPlantId, schedules).subscribe({
+    
+    // Sử dụng service mới để thiết lập lịch mặc định hoàn chỉnh
+    this.careReminderService.setupDefaultCareReminders(
+      plant.userPlantId,
+      enable,           // enabled status
+      1,                // frequencyDays: 1 ngày
+      '08:00',          // reminderTime: 8h sáng
+      'Đã tới giờ chăm sóc cây'  // customMessage
+    ).subscribe({
       next: (res) => {
         // Sau khi cập nhật, reload lại toàn bộ danh sách cây để đảm bảo đồng bộ trạng thái
         this.loadPlantDataImmediate();
         if (typeof res === 'string' && res.includes('thành công')) {
           this.toastService.success(res);
         } else {
-          this.toastService.success(enable ? 'Đã bật tất cả nhắc nhở cho cây!' : 'Đã tắt tất cả nhắc nhở cho cây!');
+          if (enable) {
+            this.toastService.success('Đã thiết lập lịch nhắc nhở mặc định cho cây!', 5000);
+          } else {
+            this.toastService.success('Đã tắt tất cả nhắc nhở cho cây!');
+          }
         }
         this.cdr.markForCheck();
       },
@@ -160,7 +167,25 @@ export class MyGardenComponent implements OnInit, OnDestroy {
   openReminderTypeDialog(plant: UserPlant): void {
     this.careReminderService.getCareReminders(plant.userPlantId).subscribe({
       next: (res) => {
-        this.careReminderDialogSchedules = res.schedules || CARE_TYPES.map(t => ({ careTypeId: t.careTypeId, enabled: true }));
+        // Nếu có schedules từ backend, sử dụng. Nếu không, tạo schedules mặc định đầy đủ
+        if (res.schedules && res.schedules.length > 0) {
+          this.careReminderDialogSchedules = res.schedules;
+        } else {
+          // Tạo schedules mặc định với thông tin lịch đầy đủ
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const startDate = tomorrow.toISOString().slice(0, 10);
+          
+          this.careReminderDialogSchedules = CARE_TYPES.map(type => ({
+            careTypeId: type.careTypeId,
+            enabled: true,
+            frequencyDays: 1,
+            reminderTime: '08:00',
+            customMessage: 'Đã tới giờ chăm sóc cây',
+            startDate: startDate
+          }));
+        }
+        
         this.careReminderDialogPlant = plant;
         this.showCareReminderDialog = true;
         this.cdr.markForCheck();
@@ -178,11 +203,32 @@ export class MyGardenComponent implements OnInit, OnDestroy {
         // Cập nhật trạng thái reminderEnabled tổng nếu tất cả đều bật hoặc tất cả đều tắt
         const allEnabled = schedules.every(s => s.enabled);
         this.careReminderDialogPlant!.reminderEnabled = allEnabled;
+        
         if (typeof res === 'string' && res.includes('thành công')) {
           this.toastService.success(res);
         } else {
-          this.toastService.success('Cập nhật nhắc nhở thành công!');
+          // Hiển thị thông báo chi tiết về lịch đã thiết lập
+          const enabledCount = schedules.filter(s => s.enabled).length;
+          const totalCount = schedules.length;
+          
+          if (enabledCount === 0) {
+            this.toastService.success('Đã tắt tất cả nhắc nhở cho cây!');
+          } else if (enabledCount === totalCount) {
+            this.toastService.success('Đã bật tất cả loại nhắc nhở với lịch mặc định: 8h sáng, 1 ngày/lần, bắt đầu từ ngày mai!', 6000);
+          } else {
+            // Hiển thị danh sách cụ thể những loại đã bật
+            const enabledTypes = schedules
+              .filter(s => s.enabled)
+              .map(s => {
+                const careType = CARE_TYPES.find(t => t.careTypeId === s.careTypeId);
+                return careType?.careTypeName || `Loại ${s.careTypeId}`;
+              })
+              .join(', ');
+            
+            this.toastService.success(`Đã bật ${enabledCount}/${totalCount} loại nhắc nhở: ${enabledTypes}`, 6000);
+          }
         }
+        
         this.showCareReminderDialog = false;
         this.cdr.markForCheck();
       },
@@ -269,20 +315,12 @@ export class MyGardenComponent implements OnInit, OnDestroy {
                 const validPlants = plants.filter((p: any) => {
                   // Kiểm tra cả plantId và userPlantId
                   if (!p.plantId || !p.userPlantId) {
-                    console.warn('Plant with null ID found:', {
-                      userPlantId: p.userPlantId,
-                      plantId: p.plantId,
-                      nickname: p.nickname
-                    });
+                    // Plant with null ID found - filtered out
                     return false;
                   }
                   // Đảm bảo plantId và userPlantId là số dương
                   if (isNaN(p.plantId) || isNaN(p.userPlantId) || p.plantId <= 0 || p.userPlantId <= 0) {
-                    console.warn('Plant with invalid ID found:', {
-                      userPlantId: p.userPlantId,
-                      plantId: p.plantId,
-                      nickname: p.nickname
-                    });
+                    // Plant with invalid ID found - filtered out
                     return false;
                   }
                   return true;
@@ -344,21 +382,13 @@ export class MyGardenComponent implements OnInit, OnDestroy {
                   const userPlantId = p.userPlantId || p.id;
                   
                   if (!plantId || !userPlantId) {
-                    console.warn('Plant with null ID found in fallback:', {
-                      userPlantId: userPlantId,
-                      plantId: plantId,
-                      nickname: p.nickname || p.name
-                    });
+                    // Plant with null ID found in fallback - filtered out
                     return false;
                   }
                   
                   // Đảm bảo IDs là số dương
                   if (isNaN(plantId) || isNaN(userPlantId) || plantId <= 0 || userPlantId <= 0) {
-                    console.warn('Plant with invalid ID found in fallback:', {
-                      userPlantId: userPlantId,
-                      plantId: plantId,
-                      nickname: p.nickname || p.name
-                    });
+                    // Plant with invalid ID found in fallback - filtered out
                     return false;
                   }
                   
@@ -452,7 +482,7 @@ export class MyGardenComponent implements OnInit, OnDestroy {
       this.toastService.error('Database integrity issue. Liên hệ admin để clean up data.');
       
       // Retry với một request khác để test
-      console.log('Attempting fallback request...');
+      // Attempting fallback request...
       setTimeout(() => {
         // Có thể thử call với page size nhỏ hơn hoặc offset khác
         this.attemptFallbackRequest();
@@ -503,14 +533,14 @@ export class MyGardenComponent implements OnInit, OnDestroy {
 
   // Fallback request method để test với parameters khác
   private attemptFallbackRequest(): void {
-    console.log('Attempting fallback request with different parameters...');
+    // Attempting fallback request with different parameters...
     
     // Thử request với page size nhỏ hơn
     this.http.get<any>(`${environment.apiUrl}/user-plants?page=0&size=5`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Fallback request successful:', response);
+          // Fallback request successful
           this.toastService.success('Đã khôi phục kết nối. Đang load dữ liệu...');
           // Process the response như bình thường
           this.processUserPlantsResponse(response);

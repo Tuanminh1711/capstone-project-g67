@@ -1,23 +1,5 @@
 <!-- Giao diện chuyên nghiệp, tối giản, không lạm dụng icon -->
 <div class="update-plant-page">
-  <div class="update-plant-header">
-    <h1>Chấp nhận Report</h1>
-    <p class="subtitle">Xem xét và chấp nhận báo cáo từ người dùng</p>
-    
-    <!-- Workflow guidance -->
-    <div class="workflow-guidance">
-      <div class="workflow-step" [class.completed]="hasPlantBeenSaved">
-        <span class="step-number">1</span>
-        <span class="step-text">Chỉnh sửa và lưu thông tin cây</span>
-        <span *ngIf="hasPlantBeenSaved" class="step-status">✓ Hoàn thành</span>
-      </div>
-      <div class="workflow-step" [class.completed]="canApprove()">
-        <span class="step-number">2</span>
-        <span class="step-text">Nhập ghi chú và chấp nhận báo cáo</span>
-        <span *ngIf="canApprove()" class="step-status">✓ Sẵn sàng</span>
-      </div>
-    </div>
-  </div>
 
   <div *ngIf="loading" class="loading-section">
     <div class="loading-card">
@@ -36,8 +18,42 @@
 
   <div *ngIf="plant && !loading" class="update-plant-content">
     <div class="plant-image-block">
-      <div *ngIf="plant.imageUrls && plant.imageUrls.length > 0" class="plant-image-gallery">
-        <img *ngFor="let imageUrl of plant.imageUrls" [src]="imageUrl" [alt]="plant.commonName" (error)="onImageError($event)" />
+      <div *ngIf="(plant.images && plant.images.length > 0) || (plant.imageUrls && plant.imageUrls.length > 0)" class="plant-image-gallery">
+        <ng-container *ngIf="plant.images && plant.images.length > 0; else showImageUrls">
+          <div *ngFor="let img of plant.images.slice(-3)" class="plant-image-item">
+            <img [src]="getPlantImageSrc(img.imageUrl)" [alt]="plant.commonName" (error)="onImageError($event)" [class.primary-image]="img.isPrimary" />
+          </div>
+        </ng-container>
+        <ng-template #showImageUrls>
+          <div *ngFor="let url of plant.imageUrls.slice(-3)" class="plant-image-item">
+            <img [src]="getPlantImageSrc(url)" [alt]="plant.commonName" (error)="onImageError($event)" />
+          </div>
+        </ng-template>
+      </div>
+      <div class="plant-image-upload-block">
+        <div class="upload-center">
+          <label class="image-upload-plus" [class.disabled]="isUploadingImage">
+            <input type="file" accept="image/*" (change)="onNewImageFileSelected($event)" [disabled]="isUploadingImage" hidden />
+            <div class="upload-img-frame">
+              <ng-container *ngIf="selectedNewImageFile; else showPlaceholder">
+                <img [src]="newImagePreviewUrl" alt="Preview" class="preview-img" />
+              </ng-container>
+              <ng-template #showPlaceholder>
+                <div class="upload-placeholder">
+                  <svg class="upload-img-icon" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="12" width="32" height="24" rx="4" fill="#e8f5e9"/>
+                    <rect x="8" y="12" width="32" height="24" rx="4" stroke="#43b06d" stroke-width="2"/>
+                    <circle cx="18" cy="22" r="3" fill="#c8e6c9" stroke="#43b06d" stroke-width="1.5"/>
+                    <path d="M13 32L20 25L28 33L33 28L39 34" stroke="#43b06d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </ng-template>
+            </div>
+          </label>
+          <button *ngIf="selectedNewImageFile" type="button" class="upload-btn-abs" (click)="onUploadNewImage()" [disabled]="isUploadingImage">
+            {{ isUploadingImage ? 'Đang tải lên...' : 'Thay đổi ảnh' }}
+          </button>
+        </div>
       </div>
       <div *ngIf="!plant.imageUrls || plant.imageUrls.length === 0" class="no-image">
         Không có ảnh
@@ -46,21 +62,21 @@
     <form (ngSubmit)="onSubmit()" #plantForm="ngForm" class="plant-form-block">
       <div class="form-row">
         <div class="form-group">
-          <label for="commonName">Tên thường gọi *</label>
+          <label for="commonName">Tên thường gọi <span class="required-star">*</span></label>
           <input id="commonName" type="text" [(ngModel)]="updateForm.commonName" name="commonName" required #commonName="ngModel" (ngModelChange)="onFieldChange()" />
         </div>
         <div class="form-group">
-          <label for="scientificName">Tên khoa học *</label>
+          <label for="scientificName">Tên khoa học <span class="required-star">*</span></label>
           <input id="scientificName" type="text" [(ngModel)]="updateForm.scientificName" name="scientificName" required #scientificName="ngModel" (ngModelChange)="onFieldChange()" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="categoryId">ID Danh mục *</label>
+          <label for="categoryId">ID Danh mục <span class="required-star">*</span></label>
           <input id="categoryId" type="number" [(ngModel)]="updateForm.categoryId" name="categoryId" required min="1" (ngModelChange)="onFieldChange()" />
         </div>
         <div class="form-group">
-          <label for="status">Trạng thái *</label>
+          <label for="status">Trạng thái <span class="required-star">*</span></label>
           <select id="status" [(ngModel)]="updateForm.status" name="status" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
           </select>
@@ -68,19 +84,19 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="lightRequirement">Yêu cầu ánh sáng *</label>
+          <label for="lightRequirement">Yêu cầu ánh sáng <span class="required-star">*</span></label>
           <select id="lightRequirement" [(ngModel)]="updateForm.lightRequirement" name="lightRequirement" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of lightRequirementOptions" [value]="option.value">{{ option.label }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="waterRequirement">Yêu cầu nước *</label>
+          <label for="waterRequirement">Yêu cầu nước <span class="required-star">*</span></label>
           <select id="waterRequirement" [(ngModel)]="updateForm.waterRequirement" name="waterRequirement" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of waterRequirementOptions" [value]="option.value">{{ option.label }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="careDifficulty">Độ khó chăm sóc *</label>
+          <label for="careDifficulty">Độ khó chăm sóc <span class="required-star">*</span></label>
           <select id="careDifficulty" [(ngModel)]="updateForm.careDifficulty" name="careDifficulty" required (ngModelChange)="onFieldChange()">
             <option *ngFor="let option of careDifficultyOptions" [value]="option.value">{{ option.label }}</option>
           </select>
@@ -88,7 +104,7 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="suitableLocation">Vị trí phù hợp</label>
+          <label for="suitableLocation">Vị trí phù hợp <span class="required-star">*</span></label>
           <select id="suitableLocation" [(ngModel)]="updateForm.suitableLocation" name="suitableLocation" (ngModelChange)="onFieldChange()" required>
             <option value="">-- Chọn vị trí phù hợp --</option>
             <option *ngFor="let option of suitableLocationOptions" [value]="option.value">{{ option.label }}</option>
@@ -97,42 +113,45 @@
       </div>
       <div class="form-row">
         <div class="form-group full-width">
-          <label for="description">Mô tả về cây</label>
-          <textarea id="description" [(ngModel)]="updateForm.description" name="description" rows="3" (ngModelChange)="onFieldChange()"></textarea>
+          <label for="description">Mô tả về cây <span class="required-star">*</span></label>
+          <textarea id="description" [(ngModel)]="updateForm.description" name="description" rows="3" required (ngModelChange)="onFieldChange()"></textarea>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group full-width">
-          <label for="careInstructions">Hướng dẫn chăm sóc</label>
-          <textarea id="careInstructions" [(ngModel)]="updateForm.careInstructions" name="careInstructions" rows="3" (ngModelChange)="onFieldChange()"></textarea>
+          <label for="careInstructions">Hướng dẫn chăm sóc <span class="required-star">*</span></label>
+          <textarea id="careInstructions" [(ngModel)]="updateForm.careInstructions" name="careInstructions" rows="3" required (ngModelChange)="onFieldChange()"></textarea>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group full-width">
-          <label for="commonDiseases">Bệnh thường gặp</label>
-          <input id="commonDiseases" type="text" [(ngModel)]="updateForm.commonDiseases" name="commonDiseases" (ngModelChange)="onFieldChange()" />
+          <label for="commonDiseases">Bệnh thường gặp <span class="required-star">*</span></label>
+          <input id="commonDiseases" type="text" [(ngModel)]="updateForm.commonDiseases" name="commonDiseases" required (ngModelChange)="onFieldChange()" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group full-width">
-          <label for="adminNotes">Ghi chú của admin *</label>
+          <label for="adminNotes">Ghi chú của admin <span class="required-star">*</span></label>
           <textarea id="adminNotes" [(ngModel)]="adminNotes" name="adminNotes" rows="3" placeholder="Nhập ghi chú về việc chấp nhận báo cáo này..." required (ngModelChange)="onFieldChange()"></textarea>
         </div>
       </div>
       <div class="form-actions">
         <button type="button" (click)="resetForm()" [disabled]="isUpdating || isApproving" class="btn ghost">Đặt lại</button>
         <button type="button" (click)="onCancel()" [disabled]="isUpdating || isApproving" class="btn secondary">Hủy bỏ</button>
-        <button type="submit" [disabled]="!plantForm.valid || isUpdating || isApproving" class="btn secondary" 
-                title="Lưu thông tin cây trước khi chấp nhận báo cáo">
-          {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây' }}
-        </button>
-        <button type="button" 
-                (click)="onApprove()" 
-                [disabled]="!canApprove()" 
-                [title]="getApproveTooltip()"
-                [class]="'btn ' + (canApprove() ? 'primary' : 'primary disabled')">
-          {{ isApproving ? 'Đang chấp nhận...' : 'Chấp nhận báo cáo' }}
-        </button>
+  <button type="submit"
+    [disabled]="!plantForm.valid || isUpdating || isApproving || hasPlantBeenSaved"
+    class="btn secondary"
+    [ngClass]="{'btn-disabled': !plantForm.valid || isUpdating || isApproving || hasPlantBeenSaved}"
+    [title]="!plantForm.valid ? 'Nhập hết các trường mới có thể lưu' : (hasPlantBeenSaved ? 'Đã lưu thông tin cây' : (isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây'))">
+    {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin cây' }}
+  </button>
+  <button type="button"
+    (click)="onApprove()"
+    [disabled]="!canApprove()"
+    [ngClass]="{'btn-disabled': !canApprove(), 'btn primary': canApprove(), 'btn primary disabled': !canApprove()}"
+    [title]="getApproveTooltip()">
+    {{ isApproving ? 'Đang chấp nhận...' : 'Chấp nhận báo cáo' }}
+  </button>
       </div>
     </form>
   </div>

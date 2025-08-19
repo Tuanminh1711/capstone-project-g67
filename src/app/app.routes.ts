@@ -29,6 +29,21 @@ export const routes: Routes = [
     loadComponent: () => import('./feature/vip/chat/chat.component').then(m => m.ChatComponent),
     canActivate: [VipAuthGuard]
   },
+  {
+    path: 'vip/chat-community',
+    loadComponent: () => import('./feature/vip/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [VipAuthGuard]
+  },
+  {
+    path: 'vip/chat-expert',
+    loadComponent: () => import('./feature/vip/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [VipAuthGuard]
+  },
+  {
+    path: 'vip/chat-expert/:expertId',
+    loadComponent: () => import('./feature/vip/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [VipAuthGuard]
+  },
 
   { 
     path: 'vip/ai-plant', 

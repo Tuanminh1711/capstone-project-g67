@@ -17,6 +17,12 @@ export interface ChatMessage {
   chatType?: 'COMMUNITY' | 'PRIVATE';
 }
 
+export interface TypingIndicator {
+  conversationId: string;
+  isTyping: boolean;
+  userId?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ChatStompService {
   private client!: Client;
@@ -41,18 +47,8 @@ export class ChatStompService {
     // Get WebSocket URL based on environment
     const websocketUrl = this.getWebSocketUrl();
 
-    console.log('Initializing WebSocket connection:', {
-      configProduction: environment.production,
-      hostname: window.location.hostname,
-      websocketUrl,
-    });
-
     // Get authentication token
     const token = this.cookieService.getAuthToken();
-    console.log(
-      'WebSocket with auth token:',
-      token ? 'Token found' : 'No token'
-    );
 
     this.client = new Client({
       webSocketFactory: () => {
@@ -65,7 +61,9 @@ export class ChatStompService {
           }
         : {},
       reconnectDelay: 5000,
-      debug: (str) => console.log('STOMP:', str),
+      debug: (str) => {
+        // STOMP debug logging disabled for security
+      },
     });
 
     this.client.onConnect = () => {
@@ -114,10 +112,6 @@ export class ChatStompService {
     const isProduction =
       environment.production ||
       window.location.hostname.includes('plantcare.id.vn');
-    console.log(
-      '[ChatStompService] WebSocket connect - isProduction:',
-      isProduction
-    );
 
     // Check authentication before connecting
     const token = this.cookieService.getAuthToken();
@@ -130,7 +124,7 @@ export class ChatStompService {
     }
 
     if (!this.connected && this.client) {
-      console.log('[ChatStompService] Activating WebSocket client...');
+      // Activating WebSocket client
       this.client.activate();
     }
     return Promise.resolve();
@@ -138,7 +132,7 @@ export class ChatStompService {
 
   disconnect() {
     if (this.client && this.connected) {
-      console.log('[ChatStompService] Disconnecting WebSocket...');
+      // Disconnecting WebSocket
       this.client.deactivate();
     }
     this.connected = false;
@@ -146,7 +140,7 @@ export class ChatStompService {
 
   // Method to refresh connection with new auth token
   refreshConnection(): Promise<void> {
-    console.log('[ChatStompService] Refreshing WebSocket connection...');
+    // Refreshing WebSocket connection
     this.disconnect();
 
     // Reinitialize with new token
@@ -193,13 +187,28 @@ export class ChatStompService {
 
   sendPrivateMessage(message: ChatMessage) {
     if (this.connected && this.client) {
+      const token = this.cookieService.getAuthToken();
       this.client.publish({
         destination: '/app/chat.sendPrivateMessage',
-        body: JSON.stringify(message)
+        body: JSON.stringify(message),
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       return Promise.resolve();
     }
-    
+    this.errorSubject.next('WebSocket chưa kết nối');
+    return Promise.reject('WebSocket not connected');
+  }
+
+  sendTypingIndicator(typingIndicator: TypingIndicator) {
+    if (this.connected && this.client) {
+      const token = this.cookieService.getAuthToken();
+      this.client.publish({
+        destination: '/app/chat.typingIndicator',
+        body: JSON.stringify(typingIndicator),
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      return Promise.resolve();
+    }
     this.errorSubject.next('WebSocket chưa kết nối');
     return Promise.reject('WebSocket not connected');
   }

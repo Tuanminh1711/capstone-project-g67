@@ -12,6 +12,7 @@ import { PlantDetailLoaderService } from './services/plant-detail-loader.service
 import { PlantUiHelperService } from './services/helpers/plant-ui-helper.service';
 import { DialogManager } from './services/dialog-manager.service';
 import { AdminPageTitleService } from '../feature/admin/shared/admin-page-title.service';
+import { ResponseHandlerService } from './services/response-handler.service';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -32,7 +33,8 @@ const SHARED_SERVICES = [
   PlantDetailLoaderService,
   PlantUiHelperService,
   DialogManager,
-  AdminPageTitleService
+  AdminPageTitleService,
+  ResponseHandlerService
 ];
 
 const MATERIAL_MODULES = [

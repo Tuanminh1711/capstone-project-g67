@@ -1326,12 +1326,41 @@
         transition: all 0.2s;
         border-bottom: 1px solid #f0f2f5;
         
+        /* Mobile touch improvements */
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        
+        /* Ensure clickable area */
+        min-height: 80px;
+        position: relative;
+        
         &:hover {
           background: #f8f9fa;
         }
         
         &:active {
           background: #e7f3ff;
+          transform: scale(0.98);
+        }
+        
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+          padding: 20px 16px;
+          min-height: 88px;
+          
+          &:active {
+            background: #007bff;
+            color: white;
+            
+            .category-name,
+            .category-desc {
+              color: white;
+            }
+          }
         }
         
         .category-avatar {
