@@ -1,167 +1,193 @@
-// Simple Beautiful Dialog
+/* Simple Beautiful Dialog */
 :host ::ng-deep {
   .mat-dialog-container {
     padding: 0 !important;
-    border-radius: 16px !important;
+    border-radius: 20px !important;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
     border: none !important;
     outline: none !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
+    max-width: 95vw !important;
+    max-height: 95vh !important;
     overflow: hidden !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     overflow-x: hidden !important;
-    
+    width: auto !important;
+    min-width: 320px !important;
+
     @media (max-width: 480px) {
-      border-radius: 12px !important;
-      margin: 0 !important;
+      border-radius: 16px !important;
+      margin: 0 auto !important;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
-      max-width: 100vw !important;
-      width: 100vw !important;
+      max-width: 95vw !important;
+      width: auto !important;
       overflow-x: hidden !important;
+      min-width: 300px !important;
     }
-    
+
     @media (max-width: 360px) {
-      border-radius: 10px !important;
-      margin: 0 !important;
+      border-radius: 14px !important;
+      margin: 0 auto !important;
       box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1) !important;
-      max-width: 100vw !important;
-      width: 100vw !important;
+      max-width: 95vw !important;
+      width: auto !important;
       overflow-x: hidden !important;
+      min-width: 280px !important;
     }
   }
 }
 
 .modern-support-dialog {
   background: white;
-  border-radius: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  max-width: 100%;
   width: 100%;
-  max-width: 500px;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  border: none;
-  outline: none;
-  box-shadow: none;
-  box-sizing: border-box;
-  
-  @media (max-width: 600px) {
-    max-width: 100vw;
-    width: 100vw;
-    border-radius: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-  
-  @media (max-width: 480px) {
-    border-radius: 0;
-    max-width: 100vw;
-    width: 100vw;
-    border: none;
-    outline: none;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-  
-  @media (max-width: 360px) {
-    border-radius: 0;
-    max-width: 100vw;
-    width: 100vw;
-    border: none;
-    outline: none;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-}
 
-// Simple Header
-.dialog-header {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  padding: 16px 24px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-  
-  @media (max-width: 600px) {
-    border-radius: 0;
-    width: 100%;
-    overflow: hidden;
-  }
-  
   @media (max-width: 480px) {
-    padding: 14px 16px;
-    min-height: 56px;
-    border-radius: 0;
+    border-radius: 16px;
+    max-width: 100%;
     width: 100%;
-    overflow: hidden;
   }
-  
-  @media (max-width: 360px) {
-    padding: 12px 12px;
-    min-height: 52px;
-    border-radius: 0;
-    width: 100%;
-    overflow: hidden;
-  }
-}
 
-.close-button {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 1000;
-  overflow: hidden;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
-  }
-  
-  @media (max-width: 600px) {
-    right: 16px;
-    overflow: hidden;
-  }
-  
-  @media (max-width: 480px) {
-    width: 24px;
-    height: 24px;
-    top: 10px;
-    right: 12px;
-    overflow: hidden;
-  }
-  
   @media (max-width: 360px) {
-    width: 22px;
-    height: 22px;
-    top: 8px;
-    right: 10px;
-    overflow: hidden;
+    border-radius: 14px;
+    max-width: 100%;
+    width: 100%;
   }
-  
-  svg {
-    width: 16px;
-    height: 16px;
+
+  .close-button {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    z-index: 1000;
+    overflow: hidden;
+    box-shadow: none;
+
+    &:hover {
+      background: rgba(0,0,0,0.08);
+      color: #fff;
+      transform: scale(1.08);
+    }
+    
+    svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      
+      @media (max-width: 480px) {
+        width: 16px;
+        height: 16px;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      right: 16px;
+      top: 14px;
+      width: 30px;
+      height: 30px;
+    }
     
     @media (max-width: 480px) {
-      width: 14px;
-      height: 14px;
+      width: 28px;
+      height: 28px;
+      top: 12px;
+      right: 14px;
+    }
+    
+    @media (max-width: 360px) {
+      width: 26px;
+      height: 26px;
+      top: 10px;
+      right: 12px;
+    }
+  }
+
+  .header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 4px auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15), 0 1.5px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    position: relative;
+  }
+
+  .header-icon svg {
+    width: 24px;
+    height: 24px;
+    color: #10b981;
+    display: block;
+    margin: auto;
+  }
+
+  .dialog-header {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 16px 16px 8px 16px;
+    text-align: center;
+    position: relative;
+    overflow: visible;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    flex-direction: column;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+
+    @media (max-width: 600px) {
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: visible;
+      padding: 12px 8px 6px 8px;
+      min-height: 40px;
+    }
+
+    @media (max-width: 480px) {
+      padding: 10px 4px 4px 4px;
+      min-height: 36px;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: visible;
+    }
+
+    @media (max-width: 360px) {
+      padding: 8px 2px 2px 2px;
+      min-height: 32px;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: visible;
     }
   }
 }
@@ -170,43 +196,51 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  
+
   @media (max-width: 480px) {
     font-size: 18px;
   }
-  
+
   @media (max-width: 360px) {
     font-size: 16px;
   }
 }
 
-// Simple Form Body  
+/* Simple Form Body */
 .dialog-body {
   padding: 24px;
   overflow-x: hidden;
   overflow-y: auto;
   max-height: calc(100vh - 120px);
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
-  
+
   @media (max-width: 600px) {
     padding: 20px 20px;
     max-height: calc(100vh - 100px);
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: hidden;
   }
-  
+
   @media (max-width: 480px) {
     padding: 20px 16px;
     max-height: calc(100vh - 100px);
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: hidden;
   }
-  
+
   @media (max-width: 360px) {
     padding: 16px 12px;
     max-height: calc(100vh - 90px);
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: hidden;
   }
 }
@@ -217,13 +251,13 @@
   gap: 20px;
   width: 100%;
   overflow-x: hidden;
-  
+
   @media (max-width: 480px) {
     gap: 16px;
     width: 100%;
     overflow-x: hidden;
   }
-  
+
   @media (max-width: 360px) {
     gap: 14px;
     width: 100%;
@@ -237,7 +271,7 @@
   gap: 8px;
   width: 100%;
   overflow-x: hidden;
-  
+
   @media (max-width: 360px) {
     gap: 6px;
     width: 100%;
@@ -249,17 +283,18 @@
   font-weight: 600;
   color: #374151;
   font-size: 14px;
-  
+
   @media (max-width: 480px) {
     font-size: 13px;
   }
-  
+
   @media (max-width: 360px) {
     font-size: 12px;
   }
 }
 
-.form-input, .form-textarea {
+.form-input,
+.form-textarea {
   width: 100%;
   background: white;
   border: 2px solid #e5e7eb;
@@ -273,19 +308,19 @@
   box-shadow: none;
   overflow: hidden;
   word-wrap: break-word;
-  
+
   &:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
-  
+
   @media (max-width: 480px) {
     padding: 10px 14px;
     font-size: 15px;
     border-radius: 6px;
     border: 1.5px solid #e5e7eb;
   }
-  
+
   @media (max-width: 360px) {
     padding: 8px 12px;
     font-size: 14px;
@@ -297,17 +332,17 @@
 .form-textarea {
   min-height: 100px;
   resize: vertical;
-  
+
   @media (max-width: 480px) {
     min-height: 80px;
   }
-  
+
   @media (max-width: 360px) {
     min-height: 70px;
   }
 }
 
-// Simple File Upload
+/* Simple File Upload */
 .file-upload-area {
   border: 2px dashed #d1d5db;
   border-radius: 12px;
@@ -319,12 +354,12 @@
   outline: none;
   width: 100%;
   overflow-x: hidden;
-  
+
   &:hover {
     border-color: #667eea;
     background: #f0f4ff;
   }
-  
+
   @media (max-width: 480px) {
     padding: 20px 16px;
     border-radius: 10px;
@@ -332,7 +367,7 @@
     width: 100%;
     overflow-x: hidden;
   }
-  
+
   @media (max-width: 360px) {
     padding: 16px 12px;
     border-radius: 8px;
@@ -345,7 +380,7 @@
 .upload-button {
   cursor: pointer;
   color: #6b7280;
-  
+
   &:hover {
     color: #667eea;
   }
@@ -354,11 +389,11 @@
 .upload-title {
   font-weight: 600;
   margin-bottom: 4px;
-  
+
   @media (max-width: 480px) {
     font-size: 14px;
   }
-  
+
   @media (max-width: 360px) {
     font-size: 13px;
   }
@@ -367,17 +402,17 @@
 .upload-subtitle {
   font-size: 14px;
   color: #9ca3af;
-  
+
   @media (max-width: 480px) {
     font-size: 12px;
   }
-  
+
   @media (max-width: 360px) {
     font-size: 11px;
   }
 }
 
-// Simple Image Preview
+/* Simple Image Preview */
 .image-preview-container {
   display: flex;
   align-items: center;
@@ -390,7 +425,7 @@
   outline: none;
   width: 100%;
   overflow-x: hidden;
-  
+
   @media (max-width: 480px) {
     padding: 12px;
     gap: 12px;
@@ -400,7 +435,7 @@
     width: 100%;
     overflow-x: hidden;
   }
-  
+
   @media (max-width: 360px) {
     padding: 10px;
     gap: 10px;
@@ -410,20 +445,25 @@
   }
 }
 
-.image-preview img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
+.image-preview {
+  position: relative;
+  display: inline-block;
   
-  @media (max-width: 480px) {
-    width: 70px;
-    height: 70px;
-  }
-  
-  @media (max-width: 360px) {
-    width: 60px;
-    height: 60px;
+  img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+
+    @media (max-width: 480px) {
+      width: 70px;
+      height: 70px;
+    }
+
+    @media (max-width: 360px) {
+      width: 60px;
+      height: 60px;
+    }
   }
 }
 
@@ -438,7 +478,7 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  
+
   @media (max-width: 480px) {
     width: 20px;
     height: 20px;
@@ -449,7 +489,7 @@
 
 .image-info {
   flex: 1;
-  
+
   @media (max-width: 480px) {
     text-align: center;
   }
@@ -458,12 +498,12 @@
 .file-name {
   font-weight: 500;
   margin-bottom: 8px;
-  
+
   @media (max-width: 480px) {
     font-size: 14px;
     margin-bottom: 6px;
   }
-  
+
   @media (max-width: 360px) {
     font-size: 13px;
     margin-bottom: 4px;
@@ -476,20 +516,20 @@
   color: #667eea;
   cursor: pointer;
   text-decoration: underline;
-  
+
   @media (max-width: 480px) {
     font-size: 13px;
   }
-  
+
   @media (max-width: 360px) {
     font-size: 12px;
   }
 }
 
-// Simple Submit Button
+/* Simple Submit Button */
 .submit-button {
   width: 100%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
   border-radius: 8px;
@@ -501,19 +541,19 @@
   outline: none;
   box-shadow: none;
   overflow-x: hidden;
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   }
-  
+
   &:disabled {
     background: #e5e7eb;
     color: #9ca3af;
     cursor: not-allowed;
     box-shadow: none;
   }
-  
+
   @media (max-width: 480px) {
     padding: 10px 20px;
     font-size: 15px;
@@ -522,7 +562,7 @@
     outline: none;
     overflow-x: hidden;
   }
-  
+
   @media (max-width: 360px) {
     padding: 8px 16px;
     font-size: 14px;
@@ -533,21 +573,22 @@
   }
 }
 
-// Enhanced Mobile responsive
+/* Enhanced Mobile responsive */
 @media (max-width: 600px) {
   .modern-support-dialog {
-    margin: 0;
-    max-width: 100vw;
+    margin: 0 auto;
+    max-width: 95vw;
+    border-radius: 16px;
   }
-  
+
   .dialog-header {
     padding: 16px 20px;
   }
-  
+
   .dialog-title {
     font-size: 18px;
   }
-  
+
   .dialog-body {
     padding: 20px;
   }
@@ -555,31 +596,33 @@
 
 @media (max-width: 480px) {
   .modern-support-dialog {
-    margin: 0;
-    max-width: 100vw;
+    margin: 0 auto;
+    max-width: 95vw;
+    border-radius: 16px;
   }
-  
+
   .dialog-header {
     padding: 14px 16px;
   }
-  
+
   .dialog-title {
     font-size: 17px;
   }
-  
+
   .dialog-body {
     padding: 18px 16px;
   }
-  
+
   .support-form {
     gap: 15px;
   }
-  
-  .form-input, .form-textarea {
+
+  .form-input,
+  .form-textarea {
     padding: 10px 14px;
     font-size: 15px;
   }
-  
+
   .file-upload-area {
     padding: 18px 14px;
   }
@@ -587,59 +630,61 @@
 
 @media (max-width: 360px) {
   .modern-support-dialog {
-    margin: 0;
-    max-width: 100vw;
+    margin: 0 auto;
+    max-width: 95vw;
+    border-radius: 14px;
   }
-  
+
   .dialog-header {
     padding: 12px 12px;
   }
-  
+
   .dialog-title {
     font-size: 16px;
   }
-  
+
   .dialog-body {
     padding: 16px 12px;
   }
-  
+
   .support-form {
     gap: 12px;
   }
-  
-  .form-input, .form-textarea {
+
+  .form-input,
+  .form-textarea {
     padding: 8px 12px;
     font-size: 14px;
   }
-  
+
   .file-upload-area {
     padding: 16px 12px;
   }
-  
+
   .image-preview-container {
     padding: 10px;
   }
 }
 
-// Landscape orientation fixes
+/* Landscape orientation fixes */
 @media (max-height: 500px) and (orientation: landscape) {
   .modern-support-dialog {
     max-height: 90vh;
     overflow-y: auto;
   }
-  
+
   .dialog-body {
     padding: 16px 20px;
   }
-  
+
   .support-form {
     gap: 12px;
   }
-  
+
   .form-textarea {
     min-height: 60px;
   }
-  
+
   .file-upload-area {
     padding: 16px 20px;
   }
