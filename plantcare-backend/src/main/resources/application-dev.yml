@@ -2,6 +2,13 @@ spring:
   config:
     activate:
       on-profile: dev
+  # Cấu hình file upload cho development
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+      enabled: true
+      file-size-threshold: 2KB
   datasource:
     url: jdbc:mysql://localhost:3306/plants_support?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
     username: root
