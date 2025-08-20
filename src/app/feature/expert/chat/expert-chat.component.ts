@@ -84,7 +84,7 @@ export class ExpertChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.connectToChat();
         this.shouldScrollToBottom = true;
       },
-      error: (err) => {
+      error: () => {
         this.error = 'Không thể tải lịch sử chat cộng đồng';
         this.loading = false;
         this.cdr.markForCheck();

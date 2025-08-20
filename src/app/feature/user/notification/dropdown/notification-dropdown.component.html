@@ -11,47 +11,57 @@
         <i class="fas fa-bell"></i>
         Thông báo
       </h4>
-      <button 
-        *ngIf="notifications.length > 0"
-        class="btn-mark-all-read"
-        (click)="markAllAsRead()"
-        title="Đánh dấu tất cả đã đọc">
-        <i class="fas fa-check-double"></i>
-      </button>
+      @if (notifications.length > 0) {
+        <button 
+          class="btn-mark-all-read"
+          (click)="markAllAsRead()"
+          title="Đánh dấu tất cả đã đọc">
+          <i class="fas fa-check-double"></i>
+        </button>
+      }
     </div>
 
     <!-- Loading state -->
-    <div *ngIf="isLoading" class="dropdown-loading">
-      <div class="spinner-small"></div>
-      <span>Đang tải...</span>
-    </div>
+    @if (isLoading) {
+      <div class="dropdown-loading">
+        <div class="spinner-small"></div>
+        <span>Đang tải...</span>
+      </div>
+    }
 
     <!-- No notifications -->
-    <div *ngIf="!isLoading && notifications.length === 0" class="dropdown-empty">
-      <i class="fas fa-bell-slash"></i>
-      <p>Không có thông báo mới</p>
-    </div>
+    @if (!isLoading && notifications.length === 0) {
+      <div class="dropdown-empty">
+        <i class="fas fa-bell-slash"></i>
+        <p>Không có thông báo mới</p>
+      </div>
+    }
 
     <!-- Notification List -->
-    <div *ngIf="!isLoading && notifications.length > 0" class="dropdown-list">
-      <div 
-        *ngFor="let notification of notifications; trackBy: trackByNotificationId"
-        class="dropdown-item"
-        [ngClass]="getNotificationClass(toNotificationType(notification.type))"
-        (click)="onNotificationClick(notification, $event)">
-        <div class="item-icon">
-          <i [class]="getNotificationIcon(toNotificationType(notification.type))"></i>
-        </div>
-        <div class="item-content">
-          <div class="item-title">{{ truncateText(notification.title, 40) }}</div>
-          <div class="item-message">{{ truncateText(notification.message, 50) }}</div>
-          <div class="item-time">{{ formatTime(notification.createdAt) }}</div>
-        </div>
-        <div class="item-indicator" *ngIf="!notification.isRead">
-          <i class="fas fa-circle"></i>
-        </div>
+    @if (!isLoading && notifications.length > 0) {
+      <div class="dropdown-list">
+  @for (notification of notifications; track trackByNotificationId(i, notification); let i = $index) {
+          <div 
+            class="dropdown-item"
+            [ngClass]="getNotificationClass(toNotificationType(notification.type))"
+            (click)="onNotificationClick(notification, $event)">
+            <div class="item-icon">
+              <i [class]="getNotificationIcon(toNotificationType(notification.type))"></i>
+            </div>
+            <div class="item-content">
+              <div class="item-title">{{ truncateText(notification.title, 40) }}</div>
+              <div class="item-message">{{ truncateText(notification.message, 50) }}</div>
+              <div class="item-time">{{ formatTime(notification.createdAt) }}</div>
+            </div>
+            @if (!notification.isRead) {
+              <div class="item-indicator">
+                <i class="fas fa-circle"></i>
+              </div>
+            }
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- Footer -->
     <div class="dropdown-footer">
@@ -63,5 +73,7 @@
   </div>
 
   <!-- Overlay -->
-  <div *ngIf="isOpen" class="dropdown-overlay" (click)="isOpen = false"></div>
+    @if (isOpen) {
+      <div class="dropdown-overlay" (click)="isOpen = false"></div>
+    }
 </div>

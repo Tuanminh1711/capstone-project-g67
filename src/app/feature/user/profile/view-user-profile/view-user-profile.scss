@@ -1,3 +1,17 @@
+/* Fix header overlap with top navigator */
+app-top-navigator + .edit-profile-page {
+  margin-top: 70px !important;
+}
+@media (max-width: 900px) {
+  app-top-navigator + .edit-profile-page {
+    margin-top: 62px !important;
+  }
+}
+@media (max-width: 480px) {
+  app-top-navigator + .edit-profile-page {
+    margin-top: 56px !important;
+  }
+}
 .profile-badges {
   display: flex;
   gap: 10px;

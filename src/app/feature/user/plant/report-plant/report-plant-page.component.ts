@@ -135,7 +135,7 @@ export class ReportPlantPageComponent implements OnInit {
     }, { headers }).subscribe({
       next: () => {
         this.toast.success('Báo cáo của bạn đã được gửi!');
-        this.router.navigate(['/plant-info']);
+  this.router.navigate(['/user/report']);
       },
       error: (err) => {
         // Ưu tiên hiện err.message nếu có, sau đó đến err.error.message

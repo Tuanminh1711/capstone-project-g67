@@ -35,40 +35,41 @@
 
 .dropdown-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #178a4c;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
+  background: #178a4c;
   border-radius: 12px 12px 0 0;
+  color: #fff;
 
   h4 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #2d3436;
+    color: #fff;
     display: flex;
     align-items: center;
     gap: 8px;
 
     i {
-      color: #6c5ce7;
+      color: #fff;
     }
   }
 
   .btn-mark-all-read {
     padding: 6px 8px;
-    background: none;
+    background: #178a4c;
     border: none;
-    color: #6c5ce7;
+    color: #fff;
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s ease;
     font-size: 0.9rem;
 
     &:hover {
-      background: rgba(108, 92, 231, 0.1);
-      color: #5f3dc4;
+      background: #0d5c2c;
+      color: #fff;
     }
   }
 }
@@ -86,7 +87,7 @@
     width: 20px;
     height: 20px;
     border: 2px solid #f3f3f3;
-    border-top: 2px solid #6c5ce7;
+  border-top: 2px solid #178a4c;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -95,17 +96,20 @@
 .dropdown-empty {
   padding: 32px 20px;
   text-align: center;
-  color: #636e72;
+  background: #178a4c;
+  color: #fff;
 
   i {
     font-size: 2rem;
     margin-bottom: 8px;
-    opacity: 0.5;
+    opacity: 0.9;
+    color: #a8e063;
   }
 
   p {
     margin: 0;
     font-size: 0.9rem;
+    color: #fff;
   }
 }
 
@@ -187,7 +191,7 @@
 
     i {
       font-size: 0.5rem;
-      color: #6c5ce7;
+      color: #178a4c;
     }
   }
 }
@@ -195,8 +199,21 @@
 .dropdown-footer {
   padding: 12px 20px;
   border-top: 1px solid #e9ecef;
-  background: #f8f9fa;
+  background: #178a4c;
   border-radius: 0 0 12px 12px;
+  
+  .btn-view-all {
+    background: #178a4c;
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid #178a4c;
+    box-shadow: none;
+  }
+  .btn-view-all:hover {
+    background: #0d5c2c;
+    color: #fff;
+    border: 1px solid #0d5c2c;
+  }
 
   .btn-view-all {
     display: flex;
@@ -205,8 +222,8 @@
     gap: 6px;
     width: 100%;
     padding: 8px 12px;
-    background: #6c5ce7;
-    color: white;
+  background: #178a4c;
+  color: #fff;
     text-decoration: none;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -214,7 +231,7 @@
     transition: all 0.2s ease;
 
     &:hover {
-      background: #5f3dc4;
+      background: #0d5c2c;
       transform: translateY(-1px);
     }
   }

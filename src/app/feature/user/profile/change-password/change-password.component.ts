@@ -178,13 +178,11 @@ export class ChangePasswordComponent implements OnInit {
     }).pipe(
       tap(response => {
         this.toastService.success('Đổi mật khẩu thành công!');
-        
         // Clear form and navigate after success
         setTimeout(() => {
           this.clearForm();
-          this.router.navigate(['/profile/edit']);
+          this.router.navigate(['/view-user-profile']);
         }, 1500);
-        
         // Trigger change detection ngay lập tức
         setTimeout(() => this.cdr.detectChanges(), 0);
       }),
@@ -231,6 +229,6 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/profile/edit']);
+  this.router.navigate(['/view-user-profile']);
   }
 }

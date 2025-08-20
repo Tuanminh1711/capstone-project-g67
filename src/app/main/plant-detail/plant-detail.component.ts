@@ -25,27 +25,12 @@ import { PlantUiHelperService } from '../../shared/services/helpers/plant-ui-hel
   styleUrl: './plant-detail.component.scss'
 })
 export class PlantDetailComponent implements OnInit {
-  /**
-   * Helper: cập nhật state khi load thành công
-   */
-
-
-  /**
-   * Helper: cập nhật state khi lỗi
-   */
-  private handleError(errorMsg: string, requiresAuth = false) {
-    this.loading = false;
-    this.error = errorMsg;
-    this.requiresAuth = requiresAuth;
-    // Không điều hướng, không toast, chỉ set error và requiresAuth để template xử lý
-  }
   plant: Plant | null = null;
   error = '';
   selectedImage = '';
   requiresAuth = false;
-  isLimitedInfo = false;
-  loading = false;
-  isGuest = false; // Thêm flag để check guest
+  loading = true; // Mặc định là loading
+  isGuest = false;
   private plantId: string | null = null;
   private toast = inject(ToastService);
   private confirmationDialog = inject(ConfirmationDialogService);
@@ -57,7 +42,7 @@ export class PlantDetailComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private cookieService: CookieService,
-    private authService: AuthService, // Thêm AuthService
+    private authService: AuthService,
     private plantDataService: PlantDataService,
     private authDialogService: AuthDialogService,
     private cdr: ChangeDetectorRef,
@@ -68,27 +53,18 @@ export class PlantDetailComponent implements OnInit {
     // Kiểm tra auth status ngay từ đầu
     this.checkAuthStatus();
     
-    // Extract id only once
+    // Extract id
     this.plantId = this.route.snapshot.paramMap.get('id');
-    // Ưu tiên lấy từ service nếu đã có (giữ state khi reload/quay lại)
-    if (this.plantId) {
-      const cached = this.plantDataService.getSelectedPlant();
-      // Validate dữ liệu: phải có id, tên hoặc hình ảnh
-      if (
-        cached &&
-        cached.id === Number(this.plantId) &&
-        (cached.commonName || cached.scientificName || (Array.isArray(cached.imageUrls) && cached.imageUrls.length > 0))
-      ) {
-        this.plant = cached;
-        this.setSelectedImage();
-        // Không return ở đây, vẫn gọi API để luôn đảm bảo dữ liệu mới nhất
-        this.loadPlantDetail();
-        return;
-      } else if (cached) {
-        // Nếu dữ liệu cache không hợp lệ, clear cache để lần sau không bị trắng
-        this.plantDataService.clearData();
-      }
+    
+    if (!this.plantId) {
+      this.handleError('ID cây không hợp lệ');
+      return;
     }
+
+    // Luôn ưu tiên lấy cache trước để hiển thị ngay
+    this.loadFromCache();
+    
+    // Sau đó gọi API để cập nhật mới nhất
     this.loadPlantDetail();
   }
 
@@ -100,78 +76,78 @@ export class PlantDetailComponent implements OnInit {
   }
 
   /**
+   * Load dữ liệu từ cache trước
+   */
+  private loadFromCache(): void {
+    const cached = this.plantDataService.getSelectedPlant();
+    if (cached && cached.id === Number(this.plantId)) {
+      this.plant = cached;
+      this.setSelectedImage();
+      this.loading = false; // Có cache thì không loading nữa
+      this.cdr.detectChanges();
+    }
+  }
+
+  /**
    * Tải thông tin chi tiết của cây
    */
   loadPlantDetail(): void {
     if (!this.plantId) {
-      this.error = 'ID cây không hợp lệ';
+      this.handleError('ID cây không hợp lệ');
       return;
     }
-    this.resetState();
-    this.loading = true;
-    // Gọi trực tiếp API đúng endpoint
+
+    // Chỉ set loading = true nếu chưa có cache
+    if (!this.plant) {
+      this.loading = true;
+    }
+
     this.http.get<any>(`/api/plants/detail/${this.plantId}`).subscribe({
       next: (res) => {
         const plant = res?.data || res;
         this.plant = plant;
-        this.plantDataService.setSelectedPlant(plant); // luôn lưu lại state mới nhất
+        this.plantDataService.setSelectedPlant(plant);
         this.setSelectedImage();
         this.loading = false;
         this.error = '';
-        // Nếu thiếu careInstructions hoặc commonDiseases thì chỉ hiển thị thông tin cơ bản
-        if (!plant.careInstructions || !plant.commonDiseases) {
-          this.isLimitedInfo = true;
-        } else {
-          this.isLimitedInfo = false;
-        }
         this.requiresAuth = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.loading = false;
+        
         if (err.status === 404) {
           this.handleError('Không tìm thấy thông tin cây với ID này');
         } else if (err.status === 403 || err.status === 401) {
-          // Nếu API trả về lỗi 401/403 thì yêu cầu đăng nhập
           this.handleError('', true);
         } else {
-          this.handleError('Không thể tải thông tin cây. Vui lòng thử lại.');
+          // Nếu lỗi và chưa có cache, hiển thị lỗi
+          if (!this.plant) {
+            this.handleError('Không thể tải thông tin cây. Vui lòng thử lại.');
+          } else {
+            // Nếu có cache rồi thì chỉ hiển thị toast lỗi, không ẩn dữ liệu
+            this.toast.error('Không thể cập nhật thông tin mới nhất. Vui lòng thử lại.');
+          }
         }
         this.cdr.detectChanges();
       }
     });
   }
 
-  private resetState(): void {
-    this.error = '';
-    this.requiresAuth = false;
-    this.isLimitedInfo = false;
-    this.plant = null;
-  }
-
   /**
-   * Load từ service trước, fallback vào API
+   * Helper: cập nhật state khi lỗi
    */
-
+  private handleError(errorMsg: string, requiresAuth = false) {
+    this.loading = false;
+    this.error = errorMsg;
+    this.requiresAuth = requiresAuth;
+    this.cdr.detectChanges();
+  }
 
   private setSelectedImage(): void {
     if (this.plant?.imageUrls?.length) {
       this.selectedImage = this.plant.imageUrls[0];
     }
-  }
-
-  /**
-   * Map API response to Plant interface với preservation của dữ liệu cũ
-   */
-
-
-  private loadCachedPlant(plantId: number): Plant | null {
-    // Đã loại bỏ cache localStorage
-    return null;
-  }
-
-  private cachePlant(plant: Plant): void {
-    // Đã loại bỏ cache localStorage
   }
 
   // UI Methods
@@ -210,6 +186,8 @@ export class PlantDetailComponent implements OnInit {
   }
 
   reloadPlantDetail(): void {
+    this.error = '';
+    this.requiresAuth = false;
     this.loadPlantDetail();
   }
 
@@ -255,7 +233,4 @@ export class PlantDetailComponent implements OnInit {
     }
     return [];
   }
-
-
-  // Các hàm dịch enum và UI helper đã chuyển sang PlantUiHelperService
 }

@@ -144,40 +144,24 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private async connectToUnifiedChat(): Promise<void> {
     try {
-      console.log('=== VIP: Connecting to Unified Chat Service ===');
-      
       // Get auth token if available - sử dụng localStorage hoặc sessionStorage
       const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || undefined;
-      
       await this.unifiedChat.connect(this.currentUserId!, token);
-      
-      console.log('=== VIP: Connected to Unified Chat Service successfully ===');
-      
       // Setup message subscriptions
       this.setupUnifiedChatSubscriptions();
-      
       this.error = '';
       this.cdr.markForCheck();
-      
     } catch (err) {
-      console.error('Failed to connect to Unified Chat Service:', err);
       this.error = 'Không thể kết nối chat: ' + (err instanceof Error ? err.message : err);
       this.cdr.markForCheck();
     }
   }
 
   private setupUnifiedChatSubscriptions(): void {
-    console.log('=== VIP: Setting up Unified Chat subscriptions ===');
-    
     // Subscribe to community messages
     this.unifiedChat.communityMessages$.subscribe((msg: ChatMessage) => {
-      console.log('=== VIP: Received community message from Unified Chat ===');
-      console.log('Message:', msg);
-      
       this.zone.run(() => {
-        console.log('Received community message:', msg);
         this.addMessageToChat(msg);
-        
         // Only scroll if we're in community chat view
         if (!this.showPrivateChat) {
           this.scrollToBottom();
@@ -188,11 +172,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Subscribe to private messages
     this.unifiedChat.privateMessages$.subscribe((msg: ChatMessage) => {
-      console.log('=== VIP: Received private message from Unified Chat ===');
-      
       this.zone.run(() => {
         this.addMessageToChat(msg);
-        
         // Update conversation and scroll if we're in the right private chat
         if (this.showPrivateChat && 
             this.selectedConversation && 
@@ -206,8 +187,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Subscribe to errors
     this.unifiedChat.errors$.subscribe((error: string) => {
-      console.error('=== VIP: Received error from Unified Chat ===', error);
-      
       this.zone.run(() => {
         this.error = error;
         this.toastService.error(error, 5000);
@@ -217,7 +196,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Subscribe to connection status
     this.unifiedChat.connectionStatus$.subscribe((status) => {
-      
       if (status.error) {
         this.error = `Chat connection error: ${status.error}`;
         this.cdr.markForCheck();
@@ -226,8 +204,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.cdr.markForCheck();
       }
     });
-
-    console.log('=== VIP: Unified Chat subscriptions setup completed ===');
   }
 
   // Enhanced message sending with Unified Chat Service
@@ -275,22 +251,22 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     if (chatType === 'PRIVATE') {
       // Private chat - không add locally, chỉ gửi và chờ nhận từ WebSocket
-      console.log('Sending private message via Unified Chat Service:', message);
+  // ...existing code...
       
       // Send via Unified Chat Service
       this.unifiedChat.sendPrivateMessage(message).catch(err => {
-        console.error('Failed to send private message via Unified Chat Service:', err);
+  // ...existing code...
         this.error = 'Không thể gửi tin nhắn: ' + err;
         this.toastService.error(this.error, 5000);
         this.cdr.markForCheck();
       });
     } else {
       // Community chat - không add locally, chỉ gửi và chờ nhận từ WebSocket
-      console.log('Sending community message via Unified Chat Service:', message);
+  // ...existing code...
       
       // Send via Unified Chat Service
       this.unifiedChat.sendCommunityMessage(message).catch(err => {
-        console.error('Failed to send community message via Unified Chat Service:', err);
+  // ...existing code...
         this.toastService.error('Failed to send message: ' + err, 5000);
         this.cdr.markForCheck();
       });
@@ -308,13 +284,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Enhanced WebSocket subscription setup - giống logic expert
   private setupWebSocketSubscriptions(): void {
-    console.log('=== VIP: Setting up WebSocket subscriptions ===');
-    console.log('Current user ID:', this.currentUserId);
-    console.log('WebSocket connected:', this.unifiedChat.isConnected());
+  // ...existing code...
     
     // Community messages subscription
     this.wsSub = this.unifiedChat.communityMessages$.subscribe((msg: ChatMessage) => {
-      console.log('=== VIP: Received community message ===');
+  // ...existing code...
       this.zone.run(() => {
         // Add message directly (giống expert)
         this.addMessageToChat(msg);
@@ -329,17 +303,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Private messages subscription
     this.wsPrivateSub = this.unifiedChat.privateMessages$.subscribe((msg: ChatMessage) => {
-      console.log('=== VIP: Received private message ===');
-      console.log('Message:', msg);
-      console.log('Message chatType:', msg.chatType);
-      console.log('Message senderId:', msg.senderId);
-      console.log('Message receiverId:', msg.receiverId);
-      console.log('Current user ID:', this.currentUserId);
-      console.log('Message conversationId:', msg.conversationId);
-      console.log('Selected conversation:', this.selectedConversation);
+  // ...existing code...
       
       this.zone.run(() => {
-        console.log('Received private message:', msg);
+  // ...existing code...
         // Add message directly (giống expert)
         this.addMessageToChat(msg);
         
@@ -356,17 +323,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Error subscription
     this.wsErrSub = this.unifiedChat.errors$.subscribe((err: string) => {
-      console.error('=== VIP: WebSocket error ===');
-      console.error('Error:', err);
+  // ...existing code...
       this.zone.run(() => {
-        console.error('WebSocket error:', err);
+  // ...existing code...
         this.error = err;
         this.toastService.error(err, 5000);
         this.cdr.markForCheck();
       });
     });
     
-    console.log('=== VIP: WebSocket subscriptions setup completed ===');
+  // ...existing code...
   }
 
   private setupSearchFilter(): void {
@@ -378,10 +344,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   // Merge new messages (community or private) into messagesSubject
   private mergeMessages(newMessages: ChatMessage[]): void {
     if (!newMessages || newMessages.length === 0) return;
-    
-    console.log('=== VIP: mergeMessages called ===');
-    console.log('Current messages count:', this.messagesSubject.value.length);
-    console.log('New messages count:', newMessages.length);
     
     const currentMessages = this.messagesSubject.value;
     const all = [...currentMessages, ...newMessages];
@@ -412,10 +374,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       // Keep only the most recent messages
       cleaned = cleaned.slice(0, MAX_TOTAL_MESSAGES);
     }
-    
-    console.log('After deduplication - Unique messages count:', unique.length);
-    console.log('After cleanup - Final messages count:', cleaned.length);
-    
+  
     this.messagesSubject.next(cleaned);
     this.checkIfShouldScroll();
   }
@@ -446,7 +405,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
     
     if (isDuplicate) {
-      console.log('Message already exists, skipping duplicate:', message);
       return;
     }
     
@@ -458,7 +416,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (message.chatType === 'PRIVATE' && 
         message.senderId !== +this.currentUserId! && 
         this.selectedConversation) {
-      console.log('Updating conversation with incoming private message:', message);
       this.updateConversationWithMessage(message);
     }
   }
@@ -478,9 +435,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   // Enhanced conversation update with better message handling
   private updateConversationWithMessage(message: ChatMessage): void {
     if (!message || !this.selectedConversation) return;
-    
-    console.log('Updating conversation with message:', message);
-    
     const conversations = this.conversationsSubject.value;
     const conversationId = this.generateConversationId(
       message.senderId || 0, 
@@ -506,9 +460,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       updatedConversations.unshift(conversation);
       
       this.conversationsSubject.next(updatedConversations);
-      console.log('Conversation updated successfully:', updatedConversations[0]);
     } else {
-      console.log('Conversation not found for message:', message);
     }
   }
 
@@ -553,20 +505,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.loading = true;
     this._hasScrolledOnce = false; // Reset scroll flag khi load lại tin nhắn
     
-    console.log('Loading private messages for user:', otherUserId);
-    
     // TEMP FIX: Clear messages trước khi load để tránh duplicate
-    console.log('=== TEMP FIX: Clearing messages before loading private messages ===');
     this.messagesSubject.next([]);
     
     this.chatService.getPrivateMessages(otherUserId).subscribe({
       next: (data) => {
         const privateMessages = (data || []).filter(
           (m: any) => m.chatType === 'PRIVATE'
-        );
-        
-        console.log('Loaded private messages:', privateMessages);
-        
+        );   
         // Ensure all private messages have proper chatType
         const processedMessages = privateMessages.map((msg: any) => ({
           ...msg,
@@ -584,7 +530,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Failed to load private messages:', err);
         this.error = 'Không thể tải tin nhắn';
         this.loading = false;
         this.cdr.markForCheck();
@@ -797,9 +742,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.showPrivateChat = false;
     this.chatType = 'COMMUNITY';
     this.selectedConversation = null;
-    
-    // TEMP FIX: Clear messages trước khi load community để tránh duplicate
-    console.log('=== TEMP FIX: Clearing messages before loading community ===');
     this.messagesSubject.next([]);
     
     // Load experts, conversations and fetch community history
@@ -1049,8 +991,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.messagesSubject.next(allCleanedMessages);
       this.cdr.markForCheck();
       
-      // Log cleanup info
-      console.log(`Chat cleanup: ${currentMessages.length} -> ${allCleanedMessages.length} messages`);
     }
   }
 
@@ -1067,11 +1007,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         return timeB - timeA;
       });
       
+
+
+
       const keptMessages = sortedMessages.slice(0, targetCount);
       this.messagesSubject.next(keptMessages);
       this.cdr.markForCheck();
       
-      console.log(`Forced cleanup: ${currentMessages.length} -> ${keptMessages.length} messages`);
     }
   }
 
@@ -1097,6 +1039,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       recommendations
     };
   }
+
+  
 
   // Enhanced message read status management
   public markMessagesAsRead(): void {
@@ -1244,44 +1188,36 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     
-    console.log('Force refreshing private messages...');
     this.loadPrivateMessages(this.selectedConversation.otherUserId);
     this.toastService.success('Refreshing private messages...', 2000);
   }
 
   // Update WebSocket test methods to use Unified Chat Service
   public testWebSocketConnection(): void {
-    console.log('=== VIP: Testing Unified Chat Service connection ===');
     
     if (this.unifiedChat.isConnected()) {
-      console.log('✅ Unified Chat Service is connected');
       this.unifiedChat.testConnection();
       this.toastService.success('Unified Chat Service connection test successful', 3000);
     } else {
-      console.log('❌ Unified Chat Service not connected, attempting to connect...');
       this.connectToUnifiedChat().then(() => {
         this.toastService.success('Connected to Unified Chat Service successfully', 3000);
       }).catch(err => {
-        console.error('Failed to connect to Unified Chat Service:', err);
         this.toastService.error('Failed to connect: ' + err, 5000);
       });
     }
   }
 
   public testWebSocketUrlDetection(): void {
-    console.log('=== VIP: Testing WebSocket URL Detection ===');
     this.unifiedChat.testWebSocketUrlDetection();
     this.toastService.success('WebSocket URL detection test completed', 3000);
   }
 
   public testCspBypass(): void {
-    console.log('=== VIP: Testing CSP Bypass ===');
     this.unifiedChat.testCspBypass();
     this.toastService.success('CSP bypass test completed', 3000);
   }
 
   public testSubscriptionStatus(): void {
-    console.log('=== VIP: Testing Subscription Status ===');
     this.unifiedChat.testSubscriptionStatus();
     this.toastService.success('Subscription status test completed', 3000);
   }
@@ -1324,14 +1260,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   public forceSetupSubscriptions(): void {
-    console.log('=== VIP: Force setting up Unified Chat subscriptions ===');
     
     if (this.unifiedChat.isConnected()) {
-      console.log('Unified Chat Service is connected, setting up subscriptions...');
       this.setupUnifiedChatSubscriptions();
       this.toastService.success('Unified Chat subscriptions setup completed', 3000);
     } else {
-      console.log('Unified Chat Service not connected, attempting to connect...');
       this.reconnectWebSocket();
     }
   }
@@ -1343,11 +1276,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     
-    console.log('=== Testing Private Chat Flow ===');
-    console.log('Selected conversation:', this.selectedConversation);
-    console.log('Current user ID:', this.currentUserId);
-    console.log('Unified Chat Service connected:', this.unifiedChat.isConnected());
-    
     // Test message structure
     const testMessage: ChatMessage = {
       senderId: +this.currentUserId!,
@@ -1358,14 +1286,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       conversationId: this.selectedConversation.conversationId,
       receiverId: this.selectedConversation.otherUserId
     };
-    
-    console.log('Test message structure:', testMessage);
-    
-    // Test conversation update logic
-    console.log('Current conversations:', this.conversationsSubject.value);
-    
-    console.log('=== End Test ===');
-    this.toastService.success('Private chat flow test completed', 3000);
   }
 
   // Add method to simulate incoming private message (for testing)
@@ -1398,12 +1318,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Add method to debug private message routing
   public debugPrivateMessageRouting(): void {
-    console.log('=== VIP: Debug Private Message Routing ===');
-    console.log('Current user ID:', this.currentUserId);
-    console.log('Selected conversation:', this.selectedConversation);
-    console.log('Unified Chat Service connected:', this.unifiedChat.isConnected());
-    console.log('Unified Chat Service status:', this.unifiedChat.getConnectionStatus());
-    
     if (this.selectedConversation) {
       console.log('Conversation details:', {
         conversationId: this.selectedConversation.conversationId,
