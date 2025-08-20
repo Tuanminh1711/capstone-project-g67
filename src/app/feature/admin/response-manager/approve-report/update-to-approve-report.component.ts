@@ -272,43 +272,41 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
           if (response && response.data) {
             // Store report data to get userId later
             this.report = response.data;
-            console.log('Report data loaded:', this.report);
-            console.log('Report status:', this.report.status);
-            console.log('Report claimedById:', this.report.claimedById);
+            // ...existing code...
             
             // Check if report is in correct status for approval
             if (this.report.status === 'PENDING') {
-              console.log('Report is PENDING - need to claim first');
+              // ...existing code...
               this.setError('Report này chưa được claim. Vui lòng claim report trước khi approve.');
               this.setLoading(false);
               return;
             }
             
             if (this.report.status === 'APPROVED') {
-              console.log('Report is already APPROVED');
+              // ...existing code...
               this.setError('Report này đã được approve rồi.');
               this.setLoading(false);
               return;
             }
             
             if (this.report.status === 'REJECTED') {
-              console.log('Report is REJECTED');
+              // ...existing code...
               this.setError('Report này đã bị reject.');
               this.setLoading(false);
               return;
             }
             
             if (this.report.status === 'CLAIMED' && this.report.claimedById) {
-              console.log('Report is CLAIMED by ID:', this.report.claimedById);
+              // ...existing code...
               const currentAdminId = this.getCurrentAdminId();
-              console.log('Current admin ID:', currentAdminId);
+              // ...existing code...
               
               if (this.report.claimedById !== currentAdminId) {
                 this.setError(`Report này đã được claim bởi admin khác (ID: ${this.report.claimedById}). Chỉ admin đã claim mới có thể approve.`);
                 this.setLoading(false);
                 return;
               } else {
-                console.log('✓ Current admin is the one who claimed this report');
+                // ...existing code...
               }
             }
             
@@ -330,7 +328,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
         },
         error: (error) => {
           this.setLoading(false);
-          console.error('Load report data error:', error);
+          // ...existing code...
           const errorMessage = error?.error?.message || error?.message || 'Không thể tải thông tin report.';
           this.setError(`Load Report Error: ${errorMessage}`);
           this.toast.error(`Load Report Error: ${errorMessage}`);
@@ -362,7 +360,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
         },
         error: (error) => {
           this.setLoading(false);
-          console.error('Load plant data error:', error);
+          // ...existing code...
           const errorMessage = error?.error?.message || error?.message || 'Không thể tải thông tin cây.';
           this.setError(`Load Plant Error: ${errorMessage}`);
           this.toast.error(`Load Plant Error: ${errorMessage}`);
@@ -400,38 +398,38 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     }
     
     // Default fallback
-    console.warn('Could not get current admin ID, using default');
+  // ...existing code...
     return 1; // Default admin ID
   }
 
   private getReportUserId(): number {
     // Get user ID from the report data (the person who submitted the report)
-    console.log('Getting user ID from report:', this.report);
+  // ...existing code...
     
     // Primary: reporterId (from the API response structure)
     if (this.report && this.report.reporterId) {
-      console.log('Found reporterId:', this.report.reporterId);
+  // ...existing code...
       return this.report.reporterId;
     }
     
     // Fallback: try other property names
     if (this.report && this.report.userId) {
-      console.log('Found userId:', this.report.userId);
+  // ...existing code...
       return this.report.userId;
     }
     
     if (this.report && this.report.user && this.report.user.id) {
-      console.log('Found user.id:', this.report.user.id);
+  // ...existing code...
       return this.report.user.id;
     }
     
     if (this.report && this.report.createdBy) {
-      console.log('Found createdBy:', this.report.createdBy);
+  // ...existing code...
       return this.report.createdBy;
     }
     
     // Default fallback - should not happen in normal flow
-    console.warn('Could not get report user ID from report data:', this.report);
+  // ...existing code...
     return 2; // Use reporterId from your example: 2
   }
 
@@ -475,9 +473,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       'userId': currentAdminId.toString() // Admin ID, not reporter ID
     };
     
-    console.log('Approving report with data:', requestBody);
-    console.log('API URL:', `${environment.apiUrl}/manager/handle-report/${this.reportId}`);
-    console.log('Headers (using ADMIN ID):', headers);
+  // ...existing code...
     console.log('Report was submitted by reporterId:', this.getReportUserId());
     
     this.http.put<ApiResponse>(`${environment.apiUrl}/manager/handle-report/${this.reportId}`, requestBody, { 

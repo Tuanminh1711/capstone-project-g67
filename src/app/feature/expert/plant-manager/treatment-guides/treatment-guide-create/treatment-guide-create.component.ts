@@ -184,7 +184,7 @@ export class TreatmentGuideCreateComponent implements OnInit {
 
   // Method được gọi khi user thay đổi dropdown
   onDiseaseChange() {
-    console.log('� Disease dropdown changed:', this.selectedDiseaseId);
+  // ...existing code...
     this.loadExistingGuides();
   }
 

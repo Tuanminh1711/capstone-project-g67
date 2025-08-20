@@ -128,7 +128,7 @@ export class EditDiseaseComponent implements OnInit {
         this.loading = false;
       },
       error: (error: Error) => {
-        console.error('Error loading disease:', error);
+  // ...existing code...
         this.toastService.error('Lỗi khi tải thông tin bệnh cây');
         this.loading = false;
       }
@@ -208,7 +208,7 @@ export class EditDiseaseComponent implements OnInit {
           this.showToastAndNavigate('Cập nhật thành công', true);
         },
         error: (error: any) => {
-          console.error('Error updating disease:', error);
+          // ...existing code...
           
           // Lấy message từ API nếu có, nếu không dùng message mặc định
           const errorMessage = error.error?.message || 'Lỗi khi cập nhật bệnh cây';

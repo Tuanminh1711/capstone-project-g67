@@ -73,12 +73,9 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
   }
 
   private checkUserPermissions(): boolean {
-    // Lấy thông tin user từ token thông qua AuthService
-    const currentUserRole = this.authService.getCurrentUserRole();
-    const currentUserId = this.authService.getCurrentUserId();
-    
-    console.log('Checking permissions - Current user role from token:', currentUserRole);
-    console.log('Checking permissions - Current user ID from token:', currentUserId);
+  // Lấy thông tin user từ token thông qua AuthService
+  const currentUserRole = this.authService.getCurrentUserRole();
+  const currentUserId = this.authService.getCurrentUserId();
 
     // Chỉ ADMIN và STAFF mới có thể truy cập trang này
     if (!currentUserRole || (currentUserRole.toUpperCase() !== 'ADMIN' && currentUserRole.toUpperCase() !== 'STAFF')) {
@@ -116,13 +113,10 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
     this.showAllInfo = false;
     this.showOnlyUsernameAndRole = false;
 
-    // Debug logging
-    console.log('Determine visibility - Current role:', currentUserRole, 'Current ID:', currentUserId);
-    console.log('Determine visibility - Viewed role:', viewedRole, 'Viewed ID:', viewedUserId);
+  // ...existing code...
 
     // Kiểm tra nếu không có thông tin user hiện tại
     if (!currentUserRole || !currentUserId) {
-      console.warn('No current user information found');
       this.canView = false;
       this.setError('Không thể xác thực thông tin người dùng hiện tại.');
       return;
@@ -130,59 +124,43 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
 
     // Chỉ ADMIN và STAFF mới có thể xem thông tin tài khoản
     const roleFromToken = currentUserRole.toUpperCase();
-    console.log(`Role check: ${roleFromToken} - Valid roles: ADMIN, STAFF`);
-    
     if (roleFromToken !== 'ADMIN' && roleFromToken !== 'STAFF') {
-      console.log('❌ Access denied - not admin or staff');
       this.canView = false;
       this.setError('Bạn không có quyền truy cập thông tin này.');
       return;
     }
-    
-    console.log('✅ Role check passed - user has admin or staff role');
 
     // Logic theo yêu cầu - sử dụng trực tiếp currentUserRole từ token:
     const currentRoleFromToken = currentUserRole.toUpperCase();
-    
-    console.log(`Permission logic: ${currentRoleFromToken} viewing ${viewedRole} (ID: ${currentUserId} vs ${viewedUserId})`);
-    
     if (currentRoleFromToken === 'ADMIN') {
       if (currentUserId === viewedUserId) {
         // Admin xem tài khoản của chính mình -> hiển thị hết thông tin
         this.showAllInfo = true;
         this.showOnlyUsernameAndRole = false;
-        console.log('✅ Admin viewing own account - show all info');
       } else if (viewedRole === 'STAFF' || viewedRole === 'EXPERT') {
         // Admin xem tài khoản của staff hoặc expert -> hiển thị hết thông tin
         this.showAllInfo = true;
         this.showOnlyUsernameAndRole = false;
-        console.log('✅ Admin viewing staff/expert account - show all info');
       } else if (viewedRole === 'USER' || viewedRole === 'VIP') {
         // Admin xem tài khoản của user hoặc vip -> chỉ hiển thị username và vai trò
         this.showAllInfo = false;
         this.showOnlyUsernameAndRole = true;
-        console.log('⚠️ Admin viewing user/vip account - show limited info');
       } else {
         // Các trường hợp khác -> chỉ hiển thị username và vai trò
         this.showAllInfo = false;
         this.showOnlyUsernameAndRole = true;
-        console.log('⚠️ Admin viewing unknown role - show limited info');
       }
     } else if (currentRoleFromToken === 'STAFF') {
       if (viewedRole === 'USER' || viewedRole === 'VIP') {
         // Staff xem tài khoản của user hoặc vip -> chỉ hiển thị username và vai trò
         this.showAllInfo = false;
         this.showOnlyUsernameAndRole = true;
-        console.log('⚠️ Staff viewing user/vip account - show limited info');
       } else {
         // Staff xem các vai trò khác (admin, staff, expert) -> hiển thị hết thông tin
         this.showAllInfo = true;
         this.showOnlyUsernameAndRole = false;
-        console.log('✅ Staff viewing admin/staff/expert account - show all info');
       }
     }
-    
-    console.log(`Final result: showAllInfo=${this.showAllInfo}, showOnlyUsernameAndRole=${this.showOnlyUsernameAndRole}`);
   }
 
   loadUserDetail() {
@@ -215,21 +193,7 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
           const currentUserRole = this.authService.getCurrentUserRole();
           const currentUserId = this.authService.getCurrentUserId();
           
-          // Debug logging chi tiết
-          console.log('=== USER PERMISSION DEBUG ===');
-          console.log('🔑 Current user role from token:', currentUserRole, '(type:', typeof currentUserRole, ')');
-          console.log('🆔 Current user ID from token:', currentUserId, '(type:', typeof currentUserId, ')');
-          console.log('👤 Viewed user role:', viewedRole, '(type:', typeof viewedRole, ')');
-          console.log('🎯 Viewed user ID:', viewedUserId, '(type:', typeof viewedUserId, ')');
-          
-          // Kiểm tra token validity
-          if (!currentUserRole) {
-            console.log('❌ WARNING: No role found in token!');
-          }
-          if (!currentUserId) {
-            console.log('❌ WARNING: No user ID found in token!');
-          }
-          console.log('===============================');
+          // ...existing code...
           
           // Convert currentUserId from string to number for comparison
           const currentUserIdNum = currentUserId ? parseInt(currentUserId, 10) : 0;
@@ -245,7 +209,7 @@ export class AdminAccountDetailComponent extends BaseAdminListComponent implemen
         this.cdr.detectChanges();
       },
       error: (error: any) => {
-        console.error('Error loading user detail:', error);
+  // ...existing code...
         // Handle different error types like user profile component
         if (error.status === 0) {
           this.setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');

@@ -199,10 +199,10 @@ export class TreatmentGuideListComponent implements OnInit, OnDestroy {
           // Trigger change detection
           this.cdr.detectChanges();
           
-          console.log('🌿 Loaded diseases for treatment guides:', this.diseases.length);
+          // ...existing code...
         },
         error: (error) => {
-          console.error('Error loading diseases:', error);
+          // ...existing code...
           this.toastService.error('❌ Lỗi khi tải danh sách bệnh cây');
           this.diseases = [];
           this.isLoadingDiseases = false;
@@ -212,7 +212,7 @@ export class TreatmentGuideListComponent implements OnInit, OnDestroy {
   }
 
   onDiseaseChange() {
-    console.log('🔄 Disease selection changed:', this.selectedDiseaseId);
+  // ...existing code...
     
     // Clear previous guides immediately
     this.treatmentGuides = [];
@@ -229,13 +229,13 @@ export class TreatmentGuideListComponent implements OnInit, OnDestroy {
     this.isLoadingGuides = true;
     this.cdr.detectChanges();
     
-    console.log('🔍 Loading treatment guides for disease:', this.selectedDiseaseId);
+  // ...existing code...
 
     this.treatmentGuideService.getTreatmentGuidesByDisease(this.selectedDiseaseId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('📋 Treatment guides response:', response);
+          // ...existing code...
           
           if (response && response.data && Array.isArray(response.data)) {
             this.treatmentGuides = response.data;
@@ -251,14 +251,14 @@ export class TreatmentGuideListComponent implements OnInit, OnDestroy {
           this.isLoadingGuides = false;
           this.cdr.detectChanges();
           
-          console.log('📝 Loaded treatment guides:', this.treatmentGuides.length);
+          // ...existing code...
 
           if (this.treatmentGuides.length > 0) {
             this.toastService.success(`✅ Tìm thấy ${this.treatmentGuides.length} hướng dẫn điều trị`);
           }
         },
         error: (error) => {
-          console.error('❌ Error loading treatment guides:', error);
+          // ...existing code...
           this.treatmentGuides = [];
           this.isLoadingGuides = false;
           this.cdr.detectChanges();
@@ -275,13 +275,13 @@ export class TreatmentGuideListComponent implements OnInit, OnDestroy {
 
   viewGuide(guideId: number) {
     // Navigate to view page
-    console.log('👁️ Viewing guide:', guideId);
+  // ...existing code...
     // TODO: Implement navigation to view page
   }
 
   editGuide(guideId: number) {
     // Navigate to edit page
-    console.log('✏️ Editing guide:', guideId);
+  // ...existing code...
     // TODO: Implement navigation to edit page
   }
 
@@ -295,7 +295,7 @@ export class TreatmentGuideListComponent implements OnInit, OnDestroy {
             this.loadTreatmentGuides(); // Reload list
           },
           error: (error) => {
-            console.error('❌ Error deleting guide:', error);
+            // ...existing code...
             this.toastService.error('❌ Lỗi khi xóa hướng dẫn');
           }
         });

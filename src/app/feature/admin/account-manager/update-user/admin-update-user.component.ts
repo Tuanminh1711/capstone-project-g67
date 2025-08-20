@@ -518,12 +518,7 @@ export class AdminUpdateUserComponent extends BaseAdminListComponent implements 
   private handleProfileUpdateError(error: any) {
     let errorMessage = '';
     
-    console.error('Profile update error details:', {
-      status: error.status,
-      message: error.message,
-      error: error.error,
-      fullError: error
-    });
+  // ...existing code...
     
     // Xử lý lỗi đặc biệt cho profile update (sử dụng UserProfileService)
     if (error.status === 0) {

@@ -40,7 +40,7 @@ export class ResponseTicketDialogComponent {
       },
       error: (err: any) => {
         this.loading = false;
-        console.error('Response error:', err);
+  // ...existing code...
         this.error = err?.error?.message || 'Gửi phản hồi thất bại. Vui lòng thử lại.';
       }
     });

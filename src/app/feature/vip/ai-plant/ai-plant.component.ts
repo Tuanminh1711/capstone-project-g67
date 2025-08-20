@@ -150,10 +150,7 @@ export class AiPlantComponent implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      console.log('File size (bytes):', file.size);
-      console.log('File size (MB):', file.size / (1024 * 1024));
-      console.log('Max file size (MB):', 20);
-      console.log('Is file too large?', file.size > 20 * 1024 * 1024);
+  // ...existing code...
       const maxFileSize = 20 * 1024 * 1024; // 20MB
       if (file.size > maxFileSize) {
         this.toastService.show(
@@ -163,13 +160,7 @@ export class AiPlantComponent implements OnInit {
         return;
       }
 
-      // Log thông tin file để debug
-      console.log('Selected file for plant identification:', {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: new Date(file.lastModified),
-      });
+  // ...existing code...
 
       // Kiểm tra và xử lý ảnh từ điện thoại
       this.processImageForUpload(file);
@@ -182,19 +173,8 @@ export class AiPlantComponent implements OnInit {
       const imageInfo = await this.getImageDimensions(file);
       const maxPixels = 1920 * 1080; // ~2MP limit
 
-      console.log(
-        'Image dimensions:',
-        imageInfo.width,
-        'x',
-        imageInfo.height,
-        '=',
-        imageInfo.width * imageInfo.height,
-        'pixels'
-      );
-      console.log('Max allowed pixels:', maxPixels);
-
       if (imageInfo.width * imageInfo.height > maxPixels) {
-        console.log('Image resolution too large, resizing...');
+  // ...existing code...
         // THÊM: Resize ảnh nếu resolution quá lớn
         const resizedFile = await this.resizeImageToMaxResolution(
           file,
@@ -203,7 +183,7 @@ export class AiPlantComponent implements OnInit {
         this.selectedFile = resizedFile;
         this.createImagePreview(resizedFile);
       } else {
-        console.log('Image resolution OK, processing normally...');
+  // ...existing code...
         // Giữ nguyên logic cũ
         if (
           file.type === 'image/heic' ||
@@ -230,7 +210,7 @@ export class AiPlantComponent implements OnInit {
       this.isValidating = true;
       this.validatePlantImage();
     } catch (error) {
-      console.error('Error processing image for plant identification:', error);
+  // ...existing code...
       this.toastService.show(
         'Không thể xử lý ảnh. Vui lòng chọn ảnh khác.',
         'error'
@@ -264,14 +244,14 @@ export class AiPlantComponent implements OnInit {
       img.onload = () => {
         let { width, height } = img;
 
-        console.log('Original dimensions:', width, 'x', height);
+  // ...existing code...
 
         // Tính toán tỷ lệ để giữ nguyên aspect ratio
         if (width * height > maxPixels) {
           const ratio = Math.sqrt(maxPixels / (width * height));
           width = Math.floor(width * ratio);
           height = Math.floor(height * ratio);
-          console.log('Resized to:', width, 'x', height);
+          // ...existing code...
         }
 
         canvas.width = width;
@@ -285,7 +265,7 @@ export class AiPlantComponent implements OnInit {
                 type: 'image/jpeg',
                 lastModified: Date.now(),
               });
-              console.log('Resized file created:', resizedFile.size, 'bytes');
+              // ...existing code...
               resolve(resizedFile);
             }
           },
@@ -405,13 +385,6 @@ export class AiPlantComponent implements OnInit {
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted identification
 
-    // Log thông tin file trước khi gửi
-    console.log('Sending file for plant identification:', {
-      name: this.selectedFile.name,
-      size: this.selectedFile.size,
-      type: this.selectedFile.type,
-      lastModified: new Date(this.selectedFile.lastModified),
-    });
 
     const formData = new FormData();
     formData.append('image', this.selectedFile);
@@ -422,7 +395,7 @@ export class AiPlantComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     if (userId) {
       formData.append('userId', userId.toString());
-      console.log('Added userId to request:', userId);
+  // ...existing code...
     } else {
       this.toastService.show(
         'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
@@ -434,8 +407,7 @@ export class AiPlantComponent implements OnInit {
 
     // Log API endpoint
     const apiEndpoint = this.getApiEndpoint('/ai/identify-plant');
-    console.log('Making request to:', apiEndpoint);
-    console.log('Request headers:', this.getAuthHeadersForFormData());
+  // ...existing code...
 
     // Making request with auth headers
     this.http
@@ -445,7 +417,7 @@ export class AiPlantComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.isLoading = false;
-          console.log('Plant identification response:', response);
+          // ...existing code...
 
           // Full response received
           setTimeout(() => {
@@ -476,14 +448,6 @@ export class AiPlantComponent implements OnInit {
         error: (error) => {
           this.isLoading = false;
 
-          console.error('Plant identification error:', error);
-          console.error('Error details:', {
-            status: error.status,
-            statusText: error.statusText,
-            message: error.message,
-            error: error.error,
-            url: error.url,
-          });
 
           setTimeout(() => {
             let errorMessage = 'Có lỗi xảy ra khi nhận diện cây. ';
@@ -655,7 +619,7 @@ export class AiPlantComponent implements OnInit {
    * Test API connection for debugging
    */
   testApiConnection() {
-    console.log('Testing API connection...');
+  // ...existing code...
 
     // Test basic connectivity
     const testEndpoint = this.getApiEndpoint('/ai/test-connection');
