@@ -38,7 +38,7 @@ public class AIPlantServiceImpl implements AIPlantService {
     @Value("${plantcare.ai.plant-id.api-key:sgG4eDNnSC87ATYjZllplm8ktLG54LAhai1QCbY13nla1x4fap}")
     private String plantIdApiKey;
 
-    @Value("${plantcare.ai.plant-id.base-url:https://api.plant.id/v3}")
+    @Value("${plantcare.ai.plant-id.base-url:https://api.plant.id/v2}")
     private String plantIdBaseUrl;
 
     @Override
