@@ -47,7 +47,7 @@ plantcare:
   ai:
     plant-id:
       api-key: ${PLANTCARE_AI_PLANT_ID_API_KEY:sgG4eDNnSC87ATYjZllplm8ktLG54LAhai1QCbY13nla1x4fap}
-      base-url: ${PLANTCARE_AI_PLANT_ID_BASE_URL:https://api.plant.id/v3}
+      base-url: ${PLANTCARE_AI_PLANT_ID_BASE_URL:https://plant.id/api/v3}
       timeout: ${PLANTCARE_AI_TIMEOUT:30000}
 
 # Health check
