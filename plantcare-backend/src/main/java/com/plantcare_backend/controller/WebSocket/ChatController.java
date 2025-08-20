@@ -60,42 +60,84 @@ public class ChatController {
                 throw new IllegalArgumentException("Message content too long (max 1000 characters)");
             }
 
+            // Sử dụng findByIdWithRole để load Role ngay lập tức
             Optional<Users> senderOpt = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getSenderId()));
             if (senderOpt.isEmpty()) {
                 throw new IllegalArgumentException("Sender not found");
             }
 
             Users sender = senderOpt.get();
-            log.info("Sender found: {} with role: {}", sender.getUsername(), sender.getRole().getRoleName());
+            String senderRoleName = sender.getRole().getRoleName().name(); // Load role ngay lập tức
+            log.info("Sender found: {} with role: {}", sender.getUsername(), senderRoleName);
 
-            Users receiver = null;
-            if (chatMessage.getReceiverId() != null) {
-                Optional<Users> receiverOpt = userRepository.findById(chatMessage.getReceiverId());
-                receiver = receiverOpt.orElse(null);
-                log.info("Receiver found: {}", receiver != null ? receiver.getUsername() : "null");
-            }
-
-            if (!sender.getRole().getRoleName().equals(Role.RoleName.VIP) &&
-                    !sender.getRole().getRoleName().equals(Role.RoleName.EXPERT)) {
+            // Validate role
+            if (!senderRoleName.equals(Role.RoleName.VIP.name()) &&
+                    !senderRoleName.equals(Role.RoleName.EXPERT.name())) {
                 throw new AccessDeniedException("Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.");
             }
 
-            // Create and save message entity
-            com.plantcare_backend.model.ChatMessage entity = com.plantcare_backend.model.ChatMessage.builder()
-                    .sender(sender)
-                    .receiver(null)
-                    .content(chatMessage.getContent().trim())
-                    .sentAt(Timestamp.from(Instant.now()))
-                    .isRead(false)
-                    .chatType(com.plantcare_backend.model.ChatMessage.ChatType.COMMUNITY)
-                    .build();
+            // Xử lý theo chatType
+            com.plantcare_backend.model.ChatMessage entity;
+
+            if ("PRIVATE".equals(chatMessage.getChatType())) {
+                // PRIVATE MESSAGE
+                if (chatMessage.getReceiverId() == null) {
+                    throw new IllegalArgumentException("Receiver ID cannot be null for private messages");
+                }
+
+                Optional<Users> receiverOpt = userRepository.findById(chatMessage.getReceiverId());
+                if (receiverOpt.isEmpty()) {
+                    throw new IllegalArgumentException("Receiver not found");
+                }
+
+                Users receiver = receiverOpt.get();
+                log.info("Receiver found: {}", receiver.getUsername());
+
+                // Tạo conversation ID nếu chưa có
+                String conversationId = chatMessage.getConversationId();
+                if (conversationId == null || conversationId.trim().isEmpty()) {
+                    conversationId = generateConversationId(chatMessage.getSenderId(), chatMessage.getReceiverId());
+                }
+
+                entity = com.plantcare_backend.model.ChatMessage.builder()
+                        .sender(sender)
+                        .receiver(receiver)
+                        .content(chatMessage.getContent().trim())
+                        .sentAt(Timestamp.from(Instant.now()))
+                        .isRead(false)
+                        .chatType(com.plantcare_backend.model.ChatMessage.ChatType.PRIVATE)
+                        .conversationId(conversationId)
+                        .build();
+
+                log.info("Private message - Conversation ID: {}, Receiver: {}", conversationId, receiver.getUsername());
+
+            } else {
+                // COMMUNITY MESSAGE (default)
+                entity = com.plantcare_backend.model.ChatMessage.builder()
+                        .sender(sender)
+                        .receiver(null)
+                        .content(chatMessage.getContent().trim())
+                        .sentAt(Timestamp.from(Instant.now()))
+                        .isRead(false)
+                        .chatType(com.plantcare_backend.model.ChatMessage.ChatType.COMMUNITY)
+                        .conversationId(null)
+                        .build();
+
+                log.info("Community message - No receiver, no conversation ID");
+            }
 
             chatMessageRepository.save(entity);
-            log.info("Chat message saved with ID: {}", entity.getMessageId());
+            log.info("Chat message saved with ID: {} and type: {}", entity.getMessageId(), entity.getChatType());
 
             // Set response data
             chatMessage.setTimestamp(entity.getSentAt().toInstant().toString());
-            chatMessage.setSenderRole(sender.getRole().getRoleName().name());
+            chatMessage.setSenderRole(senderRoleName); // Sử dụng biến đã load
+
+            // Set conversationId và receiverId cho private messages
+            if (entity.getChatType() == com.plantcare_backend.model.ChatMessage.ChatType.PRIVATE) {
+                chatMessage.setConversationId(entity.getConversationId());
+                chatMessage.setReceiverId(entity.getReceiver().getId());
+            }
 
             log.info("Broadcasting message to /topic/vip-community: {}", chatMessage);
             return chatMessage;
