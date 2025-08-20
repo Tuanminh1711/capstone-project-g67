@@ -45,6 +45,11 @@ export const routes: Routes = [
     canActivate: [VipAuthGuard]
   },
 
+  {
+    path: 'vip/chat/chat-private',
+    loadComponent: () => import('./feature/vip/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [VipAuthGuard]
+  },
   { 
     path: 'vip/ai-plant', 
     loadComponent: () => import('./feature/vip/ai-plant/ai-plant.component').then(m => m.AiPlantComponent),

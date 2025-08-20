@@ -1,5 +1,5 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChatAiComponent } from './chat-ai.component';
 import { CommonModule } from '@angular/common';
@@ -84,7 +84,8 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
     private authService: AuthService, 
     private authDialogService: AuthDialogService,
     public router: Router, 
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     this.checkCurrentRoute();
   }
@@ -155,7 +156,7 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
     event.preventDefault();
     const touch = event.touches[0];
     this.startDrag(touch.clientX, touch.clientY);
-    
+
     // Add global listeners
     const touchMoveListener = (e: TouchEvent) => {
       e.preventDefault();
@@ -167,14 +168,24 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
         this.handleDragMove(touch.clientX, touch.clientY);
       });
     };
+
     const touchEndListener = () => {
-      this.endDrag();
+      // Nếu không thực sự kéo, coi là click và mở dialog
+      if (!this.dragStarted) {
+        this.endDrag();
+        this.openDialog();
+        this.cdr.detectChanges(); // Fix ExpressionChangedAfterItHasBeenCheckedError
+      } else {
+        this.endDrag();
+      }
       document.removeEventListener('touchmove', touchMoveListener);
       document.removeEventListener('touchend', touchEndListener);
     };
-    
-    document.addEventListener('touchmove', touchMoveListener);
+
+    document.addEventListener('touchmove', touchMoveListener, { passive: false });
     document.addEventListener('touchend', touchEndListener);
+    // Đăng ký lại touchstart với passive: false để đảm bảo không bị chặn
+    document.addEventListener('touchstart', () => {}, { passive: false });
   }
 
   private startDrag(clientX: number, clientY: number) {
@@ -276,26 +287,38 @@ export class ChatAiFabComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.isDialogOpen) return;
-    
+
+
     this.isDialogOpen = true;
-    
+
+    // Responsive dialog size
+    let width = '400px';
+    let height = '70vh';
+    if (window.innerWidth < 600) {
+      width = '95vw';
+      height = '60vh';
+    }
+
+    this.cdr.detectChanges(); // Thêm dòng này để tránh lỗi ExpressionChangedAfterItHasBeenCheckedError
+
     const dialogRef = this.dialog.open(ChatAiComponent, {
-      width: '400px',
-      height: '70vh',
-      maxWidth: '90vw',
-      position: { right: '24px', bottom: '24px' },
+      width,
+      height,
+      maxWidth: '98vw',
+      position: { right: '8px', bottom: '8px' },
       panelClass: 'chat-ai-dialog-panel',
       autoFocus: false,
       hasBackdrop: false,
       backdropClass: 'no-backdrop',
       disableClose: false
     });
-    
+
     dialogRef.afterClosed().subscribe(() => {
-      this.isDialogOpen = false;
-      this.updateLoginStatusAndRole();
-      // Force detect changes to immediately show FAB again
-      setTimeout(() => this.cdr.detectChanges(), 0);
+      this.ngZone.run(() => {
+        this.isDialogOpen = false;
+        this.updateLoginStatusAndRole();
+        this.cdr.detectChanges();
+      });
     });
   }
 
