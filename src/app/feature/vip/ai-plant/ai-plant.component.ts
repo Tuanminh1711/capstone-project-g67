@@ -153,7 +153,7 @@ export class AiPlantComponent implements OnInit {
       console.log('File size (bytes):', file.size);
       console.log('File size (MB):', file.size / (1024 * 1024));
       console.log('Max file size (MB):', 20);
-      console.log('Is file too large?', file.size > 20 * 1024 * 1024); 
+      console.log('Is file too large?', file.size > 20 * 1024 * 1024);
       const maxFileSize = 20 * 1024 * 1024; // 20MB
       if (file.size > maxFileSize) {
         this.toastService.show(
@@ -178,25 +178,52 @@ export class AiPlantComponent implements OnInit {
 
   private async processImageForUpload(file: File): Promise<void> {
     try {
-      // Kiểm tra nếu là ảnh từ điện thoại (HEIC, WebP, etc.)
-      if (
-        file.type === 'image/heic' ||
-        file.type === 'image/heif' ||
-        file.type === 'image/webp'
-      ) {
-        // Convert sang JPEG
-        const convertedFile = await this.convertImageToJpeg(file);
-        this.selectedFile = convertedFile;
-        this.createImagePreview(convertedFile);
-      } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
-        // Ảnh đã đúng định dạng
-        this.selectedFile = file;
-        this.createImagePreview(file);
+      // THÊM: Kiểm tra resolution trước khi xử lý
+      const imageInfo = await this.getImageDimensions(file);
+      const maxPixels = 1920 * 1080; // ~2MP limit
+
+      console.log(
+        'Image dimensions:',
+        imageInfo.width,
+        'x',
+        imageInfo.height,
+        '=',
+        imageInfo.width * imageInfo.height,
+        'pixels'
+      );
+      console.log('Max allowed pixels:', maxPixels);
+
+      if (imageInfo.width * imageInfo.height > maxPixels) {
+        console.log('Image resolution too large, resizing...');
+        // THÊM: Resize ảnh nếu resolution quá lớn
+        const resizedFile = await this.resizeImageToMaxResolution(
+          file,
+          maxPixels
+        );
+        this.selectedFile = resizedFile;
+        this.createImagePreview(resizedFile);
       } else {
-        // Thử convert sang JPEG
-        const convertedFile = await this.convertImageToJpeg(file);
-        this.selectedFile = convertedFile;
-        this.createImagePreview(convertedFile);
+        console.log('Image resolution OK, processing normally...');
+        // Giữ nguyên logic cũ
+        if (
+          file.type === 'image/heic' ||
+          file.type === 'image/heif' ||
+          file.type === 'image/webp'
+        ) {
+          // Convert sang JPEG
+          const convertedFile = await this.convertImageToJpeg(file);
+          this.selectedFile = convertedFile;
+          this.createImagePreview(convertedFile);
+        } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
+          // Ảnh đã đúng định dạng
+          this.selectedFile = file;
+          this.createImagePreview(file);
+        } else {
+          // Thử convert sang JPEG
+          const convertedFile = await this.convertImageToJpeg(file);
+          this.selectedFile = convertedFile;
+          this.createImagePreview(convertedFile);
+        }
       }
 
       // Start validation after processing
@@ -209,6 +236,66 @@ export class AiPlantComponent implements OnInit {
         'error'
       );
     }
+  }
+
+  // THÊM: Lấy dimensions của ảnh
+  private getImageDimensions(
+    file: File
+  ): Promise<{ width: number; height: number }> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({ width: img.width, height: img.height });
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  // THÊM: Resize ảnh về resolution tối đa
+  private async resizeImageToMaxResolution(
+    file: File,
+    maxPixels: number
+  ): Promise<File> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        let { width, height } = img;
+
+        console.log('Original dimensions:', width, 'x', height);
+
+        // Tính toán tỷ lệ để giữ nguyên aspect ratio
+        if (width * height > maxPixels) {
+          const ratio = Math.sqrt(maxPixels / (width * height));
+          width = Math.floor(width * ratio);
+          height = Math.floor(height * ratio);
+          console.log('Resized to:', width, 'x', height);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              console.log('Resized file created:', resizedFile.size, 'bytes');
+              resolve(resizedFile);
+            }
+          },
+          'image/jpeg',
+          0.8
+        );
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   private async convertImageToJpeg(file: File): Promise<File> {
