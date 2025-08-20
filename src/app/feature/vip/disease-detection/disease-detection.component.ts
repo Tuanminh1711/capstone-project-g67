@@ -1,9 +1,27 @@
-
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
+import {
+  Subject,
+  takeUntil,
+  debounceTime,
+  distinctUntilChanged,
+  firstValueFrom,
+} from 'rxjs';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
 
 // Interfaces
@@ -82,53 +100,53 @@ interface DiseaseFilter {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    TopNavigatorComponent
+    TopNavigatorComponent,
   ],
   templateUrl: './disease-detection.component.html',
-  styleUrl: './disease-detection.component.scss'
+  styleUrl: './disease-detection.component.scss',
 })
 export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   @ViewChild('imagePreview') imagePreview!: ElementRef<HTMLImageElement>;
-  
+
   private destroy$ = new Subject<void>();
-  
+
   // Active tab
   activeTab: 'image' | 'symptoms' | 'history' | 'library' = 'image';
-  
+
   // Image detection
   selectedImage: File | null = null;
   imagePreviewUrl: string | null = null;
   isDetectingFromImage = false;
   imageDetectionResult: DiseaseDetectionResult | null = null;
-  
+
   // Symptoms detection
   symptomsForm: FormGroup;
   isDetectingFromSymptoms = false;
   symptomsDetectionResult: DiseaseDetectionResult | null = null;
-  
+
   // Disease library
   allDiseases: PlantDisease[] = [];
   filteredDiseases: PlantDisease[] = [];
   categories: string[] = [];
   filterForm: FormGroup;
   isLoadingLibrary = false;
-  
+
   // History
   detectionHistory: DiseaseDetectionHistory[] = [];
   isLoadingHistory = false;
   totalHistoryItems: number = 0;
-  
+
   // Pagination
   currentPage = 0;
   pageSize = 12;
   totalItems = 0;
   pagedDiseases: PlantDisease[] = [];
-  
+
   // Selected disease for detail view
   selectedDisease: PlantDisease | null = null;
   selectedTreatmentGuide: TreatmentGuide | null = null;
-  
+
   // UI states
   isLoading = false;
   errorMessage = '';
@@ -141,11 +159,13 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.symptomsForm = this.fb.group({
-      symptoms: ['', Validators.required]
+      symptoms: ['', Validators.required],
     });
 
     this.filterForm = this.fb.group({
-      selectedCategory: [this.categories.length > 0 ? this.categories[0] : 'Nấm']
+      selectedCategory: [
+        this.categories.length > 0 ? this.categories[0] : 'Nấm',
+      ],
     });
     this.pagedDiseases = [];
   }
@@ -158,30 +178,29 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeFilters();
     this.setupFilterListeners();
-    
+
     // Load data immediately and ensure it's displayed
     this.loadInitialData();
   }
 
   private async loadInitialData(): Promise<void> {
     try {
-  // Load diseases library theo category mặc định
-  await this.loadDiseasesByCategory(this.filterForm.value.selectedCategory);
-      
+      // Load diseases library theo category mặc định
+      await this.loadDiseasesByCategory(this.filterForm.value.selectedCategory);
+
       // Force change detection after loading diseases
       this.cdr.detectChanges();
-      
+
       // Load detection history
       await this.loadDetectionHistory();
-      
+
       // Force change detection after loading history
       this.cdr.detectChanges();
-      
+
       // Final force change detection
       setTimeout(() => {
         this.cdr.detectChanges();
       }, 200);
-      
     } catch (error) {
       // Error in loadInitialData handled
     }
@@ -195,10 +214,10 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   // ==================== TAB MANAGEMENT ====================
   setActiveTab(tab: 'image' | 'symptoms' | 'history' | 'library'): void {
     this.activeTab = tab;
-    
+
     // Force change detection when switching tabs
     this.cdr.detectChanges();
-    
+
     // Load specific data for each tab
     if (tab === 'history') {
       this.loadDetectionHistory();
@@ -207,7 +226,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.loadDiseasesByCategory(this.filterForm.value.selectedCategory);
       }
     }
-    
+
     // Force change detection again after loading data
     setTimeout(() => {
       this.cdr.detectChanges();
@@ -220,18 +239,20 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     if (file && file.type.startsWith('image/')) {
       const maxFileSize = 20 * 1024 * 1024; // 20MB
       if (file.size > maxFileSize) {
-        this.showError('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.');
+        this.showError(
+          'Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.'
+        );
         return;
       }
-      
+
       // Log thông tin file để debug
       console.log('Selected file:', {
         name: file.name,
         size: file.size,
         type: file.type,
-        lastModified: new Date(file.lastModified)
+        lastModified: new Date(file.lastModified),
       });
-      
+
       // Kiểm tra và xử lý ảnh từ điện thoại
       this.processImageForUpload(file);
     } else {
@@ -241,23 +262,54 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
   private async processImageForUpload(file: File): Promise<void> {
     try {
-      // Kiểm tra nếu là ảnh từ điện thoại (HEIC, WebP, etc.)
-      if (file.type === 'image/heic' || file.type === 'image/heif' || file.type === 'image/webp') {
-        // Convert sang JPEG
-        const convertedFile = await this.convertImageToJpeg(file);
-        this.selectedImage = convertedFile;
-        this.createImagePreview(convertedFile);
-      } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
-        // Ảnh đã đúng định dạng
-        this.selectedImage = file;
-        this.createImagePreview(file);
+      // THÊM: Kiểm tra resolution trước khi xử lý
+      const imageInfo = await this.getImageDimensions(file);
+      const maxPixels = 1920 * 1080; // ~2MP limit
+
+      console.log(
+        'Image dimensions:',
+        imageInfo.width,
+        'x',
+        imageInfo.height,
+        '=',
+        imageInfo.width * imageInfo.height,
+        'pixels'
+      );
+      console.log('Max allowed pixels:', maxPixels);
+
+      if (imageInfo.width * imageInfo.height > maxPixels) {
+        console.log('Image resolution too large, resizing...');
+        // THÊM: Resize ảnh nếu resolution quá lớn
+        const resizedFile = await this.resizeImageToMaxResolution(
+          file,
+          maxPixels
+        );
+        this.selectedImage = resizedFile;
+        this.createImagePreview(resizedFile);
       } else {
-        // Thử convert sang JPEG
-        const convertedFile = await this.convertImageToJpeg(file);
-        this.selectedImage = convertedFile;
-        this.createImagePreview(convertedFile);
+        console.log('Image resolution OK, processing normally...');
+        // Giữ nguyên logic cũ
+        if (
+          file.type === 'image/heic' ||
+          file.type === 'image/heif' ||
+          file.type === 'image/webp'
+        ) {
+          // Convert sang JPEG
+          const convertedFile = await this.convertImageToJpeg(file);
+          this.selectedImage = convertedFile;
+          this.createImagePreview(convertedFile);
+        } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
+          // Ảnh đã đúng định dạng
+          this.selectedImage = file;
+          this.createImagePreview(file);
+        } else {
+          // Thử convert sang JPEG
+          const convertedFile = await this.convertImageToJpeg(file);
+          this.selectedImage = convertedFile;
+          this.createImagePreview(convertedFile);
+        }
       }
-      
+
       this.clearMessages();
     } catch (error) {
       console.error('Error processing image:', error);
@@ -265,35 +317,103 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     }
   }
 
+  // THÊM: Lấy dimensions của ảnh
+  private getImageDimensions(
+    file: File
+  ): Promise<{ width: number; height: number }> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({ width: img.width, height: img.height });
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  // THÊM: Resize ảnh về resolution tối đa
+  private async resizeImageToMaxResolution(
+    file: File,
+    maxPixels: number
+  ): Promise<File> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        let { width, height } = img;
+
+        console.log('Original dimensions:', width, 'x', height);
+
+        // Tính toán tỷ lệ để giữ nguyên aspect ratio
+        if (width * height > maxPixels) {
+          const ratio = Math.sqrt(maxPixels / (width * height));
+          width = Math.floor(width * ratio);
+          height = Math.floor(height * ratio);
+          console.log('Resized to:', width, 'x', height);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              console.log('Resized file created:', resizedFile.size, 'bytes');
+              resolve(resizedFile);
+            }
+          },
+          'image/jpeg',
+          0.8
+        );
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   private async convertImageToJpeg(file: File): Promise<File> {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
         // Set canvas size
         canvas.width = img.width;
         canvas.height = img.height;
-        
+
         // Draw image to canvas
         ctx?.drawImage(img, 0, 0);
-        
+
         // Convert to blob
-        canvas.toBlob((blob) => {
-          if (blob) {
-            // Create new file with JPEG type
-            const convertedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-              type: 'image/jpeg',
-              lastModified: Date.now()
-            });
-            resolve(convertedFile);
-          } else {
-            reject(new Error('Failed to convert image'));
-          }
-        }, 'image/jpeg', 0.9); // 90% quality
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // Create new file with JPEG type
+              const convertedFile = new File(
+                [blob],
+                file.name.replace(/\.[^/.]+$/, '.jpg'),
+                {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                }
+              );
+              resolve(convertedFile);
+            } else {
+              reject(new Error('Failed to convert image'));
+            }
+          },
+          'image/jpeg',
+          0.9
+        ); // 90% quality
       };
-      
+
       img.onerror = () => reject(new Error('Failed to load image'));
       img.src = URL.createObjectURL(file);
     });
@@ -322,7 +442,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         name: this.selectedImage.name,
         size: this.selectedImage.size,
         type: this.selectedImage.type,
-        lastModified: new Date(this.selectedImage.lastModified)
+        lastModified: new Date(this.selectedImage.lastModified),
       });
 
       const formData = new FormData();
@@ -338,21 +458,22 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       if (result) {
         this.imageDetectionResult = {
           ...result,
-          detectedAt: Date.now()
+          detectedAt: Date.now(),
         };
         this.showSuccess('Phát hiện bệnh thành công!');
         this.loadDetectionHistory(); // Refresh history
       }
     } catch (error: any) {
       console.error('Disease detection error:', error);
-      
+
       // Hiển thị lỗi chi tiết hơn
       let errorMessage = 'Có lỗi xảy ra khi phát hiện bệnh. ';
-      
+
       if (error.status === 413) {
         errorMessage += 'Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
       } else if (error.status === 415) {
-        errorMessage += 'Định dạng ảnh không được hỗ trợ. Vui lòng chọn ảnh JPG hoặc PNG.';
+        errorMessage +=
+          'Định dạng ảnh không được hỗ trợ. Vui lòng chọn ảnh JPG hoặc PNG.';
       } else if (error.status === 400) {
         // Kiểm tra response từ backend
         if (error.error && error.error.symptoms) {
@@ -368,7 +489,8 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
           errorMessage += 'Lỗi server. Vui lòng thử lại sau.';
         }
       } else if (error.status === 0) {
-        errorMessage += 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+        errorMessage +=
+          'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
       } else if (error.name === 'TimeoutError') {
         errorMessage += 'Yêu cầu bị timeout. Vui lòng thử lại.';
       } else {
@@ -379,16 +501,16 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
           errorMessage += `Lỗi: ${error.message || 'Không xác định'}`;
         }
       }
-      
+
       this.showError(errorMessage);
-      
+
       // Log chi tiết lỗi để debug
       console.log('Error details:', {
         status: error.status,
         statusText: error.statusText,
         message: error.message,
         error: error.error,
-        url: error.url
+        url: error.url,
       });
     } finally {
       this.isDetectingFromImage = false;
@@ -419,7 +541,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       const symptomsText = this.symptomsForm.get('symptoms')?.value;
       const request = {
         description: symptomsText,
-        detectionMethod: 'SYMPTOMS' as const
+        detectionMethod: 'SYMPTOMS' as const,
       };
 
       // Sending symptoms detection request
@@ -434,13 +556,15 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       if (result) {
         this.symptomsDetectionResult = {
           ...result,
-          detectedAt: Date.now()
+          detectedAt: Date.now(),
         };
         this.showSuccess('Phân tích triệu chứng thành công!');
         this.loadDetectionHistory(); // Refresh history
       }
     } catch (error: any) {
-      this.showError('Có lỗi xảy ra khi phân tích triệu chứng. Vui lòng thử lại.');
+      this.showError(
+        'Có lỗi xảy ra khi phân tích triệu chứng. Vui lòng thử lại.'
+      );
     } finally {
       this.isDetectingFromSymptoms = false;
     }
@@ -454,7 +578,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   // ==================== DETECTION HISTORY ====================
   async loadDetectionHistory(): Promise<void> {
     this.isLoadingHistory = true;
-    
+
     try {
       const response = await firstValueFrom(
         this.http.get<any>(`/api/vip/disease-detection/history`)
@@ -468,16 +592,15 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.detectionHistory = response ? [...response] : [];
         this.totalHistoryItems = this.detectionHistory.length;
       }
-      
+
       // Force change detection immediately
       this.cdr.detectChanges();
-      
     } catch (error: any) {
       this.detectionHistory = [];
       this.totalHistoryItems = 0;
     } finally {
       this.isLoadingHistory = false;
-      
+
       // Force change detection again after completion
       this.cdr.detectChanges();
     }
@@ -490,10 +613,10 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   // Translate severity levels to Vietnamese
   getSeverityText(severity: string): string {
     const severityMap: { [key: string]: string } = {
-      'LOW': 'Thấp',
-      'MEDIUM': 'Trung bình', 
-      'HIGH': 'Cao',
-      'CRITICAL': 'Nghiêm trọng'
+      LOW: 'Thấp',
+      MEDIUM: 'Trung bình',
+      HIGH: 'Cao',
+      CRITICAL: 'Nghiêm trọng',
     };
     return severityMap[severity?.toUpperCase()] || severity;
   }
@@ -504,8 +627,9 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   }
 
   private setupFilterListeners(): void {
-    this.filterForm.get('selectedCategory')?.valueChanges
-      .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
+    this.filterForm
+      .get('selectedCategory')
+      ?.valueChanges.pipe(distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((category) => this.loadDiseasesByCategory(category));
   }
 
@@ -514,22 +638,32 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     try {
       const apiDiseases = await firstValueFrom(
         this.http.get<any[]>(
-          `/api/vip/disease-detection/by-category?category=${encodeURIComponent(category)}`,
+          `/api/vip/disease-detection/by-category?category=${encodeURIComponent(
+            category
+          )}`,
           { headers: { Authorization: `Bearer ${this.getAuthToken()}` } }
         )
       );
       // Map API fields to PlantDisease model
-      this.allDiseases = (apiDiseases || []).map(d => ({
+      this.allDiseases = (apiDiseases || []).map((d) => ({
         id: d.id,
         name: d.diseaseName || d.name || '',
         scientificName: d.scientificName || '',
         category: d.category || '',
         severity: d.severity || '',
-        symptoms: Array.isArray(d.symptoms) ? d.symptoms : (typeof d.symptoms === 'string' && d.symptoms ? d.symptoms.split(';').map((s: string) => s.trim()) : []),
+        symptoms: Array.isArray(d.symptoms)
+          ? d.symptoms
+          : typeof d.symptoms === 'string' && d.symptoms
+          ? d.symptoms.split(';').map((s: string) => s.trim())
+          : [],
         treatment: d.treatment || '',
         prevention: d.prevention || '',
-        affectedPlants: Array.isArray(d.affectedPlants) ? d.affectedPlants : (d.affectedPlantTypes ? d.affectedPlantTypes.split(',').map((s: string) => s.trim()) : []),
-        commonality: typeof d.commonality === 'number' ? d.commonality : 0
+        affectedPlants: Array.isArray(d.affectedPlants)
+          ? d.affectedPlants
+          : d.affectedPlantTypes
+          ? d.affectedPlantTypes.split(',').map((s: string) => s.trim())
+          : [],
+        commonality: typeof d.commonality === 'number' ? d.commonality : 0,
       }));
       this.filteredDiseases = [...this.allDiseases];
       this.totalItems = this.filteredDiseases.length;
@@ -550,7 +684,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
   private getAuthToken(): string {
     // Lấy token từ cookie hoặc localStorage tuỳ dự án
-    return (document.cookie.match(/auth_token=([^;]+)/)?.[1]) || '';
+    return document.cookie.match(/auth_token=([^;]+)/)?.[1] || '';
   }
 
   private async fetchAllDiseases(): Promise<PlantDisease[]> {
@@ -587,17 +721,15 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     }
   }
 
-
-
   // Đã loại bỏ sort/filter nâng cao, chỉ lọc theo category qua API
 
   private updatePagedDiseases(): void {
     const startIndex = this.currentPage * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    
+
     // Create new array to trigger change detection
     this.pagedDiseases = [...this.filteredDiseases.slice(startIndex, endIndex)];
-    
+
     // Force change detection after updating
     this.cdr.detectChanges();
   }
@@ -622,9 +754,12 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   get pageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisiblePages = 5;
-    const startPage = Math.max(0, Math.min(this.currentPage - 2, this.totalPages - maxVisiblePages));
+    const startPage = Math.max(
+      0,
+      Math.min(this.currentPage - 2, this.totalPages - maxVisiblePages)
+    );
     const endPage = Math.min(startPage + maxVisiblePages, this.totalPages);
-    
+
     for (let i = startPage; i < endPage; i++) {
       pages.push(i);
     }
@@ -664,16 +799,18 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
       successRate: '',
       precautions: [],
       followUpSchedule: '',
-      expertNotes: ''
+      expertNotes: '',
     };
-    
+
     // Force UI update
     this.cdr.detectChanges();
-    
+
     try {
       const guide = await firstValueFrom(
         this.http.get<TreatmentGuide>(
-          `/api/vip/disease-detection/treatment-guide?diseaseName=${encodeURIComponent(diseaseName)}`
+          `/api/vip/disease-detection/treatment-guide?diseaseName=${encodeURIComponent(
+            diseaseName
+          )}`
         )
       );
 
@@ -681,7 +818,9 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
         this.selectedTreatmentGuide = guide;
         // Translate severity if needed
         if (guide.severity) {
-          this.selectedTreatmentGuide.severity = this.getSeverityText(guide.severity);
+          this.selectedTreatmentGuide.severity = this.getSeverityText(
+            guide.severity
+          );
         }
         this.cdr.detectChanges();
       }
@@ -695,7 +834,6 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     this.selectedTreatmentGuide = null;
   }
 
-
   // ==================== FILTER METHODS ====================
   // clearFilters and toggleAdvancedFilters removed
 
@@ -708,17 +846,16 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     this.selectedDisease = null;
   }
 
-
   // ==================== EXPORT METHODS ====================
   // exportToCSV removed
 
   // ==================== UTILITY METHODS ====================
   getSeverityColor(severity: string): string {
     const colors: { [key: string]: string } = {
-      'Low': '#28a745',
-      'Medium': '#ffc107',
-      'High': '#fd7e14',
-      'Critical': '#dc3545'
+      Low: '#28a745',
+      Medium: '#ffc107',
+      High: '#fd7e14',
+      Critical: '#dc3545',
     };
     return colors[severity] || '#6c757d';
   }
@@ -729,12 +866,12 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
 
   getCategoryIcon(category: string): string {
     const icons: { [key: string]: string } = {
-      'Fungal': '🍄',
-      'Bacterial': '��',
-      'Viral': '🦠',
-      'Nematode': '🐛',
-      'Environmental': '🌡️',
-      'Nutritional': '🌱'
+      Fungal: '🍄',
+      Bacterial: '��',
+      Viral: '🦠',
+      Nematode: '🐛',
+      Environmental: '🌡️',
+      Nutritional: '🌱',
     };
     return icons[category] || '🌿';
   }
@@ -747,13 +884,13 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
   private showSuccess(message: string): void {
     this.successMessage = message;
     this.errorMessage = '';
-    setTimeout(() => this.successMessage = '', 5000);
+    setTimeout(() => (this.successMessage = ''), 5000);
   }
 
   private showError(message: string): void {
     this.errorMessage = message;
     this.successMessage = '';
-    setTimeout(() => this.errorMessage = '', 5000);
+    setTimeout(() => (this.errorMessage = ''), 5000);
   }
 
   private clearMessages(): void {
@@ -771,7 +908,8 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     const field = this.symptomsForm.get(fieldName);
     if (field && field.errors) {
       if (field.errors['required']) return 'Trường này là bắt buộc';
-      if (field.errors['minlength']) return `Tối thiểu ${field.errors['minlength'].requiredLength} ký tự`;
+      if (field.errors['minlength'])
+        return `Tối thiểu ${field.errors['minlength'].requiredLength} ký tự`;
     }
     return '';
   }
@@ -781,9 +919,9 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     if (this.activeTab === 'history') {
       this.loadDetectionHistory();
     } else if (this.activeTab === 'library') {
-  this.loadDiseasesByCategory(this.filterForm.value.selectedCategory);
+      this.loadDiseasesByCategory(this.filterForm.value.selectedCategory);
     }
-    
+
     // Force change detection
     this.cdr.detectChanges();
   }
