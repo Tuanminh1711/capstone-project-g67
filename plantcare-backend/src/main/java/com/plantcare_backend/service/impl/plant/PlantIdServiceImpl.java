@@ -22,10 +22,10 @@ public class PlantIdServiceImpl implements PlantIdService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${plantcare.ai.plant-id.api-key}")
+    @Value("${plantcare.ai.plant-id.api-key:dHWJveFsVCycSKGouiySYtC8jvSvlZysh9PyL1nJQkurMaUAos}")
     private String apiKey;
 
-    @Value("${plantcare.ai.plant-id.base-url}")
+    @Value("${plantcare.ai.plant-id.base-url:https://plant.id/api/v2}")
     private String baseUrl;
 
     @Override
