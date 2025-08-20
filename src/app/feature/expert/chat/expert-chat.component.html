@@ -21,22 +21,20 @@
         <button class="retry-btn" (click)="connectToChat()">Thử lại</button>
       </div>
 
-      <div *ngIf="!loading && messages.length === 0" class="empty-state">
+      <div *ngIf="!loading && filteredMessages.length === 0" class="empty-state">
         <div class="text">Chưa có tin nhắn nào</div>
         <div class="subtext">Hãy bắt đầu cuộc trò chuyện với cộng đồng!</div>
       </div>
 
-      <div *ngIf="!loading && messages.length > 0" class="messages-list">
-        <div *ngFor="let msg of messages; trackBy: trackMessage; let last = last" 
+      <div *ngIf="!loading && filteredMessages.length > 0" class="messages-list">
+        <div *ngFor="let msg of filteredMessages; trackBy: trackMessage; let last = last" 
              class="message-wrapper"
              [class.own-message]="isOwnMessage(msg)"
              [class.other-message]="!isOwnMessage(msg)">
-          
           <!-- Avatar cho tin nhắn của người khác (bên trái) -->
           <div class="message-avatar" *ngIf="!isOwnMessage(msg)">
             <span>{{ getAvatarInitial(msg) }}</span>
           </div>
-          
           <div class="message-bubble">
             <div class="message-content">
               <div class="message-info">

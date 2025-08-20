@@ -2,6 +2,7 @@ export const environment = {
   production: true,
   apiUrl: 'https://plantcare.id.vn',  // Base URL without /api
   baseUrl: 'https://plantcare.id.vn',  // Base URL production
+  webSocketUrl: 'https://plantcare.id.vn/ws-chat', // WebSocket URL cho production
   endpoints: {
     auth: '/api/auth',
     user: {

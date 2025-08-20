@@ -2,6 +2,7 @@ export const environment = {
   production: false,
   apiUrl: '/api',  // Sử dụng proxy trong development
   baseUrl: '',  // Sử dụng URL tương đối trong development
+  webSocketUrl: 'http://localhost:8080/ws-chat', // WebSocket URL cho development
   endpoints: {
     auth: '/api/auth',
     user: {

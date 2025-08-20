@@ -1,3 +1,4 @@
+
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -13,7 +14,6 @@ import { ChatService } from '../../../shared/services/chat.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 
 
-
 @Component({
   selector: 'app-expert-chat',
   standalone: true,
@@ -21,11 +21,19 @@ import { ToastService } from '../../../shared/toast/toast.service';
   templateUrl: './expert-chat.component.html',
   styleUrls: ['./expert-chat.component.scss']
 })
+
+
+
+// ...existing code...
 export class ExpertChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef;
   private shouldScrollToBottom = false;
   // Chat cộng đồng state
   messages: ChatMessage[] = [];
+  // Always filter only community messages for display
+  get filteredMessages(): ChatMessage[] {
+    return this.messages.filter(m => m.chatType === 'COMMUNITY');
+  }
   newMessage = '';
   loading = false;
   error = '';
@@ -68,11 +76,13 @@ export class ExpertChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loading = true;
     this.chatService.getChatHistory().subscribe({
       next: (data) => {
-        this.messages = Array.isArray(data) ? data : [];
+        this.messages = (Array.isArray(data) ? data : []).filter(
+          (m: any) => m.chatType === 'COMMUNITY'
+        );
         this.loading = false;
         this.cdr.markForCheck();
         this.connectToChat();
-  this.shouldScrollToBottom = true;
+        this.shouldScrollToBottom = true;
       },
       error: (err) => {
         this.error = 'Không thể tải lịch sử chat cộng đồng';

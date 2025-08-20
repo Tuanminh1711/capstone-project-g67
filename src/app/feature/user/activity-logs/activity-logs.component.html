@@ -35,7 +35,7 @@
             type="button" 
             (click)="goToPage(0)" 
             [disabled]="currentPage === 0"
-            class="pagination-btn">
+            class="pagination-btn first">
             ≪ Đầu
           </button>
           
@@ -64,7 +64,7 @@
             type="button" 
             (click)="goToPage(totalPages - 1)" 
             [disabled]="currentPage >= totalPages - 1"
-            class="pagination-btn">
+            class="pagination-btn last">
             Cuối ≫
           </button>
         </div>

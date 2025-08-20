@@ -5,31 +5,59 @@
   border-radius: 12px;
   box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
   padding: 32px 28px;
+  @media (max-width: 600px) {
+    padding: 14px 4px 18px 4px;
+    border-radius: 8px;
+    margin: 60px 2px 12px 2px;
+    box-shadow: 0 1px 6px 0 rgba(0,0,0,0.07);
+  }
 }
 h2 {
   margin-bottom: 24px;
   font-size: 2rem;
   font-weight: 700;
   color: #43a047;
+  @media (max-width: 600px) {
+    font-size: 1.25rem;
+    margin-bottom: 14px;
+    text-align: center;
+  }
 }
 .logs-table-wrapper {
   overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 .logs-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
-  min-width: 900px;
+  min-width: 520px;
+  font-size: 1rem;
+  @media (max-width: 600px) {
+    min-width: 340px;
+    font-size: 0.95rem;
+  }
 }
 .logs-table th, .logs-table td {
   padding: 12px 16px;
   border-bottom: 1px solid #e0e0e0;
   text-align: left;
+  word-break: break-word;
+  @media (max-width: 600px) {
+    padding: 8px 6px;
+    font-size: 0.97em;
+  }
 }
 .logs-table th {
   background: #e8f5e9;
   font-weight: 600;
   color: #388e3c;
+  font-size: 1.05em;
+  @media (max-width: 600px) {
+    font-size: 1em;
+    padding: 8px 6px;
+  }
 }
 .log-action {
   font-weight: 600;
@@ -38,9 +66,15 @@ h2 {
 .log-time {
   color: #888;
   font-size: 14px;
+  @media (max-width: 600px) {
+    font-size: 13px;
+  }
 }
 .log-detail {
   color: #444;
+  @media (max-width: 600px) {
+    font-size: 13px;
+  }
 }
 .log-ip {
   color: #888;
@@ -50,6 +84,11 @@ h2 {
   color: #bdbdbd;
   text-align: center;
   margin: 24px 0;
+  font-size: 1em;
+  @media (max-width: 600px) {
+    font-size: 0.95em;
+    margin: 16px 0;
+  }
 }
 
 .pagination {
@@ -59,6 +98,13 @@ h2 {
   gap: 16px;
   margin-top: 24px;
   padding: 16px;
+  flex-wrap: wrap;
+  @media (max-width: 600px) {
+    gap: 8px;
+    margin-top: 14px;
+    padding: 8px 2px;
+    font-size: 0.97em;
+  }
 }
 
 .pagination-btn {
@@ -81,17 +127,39 @@ h2 {
     border-color: #ccc;
     color: #ccc;
   }
+  @media (max-width: 600px) {
+    padding: 6px 10px;
+    font-size: 0.97em;
+    min-width: 54px;
+  }
+}
+
+/* Hide first/last pagination buttons on mobile */
+@media (max-width: 600px) {
+  .pagination-btn.first,
+  .pagination-btn.last {
+    display: none !important;
+  }
 }
 
 .pagination-info {
   color: #666;
   font-size: 14px;
+  @media (max-width: 600px) {
+    font-size: 13px;
+    min-width: 120px;
+    text-align: center;
+  }
 }
 
 .loading, .error {
   text-align: center;
   padding: 40px;
   color: #666;
+  @media (max-width: 600px) {
+    padding: 20px 2px;
+    font-size: 1em;
+  }
 }
 
 .error {

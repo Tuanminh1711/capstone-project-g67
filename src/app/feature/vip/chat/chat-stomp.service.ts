@@ -8,6 +8,7 @@ import { UrlService } from '../../../shared/services/url.service';
 import { CookieService } from '../../../auth/cookie.service';
 
 export interface ChatMessage {
+  messageId?: number; // Add messageId for deduplication and backend compatibility
   senderId: number;
   receiverId?: number;
   senderRole?: string;

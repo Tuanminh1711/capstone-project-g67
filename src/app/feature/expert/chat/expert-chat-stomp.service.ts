@@ -71,8 +71,12 @@ export class ExpertChatStompService {
         this.zone.run(() => {
           try {
             const data = JSON.parse(msg.body);
-            data.chatType = 'COMMUNITY';
-            this.communityMessageSubject.next(data);
+            // Lọc: chỉ nhận tin nhắn cộng đồng (không có receiverId và conversationId)
+            if (!data.receiverId && !data.conversationId) {
+              data.chatType = 'COMMUNITY';
+              this.communityMessageSubject.next(data);
+            }
+            // Nếu là private, bỏ qua ở đây (sẽ nhận qua /user/queue/private-messages)
           } catch (e) {
             this.errorSubject.next('Lỗi nhận dữ liệu chat cộng đồng');
           }
