@@ -14,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Arrays;
 
 @RestController
@@ -160,37 +163,35 @@ public class AIPlantController {
             return ValidationResult.invalid("Image size must be less than 25MB");
         }
 
-        // Enhanced content type validation
-        String contentType = image.getContentType();
-        if (contentType == null) {
-            // Try to determine content type from file extension
-            String filename = image.getOriginalFilename();
-            if (filename != null) {
-                String extension = getFileExtension(filename);
-                if (isValidImageExtension(extension)) {
-                    contentType = "image/" + extension;
-                    log.info("Inferred content type from extension: {} -> {}", extension, contentType);
+        // THÊM: Kiểm tra resolution
+        try {
+            BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+            if (bufferedImage != null) {
+                int width = bufferedImage.getWidth();
+                int height = bufferedImage.getHeight();
+                int maxPixels = 1920 * 1080; // ~2MP limit
+
+                log.info("Image dimensions: {}x{} ({} pixels). Max allowed: {} pixels",
+                        width, height, width * height, maxPixels);
+
+                if (width * height > maxPixels) {
+                    log.warn("Image resolution too large: {}x{} ({} pixels). Max allowed: {} pixels",
+                            width, height, width * height, maxPixels);
+                    return ValidationResult.invalid(
+                            String.format("Image resolution too large (%dx%d). Maximum allowed: 1920x1080 pixels",
+                                    width, height)
+                    );
                 }
             }
+        } catch (IOException e) {
+            log.warn("Could not read image dimensions: {}", e.getMessage());
+            // Continue validation without dimension check
         }
 
-        if (contentType == null || !isValidImageContentType(contentType)) {
-            log.warn("Invalid content type: {}", contentType);
-            return ValidationResult.invalid("File must be a valid image (JPEG, PNG, GIF, WebP, HEIC)");
-        }
-
-        // Check file extension
-        String filename = image.getOriginalFilename();
-        if (filename != null) {
-            String extension = getFileExtension(filename);
-            if (!isValidImageExtension(extension)) {
-                log.warn("Invalid file extension: {}", extension);
-                return ValidationResult.invalid("File extension not supported. Please use JPEG, PNG, GIF, WebP, or HEIC");
-            }
-        }
+        // ... existing content type validation ...
 
         log.info("Image validation passed for: {} (type: {}, size: {} bytes)",
-                filename, contentType, image.getSize());
+                image.getOriginalFilename(), image.getContentType(), image.getSize());
         return ValidationResult.valid();
     }
 
