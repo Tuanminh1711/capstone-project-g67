@@ -2,7 +2,11 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
-import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpClientModule,
+} from '@angular/common/http';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { ConfigService } from '../../../shared/services/config.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -36,7 +40,7 @@ interface PlantIdentificationResponse {
   standalone: true,
   imports: [CommonModule, FormsModule, TopNavigatorComponent, HttpClientModule],
   templateUrl: './ai-plant.component.html',
-  styleUrls: ['./ai-plant.component.scss']
+  styleUrls: ['./ai-plant.component.scss'],
 })
 export class AiPlantComponent implements OnInit {
   selectedFile: File | null = null;
@@ -67,7 +71,7 @@ export class AiPlantComponent implements OnInit {
     // In development: apiUrl = '/api', so /api + /ai/identify-plant = /api/ai/identify-plant
     // In production: apiUrl = 'https://plantcare.id.vn', so https://plantcare.id.vn + /api + /ai/identify-plant
     const baseUrl = this.configService.apiUrl;
-    
+
     // If apiUrl already contains '/api' (development), don't add it again
     if (baseUrl.endsWith('/api')) {
       return `${baseUrl}${path}`;
@@ -80,7 +84,10 @@ export class AiPlantComponent implements OnInit {
   ngOnInit() {
     // Check if user is VIP
     if (!this.authService.isLoggedIn()) {
-      this.toastService.show('Vui lòng đăng nhập để sử dụng tính năng này', 'error');
+      this.toastService.show(
+        'Vui lòng đăng nhập để sử dụng tính năng này',
+        'error'
+      );
       return;
     }
 
@@ -88,49 +95,54 @@ export class AiPlantComponent implements OnInit {
     const role = this.authService.getCurrentUserRole();
     const userId = this.authService.getCurrentUserId();
     const token = this.cookieService.getCookie('auth_token');
-    
+
     // Decode JWT to check algorithm and claims
     if (token) {
       try {
         const base64Url = token.split('.')[0];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const header = JSON.parse(window.atob(base64));
-        
+
         const base64Payload = token.split('.')[1];
-        const base64PayloadDecoded = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
+        const base64PayloadDecoded = base64Payload
+          .replace(/-/g, '+')
+          .replace(/_/g, '/');
         const payload = JSON.parse(window.atob(base64PayloadDecoded));
-        
+
         // JWT Debug info removed for security
       } catch (e) {
         // JWT decode error handled
       }
     }
-    
+
     // Debug info removed for security
 
     if (role !== 'VIP' && role !== 'EXPERT') {
-      this.toastService.show(`Tính năng này chỉ dành cho VIP. Quyền hiện tại: ${role}`, 'error');
+      this.toastService.show(
+        `Tính năng này chỉ dành cho VIP. Quyền hiện tại: ${role}`,
+        'error'
+      );
     }
   }
 
   private getAuthHeaders(): HttpHeaders {
     const token = this.cookieService.getCookie('auth_token');
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
   }
 
   private getAuthHeadersForFormData(): HttpHeaders {
     const token = this.cookieService.getCookie('auth_token');
     // Creating FormData headers with token
-    
+
     if (!token) {
       return new HttpHeaders();
     }
-    
+
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
       // Don't set Content-Type for FormData, let browser set it with boundary
     });
   }
@@ -138,20 +150,27 @@ export class AiPlantComponent implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      console.log('File size (bytes):', file.size);
+      console.log('File size (MB):', file.size / (1024 * 1024));
+      console.log('Max file size (MB):', 20);
+      console.log('Is file too large?', file.size > 20 * 1024 * 1024); 
       const maxFileSize = 20 * 1024 * 1024; // 20MB
       if (file.size > maxFileSize) {
-        this.toastService.show('Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.', 'error');
+        this.toastService.show(
+          'Kích thước ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn 20MB.',
+          'error'
+        );
         return;
       }
-      
+
       // Log thông tin file để debug
       console.log('Selected file for plant identification:', {
         name: file.name,
         size: file.size,
         type: file.type,
-        lastModified: new Date(file.lastModified)
+        lastModified: new Date(file.lastModified),
       });
-      
+
       // Kiểm tra và xử lý ảnh từ điện thoại
       this.processImageForUpload(file);
     }
@@ -160,7 +179,11 @@ export class AiPlantComponent implements OnInit {
   private async processImageForUpload(file: File): Promise<void> {
     try {
       // Kiểm tra nếu là ảnh từ điện thoại (HEIC, WebP, etc.)
-      if (file.type === 'image/heic' || file.type === 'image/heif' || file.type === 'image/webp') {
+      if (
+        file.type === 'image/heic' ||
+        file.type === 'image/heif' ||
+        file.type === 'image/webp'
+      ) {
         // Convert sang JPEG
         const convertedFile = await this.convertImageToJpeg(file);
         this.selectedFile = convertedFile;
@@ -175,14 +198,16 @@ export class AiPlantComponent implements OnInit {
         this.selectedFile = convertedFile;
         this.createImagePreview(convertedFile);
       }
-      
+
       // Start validation after processing
       this.isValidating = true;
       this.validatePlantImage();
-      
     } catch (error) {
       console.error('Error processing image for plant identification:', error);
-      this.toastService.show('Không thể xử lý ảnh. Vui lòng chọn ảnh khác.', 'error');
+      this.toastService.show(
+        'Không thể xử lý ảnh. Vui lòng chọn ảnh khác.',
+        'error'
+      );
     }
   }
 
@@ -191,30 +216,38 @@ export class AiPlantComponent implements OnInit {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
         // Set canvas size
         canvas.width = img.width;
         canvas.height = img.height;
-        
+
         // Draw image to canvas
         ctx?.drawImage(img, 0, 0);
-        
+
         // Convert to blob
-        canvas.toBlob((blob) => {
-          if (blob) {
-            // Create new file with JPEG type
-            const convertedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-              type: 'image/jpeg',
-              lastModified: Date.now()
-            });
-            resolve(convertedFile);
-          } else {
-            reject(new Error('Failed to convert image'));
-          }
-        }, 'image/jpeg', 0.9); // 90% quality
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // Create new file with JPEG type
+              const convertedFile = new File(
+                [blob],
+                file.name.replace(/\.[^/.]+$/, '.jpg'),
+                {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                }
+              );
+              resolve(convertedFile);
+            } else {
+              reject(new Error('Failed to convert image'));
+            }
+          },
+          'image/jpeg',
+          0.9
+        ); // 90% quality
       };
-      
+
       img.onerror = () => reject(new Error('Failed to load image'));
       img.src = URL.createObjectURL(file);
     });
@@ -250,16 +283,20 @@ export class AiPlantComponent implements OnInit {
       // Validation timeout - clearing loading state
     }, 3000); // 3 second timeout - much shorter
 
-    this.http.post<any>(this.getApiEndpoint('/ai/validate-plant-image'), formData, { 
-      headers: this.getAuthHeadersForFormData() 
-    })
+    this.http
+      .post<any>(this.getApiEndpoint('/ai/validate-plant-image'), formData, {
+        headers: this.getAuthHeadersForFormData(),
+      })
       .subscribe({
         next: (response) => {
           clearTimeout(timeout);
           this.isValidating = false;
           // Validation response received
           if (!response.data && response.data !== true) {
-            this.toastService.show('Hình ảnh này có thể không chứa cây trồng. Bạn vẫn có thể tiếp tục nhận diện.', 'warning');
+            this.toastService.show(
+              'Hình ảnh này có thể không chứa cây trồng. Bạn vẫn có thể tiếp tục nhận diện.',
+              'warning'
+            );
           }
           this.cdr.detectChanges(); // Ensure UI updates
         },
@@ -268,7 +305,7 @@ export class AiPlantComponent implements OnInit {
           this.isValidating = false;
           // Don't show error for validation failure, just continue
           this.cdr.detectChanges(); // Ensure UI updates even on error
-        }
+        },
       });
   }
 
@@ -280,27 +317,30 @@ export class AiPlantComponent implements OnInit {
 
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted identification
-    
+
     // Log thông tin file trước khi gửi
     console.log('Sending file for plant identification:', {
       name: this.selectedFile.name,
       size: this.selectedFile.size,
       type: this.selectedFile.type,
-      lastModified: new Date(this.selectedFile.lastModified)
+      lastModified: new Date(this.selectedFile.lastModified),
     });
-    
+
     const formData = new FormData();
     formData.append('image', this.selectedFile);
     formData.append('language', this.language);
     formData.append('maxResults', this.maxResults.toString());
-    
+
     // Add userId from auth service - convert to string for FormData
     const userId = this.authService.getCurrentUserId();
     if (userId) {
       formData.append('userId', userId.toString());
       console.log('Added userId to request:', userId);
     } else {
-      this.toastService.show('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+      this.toastService.show(
+        'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+        'error'
+      );
       this.isLoading = false;
       return;
     }
@@ -311,51 +351,63 @@ export class AiPlantComponent implements OnInit {
     console.log('Request headers:', this.getAuthHeadersForFormData());
 
     // Making request with auth headers
-    this.http.post<any>(apiEndpoint, formData, { 
-      headers: this.getAuthHeadersForFormData() 
-    })
+    this.http
+      .post<any>(apiEndpoint, formData, {
+        headers: this.getAuthHeadersForFormData(),
+      })
       .subscribe({
         next: (response) => {
           this.isLoading = false;
           console.log('Plant identification response:', response);
-          
+
           // Full response received
           setTimeout(() => {
             // Kiểm tra response status và data
-            if (response.status === 200 && response.data && response.data.results) {
+            if (
+              response.status === 200 &&
+              response.data &&
+              response.data.results
+            ) {
               this.results = response.data.results;
               if (this.results.length === 0) {
-                this.toastService.show('Không thể nhận diện cây từ hình ảnh này', 'warning');
+                this.toastService.show(
+                  'Không thể nhận diện cây từ hình ảnh này',
+                  'warning'
+                );
               } else {
                 this.toastService.show('Nhận diện cây thành công!', 'success');
               }
             } else {
-              this.toastService.show(response.message || 'Có lỗi xảy ra khi nhận diện cây', 'error');
+              this.toastService.show(
+                response.message || 'Có lỗi xảy ra khi nhận diện cây',
+                'error'
+              );
             }
             this.cdr.detectChanges();
           }, 0);
         },
         error: (error) => {
           this.isLoading = false;
-          
+
           console.error('Plant identification error:', error);
           console.error('Error details:', {
             status: error.status,
             statusText: error.statusText,
             message: error.message,
             error: error.error,
-            url: error.url
+            url: error.url,
           });
-          
+
           setTimeout(() => {
             let errorMessage = 'Có lỗi xảy ra khi nhận diện cây. ';
-            
+
             if (error.status === 403) {
               // Check if it's JWT/auth issue
               if (error.error && error.error.message) {
                 errorMessage += `Lỗi xác thực: ${error.error.message}`;
               } else {
-                errorMessage += 'Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP';
+                errorMessage +=
+                  'Tính năng AI nhận diện cây chỉ dành cho tài khoản VIP';
               }
             } else if (error.status === 404) {
               errorMessage += 'API endpoint không tìm thấy';
@@ -364,7 +416,8 @@ export class AiPlantComponent implements OnInit {
             } else if (error.status === 413) {
               errorMessage += 'Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
             } else if (error.status === 415) {
-              errorMessage += 'Định dạng ảnh không được hỗ trợ. Vui lòng chọn ảnh JPG hoặc PNG.';
+              errorMessage +=
+                'Định dạng ảnh không được hỗ trợ. Vui lòng chọn ảnh JPG hoặc PNG.';
             } else if (error.status === 400) {
               // Kiểm tra response từ backend
               if (error.error && error.error.message) {
@@ -380,7 +433,8 @@ export class AiPlantComponent implements OnInit {
                 errorMessage += 'Lỗi server. Vui lòng thử lại sau.';
               }
             } else if (error.status === 0) {
-              errorMessage += 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+              errorMessage +=
+                'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
             } else if (error.name === 'TimeoutError') {
               errorMessage += 'Yêu cầu bị timeout. Vui lòng thử lại.';
             } else {
@@ -391,12 +445,12 @@ export class AiPlantComponent implements OnInit {
                 errorMessage += `Lỗi: ${error.message || 'Không xác định'}`;
               }
             }
-            
+
             this.toastService.show(errorMessage, 'error');
-            
+
             this.cdr.detectChanges();
           }, 0);
-        }
+        },
       });
   }
 
@@ -409,25 +463,37 @@ export class AiPlantComponent implements OnInit {
     this.isLoading = true;
     this.hasSearched = true; // Mark that user has attempted search
 
-    this.http.get<any>(this.getApiEndpoint(`/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`), { 
-      headers: this.getAuthHeaders() 
-    })
+    this.http
+      .get<any>(
+        this.getApiEndpoint(
+          `/ai/search-plants?plantName=${encodeURIComponent(this.searchQuery)}`
+        ),
+        {
+          headers: this.getAuthHeaders(),
+        }
+      )
       .subscribe({
         next: (response) => {
           this.isLoading = false;
           // Search response received
-          
+
           // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
           setTimeout(() => {
             if (response.status === 200 && response.data) {
               this.results = response.data.results || [];
               if (this.results.length === 0) {
-                this.toastService.show('Không tìm thấy cây nào phù hợp', 'warning');
+                this.toastService.show(
+                  'Không tìm thấy cây nào phù hợp',
+                  'warning'
+                );
               } else {
                 this.toastService.show('Tìm kiếm thành công!', 'success');
               }
             } else {
-              this.toastService.show(response.message || 'Có lỗi xảy ra khi tìm kiếm', 'error');
+              this.toastService.show(
+                response.message || 'Có lỗi xảy ra khi tìm kiếm',
+                'error'
+              );
             }
             this.cdr.detectChanges();
           }, 0);
@@ -438,7 +504,7 @@ export class AiPlantComponent implements OnInit {
             this.toastService.show('Có lỗi xảy ra khi tìm kiếm cây', 'error');
             this.cdr.detectChanges();
           }, 0);
-        }
+        },
       });
   }
 
@@ -453,7 +519,7 @@ export class AiPlantComponent implements OnInit {
 
   getConfidenceColor(confidence: number): string {
     if (confidence >= 0.8) return '#4CAF50'; // Green
-    if (confidence >= 0.6) return '#FF9800'; // Orange  
+    if (confidence >= 0.6) return '#FF9800'; // Orange
     return '#F44336'; // Red
   }
 
@@ -465,7 +531,12 @@ export class AiPlantComponent implements OnInit {
 
   shouldShowEmptyState(): boolean {
     // Only show empty state if user has searched/identified but got no results
-    return this.hasSearched && this.results.length === 0 && !this.isLoading && !this.isValidating;
+    return (
+      this.hasSearched &&
+      this.results.length === 0 &&
+      !this.isLoading &&
+      !this.isValidating
+    );
   }
 
   /**
@@ -474,18 +545,23 @@ export class AiPlantComponent implements OnInit {
   testJwtValidation() {
     const token = this.cookieService.getCookie('auth_token');
     // Testing JWT with backend
-    
-    this.http.get(this.getApiEndpoint('/ai/test-api-key'), {
-      headers: this.getAuthHeaders()
-    }).subscribe({
-      next: (response) => {
-        // JWT test passed
-        this.toastService.show('JWT validation thành công', 'success');
-      },
-      error: (error) => {
-        this.toastService.show(`JWT validation thất bại: ${error.status}`, 'error');
-      }
-    });
+
+    this.http
+      .get(this.getApiEndpoint('/ai/test-api-key'), {
+        headers: this.getAuthHeaders(),
+      })
+      .subscribe({
+        next: (response) => {
+          // JWT test passed
+          this.toastService.show('JWT validation thành công', 'success');
+        },
+        error: (error) => {
+          this.toastService.show(
+            `JWT validation thất bại: ${error.status}`,
+            'error'
+          );
+        },
+      });
   }
 
   /**
@@ -493,22 +569,27 @@ export class AiPlantComponent implements OnInit {
    */
   testApiConnection() {
     console.log('Testing API connection...');
-    
+
     // Test basic connectivity
     const testEndpoint = this.getApiEndpoint('/ai/test-connection');
     console.log('Testing endpoint:', testEndpoint);
-    
-    this.http.get(testEndpoint, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
-      next: (response) => {
-        console.log('API connection test successful:', response);
-        this.toastService.show('API connection test thành công', 'success');
-      },
-      error: (error) => {
-        console.error('API connection test failed:', error);
-        this.toastService.show(`API connection test thất bại: ${error.status} - ${error.message}`, 'error');
-      }
-    });
+
+    this.http
+      .get(testEndpoint, {
+        headers: this.getAuthHeaders(),
+      })
+      .subscribe({
+        next: (response) => {
+          console.log('API connection test successful:', response);
+          this.toastService.show('API connection test thành công', 'success');
+        },
+        error: (error) => {
+          console.error('API connection test failed:', error);
+          this.toastService.show(
+            `API connection test thất bại: ${error.status} - ${error.message}`,
+            'error'
+          );
+        },
+      });
   }
 }
