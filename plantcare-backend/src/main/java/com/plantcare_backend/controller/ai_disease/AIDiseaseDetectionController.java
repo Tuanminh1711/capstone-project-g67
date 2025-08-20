@@ -20,6 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -43,6 +47,20 @@ public class AIDiseaseDetectionController {
         try {
             log.info("Received disease detection request from user: {} with image: name={}, size={}, contentType={}", 
                     userId, image.getOriginalFilename(), image.getSize(), image.getContentType());
+
+            ValidationResult validationResult = validateImageForMobile(image);
+            if (!validationResult.isValid()) {
+                log.warn("Image validation failed: {}", validationResult.getErrorMessage());
+                return ResponseEntity.badRequest().body(DiseaseDetectionResultDTO.builder()
+                        .detectedDisease("Validation Error")
+                        .confidenceScore(0.0)
+                        .severity("LOW")
+                        .symptoms("Lỗi validation: " + validationResult.getErrorMessage())
+                        .recommendedTreatment("Vui lòng kiểm tra lại ảnh và thử lại")
+                        .detectionMethod("ERROR")
+                        .aiModelVersion("2.0.0")
+                        .build());
+            }
 
             DiseaseDetectionResultDTO result = aiDiseaseDetectionService.detectDiseaseFromImage(image, userId);
 
@@ -74,6 +92,115 @@ public class AIDiseaseDetectionController {
                     .build());
         }
     }
+
+    private ValidationResult validateImageForMobile(MultipartFile image) {
+        if (image.isEmpty()) {
+            return ValidationResult.invalid("Image file is required");
+        }
+
+        long maxSize = 25 * 1024 * 1024; // 25MB for mobile images
+        if (image.getSize() > maxSize) {
+            return ValidationResult.invalid("Image size must be less than 25MB");
+        }
+
+        try {
+            BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+            if (bufferedImage != null) {
+                int width = bufferedImage.getWidth();
+                int height = bufferedImage.getHeight();
+                int maxPixels = 1920 * 1080; // ~2MP limit
+
+                log.info("Image dimensions: {}x{} ({} pixels). Max allowed: {} pixels",
+                        width, height, width * height, maxPixels);
+
+                if (width * height > maxPixels) {
+                    log.warn("Image resolution too large: {}x{} ({} pixels). Max allowed: {} pixels",
+                            width, height, width * height, maxPixels);
+                    return ValidationResult.invalid(
+                            String.format("Image resolution too large (%dx%d). Maximum allowed: 1920x1080 pixels",
+                                    width, height)
+                    );
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Could not read image dimensions: {}", e.getMessage());
+        }
+
+        String contentType = image.getContentType();
+        if (contentType == null) {
+            String filename = image.getOriginalFilename();
+            if (filename != null) {
+                String extension = getFileExtension(filename);
+                if (isValidImageExtension(extension)) {
+                    contentType = "image/" + extension;
+                    log.info("Inferred content type from extension: {} -> {}", extension, contentType);
+                }
+            }
+        }
+
+        if (contentType == null || !isValidImageContentType(contentType)) {
+            log.warn("Invalid content type: {}", contentType);
+            return ValidationResult.invalid("File must be a valid image (JPEG, PNG, GIF, WebP, HEIC)");
+        }
+
+        String filename = image.getOriginalFilename();
+        if (filename != null) {
+            String extension = getFileExtension(filename);
+            if (!isValidImageExtension(extension)) {
+                log.warn("Invalid file extension: {}", extension);
+                return ValidationResult.invalid("File extension not supported. Please use JPEG, PNG, GIF, WebP, or HEIC");
+            }
+        }
+
+        log.info("Image validation passed for: {} (type: {}, size: {} bytes)",
+                filename, contentType, image.getSize());
+        return ValidationResult.valid();
+    }
+
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.lastIndexOf(".") == -1) {
+            return "";
+        }
+        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+    }
+
+    private boolean isValidImageExtension(String extension) {
+        return Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "heic", "heif").contains(extension);
+    }
+
+    private boolean isValidImageContentType(String contentType) {
+        return contentType.startsWith("image/") &&
+                (contentType.contains("jpeg") || contentType.contains("png") ||
+                        contentType.contains("gif") || contentType.contains("webp") ||
+                        contentType.contains("heic") || contentType.contains("heif"));
+    }
+
+    private static class ValidationResult {
+        private final boolean valid;
+        private final String errorMessage;
+
+        private ValidationResult(boolean valid, String errorMessage) {
+            this.valid = valid;
+            this.errorMessage = errorMessage;
+        }
+
+        public static ValidationResult valid() {
+            return new ValidationResult(true, null);
+        }
+
+        public static ValidationResult invalid(String errorMessage) {
+            return new ValidationResult(false, errorMessage);
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+    }
+
 
     @PostMapping("/detect-from-symptoms")
     @VIPOnly
