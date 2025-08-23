@@ -10,7 +10,7 @@ import { FooterComponent } from '../../../../shared/footer/footer.component';
   templateUrl: './care-confirm.component.html',
   styleUrls: ['./care-confirm.component.scss'],
   standalone: true,
-  imports: [TopNavigatorComponent, FooterComponent]
+  imports: [TopNavigatorComponent]
 })
 export class CareConfirmComponent implements OnInit {
   loading = true;

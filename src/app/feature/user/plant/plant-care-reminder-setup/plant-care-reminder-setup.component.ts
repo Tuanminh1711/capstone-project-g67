@@ -382,6 +382,8 @@ export class PlantCareReminderSetupComponent {
       startDate: [startDateStr, Validators.required]
     }));
     this.form.get('newCareTypeId')?.setValue(null);
+    this.toast.success('Đã thêm lịch cho loại chăm sóc!');
+    setTimeout(() => { this.cdr.detectChanges(); }, 0);
   }
 
   customMessageValidator(control: any) {
@@ -446,6 +448,8 @@ export class PlantCareReminderSetupComponent {
   // Xóa schedule theo index
   removeSchedule(index: number) {
     this.schedules.removeAt(index);
+    this.toast.success('Đã xóa lịch chăm sóc!');
+    setTimeout(() => { this.cdr.detectChanges(); }, 0);
   }
 
   // Xóa schedule theo loại chăm sóc
@@ -455,6 +459,8 @@ export class PlantCareReminderSetupComponent {
     );
     if (index !== -1) {
       this.schedules.removeAt(index);
+      this.toast.success('Đã xóa lịch chăm sóc!');
+      setTimeout(() => { this.cdr.detectChanges(); }, 0);
     }
   }
 

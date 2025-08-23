@@ -1,3 +1,25 @@
+// Nút xóa lịch nhắc nhở màu đỏ nổi bật
+.mat-icon-button[color="warn"],
+button[mat-icon-button][color="warn"] {
+  background: transparent;
+  color: var(--error-color) !important;
+  border-radius: 8px;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: none;
+  margin-left: 8px;
+}
+.mat-icon-button[color="warn"]:hover,
+button[mat-icon-button][color="warn"]:hover {
+  background: #fee2e2;
+  color: #b91c1c !important;
+  box-shadow: 0 2px 8px #ef444422;
+}
+.mat-icon-button[color="warn"] mat-icon,
+button[mat-icon-button][color="warn"] mat-icon {
+  color: inherit !important;
+  font-size: 22px;
+  transition: color 0.18s;
+}
 
 .sidebar-status-btn {
   border: none;
