@@ -443,8 +443,19 @@ export class PlantCareReminderSetupComponent {
     return found ? found.icon : 'fas fa-bell';
   }
 
-  removeSchedule(i: number) {
-    this.schedules.removeAt(i);
+  // Xóa schedule theo index
+  removeSchedule(index: number) {
+    this.schedules.removeAt(index);
+  }
+
+  // Xóa schedule theo loại chăm sóc
+  removeScheduleByType(careTypeId: number) {
+    const index = this.schedules.controls.findIndex((control: any) => 
+      control.get('careTypeId')?.value === careTypeId
+    );
+    if (index !== -1) {
+      this.schedules.removeAt(index);
+    }
   }
 
   trackBySchedule(index: number, control: import('@angular/forms').AbstractControl) {

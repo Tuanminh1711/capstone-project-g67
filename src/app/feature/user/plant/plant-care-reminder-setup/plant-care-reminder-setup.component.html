@@ -43,12 +43,33 @@
               </span>
               <span class="care-type-name">{{ type.name }}</span>
               <div class="care-type-status">
-                <span class="status-badge" 
-                      [class.enabled]="isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value"
-                      [class.disabled]="!isTypeSetup(type.id) || !getScheduleByType(type.id)?.get('enabled')?.value">
+                <button type="button"
+                        class="sidebar-status-btn"
+                        [class.enabled]="isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value"
+                        [class.disabled]="!isTypeSetup(type.id) || !getScheduleByType(type.id)?.get('enabled')?.value"
+                        tabindex="-1"
+                        disabled>
                   <i class="fas" [ngClass]="isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value ? 'fa-bell' : 'fa-bell-slash'"></i>
                   {{ isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value ? 'Bật' : 'Tắt' }}
-                </span>
+                </button>
+              </div>
+              
+              <!-- Nút + và - chỉ hiện khi xem tất cả -->
+              <div class="care-type-controls" *ngIf="selectedCareTypeId === 0">
+                <button *ngIf="!hasSchedule(type.id)" 
+                        type="button" 
+                        class="btn-add-type"
+                        (click)="addSchedule(type.id)"
+                        title="Thêm {{ type.name }}">
+                  <i class="fas fa-plus"></i>
+                </button>
+                <button *ngIf="hasSchedule(type.id)" 
+                        type="button" 
+                        class="btn-remove-type"
+                        (click)="removeScheduleByType(type.id)"
+                        title="Xóa {{ type.name }}">
+                  <i class="fas fa-minus"></i>
+                </button>
               </div>
             </div>
           </li>
@@ -210,26 +231,13 @@
             </div>
             
             <div class="action-buttons">
-                <button mat-raised-button color="primary" type="button"
-                        class="btn-update-all custom-green-btn"
-                        (click)="updateAllSchedules()"
+                <button type="button" 
+                        class="btn-update-all" 
+                        (click)="updateAllSchedules()" 
                         [disabled]="loading">
-                  <mat-icon>sync</mat-icon>
-                  Cập nhật tất cả
-                </button>
-            </div>
-            <!-- Nút thêm loại chăm sóc đặt dưới cùng -->
-            <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;">
-              <ng-container *ngFor="let type of careTypes">
-                <button *ngIf="!hasSchedule(type.id)"
-                        mat-stroked-button
-                        type="button"
-                        (click)="addSchedule(type.id)"
-                        style="border-radius:8px;padding:4px 14px;font-size:15px;min-width:80px;display:flex;align-items:center;gap:6px;margin:0 6px 6px 0;">
-                  <mat-icon style="font-size:18px;">{{ type.icon.split('fa-')[1] || 'add' }}</mat-icon>
-                  {{ type.name }}
-                </button>
-              </ng-container>
+                  <i class="fas fa-sync-alt"></i>
+                  <span>Cập nhật tất cả</span>
+                 </button>
             </div>
           </div>
         </form>
