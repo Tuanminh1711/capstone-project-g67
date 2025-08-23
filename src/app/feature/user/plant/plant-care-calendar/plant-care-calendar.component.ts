@@ -56,8 +56,7 @@ interface CareStreak {
     MatProgressBarModule,
     MatChipsModule,
     MatTooltipModule,
-    MatProgressSpinnerModule,
-    MatChipListbox
+    MatProgressSpinnerModule
   ],
   templateUrl: './plant-care-calendar.component.html',
   styleUrls: ['./plant-care-calendar.component.scss']

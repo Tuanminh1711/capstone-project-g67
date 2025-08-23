@@ -12,7 +12,6 @@ import {
   AfterViewChecked,
 } from '@angular/core';
 import { TopNavigatorComponent } from '../../../shared/top-navigator/top-navigator.component';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -102,8 +101,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private authService: AuthService,
     private urlService: UrlService,
     private chatService: ChatService,
-    private toastService: ToastService,
-    private router: Router
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -146,24 +144,31 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private async connectToUnifiedChat(): Promise<void> {
     try {
-      // Get auth token if available - sử dụng localStorage hoặc sessionStorage
+      // Lấy token xác thực
       const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || undefined;
       if (!token) {
-        this.router.navigate(['/home']);
+        this.error = 'Không tìm thấy token xác thực. Vui lòng đăng nhập lại.';
+        this.cdr.markForCheck();
         return;
       }
-      await this.unifiedChat.connect(this.currentUserId!, token);
+      if (!this.currentUserId) {
+        this.error = 'Không xác định được tài khoản. Vui lòng đăng nhập lại.';
+        this.cdr.markForCheck();
+        return;
+      }
+      await this.unifiedChat.connect(this.currentUserId, token);
       // Setup message subscriptions
       this.setupUnifiedChatSubscriptions();
       this.error = '';
       this.cdr.markForCheck();
     } catch (err) {
-      // Nếu lỗi do hết session thì về home
-      if (typeof err === 'string' && err.includes('No authentication token')) {
-        this.router.navigate(['/home']);
+      const errMsg = (typeof err === 'string') ? err : (err instanceof Error ? err.message : JSON.stringify(err));
+      if (errMsg && (errMsg.includes('No authentication token') || errMsg.includes('jwt expired') || errMsg.includes('401') || errMsg.toLowerCase().includes('unauthorized'))) {
+        this.error = 'Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.';
+        this.cdr.markForCheck();
         return;
       }
-      this.error = 'Không thể kết nối chat: ' + (err instanceof Error ? err.message : err);
+      this.error = 'Không thể kết nối chat: ' + errMsg;
       this.cdr.markForCheck();
     }
   }
@@ -199,9 +204,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     // Subscribe to errors
     this.unifiedChat.errors$.subscribe((error: string) => {
       this.zone.run(() => {
-        // Nếu lỗi do hết session thì về home
-        if (typeof error === 'string' && (error.includes('authentication token') || error.includes('Cần đăng nhập'))) {
-          this.router.navigate(['/home']);
+        if (typeof error === 'string' && (error.includes('authentication token') || error.includes('Cần đăng nhập') || error.includes('jwt expired') || error.includes('401') || error.toLowerCase().includes('unauthorized'))) {
+          this.error = 'Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.';
+          this.toastService.error(this.error, 5000);
+          this.cdr.markForCheck();
           return;
         }
         this.error = error;
