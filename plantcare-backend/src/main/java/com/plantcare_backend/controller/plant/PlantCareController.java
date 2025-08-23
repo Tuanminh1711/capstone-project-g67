@@ -2,6 +2,7 @@ package com.plantcare_backend.controller.plant;
 
 import com.plantcare_backend.dto.request.plantcare.CareCompletionRequest;
 import com.plantcare_backend.dto.request.plantcare.CareScheduleSetupRequest;
+import com.plantcare_backend.dto.response.plantcare.CareLogResponseDTO;
 import com.plantcare_backend.dto.response.plantcare.CareScheduleResponseDTO;
 import com.plantcare_backend.model.CareSchedule;
 import com.plantcare_backend.repository.CareScheduleRepository;
@@ -10,6 +11,7 @@ import com.plantcare_backend.service.CareLogService;
 import com.plantcare_backend.service.PlantCareNotificationService;
 import com.plantcare_backend.service.ActivityLogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
