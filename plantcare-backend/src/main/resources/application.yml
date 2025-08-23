@@ -30,7 +30,7 @@ spring:
 
 # PlantCare Configuration
 plantcare:
-  base-url: ${PLANTCARE_BASE_URL:http://localhost:4200}
+  base-url: ${PLANTCARE_BASE_URL:https://plantcare.id.vn}
   scheduler:
     cron: ${PLANTCARE_SCHEDULER_CRON:0 0 8 * * ?}
     timezone: ${PLANTCARE_SCHEDULER_TIMEZONE:Asia/Ho_Chi_Minh}
