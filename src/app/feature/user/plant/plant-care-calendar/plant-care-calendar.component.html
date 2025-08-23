@@ -1,0 +1,224 @@
+<app-top-navigator></app-top-navigator>
+
+<div class="calendar-container">
+  <!-- Header với thông tin tổng quan -->
+  <div class="calendar-header">
+    <div class="header-content">
+      <h1>📅 Lịch Chăm Sóc Cây</h1>
+      <p class="subtitle">Theo dõi streak và lịch sử chăm sóc của bạn</p>
+    </div>
+    
+    <!-- Thống kê tổng quan -->
+    <div class="overview-stats">
+      <div class="stat-card" *ngFor="let streak of careStreaks">
+        <div class="stat-icon" [style.background-color]="streak.typeColor">
+          <i [class]="streak.typeIcon"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ streak.currentStreak }}</div>
+          <div class="stat-label">Streak hiện tại</div>
+          <div class="stat-subtitle">{{ streak.typeName }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs chính -->
+  <mat-tab-group class="main-tabs" animationDuration="300ms">
+    
+    <!-- Tab Calendar -->
+    <mat-tab label="📅 Lịch">
+      <div class="calendar-tab">
+        <!-- Calendar Navigation -->
+        <div class="calendar-nav">
+          <button mat-icon-button (click)="previousMonth()" class="nav-btn">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          
+          <div class="month-display">
+            <h2>{{ currentMonth.format('MMMM YYYY') }}</h2>
+          </div>
+          
+          <button mat-icon-button (click)="nextMonth()" class="nav-btn">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-grid">
+          <!-- Weekday Headers -->
+          <div class="weekday-header" *ngFor="let day of ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']">
+            {{ day }}
+          </div>
+
+          <!-- Calendar Days -->
+          <div 
+            class="calendar-day" 
+            *ngFor="let day of calendarDays; trackBy: trackByDate"
+            [class.other-month]="!isCurrentMonth(day)"
+            [class.today]="isToday(day)"
+            [class.selected]="selectedDate.isSame(day, 'day')"
+            (click)="selectDate(day)"
+          >
+            <div class="day-number">{{ day.format('D') }}</div>
+            
+            <!-- Care Type Indicators -->
+            <div class="care-indicators" *ngIf="getCareTypesForDate(day).length > 0">
+              <div 
+                class="care-dot"
+                *ngFor="let careTypeId of getCareTypesForDate(day)"
+                [style.borderColor]="getCareTypeColor(careTypeId)"
+                [matTooltip]="getCareTypeName(careTypeId)"
+              >
+                <i class="fas fa-leaf"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Date Info -->
+        <div class="selected-date-info" *ngIf="selectedDate">
+          <mat-card class="date-card">
+            <mat-card-header>
+              <mat-card-title>{{ getSelectedDateInfo() }}</mat-card-title>
+              <mat-card-subtitle>{{ selectedDate.format('dddd, DD/MM/YYYY') }}</mat-card-subtitle>
+            </mat-card-header>
+            
+            <mat-card-content>
+              <div class="care-types-for-date" *ngIf="getSelectedDateCareTypes().length > 0; else noCareTypes">
+                <h4>Loại chăm sóc đã thực hiện:</h4>
+                <div class="care-type-chips">
+                  <mat-chip 
+                    *ngFor="let careTypeId of getSelectedDateCareTypes()"
+                    [style.background-color]="getCareTypeColor(careTypeId)"
+                    class="care-chip"
+                  >
+                    <i [class]="getCareTypeIcon(careTypeId)" class="chip-icon"></i>
+                    {{ getCareTypeName(careTypeId) }}
+                  </mat-chip>
+                </div>
+              </div>
+              
+              <ng-template #noCareTypes>
+                <div class="no-care-types">
+                  <i class="fas fa-calendar-times"></i>
+                  <p>Chưa có hoạt động chăm sóc nào trong ngày này</p>
+                </div>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab Streaks -->
+    <mat-tab label="🔥 Streaks">
+      <div class="streaks-tab">
+        <div class="streaks-grid">
+          <mat-card class="streak-card" *ngFor="let streak of careStreaks">
+            <mat-card-header>
+              <div class="streak-header">
+                <div class="streak-icon" [style.background-color]="streak.typeColor">
+                  <i [class]="streak.typeIcon"></i>
+                </div>
+                <div class="streak-title">
+                  <h3>{{ streak.typeName }}</h3>
+                  <p class="streak-subtitle">Tổng: {{ streak.totalCares }} lần</p>
+                </div>
+              </div>
+            </mat-card-header>
+            
+            <mat-card-content>
+              <!-- Current Streak -->
+              <div class="streak-info">
+                <div class="streak-current">
+                  <div class="streak-number">{{ streak.currentStreak }}</div>
+                  <div class="streak-label">Streak hiện tại</div>
+                </div>
+                
+                <div class="streak-longest">
+                  <div class="streak-number">{{ streak.longestStreak }}</div>
+                  <div class="streak-label">Streak dài nhất</div>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="streak-progress">
+                <mat-progress-bar 
+                  mode="determinate" 
+                  [value]="getStreakPercentage(streak)"
+                  [style.color]="streak.typeColor"
+                ></mat-progress-bar>
+                <div class="progress-text">{{ getStreakPercentage(streak) | number:'1.0-0' }}% của streak dài nhất</div>
+              </div>
+
+              <!-- Last Care Date -->
+              <div class="last-care-date" *ngIf="streak.lastCareDate">
+                <i class="fas fa-clock"></i>
+                <span>Lần cuối: {{ streak.lastCareDate.fromNow() }}</span>
+              </div>
+
+              <!-- Streak Days Visualization -->
+              <div class="streak-days" *ngIf="streak.streakDays.length > 0">
+                <h4>30 ngày gần nhất:</h4>
+                <div class="streak-calendar">
+                  <div 
+                    class="streak-day" 
+                    *ngFor="let date of streak.streakDays.slice(0, 30)"
+                    [class.has-care]="true"
+                    [style.background-color]="streak.typeColor"
+                    [matTooltip]="date.format('DD/MM/YYYY')"
+                  ></div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab History -->
+    <mat-tab label="📋 Lịch sử">
+      <div class="history-tab">
+        <div class="history-header">
+          <h3>Lịch sử chăm sóc gần đây</h3>
+          <div class="history-filters">
+            <!-- <mat-chip-listbox>
+              <mat-chip-option 
+                *ngFor="let type of careTypes" 
+                [value]="type.id"
+                [style.color]="type.color"
+              >
+                <i [class]="type.icon"></i>
+                {{ type.name }}
+              </mat-chip-option>
+            </mat-chip-listbox> -->
+          </div>
+        </div>
+
+        <div class="history-list">
+          <mat-card class="history-item" *ngFor="let item of careHistory">
+            <div class="history-content">
+              <div class="history-icon" [style.background-color]="getCareTypeColor(getCareTypeIdByName(item.careTypeName))">
+                <i [class]="getCareTypeIcon(getCareTypeIdByName(item.careTypeName))"></i>
+              </div>
+              
+              <div class="history-details">
+                <div class="history-title">{{ item.plantName }}</div>
+                <div class="history-type">{{ item.careTypeName }}</div>
+                <div class="history-notes" *ngIf="item.notes">{{ item.notes }}</div>
+                <div class="history-time">{{ getTimeAgo(item.careDate) }}</div>
+              </div>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" *ngIf="loading">
+  <mat-spinner></mat-spinner>
+  <p>Đang tải dữ liệu...</p>
+</div>

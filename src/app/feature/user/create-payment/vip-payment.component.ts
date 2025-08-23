@@ -16,7 +16,8 @@ import { environment } from '../../../../environments/environment';
 export class VipPaymentComponent {
   user: any = {};
   paymentUrl: string = '';
-  loading = true;
+  loading = true; // loading profile
+  paymentLoading = false; // loading khi bấm thanh toán
   error = '';
 
   // Subscription logic
@@ -96,7 +97,7 @@ export class VipPaymentComponent {
   }
 
   payVip() {
-    this.loading = true;
+    this.paymentLoading = true;
     const userId = this.jwtUtil.getUserIdFromToken() || 1;
     const amount = this.subscriptionDetails[this.selectedSubscriptionType].price;
     const subscriptionType = this.selectedSubscriptionType;
@@ -111,7 +112,6 @@ export class VipPaymentComponent {
     ).subscribe({
       next: (res) => {
         if (res && res.paymentUrl) {
-          // Hiện toast báo trước khi chuyển hướng
           this.showToast('Đang chuyển đến trang thanh toán. Sau khi thanh toán thành công, bạn sẽ được chuyển về trang chủ.');
           setTimeout(() => {
             window.location.href = res.paymentUrl;
@@ -119,11 +119,11 @@ export class VipPaymentComponent {
         } else {
           this.error = 'Không lấy được link thanh toán.';
         }
-        this.loading = false;
+        this.paymentLoading = false;
       },
       error: (err) => {
         this.error = 'Lỗi khi tạo thanh toán. Vui lòng thử lại.';
-        this.loading = false;
+        this.paymentLoading = false;
       }
     });
   }

@@ -1879,7 +1879,8 @@
 
   .messenger-main {
     .chat-input-container {
-      padding: 12px 16px;
+      padding: 12px 16px 32px 16px; // tăng padding-bottom để tránh bị che
+      margin-bottom: 18px; // thêm khoảng cách dưới cùng
       
       .input-footer {
         margin-top: 8px;

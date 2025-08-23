@@ -144,6 +144,9 @@
                         <button type="button" class="reminder-icon-btn outline" (click)="openReminderTypeDialog(plant); $event.stopPropagation()" title="Chọn những loại nhắc nhở muốn bật (những loại không chọn sẽ bị tắt)">
                           <i class="fas fa-sliders-h"></i>
                         </button>
+                        <button type="button" class="reminder-icon-btn fire" (click)="goToCareHistory(plant.userPlantId); $event.stopPropagation()" title="Xem calendar và streak chăm sóc">
+                          <i class="fas fa-fire"></i>
+                        </button>
                       </div>
                     </div>
                     

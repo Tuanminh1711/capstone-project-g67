@@ -1,3 +1,4 @@
+
 import { Routes } from '@angular/router';
 import { VipAuthGuard } from './auth/vip-auth.guard';
 
@@ -24,6 +25,8 @@ export const routes: Routes = [
     loadComponent: () => import('./feature/vip/welcome/welcome-vip.component').then(m => m.WelcomeVipComponent),
     canActivate: [VipAuthGuard]
   },
+    // Calendar với streak tracking
+    { path: 'user/plant-care-calendar/:userPlantId', loadComponent: () => import('./feature/user/plant/plant-care-calendar/plant-care-calendar.component').then(m => m.PlantCareCalendarComponent) },
   { 
     path: 'vip/chat', 
     loadComponent: () => import('./feature/vip/chat/chat.component').then(m => m.ChatComponent),

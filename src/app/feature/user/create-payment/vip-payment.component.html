@@ -106,11 +106,11 @@
   <!-- Payment Button -->
   <div class="payment-action">
     <button class="pay-button" 
-            [disabled]="loading"
+            [disabled]="paymentLoading"
             (click)="payVip()">
-      <i class="fas fa-credit-card" *ngIf="!loading"></i>
-      <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
-      <span>{{ loading ? 'Đang xử lý...' : 'Thanh toán ngay' }}</span>
+      <i class="fas fa-credit-card" *ngIf="!paymentLoading"></i>
+      <i class="fas fa-spinner fa-spin" *ngIf="paymentLoading"></i>
+      <span>{{ paymentLoading ? 'Đang xử lý...' : 'Thanh toán ngay' }}</span>
     </button>
     
     <p class="secure-payment">

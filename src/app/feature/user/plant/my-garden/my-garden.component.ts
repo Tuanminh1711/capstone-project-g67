@@ -1,3 +1,4 @@
+
 import { environment } from '../../../../../environments/environment';
 import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -84,6 +85,8 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     }
   }
 
+  
+
   constructor(
     private http: HttpClient,
     public router: Router,
@@ -159,6 +162,9 @@ export class MyGardenComponent implements OnInit, OnDestroy {
     });
   }
 
+  goToCareHistory(userPlantId: number): void {
+    this.router.navigate(['/user/plant-care-calendar', userPlantId]);
+  }
   // State cho dialog tuỳ chỉnh nhắc nhở
   showCareReminderDialog = false;
   careReminderDialogSchedules: CareReminderSchedule[] = [];
