@@ -16,6 +16,7 @@ export class CareConfirmComponent implements OnInit {
   loading = true;
   success = false;
   error = '';
+  successMessage = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -29,25 +30,26 @@ export class CareConfirmComponent implements OnInit {
     const userPlantId = this.route.snapshot.queryParamMap.get('userPlantId');
     const careTypeId = this.route.snapshot.queryParamMap.get('careTypeId');
     if (userPlantId && careTypeId) {
-      this.http.post(`/api/plant-care/${userPlantId}/care-reminders/${careTypeId}/confirm`, {}).subscribe({
-        next: () => {
+      this.http.post(`/api/plant-care/${userPlantId}/care-reminders/${careTypeId}/confirm`, {}, { responseType: 'text' }).subscribe({
+        next: (res: string) => {
           this.success = true;
+          this.successMessage = res || 'Bạn đã xác nhận chăm sóc thành công cho cây của mình!';
           this.loading = false;
-          this.toast.success('Xác nhận chăm sóc thành công!');
+          this.toast.success(this.successMessage);
           this.cdr.detectChanges();
         },
         error: err => {
-          this.error = err?.error?.message || 'Có lỗi xảy ra.';
+          this.error = (typeof err?.error === 'string' && err.error) || err?.message || 'Có lỗi xảy ra.';
           this.loading = false;
           this.toast.error('Xác nhận thất bại: ' + this.error);
           this.cdr.detectChanges();
         }
       });
     } else {
-  this.error = 'Thiếu thông tin xác nhận.';
-  this.loading = false;
-  this.toast.error(this.error);
-  this.cdr.detectChanges();
+      this.error = 'Thiếu thông tin xác nhận.';
+      this.loading = false;
+      this.toast.error(this.error);
+      this.cdr.detectChanges();
     }
   }
 

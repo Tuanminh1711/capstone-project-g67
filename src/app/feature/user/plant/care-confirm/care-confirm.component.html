@@ -11,16 +11,16 @@
     </div>
   }
   @if (success) {
-    <div class="success-block">
+    <div class="success-block animate-success">
       <div class="success-icon">🎉</div>
-      <div class="success-message">Bạn đã xác nhận chăm sóc thành công cho cây của mình!</div>
-      <button class="go-garden-btn" (click)="goToGarden()">
-        <i class="fas fa-seedling"></i> Về vườn của tôi
+      <div class="success-message">{{ successMessage }}</div>
+      <button class="go-garden-btn pulse-btn" (click)="goToGarden()">
+        <span class="btn-icon">🌿</span> Về vườn của tôi
       </button>
     </div>
   }
   @if (error) {
-    <div class="error-block">
+    <div class="error-block animate-error">
       <div class="error-icon">😢</div>
       <div class="error-message">Xác nhận thất bại: {{error}}</div>
     </div>

@@ -48,56 +48,94 @@ h2 {
   color: #4a5568;
   font-size: 1.08rem;
 }
+// Hiệu ứng thành công
 .success-block {
   margin: 32px 0 16px 0;
   animation: fadeIn 0.7s;
+  background: linear-gradient(120deg, #e6ffe6 60%, #d1f7e7 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(56,161,105,0.10);
+  padding: 24px 12px 18px 12px;
+  border: 2px solid #38a16933;
+}
+.animate-success {
+  animation: pop 0.7s, fadeIn 0.7s;
 }
 .success-icon {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
+  font-size: 2.7rem;
+  margin-bottom: 10px;
   animation: pop 0.7s;
 }
 .success-message {
-  color: #38a169;
-  font-size: 1.15rem;
-  font-weight: 600;
+  color: #219150;
+  font-size: 1.18rem;
+  font-weight: 700;
   margin-bottom: 18px;
+  letter-spacing: 0.01em;
 }
 .go-garden-btn {
-  background: linear-gradient(90deg, #38a169 0%, #48bb78 100%);
+  margin-top: 18px;
+  background: linear-gradient(90deg, #38a169 60%, #43e97b 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
-  padding: 12px 32px;
-  font-size: 1.08rem;
-  font-weight: 600;
-  box-shadow: 0 2px 10px rgba(56,161,105,0.10);
+  padding: 12px 36px;
+  font-size: 1.13rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.18s, transform 0.18s;
-  margin-top: 8px;
+  box-shadow: 0 2px 12px #38a16922;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
-.go-garden-btn:hover {
-  background: linear-gradient(90deg, #319795 0%, #38a169 100%);
-  transform: translateY(-2px) scale(1.04);
+.go-garden-btn:hover, .pulse-btn:hover {
+  background: linear-gradient(90deg, #2f855a 60%, #38a169 100%);
+  color: #ffb300;
+  transform: scale(1.04);
 }
-.go-garden-btn i {
-  font-size: 1.2em;
+.pulse-btn {
+  animation: pulse 1.2s infinite alternate;
 }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 #38a16944; }
+  100% { box-shadow: 0 0 16px 6px #38a16933; }
+}
+.btn-icon {
+  font-size: 1.3em;
+  margin-right: 2px;
+}
+
+// Hiệu ứng lỗi
 .error-block {
   margin: 32px 0 16px 0;
+  background: linear-gradient(120deg, #ffeaea 60%, #fff0f0 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(255,0,0,0.07);
+  padding: 24px 12px 18px 12px;
+  border: 2px solid #e53e3e33;
   animation: fadeIn 0.7s;
 }
+.animate-error {
+  animation: shake 0.5s, fadeIn 0.7s;
+}
 .error-icon {
-  font-size: 2.2rem;
-  margin-bottom: 8px;
+  font-size: 2.3rem;
+  margin-bottom: 10px;
+  animation: pop 0.7s;
 }
 .error-message {
-  color: #dc3545;
+  color: #e53e3e;
+  font-weight: 600;
   font-size: 1.08rem;
-  font-weight: 500;
+}
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
