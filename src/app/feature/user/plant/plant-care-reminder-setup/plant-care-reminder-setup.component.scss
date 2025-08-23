@@ -1,3 +1,17 @@
+.custom-green-btn {
+  background: #22c55e !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 18px;
+  border-radius: 8px;
+  min-width: 200px;
+  min-height: 48px;
+  box-shadow: 0 2px 8px #22c55e33;
+  transition: color 0.2s;
+}
+.custom-green-btn:hover:not(:disabled) {
+  color: #ff9800 !important;
+}
 // ============================================================================
 // Plant Care Reminder Setup - Professional Interface
 // ============================================================================

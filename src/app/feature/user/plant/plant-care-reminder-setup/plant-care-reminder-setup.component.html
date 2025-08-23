@@ -70,6 +70,7 @@
         <!-- Form Content -->
         <form [formGroup]="form" class="reminder-form" [class.loading]="loading">
           <div formArrayName="schedules">
+            <!-- Nút thêm loại chăm sóc (Material) chỉ hiện ở chế độ tất cả, đặt dưới cùng -->
             <ng-container *ngFor="let scheduleCtrl of scheduleFormGroups; let i = index">
               <ng-container *ngIf="selectedCareTypeId === 0 || scheduleCtrl.get('careTypeId')?.value === selectedCareTypeId">
                 <div [formGroup]="scheduleCtrl" class="schedule-card">
@@ -94,13 +95,15 @@
                         </span>
                       </div> -->
                       <!-- Only show delete button when viewing all schedules -->
-                      <button type="button" 
+                      <button type="button"
                               *ngIf="selectedCareTypeId === 0"
-                              class="btn-remove-schedule" 
-                              (click)="removeSchedule(i)" 
+                              mat-icon-button
+                              color="warn"
+                              (click)="removeSchedule(i)"
                               title="Xóa lịch này"
-                              aria-label="Xóa lịch nhắc nhở">
-                        <i class="fas fa-trash-alt"></i>
+                              aria-label="Xóa lịch nhắc nhở"
+                              style="margin-left:auto;">
+                        <mat-icon>delete</mat-icon>
                       </button>
                     </div>
                   </div>
@@ -197,7 +200,7 @@
 
           <!-- Global Actions -->
           <!-- Đã xoá debug UI -->
-          <div class="global-actions">
+          <div class="global-actions" *ngIf="selectedCareTypeId === 0">
             <div class="action-info">
               <i class="fas fa-info-circle"></i>
               <span>
@@ -207,13 +210,26 @@
             </div>
             
             <div class="action-buttons">
-              <button type="button" 
-                      class="btn-update-all" 
-                      (click)="updateAllSchedules()" 
-                      [disabled]="loading">
-                <i class="fas fa-sync-alt"></i>
-                <span>Cập nhật tất cả</span>
-               </button>
+                <button mat-raised-button color="primary" type="button"
+                        class="btn-update-all custom-green-btn"
+                        (click)="updateAllSchedules()"
+                        [disabled]="loading">
+                  <mat-icon>sync</mat-icon>
+                  Cập nhật tất cả
+                </button>
+            </div>
+            <!-- Nút thêm loại chăm sóc đặt dưới cùng -->
+            <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;">
+              <ng-container *ngFor="let type of careTypes">
+                <button *ngIf="!hasSchedule(type.id)"
+                        mat-stroked-button
+                        type="button"
+                        (click)="addSchedule(type.id)"
+                        style="border-radius:8px;padding:4px 14px;font-size:15px;min-width:80px;display:flex;align-items:center;gap:6px;margin:0 6px 6px 0;">
+                  <mat-icon style="font-size:18px;">{{ type.icon.split('fa-')[1] || 'add' }}</mat-icon>
+                  {{ type.name }}
+                </button>
+              </ng-container>
             </div>
           </div>
         </form>
