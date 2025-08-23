@@ -11,6 +11,21 @@
 
   <nav class="sidebar-nav">
     <ul class="nav-list">
+      <li class="nav-section">
+        <div class="nav-section-title">Tài khoản</div>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/profile/edit']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">👤</span>
+          <span class="nav-text">Chỉnh sửa hồ sơ</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a [routerLink]="['/expert/profile/view']" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-text">Xem hồ sơ</span>
+        </a>
+      </li>
       <li class="nav-item">
         <a [routerLink]="['/expert/welcome']" class="nav-link" routerLinkActive="active">
           <span class="nav-icon">🏠</span>

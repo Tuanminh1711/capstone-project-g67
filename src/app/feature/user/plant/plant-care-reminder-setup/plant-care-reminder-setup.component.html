@@ -33,6 +33,7 @@
           <li *ngFor="let type of careTypes" 
               class="care-type-item" 
               [class.active]="selectedCareTypeId === type.id"
+              [class.setup]="isTypeSetup(type.id)"
               (click)="selectCareType(type.id)" 
               tabindex="0"
               role="button">
@@ -41,6 +42,14 @@
                 <i [ngClass]="type.icon"></i>
               </span>
               <span class="care-type-name">{{ type.name }}</span>
+              <div class="care-type-status">
+                <span class="status-badge" 
+                      [class.enabled]="isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value"
+                      [class.disabled]="!isTypeSetup(type.id) || !getScheduleByType(type.id)?.get('enabled')?.value">
+                  <i class="fas" [ngClass]="isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value ? 'fa-bell' : 'fa-bell-slash'"></i>
+                  {{ isTypeSetup(type.id) && getScheduleByType(type.id)?.get('enabled')?.value ? 'Bật' : 'Tắt' }}
+                </span>
+              </div>
             </div>
           </li>
         </ul>
@@ -70,15 +79,30 @@
                       <i [ngClass]="getCareTypeIcon(scheduleCtrl.get('careTypeId')?.value)"></i>
                       <span>{{ getCareTypeName(scheduleCtrl.get('careTypeId')?.value) }}</span>
                     </div>
-                    <!-- Only show delete button when viewing all schedules -->
-                    <button type="button" 
-                            *ngIf="selectedCareTypeId === 0"
-                            class="btn-remove-schedule" 
-                            (click)="removeSchedule(i)" 
-                            title="Xóa lịch này"
-                            aria-label="Xóa lịch nhắc nhở">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <div class="card-controls">
+                      <!-- Toggle Switch for Enable/Disable -->
+                      <!-- <div class="toggle-switch">
+                        <label class="switch">
+                          <input type="checkbox" 
+                                 formControlName="enabled"
+                                 (change)="onToggleReminder(i)"
+                                 [checked]="scheduleCtrl.get('enabled')?.value">
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">
+                          {{ scheduleCtrl.get('enabled')?.value ? 'Bật nhắc nhở' : 'Tắt nhắc nhở' }}
+                        </span>
+                      </div> -->
+                      <!-- Only show delete button when viewing all schedules -->
+                      <button type="button" 
+                              *ngIf="selectedCareTypeId === 0"
+                              class="btn-remove-schedule" 
+                              (click)="removeSchedule(i)" 
+                              title="Xóa lịch này"
+                              aria-label="Xóa lịch nhắc nhở">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Form Fields -->
@@ -147,7 +171,9 @@
 
                   <!-- Card Actions -->
                   <div class="card-actions">
+                    <!-- Chỉ hiển thị nút lưu riêng khi chọn từng loại cụ thể -->
                     <button type="button" 
+                            *ngIf="selectedCareTypeId !== 0"
                             class="btn-save-schedule" 
                             (click)="saveSchedule(i)" 
                             [disabled]="scheduleCtrl.invalid || loading">
@@ -166,6 +192,28 @@
               <i class="fas fa-calendar-plus"></i>
               <h3>Chưa có lịch nhắc nhở nào</h3>
               <p>Hãy tạo lịch nhắc nhở để chăm sóc cây của bạn tốt hơn</p>
+            </div>
+          </div>
+
+          <!-- Global Actions -->
+          <!-- Đã xoá debug UI -->
+          <div class="global-actions">
+            <div class="action-info">
+              <i class="fas fa-info-circle"></i>
+              <span>
+                <strong>{{ getEnabledCount() }}</strong> loại chăm sóc đang được bật nhắc nhở
+                <span *ngIf="getEnabledCount() > 1">. Bạn có thể cập nhật tất cả cùng lúc.</span>
+              </span>
+            </div>
+            
+            <div class="action-buttons">
+              <button type="button" 
+                      class="btn-update-all" 
+                      (click)="updateAllSchedules()" 
+                      [disabled]="loading">
+                <i class="fas fa-sync-alt"></i>
+                <span>Cập nhật tất cả</span>
+               </button>
             </div>
           </div>
         </form>

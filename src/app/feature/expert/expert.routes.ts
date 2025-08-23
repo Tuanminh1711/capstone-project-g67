@@ -44,6 +44,16 @@ export const expertRoutes: Routes = [
         title: 'Quản lý cây trồng'
       },
       {
+        path: 'profile/edit',
+        loadComponent: () => import('./profile/edit-expert-profile/edit-expert-profile.component').then(c => c.EditExpertProfileComponent),
+        title: 'Chỉnh sửa hồ sơ chuyên gia'
+      },
+      {
+        path: 'profile/view',
+        loadComponent: () => import('./profile/view-expert-profile/view-expert-profile.component').then(c => c.ViewExpertProfileComponent),
+        title: 'Xem hồ sơ chuyên gia'
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./reports/expert-reports.component').then(c => c.ExpertReportsComponent),
         title: 'Báo cáo thống kê'

@@ -1,5 +1,6 @@
 
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { JwtUserUtilService } from '../../../../auth/jwt-user-util.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../../auth/auth.service';
@@ -20,6 +21,7 @@ export class ExpertSidebarComponent implements OnInit {
   recentUsers$ = new BehaviorSubject<{ username: string, userId: number, conversationId?: string }[]>([]);
   currentUserName: string = 'Expert'; // Giá trị mặc định
   fullUserName: string = 'Expert'; // Lưu tên đầy đủ cho tooltip
+  currentUserId: string | null = null;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -27,12 +29,14 @@ export class ExpertSidebarComponent implements OnInit {
     private authService: AuthService,
     private http: HttpClient,
     private urlService: UrlService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private jwtUserUtil: JwtUserUtilService
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadRecentUsers();
+    this.currentUserId = this.jwtUserUtil.getUserIdFromToken();
   }
 
   loadCurrentUser() {

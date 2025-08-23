@@ -1,0 +1,18 @@
+<div class="view-expert-profile-page">
+  <div *ngIf="loading">Đang tải thông tin chuyên gia...</div>
+  <div *ngIf="error">{{ error }}</div>
+  <div *ngIf="expert && !loading">
+    <div class="profile-header">
+      <img *ngIf="expert.avatar" [src]="expert.avatar" class="profile-avatar" alt="avatar">
+      <div class="profile-info">
+        <h2>{{ expert.fullName }}</h2>
+        <div class="profile-username">@{{ expert.username }}</div>
+        <div class="profile-email">{{ expert.email }}</div>
+        <div class="profile-phone">SĐT: {{ expert.phoneNumber }}</div>
+        <div class="profile-gender">Giới tính: {{ expert.gender }}</div>
+        <div class="profile-bio" *ngIf="expert.bio">{{ expert.bio }}</div>
+        <div class="profile-expertise" *ngIf="expert.expertise">Chuyên môn: {{ expert.expertise }}</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,18 +13,6 @@ import { CommonModule } from '@angular/common';
         </div>
         
         <div class="footer-right">
-          <div class="footer-links">
-            <a href="#" class="footer-link">Hỗ trợ</a>
-            <span class="separator">|</span>
-            <a href="#" class="footer-link">Chính sách</a>
-            <span class="separator">|</span>
-            <a href="#" class="footer-link">Điều khoản</a>
-          </div>
-          
-          <div class="system-status">
-            <span class="status-dot"></span>
-            <span class="status-text">Hệ thống hoạt động bình thường</span>
-          </div>
         </div>
       </div>
     </div>

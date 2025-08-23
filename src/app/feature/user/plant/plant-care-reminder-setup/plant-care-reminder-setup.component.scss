@@ -650,6 +650,122 @@ body {
 }
 
 // ============================================================================
+// Global Actions
+// ============================================================================
+// Đã bỏ style debug, trả lại style gốc
+.global-actions {
+  background: white !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--neutral-200) !important;
+  padding: var(--spacing-xl) !important;
+  margin-top: var(--spacing-xl) !important;
+  display: block !important; // Đảm bảo hiển thị
+  visibility: visible !important; // Đảm bảo hiển thị
+  opacity: 1 !important; // Đảm bảo hiển thị
+  
+  .action-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--spacing-md) !important;
+    margin-bottom: var(--spacing-lg) !important;
+    padding: var(--spacing-md) !important;
+    background: var(--info-color) !important;
+    color: white !important;
+    border-radius: var(--radius-md) !important;
+    font-size: 0.875rem !important;
+    
+    i {
+      font-size: 1.1rem !important;
+    }
+    
+    strong {
+      font-weight: 600 !important;
+    }
+  }
+  
+  .action-buttons {
+    display: flex !important;
+    gap: var(--spacing-md) !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+    
+    .btn-update-all {
+      padding: var(--spacing-lg) var(--spacing-2xl) !important;
+      border: none !important;
+      background: var(--primary-color) !important;
+      color: white !important;
+      border-radius: var(--radius-md) !important;
+      font-weight: 600 !important;
+      font-size: 1rem !important;
+      cursor: pointer !important;
+      transition: all var(--transition-normal) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: var(--spacing-sm) !important;
+      min-height: 48px !important; // Đảm bảo kích thước tối thiểu
+      min-width: 160px !important; // Đảm bảo kích thước tối thiểu
+      
+      &:hover:not(:disabled) {
+        background: var(--primary-dark) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: var(--shadow-lg) !important;
+      }
+      
+      &:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2) !important;
+      }
+      
+      &:disabled {
+        background: var(--neutral-400) !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+        opacity: 0.6 !important;
+      }
+    }
+    
+    .btn-reset-all {
+      padding: var(--spacing-lg) var(--spacing-2xl);
+      border: 2px solid var(--neutral-300);
+      background: white;
+      color: var(--neutral-700);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      
+      &:hover:not(:disabled) {
+        border-color: var(--warning-color);
+        color: var(--warning-color);
+        background: #fef3c7;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+      
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+      }
+      
+      &:disabled {
+        border-color: var(--neutral-400);
+        color: var(--neutral-400);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        opacity: 0.6;
+      }
+    }
+  }
+}
+
+// ============================================================================
 // Responsive Design
 // ============================================================================
 @media (max-width: 1024px) {
@@ -975,6 +1091,46 @@ body {
       transition: all 0.3s ease !important;
     }
     
+    .care-type-status {
+      display: flex !important;
+      align-items: center !important;
+      
+      .status-badge {
+        padding: 6px 12px !important;
+        border-radius: 20px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        transition: all 0.3s ease !important;
+        
+        &.enabled {
+          background: #dcfce7 !important;
+          color: #16a34a !important;
+          border: 1px solid #bbf7d0 !important;
+          
+          i {
+            color: #16a34a !important;
+          }
+        }
+        
+        &.disabled {
+          background: #f3f4f6 !important;
+          color: #6b7280 !important;
+          border: 1px solid #e5e7eb !important;
+          
+          i {
+            color: #6b7280 !important;
+          }
+        }
+        
+        i {
+          font-size: 10px !important;
+        }
+      }
+    }
+    
     .schedule-indicator {
       display: none !important; // Hide schedule indicators
     }
@@ -1152,6 +1308,75 @@ body {
       align-items: center !important;
       justify-content: center !important;
       font-size: 16px !important;
+    }
+  }
+  
+  .card-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    
+    .toggle-switch {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      
+      .switch {
+        position: relative !important;
+        display: inline-block !important;
+        width: 50px !important;
+        height: 24px !important;
+        
+        input {
+          opacity: 0 !important;
+          width: 0 !important;
+          height: 0 !important;
+          
+          &:checked + .slider {
+            background-color: #22c55e !important;
+          }
+          
+          &:checked + .slider:before {
+            transform: translateX(26px) !important;
+          }
+          
+          &:focus + .slider {
+            box-shadow: 0 0 1px #22c55e !important;
+          }
+        }
+        
+        .slider {
+          position: absolute !important;
+          cursor: pointer !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          background-color: #ccc !important;
+          transition: 0.3s !important;
+          border-radius: 24px !important;
+          
+          &:before {
+            position: absolute !important;
+            content: "" !important;
+            height: 18px !important;
+            width: 18px !important;
+            left: 3px !important;
+            bottom: 3px !important;
+            background-color: white !important;
+            transition: 0.3s !important;
+            border-radius: 50% !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+          }
+        }
+      }
+      
+      .toggle-label {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: #525252 !important;
+        white-space: nowrap !important;
+      }
     }
   }
   

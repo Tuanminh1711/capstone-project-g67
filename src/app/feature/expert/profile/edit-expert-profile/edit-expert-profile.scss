@@ -1,0 +1,211 @@
+.edit-profile-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0;
+}
+.edit-profile-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  padding: 32px 24px;
+  max-width: 480px;
+  width: 100%;
+}
+.page-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.avatar-card {
+  width: 100%;
+  text-align: center;
+}
+.avatar-upload-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.avatar-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0 auto 8px auto;
+  cursor: pointer;
+  position: relative;
+  border: 2px solid #e4e6ea;
+  transition: border 0.2s;
+}
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.upload-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom-left-radius: 50%;
+  border-bottom-right-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.avatar-preview:hover .upload-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+.avatar-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.loading-spinner {
+  border: 3px solid #e4e6ea;
+  border-top: 3px solid #0084ff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.cropper-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+}
+.cropper-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 24px 16px;
+  z-index: 1001;
+  min-width: 320px;
+  max-width: 90vw;
+}
+.cropper-header {
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.cropper-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.update-avatar-btn {
+  background: #e4e6ea;
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.update-avatar-btn.highlight {
+  background: #0084ff;
+  color: #fff;
+}
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 8px 10px;
+  border: 1.5px solid #e4e6ea;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #fafbfc;
+  outline: none;
+  transition: border 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #0084ff;
+}
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.form-actions button {
+  background: #0084ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.form-actions button:disabled {
+  background: #b3d9ff;
+  cursor: not-allowed;
+}
+.save-message {
+  color: #42b883;
+  font-weight: 500;
+}
+.save-error {
+  color: #dc3545;
+  font-weight: 500;
+}
+.loading-state {
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  margin: 32px 0;
+}
