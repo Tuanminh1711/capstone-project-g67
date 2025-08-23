@@ -2,11 +2,13 @@ package com.plantcare_backend.service.impl.email;
 
 import com.plantcare_backend.model.SupportTicket;
 import com.plantcare_backend.service.EmailService;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -60,12 +62,30 @@ public class EmailServiceImpl implements EmailService {
                 throw new IllegalArgumentException("Content cannot be null or empty");
             }
 
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(content);
-            message.setFrom("nguyentahoang15012003@gmail.com");
-            emailSender.send(message);
+            boolean isHtml = content.contains("<html") || content.contains("<div") ||
+                    content.contains("<p>") || content.contains("<a href");
+
+            if (isHtml) {
+                MimeMessage message = emailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                helper.setTo(to);
+                helper.setSubject(subject);
+                helper.setText(content, true);
+                helper.setFrom("nguyentahoang15012003@gmail.com");
+
+                emailSender.send(message);
+            } else {
+                MimeMessage message = emailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                helper.setTo(to);
+                helper.setSubject(subject);
+                helper.setText(content, false);
+                helper.setFrom("nguyentahoang15012003@gmail.com");
+
+                emailSender.send(message);
+            }
             log.info("Email sent successfully to: {}", to);
         } catch (IllegalArgumentException e) {
             log.error("Invalid email parameters: {}", e.getMessage());
