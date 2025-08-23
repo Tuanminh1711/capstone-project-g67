@@ -19,23 +19,12 @@ import java.util.Date;
 @Slf4j
 public class PlantCareNotificationServiceImpl implements PlantCareNotificationService {
     @Autowired
-    private CareScheduleRepository careScheduleRepository;
-    @Autowired
-    private CareLogRepository careLogRepository;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private EmailService emailService;
 
-    @Value("${plantcare.base-url:http://localhost:4200}")
+    @Value("${plantcare.base-url:https://plantcare.id.vn}")
     private String baseUrl;
-
-    private Date calculateNextCareDate(Date lastCareDate, Integer frequencyDays) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(lastCareDate);
-        cal.add(Calendar.DAY_OF_MONTH, frequencyDays);
-        return cal.getTime();
-    }
 
     @Override
     public void sendReminder(CareSchedule schedule) {
@@ -54,9 +43,10 @@ public class PlantCareNotificationServiceImpl implements PlantCareNotificationSe
 
         String careType = schedule.getCareType().getCareTypeName();
         String subject = "🌱 Nhắc nhở chăm sóc cây: " + careType;
-        String confirmUrl = baseUrl + "/api/plant-care/" +
-                schedule.getUserPlant().getUserPlantId() +
-                "/care-reminders/" + schedule.getCareType().getCareTypeId() + "/confirm";
+        String confirmUrl = baseUrl + "/user/plant/care-confirm?userPlantId=" +
+                schedule.getUserPlant().getUserPlantId() + "&careTypeId=" +
+                schedule.getCareType().getCareTypeId();
+
         String confirmLink = "\n\n<b><a href='" + confirmUrl + "'>Tôi đã thực hiện " + careType + "</a></b>";
         String content = (schedule.getCustomMessage() != null && !schedule.getCustomMessage().isEmpty())
                 ? schedule.getCustomMessage() + confirmLink
