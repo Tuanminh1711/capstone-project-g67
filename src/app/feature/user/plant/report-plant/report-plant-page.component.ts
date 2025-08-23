@@ -102,7 +102,7 @@ export class ReportPlantPageComponent implements OnInit {
           return plantData.plant;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
     return null;
   }
 
@@ -113,7 +113,7 @@ export class ReportPlantPageComponent implements OnInit {
         cachedAt: new Date().toISOString()
       };
       localStorage.setItem(`plant_${plant.id}`, JSON.stringify(cacheData));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   submitReport() {
@@ -135,9 +135,13 @@ export class ReportPlantPageComponent implements OnInit {
     }, { headers }).subscribe({
       next: () => {
         this.toast.success('Báo cáo của bạn đã được gửi!');
-  this.router.navigate(['/user/report']);
+        this.router.navigate(['/user/report']);
       },
       error: (err) => {
+        if (err?.status === 401) {
+          this.router.navigate(['/home']);
+          return;
+        }
         // Ưu tiên hiện err.message nếu có, sau đó đến err.error.message
         if (err?.message) {
           this.toast.error(err.message);

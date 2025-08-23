@@ -78,6 +78,10 @@ export class TicketDetailComponent implements OnInit, OnDestroy, OnChanges {
         this.cdr.detectChanges();
       },
       error: (error) => {
+        if (error?.status === 401) {
+          window.location.href = '/home';
+          return;
+        }
         this.imageObjectUrl = null;
         this.cdr.detectChanges();
       }

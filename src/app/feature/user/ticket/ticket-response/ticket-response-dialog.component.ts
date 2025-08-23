@@ -48,6 +48,10 @@ export class TicketResponseDialogComponent {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        if (err?.status === 401) {
+          window.location.href = '/home';
+          return;
+        }
         this.loading = false;
         this.responseForm.get('content')?.enable();
         this.toast.error('Gửi phản hồi thất bại!');

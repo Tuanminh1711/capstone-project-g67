@@ -95,6 +95,10 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        if (err?.status === 401) {
+          this.router.navigate(['/home']);
+          return;
+        }
         this.error = 'Không thể tải danh sách ticket.';
         this.ticketsSubject.next([]);
         this.loading = false;
@@ -118,6 +122,10 @@ export class ViewTicketComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        if (err?.status === 401) {
+          this.router.navigate(['/home']);
+          return;
+        }
         this.error = 'Không thể tải chi tiết ticket.';
         this.selectedTicket = null;
         this.loading = false;
