@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -16,32 +19,38 @@ import java.util.List;
 @Slf4j
 public class PlantCareScheduler {
     @Autowired
-    private PlantCareNotificationService notificationService;
+    private PlantCareNotificationService plantCareNotificationService;
     @Autowired
     private CareScheduleRepository careScheduleRepository;
 
     // Chạy mỗi giờ để kiểm tra reminders
     @Scheduled(cron = "0 * * * * ?")
-    public void sendReminders() {
-        try {
-            LocalTime now = LocalTime.now().withSecond(0).withNano(0);
-            Date today = new Date();
-            List<CareSchedule> dueSchedules = careScheduleRepository.findDueReminders(today, now);
+    public void sendCareReminders() {
+        Date today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalTime now = LocalTime.now();
 
-            log.info("Found {} due schedules at {}", dueSchedules.size(), now);
+        List<CareSchedule> dueSchedules = careScheduleRepository.findDueReminders(today, now);
 
-            for (CareSchedule schedule : dueSchedules) {
-                try {
-                    notificationService.sendReminder(schedule);
-                    log.info("Sent reminder for schedule: {}", schedule.getScheduleId());
-                } catch (Exception e) {
-                    log.error("Failed to send reminder for schedule: {}", schedule.getScheduleId(), e);
-                }
+        for (CareSchedule schedule : dueSchedules) {
+            try {
+                plantCareNotificationService.sendReminder(schedule);
+
+                Date nextCareDate = calculateNextCareDate(schedule.getNextCareDate(), schedule.getFrequencyDays());
+                schedule.setNextCareDate(nextCareDate);
+                careScheduleRepository.save(schedule);
+
+                log.info("Sent reminder and updated next_care_date for schedule: {}", schedule.getScheduleId());
+
+            } catch (Exception e) {
+                log.error("Failed to send reminder for schedule: {}", schedule.getScheduleId(), e);
             }
-
-            log.info("Completed processing {} reminders", dueSchedules.size());
-        } catch (Exception e) {
-            log.error("Critical error in reminder scheduler", e);
         }
+    }
+
+    private Date calculateNextCareDate(Date currentDate, Integer frequencyDays) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(currentDate);
+        cal.add(Calendar.DAY_OF_MONTH, frequencyDays);
+        return cal.getTime();
     }
 }
