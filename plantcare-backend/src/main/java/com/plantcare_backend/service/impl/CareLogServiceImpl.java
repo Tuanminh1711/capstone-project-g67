@@ -1,6 +1,7 @@
 package com.plantcare_backend.service.impl;
 
 import com.plantcare_backend.dto.request.plantcare.CareCompletionRequest;
+import com.plantcare_backend.dto.response.plantcare.CareLogResponseDTO;
 import com.plantcare_backend.exception.ResourceNotFoundException;
 import com.plantcare_backend.model.CareLog;
 import com.plantcare_backend.model.CareSchedule;
@@ -100,7 +101,7 @@ public class CareLogServiceImpl implements CareLogService {
     }
 
     @Override
-    public Page<?> getCareHistory(Long userPlantId, int page, int size) {
+    public Page<CareLogResponseDTO> getCareHistory(Long userPlantId, int page, int size) {
         // Kiểm tra userPlant có tồn tại không
         if (!userPlantRepository.existsById(userPlantId)) {
             throw new ResourceNotFoundException("User plant not found with id: " + userPlantId);
@@ -109,7 +110,7 @@ public class CareLogServiceImpl implements CareLogService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<CareLog> careLogs = careLogRepository.findByUserPlant_UserPlantId(userPlantId, pageable);
 
-        return careLogs.map(this::toCareLogResponse);
+        return careLogs.map(this::toCareLogResponseDTO);
     }
 
     private void updateCareSchedulesLastCareDate(Long userPlantId) {
@@ -134,68 +135,18 @@ public class CareLogServiceImpl implements CareLogService {
         return cal.getTime();
     }
 
-    private CareLogResponse toCareLogResponse(CareLog careLog) {
-        return CareLogResponse.builder()
+    /**
+     * Chuyển đổi CareLog thành CareLogResponseDTO
+     */
+    private CareLogResponseDTO toCareLogResponseDTO(CareLog careLog) {
+        return CareLogResponseDTO.builder()
                 .logId(careLog.getLogId())
                 .careDate(careLog.getCreatedAt())
                 .notes(careLog.getNotes())
                 .imageUrl(careLog.getImageUrl())
                 .createdAt(careLog.getCreatedAt())
+                .careTypeName(careLog.getCareType() != null ? careLog.getCareType().getCareTypeName() : null)
+                .plantName(careLog.getUserPlant() != null ? careLog.getUserPlant().getPlantName() : null)
                 .build();
-    }
-
-    // Inner class cho response
-    public static class CareLogResponse {
-        private Long logId;
-        private Date careDate;
-        private String notes;
-        private String imageUrl;
-        private Date createdAt;
-
-        // Builder pattern
-        public static CareLogResponseBuilder builder() {
-            return new CareLogResponseBuilder();
-        }
-
-        public static class CareLogResponseBuilder {
-            private CareLogResponse response = new CareLogResponse();
-
-            public CareLogResponseBuilder logId(Long logId) {
-                response.logId = logId;
-                return this;
-            }
-
-            public CareLogResponseBuilder careDate(Date careDate) {
-                response.careDate = careDate;
-                return this;
-            }
-
-            public CareLogResponseBuilder notes(String notes) {
-                response.notes = notes;
-                return this;
-            }
-
-            public CareLogResponseBuilder imageUrl(String imageUrl) {
-                response.imageUrl = imageUrl;
-                return this;
-            }
-
-            public CareLogResponseBuilder createdAt(Date createdAt) {
-                response.createdAt = createdAt;
-                return this;
-            }
-
-            public CareLogResponse build() {
-                return response;
-            }
-        }
-
-        public String getImageUrl() {
-            return imageUrl;
-        }
-
-        public Date getCreatedAt() {
-            return createdAt;
-        }
     }
 }
