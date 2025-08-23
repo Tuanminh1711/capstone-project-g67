@@ -423,6 +423,7 @@ export class DiseaseDetectionComponent implements OnInit, OnDestroy {
     const reader = new FileReader();
     reader.onload = (e: any) => {
       this.imagePreviewUrl = e.target.result;
+      this.forceChangeDetection(); // Đảm bảo UI cập nhật ngay
     };
     reader.readAsDataURL(file);
   }

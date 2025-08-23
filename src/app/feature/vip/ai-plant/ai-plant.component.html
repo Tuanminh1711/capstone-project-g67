@@ -37,7 +37,7 @@
           <div class="upload-text">
             <strong>Chọn hình ảnh cây</strong>
             <span>Kéo thả hoặc click để chọn file</span>
-            <span style="color: #888; font-size: 13px;">Dung lượng tối đa: 20MB</span>
+            <span style="color: #888; font-size: 13px;"> (Dung lượng tối đa: 20MB)</span>
           </div>
         </label>
       </div>
@@ -57,34 +57,7 @@
           <p><strong>Kích thước:</strong> {{(selectedFile.size / 1024 / 1024).toFixed(2)}} MB</p>
         </div>
 
-        <!-- Debug Information -->
-        <div *ngIf="selectedFile && showDebugInfo" class="debug-info">
-          <h4>🔧 Thông tin Debug</h4>
-          <div class="debug-grid">
-            <div class="debug-item">
-              <strong>Tên file:</strong> {{selectedFile.name}}
-            </div>
-            <div class="debug-item">
-              <strong>Kích thước:</strong> {{(selectedFile.size / (1024 * 1024)).toFixed(2)}} MB
-            </div>
-            <div class="debug-item">
-              <strong>Loại file:</strong> {{selectedFile.type}}
-            </div>
-            <div class="debug-item">
-              <strong>Ngày sửa đổi:</strong> {{selectedFile.lastModified | date:'dd/MM/yyyy HH:mm:ss'}}
-            </div>
-          </div>
-          <button (click)="toggleDebugInfo()" class="btn secondary small">
-            Ẩn Debug Info
-          </button>
-        </div>
-
-        <!-- Show Debug Info Button -->
-        <div *ngIf="selectedFile && !showDebugInfo" class="debug-toggle">
-          <button (click)="toggleDebugInfo()" class="btn secondary small">
-            🔧 Hiển thị Debug Info
-          </button>
-        </div>
+        
 
         <div class="identification-options">
           <div class="option-group">
@@ -114,14 +87,6 @@
             <div class="spinner-small"></div>
             Đang nhận diện...
           </span>
-        </button>
-
-        <!-- Test API Button for Debug -->
-        <button 
-          class="btn secondary small" 
-          (click)="testApiConnection()" 
-          style="margin-top: 10px; width: 100%;">
-          🔧 Test API Connection
         </button>
       </div>
     </div>
@@ -164,27 +129,27 @@
         
         <div class="result-content">
           <p class="scientific-name">
-            <strong>Tên khoa học:</strong> 
+            <strong>Tên khoa học: </strong> 
             <em>{{result.scientificName}}</em>
           </p>
           
           <div class="name-info">
-            <p *ngIf="result.commonName"><strong>Tên thông thường:</strong> {{result.commonName}}</p>
-            <p *ngIf="result.vietnameseName"><strong>Tên Việt Nam:</strong> {{result.vietnameseName}}</p>
+            <p *ngIf="result.commonName"><strong>Tên thông thường: </strong> {{result.commonName}}</p>
+            <p *ngIf="result.vietnameseName"><strong>Tên Việt Nam: </strong> {{result.vietnameseName}}</p>
           </div>
           
           <div class="description" *ngIf="result.description">
-            <h5>Mô tả:</h5>
+            <h5>Mô tả: </h5>
             <p>{{result.description}}</p>
           </div>
           
           <div class="care-instructions" *ngIf="result.careInstructions">
-            <h5>Hướng dẫn chăm sóc:</h5>
+            <h5>Hướng dẫn chăm sóc: </h5>
             <p>{{result.careInstructions}}</p>
           </div>
           
           <div class="result-images" *ngIf="result.imageUrl">
-            <h5>Hình ảnh tham khảo:</h5>
+            <h5>Hình ảnh tham khảo: </h5>
             <div class="image-gallery">
               <img 
                 [src]="result.imageUrl" 

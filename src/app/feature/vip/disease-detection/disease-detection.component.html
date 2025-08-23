@@ -6,18 +6,6 @@
     <h1>🔬 Phát Hiện Bệnh Cây Trồng</h1>
     <p class="subtitle">Sử dụng AI để chẩn đoán và điều trị bệnh cây trồng một cách chính xác</p>
   </div>
-
-  <!-- Alert Messages -->
-  <div *ngIf="errorMessage" class="alert error">
-    <span class="alert-icon">⚠️</span>
-    {{ errorMessage }}
-  </div>
-  
-  <div *ngIf="successMessage" class="alert success">
-    <span class="alert-icon">✅</span>
-    {{ successMessage }}
-  </div>
-
   <!-- Navigation Tabs -->
   <div class="nav-tabs">
     <button 
@@ -50,498 +38,487 @@
   <div class="tab-content">
     
     <!-- ==================== IMAGE DETECTION TAB ==================== -->
-    <div *ngIf="activeTab === 'image'" class="tab-panel">
-      <div class="detection-card">
-        <h2>📷 Phát hiện bệnh qua hình ảnh</h2>
-        <p class="card-description">
-          Tải lên ảnh cây bị bệnh để AI phân tích và chẩn đoán
-        </p>
+    @if (activeTab === 'image') {
+      <div class="tab-panel">
+        <div class="detection-card">
+          <h2>📷 Phát hiện bệnh qua hình ảnh</h2>
+          <p class="card-description">
+            Tải lên ảnh cây bị bệnh để AI phân tích và chẩn đoán
+          </p>
 
-        <!-- Image Upload Area -->
-        <div class="image-upload-area">
-          <input 
-            #imageInput
-            type="file" 
-            accept="image/*" 
-            (change)="onImageSelected($event)"
-            hidden>
-          
-          <div class="upload-placeholder" (click)="imageInput.click()">
-            <div *ngIf="!selectedImage && !imagePreviewUrl" class="upload-icon">
-              📷
-            </div>
-            <img 
-              *ngIf="imagePreviewUrl" 
-              [src]="imagePreviewUrl" 
-              alt="Preview" 
-              class="image-preview">
+          <!-- Image Upload Area -->
+          <div class="image-upload-area">
+            <input 
+              #imageInput
+              type="file" 
+              accept="image/*" 
+              (change)="onImageSelected($event)"
+              hidden>
             
-            <p *ngIf="!selectedImage && !imagePreviewUrl" class="upload-text">
-              Click để chọn ảnh hoặc kéo thả ảnh vào đây
-              <span style="color: #888; font-size: 13px; display: block;">Dung lượng tối đa: 20MB</span>
-            </p>
-            <p *ngIf="imagePreviewUrl" class="upload-text">
-              Click để thay đổi ảnh
-            </p>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <button 
-            (click)="detectDiseaseFromImage()"
-            [disabled]="!selectedImage || isDetectingFromImage"
-            class="btn primary large">
-            <span *ngIf="!isDetectingFromImage">🔍 Phát hiện bệnh</span>
-            <span *ngIf="isDetectingFromImage">⏳ Đang phân tích...</span>
-          </button>
-          
-          <button 
-            *ngIf="selectedImage || imageDetectionResult"
-            (click)="clearImageDetection()"
-            class="btn secondary">
-            🗑️ Xóa
-          </button>
-        </div>
-
-        <!-- Debug Information (chỉ hiển thị trong development) -->
-        <div *ngIf="selectedImage && showDebugInfo" class="debug-info">
-          <h4>🔧 Thông tin Debug</h4>
-          <div class="debug-grid">
-            <div class="debug-item">
-              <strong>Tên file:</strong> {{selectedImage.name}}
+            <div class="upload-placeholder" (click)="imageInput.click()">
+              @if (!selectedImage && !imagePreviewUrl) {
+                <div class="upload-icon">📷</div>
+              }
+              @if (imagePreviewUrl) {
+                <img [src]="imagePreviewUrl" alt="Preview" class="image-preview">
+              }
+              @if (!selectedImage && !imagePreviewUrl) {
+                <p class="upload-text">
+                  Click để chọn ảnh hoặc kéo thả ảnh vào đây
+                  <span style="color: #888; font-size: 13px; display: block;">Dung lượng tối đa: 20MB</span>
+                </p>
+              }
+              @if (imagePreviewUrl) {
+                <p class="upload-text">Click để thay đổi ảnh</p>
+              }
             </div>
-            <div class="debug-item">
-              <strong>Kích thước:</strong> {{(selectedImage.size / (1024 * 1024)).toFixed(2)}} MB
-            </div>
-            <div class="debug-item">
-              <strong>Loại file:</strong> {{selectedImage.type}}
-            </div>
-            <div class="debug-item">
-              <strong>Ngày sửa đổi:</strong> {{selectedImage.lastModified | date:'dd/MM/yyyy HH:mm:ss'}}
-            </div>
-          </div>
-          <button (click)="toggleDebugInfo()" class="btn secondary small">
-            Ẩn Debug Info
-          </button>
-        </div>
-
-        <!-- Show Debug Info Button (chỉ hiển thị khi có ảnh) -->
-        <div *ngIf="selectedImage && !showDebugInfo" class="debug-toggle">
-          <button (click)="toggleDebugInfo()" class="btn secondary small">
-            🔧 Hiển thị Debug Info
-          </button>
-        </div>
-
-        <!-- Detection Result -->
-        <div *ngIf="imageDetectionResult" class="detection-result">
-          <h3>🎯 Kết quả phát hiện</h3>
-          <div class="result-content">
-            <div class="result-header">
-              <h4>{{ imageDetectionResult.detectedDisease }}</h4>
-              <span class="confidence-badge">
-                Độ tin cậy: {{ (imageDetectionResult.confidenceScore * 100).toFixed(0) }}%
-              </span>
-            </div>
-            
-            <div class="result-details">
-              <div class="detail-item">
-                <strong>Mức độ nghiêm trọng:</strong>
-                <span class="severity-badge" [style.background-color]="getSeverityColor(imageDetectionResult.severity)">
-                  {{ imageDetectionResult.severity }}
-                </span>
-              </div>
-              
-              <div class="detail-item">
-                <strong>Triệu chứng:</strong>
-                <p>{{ imageDetectionResult.symptoms }}</p>
-              </div>
-              
-              <div class="detail-item">
-                <strong>Điều trị được khuyến nghị:</strong>
-                <p>{{ imageDetectionResult.recommendedTreatment }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== SYMPTOMS DETECTION TAB ==================== -->
-    <div *ngIf="activeTab === 'symptoms'" class="tab-panel">
-      <div class="detection-card">
-        <h2>🔍 Phát hiện bệnh qua triệu chứng</h2>
-        <p class="card-description">
-          Mô tả triệu chứng cây bị bệnh để AI phân tích và chẩn đoán
-        </p>
-
-        <!-- Symptoms Form -->
-        <form [formGroup]="symptomsForm" class="symptoms-form">
-          <div class="form-group">
-            <label for="symptoms">Mô tả triệu chứng bệnh *</label>
-            <textarea 
-              id="symptoms" 
-              formControlName="symptoms" 
-              placeholder="Mô tả chi tiết các triệu chứng bạn quan sát thấy trên cây..."
-              rows="6"
-              class="form-control">
-            </textarea>
-            <div *ngIf="isFieldInvalid('symptoms')" class="error-message">
-              {{ getFieldError('symptoms') }}
-            </div>
-            <small class="form-help">
-              Ví dụ: "Cây hoa hồng của tôi thân mềm, đen, cây gãy" hoặc "Lá cây xuất hiện đốm vàng, khô héo"
-            </small>
           </div>
 
           <!-- Action Buttons -->
           <div class="action-buttons">
             <button 
-              (click)="detectDiseaseFromSymptoms()"
-              [disabled]="symptomsForm.invalid || isDetectingFromSymptoms"
+              (click)="detectDiseaseFromImage()"
+              [disabled]="!selectedImage || isDetectingFromImage"
               class="btn primary large">
-              <span *ngIf="!isDetectingFromSymptoms">🔍 Phân tích triệu chứng</span>
-              <span *ngIf="isDetectingFromSymptoms">⏳ Đang phân tích...</span>
+              @if (!isDetectingFromImage) {<span>🔍 Phát hiện bệnh</span>}
+              @if (isDetectingFromImage) {<span>⏳ Đang phân tích...</span>}
             </button>
-          </div>
-        </form>
-
-        <!-- Detection Result -->
-        <div *ngIf="symptomsDetectionResult" class="detection-result">
-          <h3>🎯 Kết quả phân tích triệu chứng</h3>
-          <div class="result-content">
-            <div class="result-header">
-              <h4>{{ symptomsDetectionResult.detectedDisease }}</h4>
-              <span class="confidence-badge">
-                Độ tin cậy: {{ (symptomsDetectionResult.confidenceScore * 100) | number:'1.0-0' }}%
-              </span>
-            </div>
             
-            <div class="result-details">
-              <div class="detail-item">
-                <strong>Mức độ nghiêm trọng:</strong>
-                <span class="severity-badge" [style.background-color]="getSeverityColor(symptomsDetectionResult.severity)">
-                  {{ getSeverityText(symptomsDetectionResult.severity) }}
-                </span>
-              </div>
-              
-              <div class="detail-item">
-                <strong>Triệu chứng:</strong>
-                <p>{{ symptomsDetectionResult.symptoms }}</p>
-              </div>
-              
-              <div class="detail-item">
-                <strong>Điều trị được khuyến nghị:</strong>
-                <p>{{ symptomsDetectionResult.recommendedTreatment }}</p>
+            @if (selectedImage || imageDetectionResult) {
+              <button (click)="clearImageDetection()" class="btn secondary">🗑️ Xóa</button>
+            }
+          </div>
+
+          <!-- Detection Result -->
+          @if (imageDetectionResult) {
+            <div class="detection-result">
+              <h3>🎯 Kết quả phát hiện</h3>
+              <div class="result-content">
+                <div class="result-header">
+                  <h4>{{ imageDetectionResult.detectedDisease }}</h4>
+                  <span class="confidence-badge">
+                    Độ tin cậy: {{ (imageDetectionResult.confidenceScore * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <div class="result-details">
+                  <div class="detail-item">
+                    <strong>Mức độ nghiêm trọng:</strong>
+                    <span class="severity-badge" [style.background-color]="getSeverityColor(imageDetectionResult.severity)">
+                      {{ imageDetectionResult.severity }}
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Triệu chứng:</strong>
+                    <p>{{ imageDetectionResult.symptoms }}</p>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Điều trị được khuyến nghị:</strong>
+                    <p>{{ imageDetectionResult.recommendedTreatment }}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
       </div>
-    </div>
+    }
+
+    <!-- ==================== SYMPTOMS DETECTION TAB ==================== -->
+    @if (activeTab === 'symptoms') {
+      <div class="tab-panel">
+        <div class="detection-card">
+          <h2>🔍 Phát hiện bệnh qua triệu chứng</h2>
+          <p class="card-description">
+            Mô tả triệu chứng cây bị bệnh để AI phân tích và chẩn đoán
+          </p>
+
+          <!-- Symptoms Form -->
+          <form [formGroup]="symptomsForm" class="symptoms-form">
+            <div class="form-group">
+              <label for="symptoms">Mô tả triệu chứng bệnh *</label>
+              <textarea 
+                id="symptoms" 
+                formControlName="symptoms" 
+                placeholder="Mô tả chi tiết các triệu chứng bạn quan sát thấy trên cây..."
+                rows="6"
+                class="form-control">
+              </textarea>
+              @if (isFieldInvalid('symptoms')) {
+                <div class="error-message">
+                  {{ getFieldError('symptoms') }}
+                </div>
+              }
+              <small class="form-help">
+                Ví dụ: "Cây hoa hồng của tôi thân mềm, đen, cây gãy" hoặc "Lá cây xuất hiện đốm vàng, khô héo"
+              </small>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+              <button 
+                (click)="detectDiseaseFromSymptoms()"
+                [disabled]="symptomsForm.invalid || isDetectingFromSymptoms"
+                class="btn primary large">
+                @if (!isDetectingFromSymptoms) {<span>🔍 Phân tích triệu chứng</span>}
+                @if (isDetectingFromSymptoms) {<span>⏳ Đang phân tích...</span>}
+              </button>
+            </div>
+          </form>
+
+          <!-- Detection Result -->
+          @if (symptomsDetectionResult) {
+            <div class="detection-result">
+              <h3>🎯 Kết quả phân tích triệu chứng</h3>
+              <div class="result-content">
+                <div class="result-header">
+                  <h4>{{ symptomsDetectionResult.detectedDisease }}</h4>
+                  <span class="confidence-badge">
+                    Độ tin cậy: {{ (symptomsDetectionResult.confidenceScore * 100) | number:'1.0-0' }}%
+                  </span>
+                </div>
+                <div class="result-details">
+                  <div class="detail-item">
+                    <strong>Mức độ nghiêm trọng:</strong>
+                    <span class="severity-badge" [style.background-color]="getSeverityColor(symptomsDetectionResult.severity)">
+                      {{ getSeverityText(symptomsDetectionResult.severity) }}
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Triệu chứng:</strong>
+                    <p>{{ symptomsDetectionResult.symptoms }}</p>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Điều trị được khuyến nghị:</strong>
+                    <p>{{ symptomsDetectionResult.recommendedTreatment }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <!-- ==================== HISTORY TAB ==================== -->
-    <div *ngIf="activeTab === 'history'" class="tab-panel">
-      <!-- Hidden history header section -->
-      <!-- <div class="history-header">
-        <h3>📋 Lịch sử phát hiện bệnh</h3>
-        <p>Tổng cộng {{ totalHistoryItems }} lần phát hiện</p>
-        <button (click)="refreshCurrentTab()" class="btn primary small">
-          🔄 Làm mới lịch sử
-        </button>
-      </div> -->
-
-      <!-- Loading State -->
-      <div *ngIf="isLoadingHistory" class="loading-state">
-        <div class="spinner"></div>
-        <p>Đang tải lịch sử...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!isLoadingHistory && detectionHistory.length === 0" class="empty-state">
-        <div class="empty-icon">📋</div>
-        <p>Chưa có lịch sử phát hiện bệnh nào</p>
-        <p class="empty-subtitle">Hãy thử phát hiện bệnh qua ảnh hoặc triệu chứng để bắt đầu</p>
-      </div>
-
-      <!-- History List -->
-      <div *ngIf="!isLoadingHistory && detectionHistory.length > 0" class="history-list modern">
-        <div *ngFor="let record of detectionHistory" class="history-card">
-          <div class="history-card-header">
-            <div>
-              <span class="history-disease-name">{{ record.detectedDisease }}</span>
-              <span class="history-severity-badge" [ngClass]="'sev-' + record.severity.toLowerCase()">
-                {{ getSeverityText(record.severity) }}
-              </span>
-            </div>
-            <!-- Hidden detection method -->
-            <!-- <div class="history-method">
-              {{ record.detectionMethod === 'IMAGE' ? 'Qua ảnh' : 'Qua triệu chứng' }}
-            </div> -->
+    @if (activeTab === 'history') {
+      <div class="tab-panel">
+        <!-- Loading State -->
+        @if (isLoadingHistory) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Đang tải lịch sử...</p>
           </div>
-          <div class="history-card-body">
-            <div class="history-row">
-              <span class="history-label">Triệu chứng:</span>
-              <span class="history-value">{{ record.symptoms }}</span>
-            </div>
-            <div class="history-row">
-              <span class="history-label">Điều trị:</span>
-              <span class="history-value">{{ record.recommendedTreatment }}</span>
-            </div>
-            <div class="history-row">
-              <span class="history-label">Độ tin cậy:</span>
-              <span class="history-value">{{ (record.confidenceScore * 100).toFixed(0) }}%</span>
-            </div>
-            <!-- Hidden status and AI version -->
-            <!-- <div class="history-row">
-              <span class="history-label">Trạng thái:</span>
-              <span class="history-value">{{ record.status === 'DETECTED' ? 'Đã phát hiện' : record.status }}</span>
-              <span *ngIf="record.isConfirmed" class="history-confirmed">Đã xác nhận</span>
-            </div> -->
-            <div class="history-row">
-              <span class="history-label">Thời gian:</span>
-              <span class="history-value">{{ record.detectedAt | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <!-- <div class="history-row">
-              <span class="history-label">Phiên bản AI:</span>
-              <span class="history-value">{{ record.aiModelVersion }}</span>
-            </div> -->
-            <div *ngIf="record.expertNotes" class="history-row">
-              <span class="history-label">Ghi chú chuyên gia:</span>
-              <span class="history-value">{{ record.expertNotes }}</span>
-            </div>
-            <div *ngIf="record.treatmentResult" class="history-row">
-              <span class="history-label">KQ điều trị:</span>
-              <span class="history-value">{{ record.treatmentResult }}</span>
-            </div>
+        }
+
+        <!-- Empty State -->
+        @if (!isLoadingHistory && detectionHistory.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>Chưa có lịch sử phát hiện bệnh nào</p>
+            <p class="empty-subtitle">Hãy thử phát hiện bệnh qua ảnh hoặc triệu chứng để bắt đầu</p>
           </div>
-        </div>
+        }
+
+        <!-- History List -->
+        @if (!isLoadingHistory && detectionHistory.length > 0) {
+          <div class="history-list modern">
+            @for (record of detectionHistory; track record) {
+              <div class="history-card">
+                <div class="history-card-header">
+                  <div>
+                    <span class="history-disease-name">{{ record.detectedDisease }}</span>
+                    <span class="history-severity-badge" [ngClass]="'sev-' + record.severity.toLowerCase()">
+                      {{ getSeverityText(record.severity) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="history-card-body">
+                  <div class="history-row">
+                    <span class="history-label">Triệu chứng:</span>
+                    <span class="history-value">{{ record.symptoms }}</span>
+                  </div>
+                  <div class="history-row">
+                    <span class="history-label">Điều trị:</span>
+                    <span class="history-value">{{ record.recommendedTreatment }}</span>
+                  </div>
+                  <div class="history-row">
+                    <span class="history-label">Độ tin cậy:</span>
+                    <span class="history-value">{{ (record.confidenceScore).toFixed(0) }}%</span>
+                  </div>
+                  <div class="history-row">
+                    <span class="history-label">Thời gian:</span>
+                    <span class="history-value">{{ record.detectedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  @if (record.expertNotes) {
+                    <div class="history-row">
+                      <span class="history-label">Ghi chú chuyên gia:</span>
+                      <span class="history-value">{{ record.expertNotes }}</span>
+                    </div>
+                  }
+                  @if (record.treatmentResult) {
+                    <div class="history-row">
+                      <span class="history-label">KQ điều trị:</span>
+                      <span class="history-value">{{ record.treatmentResult }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- ==================== LIBRARY TAB ==================== -->
-    <div *ngIf="activeTab === 'library'" class="tab-panel">
-      <div class="library-header">
-        <h3>📚 Thư viện bệnh thường gặp</h3>
-        <p class="card-description">
-          Khám phá cơ sở dữ liệu toàn diện về các bệnh cây trồng phổ biến, 
-          bao gồm triệu chứng, phương pháp điều trị và biện pháp phòng ngừa
-        </p>
-      </div>
-
-
-      <!-- Loading State -->
-      <div *ngIf="isLoadingLibrary" class="loading-state">
-        <div class="spinner"></div>
-        <p>Đang tải thư viện bệnh...</p>
-      </div>
-
-
-      <!-- Only show category dropdown for filtering -->
-      <div *ngIf="!isLoadingLibrary" class="filter-controls" [formGroup]="filterForm">
-        <div class="filter-group">
-          <label>Loại bệnh:</label>
-          <select formControlName="selectedCategory" class="form-control">
-            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
-          </select>
+    @if (activeTab === 'library') {
+      <div class="tab-panel">
+        <div class="library-header">
+          <h3>📚 Thư viện bệnh thường gặp</h3>
+          <p class="card-description">
+            Khám phá cơ sở dữ liệu toàn diện về các bệnh cây trồng phổ biến, 
+            bao gồm triệu chứng, phương pháp điều trị và biện pháp phòng ngừa
+          </p>
         </div>
-      </div>
 
+        <!-- Loading State -->
+        @if (isLoadingLibrary) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Đang tải thư viện bệnh...</p>
+          </div>
+        }
 
-  <!-- Advanced Filters removed -->
-
-
-  <!-- Filtering State removed -->
-
-
-      <!-- Results Summary -->
-      <div *ngIf="!isLoadingLibrary && filteredDiseases.length > 0" class="results-summary">
-        <p>
-          🎯 Hiển thị {{ (currentPage * pageSize) + 1 }}-{{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }} 
-          trong tổng số {{ totalItems }} bệnh được tìm thấy
-        </p>
-      </div>
-
-
-      <!-- Empty State -->
-      <div *ngIf="!isLoadingLibrary && filteredDiseases.length === 0" class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <p>Không tìm thấy bệnh nào phù hợp với loại đã chọn</p>
-      </div>
-
-  <!-- Disease Grid -->
-  <div *ngIf="!isLoadingLibrary && filteredDiseases.length > 0" class="disease-grid">
-        <div *ngFor="let disease of paginatedDiseases" class="disease-card" (click)="selectDisease(disease)">
-          <div class="disease-card-header">
-            <div class="disease-title-row">
-              <span class="disease-name">{{ disease.name }}</span>
-              <span class="severity-badge" [ngClass]="'sev-' + disease.severity.toLowerCase()">{{ getSeverityText(disease.severity) }}</span>
-            </div>
-            <div class="disease-meta-row">
-              <span class="common-badge" *ngIf="disease.commonality === 1">⭐ Phổ biến</span>
+        <!-- Filter Controls -->
+        @if (!isLoadingLibrary) {
+          <div class="filter-controls" [formGroup]="filterForm">
+            <div class="filter-group">
+              <label>Loại bệnh:</label>
+              <select formControlName="selectedCategory" class="form-control">
+                @for (category of categories; track category) {
+                  <option [value]="category">{{ category }}</option>
+                }
+              </select>
             </div>
           </div>
-          <div class="disease-card-body">
-            <div class="disease-scientific">{{ disease.scientificName }}</div>
-            <div class="disease-symptoms">
-              <span class="disease-label">🌿 Triệu chứng:</span>
-              <ul>
-                <li *ngFor="let symptom of disease.symptoms">{{ symptom }}</li>
-              </ul>
-            </div>
-            <div class="disease-plants">
-              <span class="disease-label">🌱 Cây bị ảnh hưởng:</span>
-              <div class="plant-tags">
-                <span *ngFor="let plant of disease.affectedPlants" class="plant-tag">{{ plant }}</span>
+        }
+
+        <!-- Results Summary -->
+        @if (!isLoadingLibrary && filteredDiseases.length > 0) {
+          <div class="results-summary">
+            <p>
+              🎯 Hiển thị {{ (currentPage * pageSize) + 1 }}-{{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }} 
+              trong tổng số {{ totalItems }} bệnh được tìm thấy
+            </p>
+          </div>
+        }
+
+        <!-- Empty State -->
+        @if (!isLoadingLibrary && filteredDiseases.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p>Không tìm thấy bệnh nào phù hợp với loại đã chọn</p>
+          </div>
+        }
+
+        <!-- Disease Grid -->
+        @if (!isLoadingLibrary && filteredDiseases.length > 0) {
+          <div class="disease-grid">
+            @for (disease of paginatedDiseases; track disease) {
+              <div class="disease-card" (click)="selectDisease(disease)">
+                <div class="disease-card-header">
+                  <div class="disease-title-row">
+                    <span class="disease-name">{{ disease.name }}</span>
+                    <span class="severity-badge" [ngClass]="'sev-' + disease.severity.toLowerCase()">{{ getSeverityText(disease.severity) }}</span>
+                  </div>
+                  <div class="disease-meta-row">
+                    @if (disease.commonality === 1) {<span class="common-badge">⭐ Phổ biến</span>}
+                  </div>
+                </div>
+                <div class="disease-card-body">
+                  <div class="disease-scientific">{{ disease.scientificName }}</div>
+                  <div class="disease-symptoms">
+                    <span class="disease-label">🌿 Triệu chứng:</span>
+                    <ul>
+                      @for (symptom of disease.symptoms; track symptom) {
+                        <li>{{ symptom }}</li>
+                      }
+                    </ul>
+                  </div>
+                  <div class="disease-plants">
+                    <span class="disease-label">🌱 Cây bị ảnh hưởng:</span>
+                    <div class="plant-tags">
+                      @for (plant of disease.affectedPlants; track plant) {
+                        <span class="plant-tag">{{ plant }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div class="disease-actions">
+                  <button class="btn secondary" (click)="loadTreatmentGuide(disease.name); $event.stopPropagation()">
+                    💊 Hướng dẫn điều trị
+                  </button>
+                </div>
               </div>
-            </div>
+            }
           </div>
-          <div class="disease-actions">
-            <button class="btn secondary" (click)="loadTreatmentGuide(disease.name); $event.stopPropagation()">
-              💊 Hướng dẫn điều trị
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <!-- Pagination -->
-  <div *ngIf="!isLoadingLibrary && totalPages > 1" class="pagination">
-        <button 
-          (click)="prevPage()" 
-          [disabled]="!hasPrevPage"
-          class="btn pagination-btn">
-          ← Trang trước
-        </button>
-        
-        <div class="page-numbers">
-          <button 
-            *ngFor="let page of pageNumbers" 
-            (click)="goToPage(page)"
-            [class.active]="page === currentPage"
-            class="btn page-btn">
-            {{ page + 1 }}
-          </button>
-        </div>
-        
-        <button 
-          (click)="nextPage()" 
-          [disabled]="!hasNextPage"
-          class="btn pagination-btn">
-          Trang sau →
-        </button>
+          <!-- Pagination -->
+          @if (!isLoadingLibrary && totalPages > 1) {
+            <div class="pagination">
+              <button 
+                (click)="prevPage()" 
+                [disabled]="!hasPrevPage"
+                class="btn pagination-btn">
+                ← Trang trước
+              </button>
+              
+              <div class="page-numbers">
+                @for (page of pageNumbers; track page) {
+                  <button (click)="goToPage(page)" [class.active]="page === currentPage" class="btn page-btn">{{ page + 1 }}</button>
+                }
+              </div>
+              
+              <button 
+                (click)="nextPage()" 
+                [disabled]="!hasNextPage"
+                class="btn pagination-btn">
+                Trang sau →
+              </button>
+            </div>
+          }
+        }
       </div>
-    </div>
+    }
   </div>
 
   <!-- ==================== MODALS ==================== -->
   
-
-
   <!-- Treatment Guide Modal - Modern Design -->
-  <div *ngIf="selectedTreatmentGuide" class="treatment-modal-overlay" (click)="closeTreatmentGuide()">
-    <div class="treatment-modal" (click)="$event.stopPropagation()">
-      <!-- Modal Header -->
-      <div class="treatment-header">
-        <div class="treatment-header-content">
-          <div class="treatment-icon">💊</div>
-          <div class="treatment-title">
-            <h3>Hướng dẫn điều trị</h3>
-            <p>{{ selectedTreatmentGuide.diseaseName }}</p>
-          </div>
-        </div>
-        <button (click)="closeTreatmentGuide()" class="treatment-close">×</button>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="treatment-body">
-        <!-- Key Info Cards -->
-        <div class="treatment-key-info">
-          <div *ngIf="selectedTreatmentGuide.estimatedDuration" class="info-card duration-card">
-            <div class="info-icon">⏱️</div>
-            <div class="info-content">
-              <span class="info-label">Thời gian điều trị</span>
-              <span class="info-value">{{ selectedTreatmentGuide.estimatedDuration }}</span>
+  @if (selectedTreatmentGuide) {
+    <div class="treatment-modal-overlay" (click)="closeTreatmentGuide()">
+      <div class="treatment-modal" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="treatment-header">
+          <div class="treatment-header-content">
+            <div class="treatment-icon">💊</div>
+            <div class="treatment-title">
+              <h3>Hướng dẫn điều trị</h3>
+              <p>{{ selectedTreatmentGuide.diseaseName }}</p>
             </div>
           </div>
-          
-          <div *ngIf="selectedTreatmentGuide.successRate" class="info-card success-card">
-            <div class="info-icon">📈</div>
-            <div class="info-content">
-              <span class="info-label">Tỷ lệ thành công</span>
-              <span class="info-value success-rate">{{ selectedTreatmentGuide.successRate }}</span>
-            </div>
-          </div>
+          <button (click)="closeTreatmentGuide()" class="treatment-close">×</button>
         </div>
 
-        <!-- Treatment Steps -->
-        <div *ngIf="selectedTreatmentGuide.steps && selectedTreatmentGuide.steps.length" class="treatment-section">
-          <div class="section-header">
-            <span class="section-icon">🔧</span>
-            <h4>Các bước điều trị</h4>
+        <!-- Modal Body -->
+        <div class="treatment-body">
+          <!-- Key Info Cards -->
+          <div class="treatment-key-info">
+            @if (selectedTreatmentGuide.estimatedDuration) {
+              <div class="info-card duration-card">
+                <div class="info-icon">⏱️</div>
+                <div class="info-content">
+                  <span class="info-label">Thời gian điều trị</span>
+                  <span class="info-value">{{ selectedTreatmentGuide.estimatedDuration }}</span>
+                </div>
+              </div>
+            }
+            
+            @if (selectedTreatmentGuide.successRate) {
+              <div class="info-card success-card">
+                <div class="info-icon">📈</div>
+                <div class="info-content">
+                  <span class="info-label">Tỷ lệ thành công</span>
+                  <span class="info-value success-rate">{{ selectedTreatmentGuide.successRate }}</span>
+                </div>
+              </div>
+            }
           </div>
-          <div class="steps-container">
-            <div *ngFor="let step of selectedTreatmentGuide.steps; let i = index" class="treatment-step">
-              <div class="step-number">{{ i + 1 }}</div>
-              <div class="step-content">{{ step }}</div>
+
+          <!-- Treatment Steps -->
+          @if (selectedTreatmentGuide.steps && selectedTreatmentGuide.steps.length) {
+            <div class="treatment-section">
+              <div class="section-header">
+                <span class="section-icon">🔧</span>
+                <h4>Các bước điều trị</h4>
+              </div>
+              <div class="steps-container">
+                @for (step of selectedTreatmentGuide.steps; track step; let i = $index) {
+                  <div class="treatment-step">
+                    <div class="step-number">{{ i + 1 }}</div>
+                    <div class="step-content">{{ step }}</div>
+                  </div>
+                }
+              </div>
             </div>
+          }
+
+          <!-- Required Products -->
+          @if (selectedTreatmentGuide.requiredProducts && selectedTreatmentGuide.requiredProducts.length) {
+            <div class="treatment-section">
+              <div class="section-header">
+                <span class="section-icon">💊</span>
+                <h4>Sản phẩm/thuốc cần thiết</h4>
+              </div>
+              <div class="products-grid">
+                @for (product of selectedTreatmentGuide.requiredProducts; track product) {
+                  <div class="product-item">
+                    <span class="product-icon">🧪</span>
+                    <span class="product-name">{{ product }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Precautions -->
+          @if (selectedTreatmentGuide.precautions && selectedTreatmentGuide.precautions.length) {
+            <div class="treatment-section">
+              <div class="section-header">
+                <span class="section-icon">🛡️</span>
+                <h4>Lưu ý/Phòng ngừa</h4>
+              </div>
+              <div class="precautions-list">
+                @for (precaution of selectedTreatmentGuide.precautions; track precaution) {
+                  <div class="precaution-item">
+                    <span class="precaution-icon">⚠️</span>
+                    <span class="precaution-text">{{ precaution }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Follow-up & Expert Notes -->
+          <div class="additional-info">
+            @if (selectedTreatmentGuide.followUpSchedule) {
+              <div class="info-section followup-section">
+                <div class="info-section-header">
+                  <span class="info-section-icon">📅</span>
+                  <h5>Lịch kiểm tra lại</h5>
+                </div>
+                <div class="followup-content">{{ selectedTreatmentGuide.followUpSchedule }}</div>
+              </div>
+            }
+            @if (selectedTreatmentGuide.expertNotes) {
+              <div class="info-section expert-section">
+                <div class="info-section-header">
+                  <span class="info-section-icon">👨‍⚕️</span>
+                  <h5>Ghi chú chuyên gia</h5>
+                </div>
+                <div class="expert-content">{{ selectedTreatmentGuide.expertNotes }}</div>
+              </div>
+            }
           </div>
         </div>
 
-        <!-- Required Products -->
-        <div *ngIf="selectedTreatmentGuide.requiredProducts && selectedTreatmentGuide.requiredProducts.length" class="treatment-section">
-          <div class="section-header">
-            <span class="section-icon">💊</span>
-            <h4>Sản phẩm/thuốc cần thiết</h4>
-          </div>
-          <div class="products-grid">
-            <div *ngFor="let product of selectedTreatmentGuide.requiredProducts" class="product-item">
-              <span class="product-icon">🧪</span>
-              <span class="product-name">{{ product }}</span>
-            </div>
-          </div>
+        <!-- Modal Footer -->
+        <div class="treatment-footer">
+          <button (click)="closeTreatmentGuide()" class="btn-treatment primary">
+            Đóng
+          </button>
         </div>
-
-        <!-- Precautions -->
-        <div *ngIf="selectedTreatmentGuide.precautions && selectedTreatmentGuide.precautions.length" class="treatment-section">
-          <div class="section-header">
-            <span class="section-icon">🛡️</span>
-            <h4>Lưu ý/Phòng ngừa</h4>
-          </div>
-          <div class="precautions-list">
-            <div *ngFor="let precaution of selectedTreatmentGuide.precautions" class="precaution-item">
-              <span class="precaution-icon">⚠️</span>
-              <span class="precaution-text">{{ precaution }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Follow-up & Expert Notes -->
-        <div class="additional-info">
-          <div *ngIf="selectedTreatmentGuide.followUpSchedule" class="info-section followup-section">
-            <div class="info-section-header">
-              <span class="info-section-icon">📅</span>
-              <h5>Lịch kiểm tra lại</h5>
-            </div>
-            <div class="followup-content">{{ selectedTreatmentGuide.followUpSchedule }}</div>
-          </div>
-
-          <div *ngIf="selectedTreatmentGuide.expertNotes" class="info-section expert-section">
-            <div class="info-section-header">
-              <span class="info-section-icon">👨‍⚕️</span>
-              <h5>Ghi chú chuyên gia</h5>
-            </div>
-            <div class="expert-content">{{ selectedTreatmentGuide.expertNotes }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="treatment-footer">
-        <button (click)="closeTreatmentGuide()" class="btn-treatment primary">
-          Đóng
-        </button>
       </div>
     </div>
-  </div>
-
+  }
 </div>
+
