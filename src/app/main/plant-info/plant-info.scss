@@ -500,22 +500,29 @@ body, .plant-info-layout {
       }
 
       .report-btn {
-        background: #ff5722;
-        color: white;
-        border: none;
+        background: #f5f5f5;
+        color: #d32f2f;
+        border: 1px solid #e0e0e0;
         padding: 8px 16px;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 0.9rem;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Roboto', Arial, sans-serif;
 
         &:hover {
-          background: #e64a19;
+          background: #e8e8e8;
+          border-color: #d0d0d0;
+          color: #b71c1c;
         }
 
         &:active {
           transform: translateY(1px);
+          background: #e0e0e0;
         }
       }
     }
