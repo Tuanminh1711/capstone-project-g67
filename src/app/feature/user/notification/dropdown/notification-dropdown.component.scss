@@ -8,322 +8,267 @@
   cursor: pointer;
 }
 
+// Đồng bộ style với ticket dropdown (support dropdown)
 .notification-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 320px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
-  z-index: 9999;
-  transform: translateY(-10px);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s ease;
-  max-height: 480px;
-  display: flex;
-  flex-direction: column;
+  position: absolute !important;
+  top: 100% !important;
+  right: 0 !important;
+  width: 380px !important;
+  max-height: 500px !important;
+  background: #357a38 !important; // Đồng bộ với support dropdown
+  border: none !important;
+  border-radius: 10px !important; // Đồng bộ với support dropdown
+  box-shadow: 0 8px 24px rgba(53, 122, 56, 0.12), 0 1.5px 6px rgba(0,0,0,0.05) !important; // Đồng bộ với support dropdown
+  z-index: 10000 !important; // Tăng z-index để đảm bảo hiển thị trên các element khác
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(-8px) !important; // Đồng bộ với support dropdown
+  transition: all 0.22s !important; // Đồng bộ với support dropdown
+  overflow: hidden !important;
+  margin-top: 5px !important; // Đồng bộ với support dropdown
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  padding: 6px 0 !important; // Đồng bộ với support dropdown
+  font-size: 0.95rem !important; // Đồng bộ với support dropdown
 
   &.open {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
   }
-}
 
-.dropdown-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #178a4c;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #178a4c;
-  border-radius: 12px 12px 0 0;
-  color: #fff;
-
-  h4 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    i {
-      color: #fff;
+  .dropdown-header.custom-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 20px 28px 12px 28px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+    background: transparent !important;
+    h4 {
+      margin: 0 !important;
+      font-size: 20px !important;
+      font-weight: 700 !important;
+      color: #fff !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      font-family: inherit !important;
+      .white-icon {
+        color: #fff !important;
+        font-size: 26px !important;
+      }
+      .unread-badge {
+        margin-left: 8px !important;
+      }
+      .unread-count {
+        background: #dc3545 !important;
+        color: white !important;
+        padding: 2px 8px !important;
+        border-radius: 12px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        margin-left: 8px !important;
+      }
     }
   }
 
-  .btn-mark-all-read {
-    padding: 6px 8px;
-    background: #178a4c;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+  .dropdown-loading {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 40px 20px !important;
+    color: #666 !important;
 
+    mat-spinner {
+      margin-bottom: 12px !important;
+    }
+
+    span {
+      font-size: 14px !important;
+    }
+  }
+
+  .dropdown-empty {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 40px 20px !important;
+    color: #999 !important;
+
+    .empty-icon {
+      font-size: 32px !important;
+      width: 32px !important;
+      height: 32px !important;
+      margin-bottom: 12px !important;
+      color: #ccc !important;
+    }
+
+    p {
+      margin: 0 !important;
+      font-size: 14px !important;
+    }
+  }
+
+  .dropdown-list.custom-scroll {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #fff #357a38 !important; // Đồng bộ với support dropdown
+    font-family: inherit !important;
+    
+    // Cải thiện scrollbar cho webkit browsers
+    &::-webkit-scrollbar {
+      width: 8px !important;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-radius: 4px !important;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3) !important;
+      border-radius: 4px !important;
+      transition: background 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.5) !important;
+      }
+    }
+    
+    // Đảm bảo scroll mượt mà
+    scroll-behavior: smooth !important;
+    
+    // Cải thiện performance cho scroll
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .dropdown-item.custom-item {
+    padding: 18px 28px !important;
+    cursor: pointer !important;
+    transition: background 0.2s cubic-bezier(.4,0,.2,1) !important;
+    position: relative !important;
+    background: transparent !important;
+    color: #fff !important;
+    border-radius: 6px !important; // Đồng bộ với support dropdown
+    font-family: inherit !important;
     &:hover {
-      background: #0d5c2c;
-      color: #fff;
+      background: #255626 !important; // Đồng bộ với support dropdown
+      color: #fff !important;
     }
-  }
-}
-
-.dropdown-loading {
-  padding: 24px;
-  text-align: center;
-  color: #636e72;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-
-  .spinner-small {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #f3f3f3;
-  border-top: 2px solid #178a4c;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-}
-
-.dropdown-empty {
-  padding: 32px 20px;
-  text-align: center;
-  background: #178a4c;
-  color: #fff;
-
-  i {
-    font-size: 2rem;
-    margin-bottom: 8px;
-    opacity: 0.9;
-    color: #a8e063;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #fff;
-  }
-}
-
-.dropdown-list {
-  flex: 1;
-  overflow-y: auto;
-  max-height: 320px;
-
-  .dropdown-item {
-    padding: 12px 20px;
-    border-bottom: 1px solid #f1f3f4;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    position: relative;
-
-    &:hover {
-      background: #f8f9fa;
+    .item-icon {
+      margin-right: 16px !important;
+      mat-icon.white-icon {
+        font-size: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+        color: #fff !important;
+      }
     }
-
-    &:last-child {
-      border-bottom: none;
+    .item-title {
+      font-weight: 600 !important;
+      color: #fff !important;
+      font-size: 15px !important;
+      margin-bottom: 2px !important;
+      font-family: inherit !important;
     }
-
-    // Type-specific colors
-    &.system .item-icon i { color: #636e72; }
-    &.plant-care .item-icon i { color: #00b894; }
-    &.expert .item-icon i { color: #0984e3; }
-    &.ticket .item-icon i { color: #e17055; }
-    &.promotion .item-icon i { color: #fdcb6e; }
-    &.reminder .item-icon i { color: #e84393; }
-  }
-
-  .item-icon {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #f1f3f4;
-
-    i {
-      font-size: 0.9rem;
+    .item-message {
+      color: #e0f7ef !important;
+      font-size: 13px !important;
+      font-family: inherit !important;
+    }
+    .item-time {
+      color: #b7f0d6 !important;
+      font-size: 12px !important;
+      font-family: inherit !important;
+    }
+    .item-indicator {
+      position: absolute !important;
+      top: 18px !important;
+      right: 28px !important;
+      .unread-dot {
+        color: #fff !important;
+        font-size: 10px !important;
+        width: 10px !important;
+        height: 10px !important;
+      }
     }
   }
 
-  .item-content {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .item-title {
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: #2d3436;
-    margin-bottom: 2px;
-    line-height: 1.3;
-  }
-
-  .item-message {
-    font-size: 0.8rem;
-    color: #636e72;
-    margin-bottom: 4px;
-    line-height: 1.3;
-  }
-
-  .item-time {
-    font-size: 0.75rem;
-    color: #b2bec3;
-  }
-
-  .item-indicator {
-    flex-shrink: 0;
-    margin-top: 2px;
-
-    i {
-      font-size: 0.5rem;
-      color: #178a4c;
-    }
-  }
-}
-
-.dropdown-footer {
-  padding: 12px 20px;
-  border-top: 1px solid #e9ecef;
-  background: #178a4c;
-  border-radius: 0 0 12px 12px;
-  
-  .btn-view-all {
-    background: #178a4c;
-    color: #fff;
-    font-weight: 600;
-    border: 1px solid #178a4c;
-    box-shadow: none;
-  }
-  .btn-view-all:hover {
-    background: #0d5c2c;
-    color: #fff;
-    border: 1px solid #0d5c2c;
-  }
-
-  .btn-view-all {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 8px 12px;
-  background: #178a4c;
-  color: #fff;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: #0d5c2c;
-      transform: translateY(-1px);
+  .dropdown-footer.custom-footer {
+    padding: 18px 28px !important;
+    border-top: 1px solid rgba(255,255,255,0.12) !important;
+    background: transparent !important;
+    .btn-view-all.custom-btn-view-all {
+      width: 100% !important;
+      height: 44px !important;
+      text-decoration: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #219653 !important; // Background xanh đẹp hơn
+      color: #fff !important;
+      border-radius: 12px !important;
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      font-family: inherit !important;
+      border: none !important;
+      cursor: pointer !important;
+      transition: background 0.2s ease !important;
+      
+      &:hover {
+        background: #1e7e34 !important; // Darker green on hover
+      }
+      
+      mat-icon.white-icon {
+        margin-right: 10px !important;
+        color: #fff !important;
+        font-size: 20px !important;
+      }
     }
   }
 }
 
 .dropdown-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  z-index: 9998;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  z-index: 9999 !important; // Đảm bảo overlay không chặn dropdown
+  pointer-events: auto !important; // Cho phép click để đóng dropdown
 }
 
 // Responsive
 @media (max-width: 768px) {
   .notification-dropdown {
-    width: 280px;
-    right: -20px;
+    width: 280px !important;
+    right: -20px !important;
 
     .dropdown-list {
-      max-height: 280px;
+      max-height: 280px !important;
     }
 
     .dropdown-item {
-      padding: 10px 16px;
-      gap: 10px;
+      padding: 10px 16px !important;
     }
 
-    .item-icon {
-      width: 28px;
-      height: 28px;
-
-      i {
-        font-size: 0.8rem;
-      }
+    .item-icon mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
     }
 
     .item-title {
-      font-size: 0.8rem;
+      font-size: 13px !important;
     }
 
     .item-message {
-      font-size: 0.75rem;
+      font-size: 12px !important;
     }
 
     .item-time {
-      font-size: 0.7rem;
-    }
-  }
-}
-
-// Dark mode support (optional)
-@media (prefers-color-scheme: dark) {
-  .notification-dropdown {
-    background: #2d3436;
-    border-color: #636e72;
-
-    .dropdown-header {
-      background: #636e72;
-      border-color: #b2bec3;
-    }
-
-    .dropdown-item {
-      border-color: #636e72;
-
-      &:hover {
-        background: #636e72;
-      }
-    }
-
-    .dropdown-footer {
-      background: #636e72;
-      border-color: #b2bec3;
-    }
-
-    .item-title {
-      color: #ddd;
-    }
-
-    .item-message {
-      color: #b2bec3;
-    }
-
-    h4 {
-      color: #ddd;
+      font-size: 11px !important;
     }
   }
 }

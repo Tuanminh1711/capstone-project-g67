@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -19,21 +19,85 @@ import { NotificationService } from '../notification.service';
   styleUrls: ['./notification-badge.component.scss']
 })
 export class NotificationBadgeComponent implements OnInit, OnDestroy {
+  @Input() autoRefresh: boolean = true;
+  @Input() refreshInterval: number = 30000; // 30 giây
+  
   unreadCount = 0;
   private destroy$ = new Subject<void>();
+  private refreshTimer: any;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
-    this.notificationService.unreadCount$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(count => {
-        this.unreadCount = count;
-      });
+    // Load unread count ngay khi component khởi tạo
+    this.loadUnreadCount();
+    
+    // Subscribe để cập nhật khi có thay đổi
+    this.subscribeToUnreadCount();
+    
+    // Tự động refresh nếu được bật
+    if (this.autoRefresh) {
+      this.startAutoRefresh();
+    }
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
+  }
+
+  /**
+   * Load unread count từ server
+   */
+  private loadUnreadCount(): void {
+    this.notificationService.loadUnreadCountIfLoggedIn();
+  }
+
+  /**
+   * Subscribe để cập nhật unread count
+   */
+  private subscribeToUnreadCount(): void {
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        this.unreadCount = count;
+        console.log('🔔 Notification badge updated:', count);
+      });
+  }
+
+  /**
+   * Bắt đầu tự động refresh
+   */
+  private startAutoRefresh(): void {
+    this.refreshTimer = setInterval(() => {
+      this.refreshUnreadCount();
+    }, this.refreshInterval);
+  }
+
+  /**
+   * Refresh số thông báo chưa đọc
+   */
+  private refreshUnreadCount(): void {
+    this.notificationService.forceRefreshUnreadCount();
+  }
+
+  /**
+   * Force refresh từ bên ngoài
+   */
+  public forceRefresh(): void {
+    this.refreshUnreadCount();
+  }
+
+  /**
+   * Lấy số thông báo hiện tại
+   */
+  public getCurrentCount(): number {
+    return this.unreadCount;
   }
 }

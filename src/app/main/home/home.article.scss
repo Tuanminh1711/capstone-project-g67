@@ -217,8 +217,14 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin: 0 auto;
-    max-width: 1200px;
+    margin-bottom: 40px;
+    
+    // Đảm bảo tất cả các card có cùng chiều cao
+    .article-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
 
     @media (max-width: 1024px) {
       grid-template-columns: repeat(2, 1fr);
@@ -240,6 +246,9 @@
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     border: 1px solid rgba(226, 232, 240, 0.8);
+    height: 100%; // Đảm bảo tất cả card có cùng chiều cao
+    display: flex;
+    flex-direction: column;
 
     &:hover {
       transform: translateY(-12px) scale(1.02);
@@ -271,12 +280,13 @@
       overflow: hidden;
       background: #f8fafc; // Light background for debugging
       border-radius: 20px 20px 0 0; // Match card border radius
+      flex-shrink: 0; // Không cho phép co lại
     }
 
     .article-image-wrapper {
       position: relative;
       width: 100%;
-      padding-bottom: 65%; // Aspect ratio 3:2
+      height: 240px; // Fixed height thay vì padding-bottom
       overflow: hidden;
       background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); // Fallback gradient
       
@@ -299,10 +309,10 @@
         left: 0;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: cover; // Đảm bảo ảnh cover toàn bộ container
+        object-position: center; // Căn giữa ảnh
         transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         background-color: #f1f5f9; // Fallback background
-        min-height: 200px; // Ensure minimum height
         z-index: 2;
         
         // Add error handling for images
@@ -342,6 +352,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 3;
 
         .article-overlay-content {
           color: white;
@@ -375,7 +386,7 @@
       position: absolute;
       top: 20px;
       left: 20px;
-      z-index: 2;
+      z-index: 4;
 
       .category-tag {
         background: rgba(255, 255, 255, 0.95);
@@ -393,88 +404,91 @@
     }
 
     .article-content {
-      padding: 28px;
-
+      flex: 1; // Cho phép content mở rộng để fill phần còn lại
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      padding-top: 20px;
+      
       .article-meta {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
         font-size: 0.85rem;
-        color: #94a3b8;
-
+        color: #64748b;
+        
         .article-date {
-          background: #f1f5f9;
-          padding: 4px 12px;
-          border-radius: 15px;
-          color: #64748b;
           font-weight: 500;
         }
-
+        
         .article-read-time {
-          color: #94a3b8;
-          font-weight: 400;
+          background: #f1f5f9;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          color: #475569;
         }
       }
-
+      
       .article-title {
         font-size: 1.25rem;
         font-weight: 700;
-        margin-bottom: 16px;
         color: #1e293b;
+        margin: 0 0 12px 0;
         line-height: 1.4;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
+        -webkit-line-clamp: 2; // Giới hạn 2 dòng
         -webkit-box-orient: vertical;
         overflow: hidden;
-        min-height: 3.5em;
-        transition: color 0.3s ease;
-
-        &:hover {
-          color: #059669;
-        }
+        text-overflow: ellipsis;
+        min-height: 2.8em; // Đảm bảo chiều cao tối thiểu
       }
-
+      
       .article-excerpt {
         color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 24px;
         line-height: 1.6;
+        margin: 0 0 20px 0;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
+        -webkit-line-clamp: 3; // Giới hạn 3 dòng
         -webkit-box-orient: vertical;
         overflow: hidden;
-        min-height: 4.5em;
+        text-overflow: ellipsis;
+        min-height: 4.8em; // Đảm bảo chiều cao tối thiểu
+        flex: 1; // Cho phép excerpt mở rộng
       }
-
+      
       .article-footer {
+        margin-top: auto; // Đẩy footer xuống dưới cùng
+        padding-top: 16px;
+        
         .article-read-more-btn {
-          background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+          width: 100%;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: white;
           border: none;
-          padding: 12px 24px;
           border-radius: 12px;
-          cursor: pointer;
-          font-size: 0.9rem;
           font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
           transition: all 0.3s ease;
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 8px;
-          width: fit-content;
-
+          
           &:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-            background: linear-gradient(135deg, #047857 0%, #059669 100%);
           }
-
+          
           i {
+            font-size: 0.9rem;
             transition: transform 0.3s ease;
           }
-
+          
           &:hover i {
             transform: translateX(4px);
           }
@@ -621,6 +635,24 @@
       .article-content .article-meta .article-read-time {
         display: none; // Ẩn "5 phút đọc"
       }
+
+      .article-image-wrapper {
+        height: 200px; // Giảm chiều cao ảnh trên tablet
+      }
+
+      .article-content {
+        padding: 20px;
+        padding-top: 16px;
+        
+        .article-title {
+          font-size: 1.1rem;
+          min-height: 2.4em; // Giảm chiều cao tối thiểu
+        }
+        
+        .article-excerpt {
+          min-height: 4.2em; // Giảm chiều cao tối thiểu
+        }
+      }
     }
 
     .articles-navigation {
@@ -677,43 +709,37 @@
         font-size: 1.1rem;
         max-width: 100%;
         padding: 0 20px;
-        white-space: normal; // Cho phép xuống dòng trên mobile
-        line-height: 1.5; // Giảm line-height trên mobile
       }
     }
 
     .article-card {
+      .article-image-wrapper {
+        height: 180px; // Giảm chiều cao ảnh trên mobile
+      }
+
       .article-content {
-        padding: 20px;
-      }
-      
-      // Ẩn category và read-time trên mobile nhỏ
-      .article-category-badge {
-        display: none; // Ẩn category badge
-      }
-      
-      .article-content .article-meta .article-read-time {
-        display: none; // Ẩn "5 phút đọc"
-      }
-    }
-
-    .articles-navigation {
-      padding: 16px;
-      gap: 16px;
-
-      .nav-controls {
-        flex-direction: column;
-        gap: 12px;
-
-        .nav-btn {
-          width: 100%;
-          justify-content: center;
+        padding: 16px;
+        padding-top: 14px;
+        
+        .article-title {
+          font-size: 1rem;
+          min-height: 2.2em; // Giảm chiều cao tối thiểu
+        }
+        
+        .article-excerpt {
+          min-height: 3.8em; // Giảm chiều cao tối thiểu
+          font-size: 0.9rem;
+        }
+        
+        .article-footer {
+          padding-top: 12px;
+          
+          .article-read-more-btn {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+          }
         }
       }
-    }
-
-    .articles-cta {
-      padding: 24px 20px;
     }
   }
 

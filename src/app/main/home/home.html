@@ -130,24 +130,198 @@
 <!-- Testimonials Section -->
 <section class="home-testimonials">
   <h2 class="testimonials-title">Cảm nhận từ người dùng</h2>
-  <div class="testimonials-list">
-    <div class="testimonial-item">
-      <div class="testimonial-content">
-        <p>"PlantCare giúp tôi chăm sóc khu vườn của mình dễ dàng hơn rất nhiều. <br>Nhắc nhở tưới nước cực kỳ tiện lợi!"</p>
-        <span class="testimonial-user">- Minh, Hà Nội</span>
+  
+  <div class="testimonials-carousel">
+    <div class="carousel-container">
+      <div class="carousel-track" [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+        <!-- Slide 1 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"PlantCare giúp tôi chăm sóc khu vườn của mình dễ dàng hơn rất nhiều. <br>Nhắc nhở tưới nước cực kỳ tiện lợi!"</p>
+                <span class="testimonial-user">- Minh, Hà Nội</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Tôi rất thích tính năng hỏi đáp với chuyên gia, mọi thắc mắc về cây đều được giải đáp nhanh chóng."</p>
+                <span class="testimonial-user">- Lan, Hà Nội</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Giao diện đẹp, dễ dùng, cộng đồng thân thiện.<br>Tôi đã học hỏi được rất nhiều kinh nghiệm chăm cây."</p>
+                <span class="testimonial-user">- Hùng, Hà Nội</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Nhờ PlantCare mà cây cảnh nhà tôi luôn xanh tốt. <br>Nhắc nhở chăm sóc đúng lịch thật sự rất hữu ích!"</p>
+                <span class="testimonial-user">- Mai, Hải Phòng</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Lần đầu tiên tôi thấy một ứng dụng chăm sóc cây chuyên nghiệp đến vậy. <br>Thực sự đáng để sử dụng!"</p>
+                <span class="testimonial-user">- Tuấn, Quảng Ninh</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Tính năng nhận diện cây bệnh rất hay, giúp tôi phát hiện và xử lý kịp thời. <br>Cảm ơn PlantCare!"</p>
+                <span class="testimonial-user">- Thảo, Thái Nguyên</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Cộng đồng PlantCare rất nhiệt tình, mọi người chia sẻ kinh nghiệm rất bổ ích. <br>Tôi học được rất nhiều!"</p>
+                <span class="testimonial-user">- Nam, Bắc Ninh</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Nhắc nhở tưới nước và bón phân đúng lịch giúp cây nhà tôi phát triển tốt hơn hẳn. <br>Thật sự rất hài lòng!"</p>
+                <span class="testimonial-user">- Linh, Hưng Yên</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Giao diện đơn giản, dễ sử dụng, phù hợp với mọi lứa tuổi. <br>Tôi đã giới thiệu cho cả gia đình!"</p>
+                <span class="testimonial-user">- Phương, Vĩnh Phúc</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Tính năng chat với chuyên gia rất tiện lợi, mọi câu hỏi đều được trả lời chi tiết. <br>Rất hài lòng!"</p>
+                <span class="testimonial-user">- Đức, Hà Nam</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Nhờ PlantCare mà tôi biết cách chăm sóc từng loại cây cụ thể. <br>Kiến thức rất thực tế và hữu ích!"</p>
+                <span class="testimonial-user">- Hương, Nam Định</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Ứng dụng giúp tôi theo dõi sự phát triển của cây một cách khoa học. <br>Thật sự rất chuyên nghiệp!"</p>
+                <span class="testimonial-user">- Sơn, Lào Cai</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Cảm ơn PlantCare đã giúp tôi có một khu vườn đẹp. <br>Nhắc nhở chăm sóc đúng giờ thật sự rất quan trọng!"</p>
+                <span class="testimonial-user">- Trang, Yên Bái</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Tính năng lưu trữ thông tin cây rất tiện lợi, giúp tôi quản lý vườn hiệu quả hơn. <br>Thật sự rất hữu ích!"</p>
+                <span class="testimonial-user">- Long, Tuyên Quang</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"PlantCare giúp tôi hiểu rõ hơn về nhu cầu của từng loại cây. <br>Chăm sóc cây giờ đây thật dễ dàng!"</p>
+                <span class="testimonial-user">- Nga, Phú Thọ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Cộng đồng người dùng rất thân thiện và nhiệt tình. <br>Tôi đã kết nối được với nhiều người có cùng sở thích!"</p>
+                <span class="testimonial-user">- Hoàng, Bắc Giang</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Nhắc nhở thông minh giúp tôi không bao giờ quên chăm sóc cây. <br>Thật sự rất tiện lợi!"</p>
+                <span class="testimonial-user">- Dung, Lạng Sơn</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Tính năng theo dõi lịch sử chăm sóc rất hay, giúp tôi đánh giá hiệu quả. <br>Rất hài lòng với ứng dụng!"</p>
+                <span class="testimonial-user">- Vinh, Cao Bằng</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="carousel-slide">
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"PlantCare đã thay đổi hoàn toàn cách tôi chăm sóc cây cảnh. <br>Giờ đây mọi thứ đều có hệ thống!"</p>
+                <span class="testimonial-user">- Hà, Hòa Bình</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Ứng dụng giúp tôi tiết kiệm thời gian chăm sóc cây rất nhiều. <br>Thật sự rất đáng để sử dụng!"</p>
+                <span class="testimonial-user">- Quân, Sơn La</span>
+              </div>
+            </div>
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <p>"Cảm ơn PlantCare đã mang đến trải nghiệm chăm sóc cây tuyệt vời. <br>Tôi sẽ giới thiệu cho bạn bè!"</p>
+                <span class="testimonial-user">- My, Điện Biên</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="testimonial-item">
-      <div class="testimonial-content">
-        <p>"Tôi rất thích tính năng hỏi đáp với chuyên gia, mọi thắc mắc về cây đều được giải đáp nhanh chóng."</p>
-        <span class="testimonial-user">- Lan, Hà Nội</span>
+
+    <!-- Navigation Controls -->
+    <div class="carousel-controls">
+      <button class="carousel-btn prev-btn" (click)="previousTestimonial()" [disabled]="currentSlide === 0">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <div class="carousel-dots">
+        <span 
+          *ngFor="let slide of getTestimonialSlides(); let i = index" 
+          class="carousel-dot" 
+          [class.active]="i === currentSlide"
+          (click)="goToTestimonialSlide(i)">
+        </span>
       </div>
-    </div>
-    <div class="testimonial-item">
-      <div class="testimonial-content">
-        <p>"Giao diện đẹp, dễ dùng, cộng đồng thân thiện.<br>Tôi đã học hỏi được rất nhiều kinh nghiệm chăm cây."</p>
-        <span class="testimonial-user">- Hùng, Hà Nội</span>
-      </div>
+      
+      <button class="carousel-btn next-btn" (click)="nextTestimonial()" [disabled]="currentSlide === 6">
+        <i class="fas fa-chevron-right"></i>
+      </button>
     </div>
   </div>
 </section>

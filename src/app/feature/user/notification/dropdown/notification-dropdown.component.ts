@@ -1,8 +1,17 @@
 import { Component, OnInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+// Angular Material imports
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { NotificationService } from '../notification.service';
 import { Notification, NotificationType } from '../notification.model';
@@ -11,7 +20,19 @@ import { NotificationBadgeComponent } from '../badge/notification-badge.componen
 @Component({
   selector: 'app-notification-dropdown',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBadgeComponent],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    NotificationBadgeComponent,
+    // Angular Material modules
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatListModule,
+    MatProgressSpinnerModule,
+    MatBadgeModule,
+    MatDividerModule
+  ],
   templateUrl: './notification-dropdown.component.html',
   styleUrls: ['./notification-dropdown.component.scss']
 })
@@ -19,7 +40,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   isOpen = false;
   isLoading = false;
   notifications: Notification[] = [];
-  unreadCount$!: Observable<number>;
+  unreadCount = 0;
 
   private destroy$ = new Subject<void>();
 
@@ -29,11 +50,12 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
-  /* ========== Lifecycle Hooks ========== */
-
   ngOnInit(): void {
-    this.unreadCount$ = this.notificationService.unreadCount$;
-    this.loadUnreadNotifications();
+    // Subscribe để cập nhật unread count
+    this.subscribeToUnreadCount();
+    
+    // Load danh sách thông báo
+    this.loadNotifications();
   }
 
   ngOnDestroy(): void {
@@ -41,10 +63,81 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Subscribe để cập nhật unread count
+   */
+  private subscribeToUnreadCount(): void {
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        this.unreadCount = count;
+      });
+  }
+
+  /**
+   * Load danh sách thông báo
+   */
+  private loadNotifications(): void {
+    // Ngăn infinite loop - chỉ load nếu chưa loading
+    if (this.isLoading) {
+      console.log('⏳ Already loading, skipping...');
+      return;
+    }
+
+    console.log('🔄 Loading notifications...');
+    this.isLoading = true;
+
+    // Timeout fallback để đảm bảo loading state luôn được reset
+    const loadingTimeout = setTimeout(() => {
+      if (this.isLoading) {
+        console.log('⏰ Loading timeout, resetting loading state');
+        this.isLoading = false;
+      }
+    }, 10000); // 10 giây timeout
+
+    // Load cả unread count và danh sách thông báo
+    this.notificationService.getUserNotifications(0, 10)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (notificationPage) => {
+          clearTimeout(loadingTimeout);
+          console.log('📥 Raw response:', notificationPage);
+          
+          const allNotifications = notificationPage.content || [];
+          console.log('📥 All notifications:', allNotifications);
+          
+          // Hiển thị tất cả notifications (không filter theo status)
+          this.notifications = allNotifications;
+          
+          this.isLoading = false;
+          
+          console.log('📋 Loaded notifications:', this.notifications.length, 'total');
+          console.log('📋 Final notifications data:', this.notifications);
+        },
+        error: (err) => {
+          clearTimeout(loadingTimeout);
+          this.notifications = [];
+          this.isLoading = false;
+          if (err.message?.includes('not authenticated')) {
+            this.isOpen = false;
+          }
+          console.error('Error loading notifications:', err);
+        }
+      });
+  }
+
   /* ========== Event Handlers ========== */
 
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
+    
+    // Khi mở dropdown, chỉ load dữ liệu nếu chưa có
+    if (this.isOpen && this.notifications.length === 0) {
+      console.log('📋 Dropdown opened, loading notifications...');
+      this.loadNotifications();
+    } else if (this.isOpen) {
+      console.log('📋 Dropdown opened, notifications already loaded');
+    }
   }
 
   onNotificationClick(notification: Notification, event: Event): void {
@@ -75,41 +168,31 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   markAsRead(notification: Notification, event: Event): void {
     event.stopPropagation();
-    if (notification.isRead) return;
+    if (notification.status === 'READ') return;
 
     this.notificationService.markAsRead(notification.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          notification.isRead = true;
-          this.loadUnreadNotifications();
+          notification.status = 'READ';
+          // Refresh lại danh sách
+          this.loadNotifications();
         },
         error: (err) => {
-          // Error marking notification as read
-        }
-      });
-  }
-
-  markAllAsRead(): void {
-    this.notificationService.markAllAsRead()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => { this.notifications = []; },
-        error: (err) => {
-          // Error marking all notifications as read
+          console.error('Error marking notification as read:', err);
         }
       });
   }
 
   getNotificationIcon(type: NotificationType): string {
     switch (type) {
-      case NotificationType.SYSTEM: return 'fas fa-cog';
-      case NotificationType.PLANT_CARE: return 'fas fa-leaf';
-      case NotificationType.EXPERT_RESPONSE: return 'fas fa-user-md';
-      case NotificationType.TICKET_UPDATE: return 'fas fa-ticket-alt';
-      case NotificationType.PROMOTION: return 'fas fa-tag';
-      case NotificationType.REMINDER: return 'fas fa-bell';
-      default: return 'fas fa-info-circle';
+      case NotificationType.SYSTEM: return 'settings';
+      case NotificationType.PLANT_CARE: return 'eco';
+      case NotificationType.EXPERT_RESPONSE: return 'support_agent';
+      case NotificationType.TICKET_UPDATE: return 'confirmation_number';
+      case NotificationType.PROMOTION: return 'local_offer';
+      case NotificationType.REMINDER: return 'notifications_active';
+      default: return 'info';
     }
   }
 
@@ -159,24 +242,9 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   /* ========== Private Methods ========== */
 
-  private loadUnreadNotifications(): void {
-    this.isLoading = true;
-
-    this.notificationService.getUnreadNotifications()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (notifications) => {
-          this.notifications = notifications.slice(0, 5);
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.notifications = [];
-          this.isLoading = false;
-          if (err.message?.includes('not authenticated')) {
-            this.isOpen = false;
-          }
-        }
-      });
+  private refreshNotifications(): void {
+    console.log('🔄 Refreshing notifications...');
+    this.loadNotifications();
   }
 
   private mapBackendLink(link: string): string {

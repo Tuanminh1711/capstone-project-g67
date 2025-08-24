@@ -5,26 +5,24 @@
   </div>
 
   <!-- Dropdown Menu -->
-  <div class="notification-dropdown" [class.open]="isOpen">
-    <div class="dropdown-header">
+  <mat-card class="notification-dropdown custom-notification-dropdown" [class.open]="isOpen">
+    <!-- Header -->
+    <div class="dropdown-header custom-header">
       <h4>
-        <i class="fas fa-bell"></i>
-        Thông báo
+        <mat-icon class="white-icon">notifications</mat-icon>
+        <span>Thông báo</span>
+        @if (unreadCount > 0) {
+          <span class="unread-count">({{ unreadCount }})</span>
+        }
       </h4>
-      @if (notifications.length > 0) {
-        <button 
-          class="btn-mark-all-read"
-          (click)="markAllAsRead()"
-          title="Đánh dấu tất cả đã đọc">
-          <i class="fas fa-check-double"></i>
-        </button>
-      }
     </div>
+
+    <mat-divider></mat-divider>
 
     <!-- Loading state -->
     @if (isLoading) {
       <div class="dropdown-loading">
-        <div class="spinner-small"></div>
+        <mat-spinner diameter="24"></mat-spinner>
         <span>Đang tải...</span>
       </div>
     }
@@ -32,48 +30,62 @@
     <!-- No notifications -->
     @if (!isLoading && notifications.length === 0) {
       <div class="dropdown-empty">
-        <i class="fas fa-bell-slash"></i>
-        <p>Không có thông báo mới</p>
+        <mat-icon class="empty-icon">notifications_off</mat-icon>
+        <p>Không có thông báo</p>
       </div>
     }
 
     <!-- Notification List -->
     @if (!isLoading && notifications.length > 0) {
-      <div class="dropdown-list">
-  @for (notification of notifications; track trackByNotificationId(i, notification); let i = $index) {
-          <div 
-            class="dropdown-item"
+      <mat-list class="dropdown-list custom-scroll">
+        @for (notification of notifications; track trackByNotificationId(i, notification); let i = $index) {
+          <mat-list-item 
+            class="dropdown-item custom-item"
             [ngClass]="getNotificationClass(toNotificationType(notification.type))"
-            (click)="onNotificationClick(notification, $event)">
-            <div class="item-icon">
-              <i [class]="getNotificationIcon(toNotificationType(notification.type))"></i>
+            (click)="onNotificationClick(notification, $event)"
+            style="background: transparent; color: #fff; cursor: pointer;">
+            <div matListItemIcon class="item-icon">
+              <mat-icon class="white-icon">
+                {{ getNotificationIcon(toNotificationType(notification.type)) }}
+              </mat-icon>
             </div>
-            <div class="item-content">
-              <div class="item-title">{{ truncateText(notification.title, 40) }}</div>
-              <div class="item-message">{{ truncateText(notification.message, 50) }}</div>
-              <div class="item-time">{{ formatTime(notification.createdAt) }}</div>
+            <div matListItemTitle class="item-title">
+              {{ truncateText(notification.title, 40) }}
             </div>
-            @if (!notification.isRead) {
+            <div matListItemLine class="item-message">
+              {{ truncateText(notification.message, 50) }}
+            </div>
+            <div matListItemLine class="item-time">
+              {{ formatTime(notification.createdAt) }}
+            </div>
+            @if (notification.status !== 'READ') {
               <div class="item-indicator">
-                <i class="fas fa-circle"></i>
+                <mat-icon class="unread-dot">fiber_manual_record</mat-icon>
               </div>
             }
-          </div>
+          </mat-list-item>
+          @if (i < notifications.length - 1) {
+            <mat-divider></mat-divider>
+          }
         }
-      </div>
+      </mat-list>
     }
 
     <!-- Footer -->
-    <div class="dropdown-footer">
-      <a routerLink="/user/notification" class="btn-view-all" (click)="isOpen = false">
-        <i class="fas fa-eye"></i>
+    <div class="dropdown-footer custom-footer">
+      <a 
+        mat-raised-button 
+        class="btn-view-all custom-btn-view-all"
+        routerLink="/user/notification" 
+        (click)="isOpen = false">
+        <mat-icon class="white-icon">visibility</mat-icon>
         Xem tất cả thông báo
       </a>
     </div>
-  </div>
+  </mat-card>
 
   <!-- Overlay -->
-    @if (isOpen) {
-      <div class="dropdown-overlay" (click)="isOpen = false"></div>
-    }
+  @if (isOpen) {
+    <div class="dropdown-overlay" (click)="isOpen = false"></div>
+  }
 </div>

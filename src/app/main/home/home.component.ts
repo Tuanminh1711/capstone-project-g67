@@ -62,6 +62,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   currentPage = 0;
   articlesPerPage = 3;
 
+  // Testimonials carousel properties
+  currentSlide = 0;
+  totalTestimonialSlides = 7;
+
   checkVnpaySuccess() {
     this.route.queryParams.subscribe(params => {
       if (params['vnp_ResponseCode'] === '00' && params['vnp_TxnRef']) {
@@ -270,5 +274,31 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   goToVipUpgrade() {
   this.router.navigate(['/care-expert']);
+  }
+
+  // Testimonials carousel methods
+  nextTestimonial(): void {
+    if (this.currentSlide < this.totalTestimonialSlides - 1) {
+      this.currentSlide++;
+      this.cdr.detectChanges();
+    }
+  }
+
+  previousTestimonial(): void {
+    if (this.currentSlide > 0) {
+      this.currentSlide--;
+      this.cdr.detectChanges();
+    }
+  }
+
+  goToTestimonialSlide(slideIndex: number): void {
+    if (slideIndex >= 0 && slideIndex < this.totalTestimonialSlides) {
+      this.currentSlide = slideIndex;
+      this.cdr.detectChanges();
+    }
+  }
+
+  getTestimonialSlides(): number[] {
+    return Array.from({ length: this.totalTestimonialSlides }, (_, i) => i);
   }
 }

@@ -23,10 +23,7 @@ export class NotificationService {
   constructor(
     private http: HttpClient,
     private cookieService: CookieService
-  ) {
-    // Load unread count khi service khởi tạo - chỉ khi user đã đăng nhập
-    this.loadUnreadCountIfLoggedIn();
-  }
+  ) {}
 
   /**
    * Tạo HTTP headers với Bearer token
@@ -52,7 +49,38 @@ export class NotificationService {
   }
 
   /**
-   * Lấy danh sách notification có phân trang
+   * Lấy số notification chưa đọc từ API /unread-count
+   */
+  getUnreadCount(): Observable<number> {
+    if (!this.isUserLoggedIn()) {
+      throw new Error('User not authenticated');
+    }
+
+    const headers = this.getAuthHeaders();
+
+    return this.http.get<any>(`${this.apiUrl}/unread-count`, { headers })
+      .pipe(
+        map(response => {
+          // Handle different response structures
+          if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
+            return typeof response.data === 'number' ? response.data : 0;
+          } else if (response && typeof response === 'number') {
+            return response;
+          } else if (response && typeof response.count === 'number') {
+            return response.count;
+          } else {
+            return 0;
+          }
+        }),
+        tap(count => {
+          // Cập nhật unread count trong service
+          this.unreadCountSubject.next(count);
+        })
+      );
+  }
+
+  /**
+   * Lấy danh sách notification có phân trang từ API /notifications
    */
   getUserNotifications(page: number = 0, size: number = 10): Observable<NotificationPage> {
     if (!this.isUserLoggedIn()) {
@@ -68,13 +96,17 @@ export class NotificationService {
     return this.http.get<any>(`${this.apiUrl}`, { params, headers })
       .pipe(
         map(response => {
+          console.log('🔍 Raw API response:', response);
+          
           // Handle different response structures
           if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
             const notificationPage = response.data as NotificationPage;
-            
-            // Đảm bảo content luôn là array
             const content = notificationPage.content || [];
             
+            console.log('🔍 Parsed notification page:', notificationPage);
+            console.log('🔍 Content array:', content);
+            
+            // Cập nhật danh sách notifications
             this.notificationsSubject.next(content);
             
             return {
@@ -88,6 +120,8 @@ export class NotificationService {
             } as NotificationPage;
           } else if (response && Array.isArray(response)) {
             // Direct array response
+            console.log('🔍 Direct array response:', response);
+            
             const mockPage: NotificationPage = {
               content: response,
               totalElements: response.length,
@@ -97,10 +131,15 @@ export class NotificationService {
               first: page === 0,
               last: true
             };
+            
+            // Cập nhật danh sách notifications
             this.notificationsSubject.next(response);
+            
             return mockPage;
           } else {
-            // Empty or unexpected response - don't throw error, return empty page
+            // Empty response
+            console.log('🔍 Empty response, returning empty page');
+            
             const emptyPage: NotificationPage = {
               content: [],
               totalElements: 0,
@@ -110,6 +149,7 @@ export class NotificationService {
               first: true,
               last: true
             };
+            
             this.notificationsSubject.next([]);
             return emptyPage;
           }
@@ -132,11 +172,23 @@ export class NotificationService {
         map(response => {
           // Handle different response structures
           if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
-            return Array.isArray(response.data) ? response.data : [];
+            const unreadNotifications = Array.isArray(response.data) ? response.data : [];
+            
+            // Cập nhật unread count dựa trên số thông báo chưa đọc thực tế
+            this.unreadCountSubject.next(unreadNotifications.length);
+            
+            return unreadNotifications;
           } else if (response && Array.isArray(response)) {
             // Direct array response
-            return response;
+            const unreadNotifications = response;
+            
+            // Cập nhật unread count dựa trên số thông báo chưa đọc thực tế
+            this.unreadCountSubject.next(unreadNotifications.length);
+            
+            return unreadNotifications;
           } else {
+            // Reset unread count khi không có thông báo chưa đọc
+            this.unreadCountSubject.next(0);
             return [];
           }
         })
@@ -162,7 +214,6 @@ export class NotificationService {
             const updatedNotifications = notifications.map(notif => 
               notif.id === notificationId ? { 
                 ...notif, 
-                isRead: true,
                 status: 'READ' as const
               } : notif
             );
@@ -202,7 +253,6 @@ export class NotificationService {
             
             const updatedNotifications = notifications.map(notif => ({ 
               ...notif, 
-              isRead: true,
               status: 'READ' as const
             }));
             
@@ -217,43 +267,6 @@ export class NotificationService {
             return response;
           } else {
             throw new Error(response.message);
-          }
-        })
-      );
-  }
-
-  /**
-   * Lấy số notification chưa đọc
-   */
-  getUnreadCount(): Observable<number> {
-    if (!this.isUserLoggedIn()) {
-      throw new Error('User not authenticated');
-    }
-
-    const headers = this.getAuthHeaders();
-
-    return this.http.get<any>(`${this.apiUrl}/unread-count`, { headers })
-      .pipe(
-        tap(response => {
-          // Handle different response structures for count update
-          if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
-            this.unreadCountSubject.next(typeof response.data === 'number' ? response.data : 0);
-          } else if (response && typeof response === 'number') {
-            this.unreadCountSubject.next(response);
-          } else if (response && typeof response.count === 'number') {
-            this.unreadCountSubject.next(response.count);
-          }
-        }),
-        map(response => {
-          // Handle different response structures
-          if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
-            return typeof response.data === 'number' ? response.data : 0;
-          } else if (response && typeof response === 'number') {
-            return response;
-          } else if (response && typeof response.count === 'number') {
-            return response.count;
-          } else {
-            return 0;
           }
         })
       );
@@ -280,7 +293,7 @@ export class NotificationService {
             
             // Nếu notification chưa đọc thì giảm unread count
             const deletedNotification = notifications.find(notif => notif.id === notificationId);
-            if (deletedNotification && !deletedNotification.isRead) {
+            if (deletedNotification && deletedNotification.status !== 'READ') {
               const currentCount = this.unreadCountSubject.value;
               this.unreadCountSubject.next(Math.max(0, currentCount - 1));
             }
@@ -297,34 +310,17 @@ export class NotificationService {
   }
 
   /**
-   * Load unread count từ server - chỉ khi user đã đăng nhập
+   * Load unread count từ server
    */
-  private loadUnreadCountIfLoggedIn(): void {
+  loadUnreadCountIfLoggedIn(): void {
     if (!this.isUserLoggedIn()) {
       return;
     }
 
     this.getUnreadCount().subscribe({
-      next: (count) => {
-        // Count đã được update trong getUnreadCount()
-      },
       error: (error) => {
-        // Reset về 0 nếu có lỗi (có thể API chưa sẵn sàng)
+        // Reset về 0 nếu có lỗi
         this.unreadCountSubject.next(0);
-      }
-    });
-  }
-
-  /**
-   * Load unread count từ server
-   */
-  private loadUnreadCount(): void {
-    this.getUnreadCount().subscribe({
-      next: (count) => {
-        // Count đã được update trong getUnreadCount()
-      },
-      error: (error) => {
-        // Error loading unread count
       }
     });
   }
@@ -341,13 +337,6 @@ export class NotificationService {
         }
       });
     }
-  }
-
-  /**
-   * Initialize notifications for logged in user
-   */
-  initializeForLoggedInUser(): void {
-    this.loadUnreadCountIfLoggedIn();
   }
 
   /**
