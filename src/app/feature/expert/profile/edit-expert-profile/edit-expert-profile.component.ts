@@ -11,6 +11,22 @@ import { of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
+// Dịch nhanh các lỗi backend trả về sang tiếng Việt
+function translateErrorMessage(message: string): string {
+  if (!message) return '';
+  const map: { [key: string]: string } = {
+    'Living environment cannot be null or empty': 'Vui lòng chọn môi trường sống cho hồ sơ của bạn.',
+    'Full name cannot be null or empty': 'Họ tên không được để trống.',
+    'Phone number is invalid': 'Số điện thoại không hợp lệ.',
+    'Gender is invalid': 'Giới tính không hợp lệ.',
+    // Thêm các lỗi khác nếu cần
+  };
+  for (const key in map) {
+    if (message.includes(key)) return map[key];
+  }
+  return message; // fallback: giữ nguyên nếu không khớp
+}
+
 @Component({
   selector: 'app-edit-expert-profile',
   standalone: true,
@@ -65,8 +81,20 @@ export class EditExpertProfileComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (error) => {
-        this.saveError = 'Có lỗi xảy ra khi tải thông tin. Vui lòng thử lại.';
-        this.toastService.error('Có lỗi xảy ra khi tải thông tin. Vui lòng thử lại.');
+        if (error.status === 401) {
+          this.saveError = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          this.toastService.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+          this.showLoginDialog();
+        } else if (error.status === 403) {
+          this.saveError = 'Không có quyền truy cập thông tin này.';
+          this.toastService.error('Không có quyền truy cập thông tin này.');
+        } else if (error.status === 404) {
+          this.saveError = 'Không tìm thấy thông tin chuyên gia.';
+          this.toastService.error('Không tìm thấy thông tin chuyên gia.');
+        } else {
+          this.saveError = 'Có lỗi xảy ra khi tải thông tin. Vui lòng thử lại.';
+          this.toastService.error('Có lỗi xảy ra khi tải thông tin. Vui lòng thử lại.');
+        }
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -178,7 +206,7 @@ export class EditExpertProfileComponent implements OnInit {
         this.cdr.markForCheck();
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate(['/expert/profile']);
+          this.router.navigate(['/expert/profile/view']);
         }, 1000);
       },
       error: () => {
@@ -192,8 +220,8 @@ export class EditExpertProfileComponent implements OnInit {
   save() {
     this.saveError = '';
     this.saveMessage = '';
-    if (!this.expert.id || !this.expert.fullName || !this.expert.phoneNumber) {
-      this.saveError = 'Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại)';
+    if (!this.expert.id || !this.expert.fullName || !this.expert.phoneNumber || !this.expert.livingEnvironment) {
+      this.saveError = 'Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Môi trường sống)';
       this.toastService.error(this.saveError);
       this.cdr.markForCheck();
       this.cdr.detectChanges();
@@ -214,6 +242,14 @@ export class EditExpertProfileComponent implements OnInit {
       this.cdr.detectChanges();
       return;
     }
+    // Kiểm tra livingEnvironment không được để trống
+    if (!this.expert.livingEnvironment.trim()) {
+      this.saveError = 'Vui lòng nhập môi trường sống';
+      this.toastService.error(this.saveError);
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      return;
+    }
     const validGenders = ['MALE', 'FEMALE', 'OTHER'];
     let gender = this.expert.gender;
     if (!gender || !validGenders.includes(gender)) {
@@ -224,10 +260,9 @@ export class EditExpertProfileComponent implements OnInit {
       id: this.expert.id,
       fullName: this.expert.fullName.trim(),
       phoneNumber: this.expert.phoneNumber.trim(),
-      bio: this.expert.bio || '',
-      expertise: this.expert.expertise || '',
       avatar: this.expert.avatar || '',
-      gender: gender
+      gender: gender,
+      livingEnvironment: this.expert.livingEnvironment.trim()
     };
     this.expertProfileService.updateExpertProfile(updateData).pipe(
       tap(response => {
@@ -240,14 +275,31 @@ export class EditExpertProfileComponent implements OnInit {
           this.toastService.success('Cập nhật thông tin thành công!');
           this.cdr.detectChanges();
           setTimeout(() => {
-            this.router.navigate(['/expert/profile']);
+            this.router.navigate(['/expert/profile/view']);
           }, 1000);
         }
         this.cdr.markForCheck();
       }),
       catchError(error => {
-        this.saveError = 'Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.';
-        this.toastService.error(this.saveError);
+        let errorMessage = '';
+        if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          this.showLoginDialog();
+        } else if (error.status === 403) {
+          errorMessage = 'Không có quyền cập nhật thông tin này.';
+        } else if (error.status === 404) {
+          errorMessage = error.error?.message || 'Không tìm thấy chuyên gia.';
+        } else if (error.status === 400) {
+          errorMessage = translateErrorMessage(error.error?.message || 'Dữ liệu không hợp lệ.');
+        } else if (error.status === 500) {
+          errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+        } else if (error.error?.message) {
+          errorMessage = translateErrorMessage(error.error.message);
+        } else {
+          errorMessage = 'Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.';
+        }
+        this.saveError = errorMessage;
+        this.toastService.error(errorMessage);
         this.cdr.markForCheck();
         return of(null);
       }),

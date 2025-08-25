@@ -1,115 +1,207 @@
 <div class="edit-profile-page">
   <div class="edit-profile-container">
+    <!-- Header -->
     <div class="page-header">
       <h1>CHỈNH SỬA HỒ SƠ CHUYÊN GIA</h1>
       <p>Cập nhật thông tin cá nhân và ảnh đại diện của bạn</p>
     </div>
-    <div *ngIf="!loading; else loadingTpl">
-      <div *ngIf="saveError && !expert.id" class="login-prompt-container">
-        <div class="login-prompt-card">
-          <div class="login-prompt-content">
-            <h2>Đăng nhập để tiếp tục</h2>
-            <p>Bạn cần đăng nhập để có thể chỉnh sửa thông tin hồ sơ chuyên gia</p>
-            <button type="button" class="login-prompt-button" (click)="showLoginDialog()">Đăng nhập ngay</button>
-          </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
+
+    <!-- Login Prompt -->
+    <div *ngIf="!loading && saveError && !expert.id" class="login-prompt-container">
+      <div class="login-prompt-card">
+        <div class="login-prompt-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+          </svg>
         </div>
-      </div>
-      <div *ngIf="expert.id" class="edit-profile-content">
-        <div class="avatar-section">
-          <div class="avatar-card">
-            <h3>Ảnh đại diện</h3>
-            <div class="avatar-upload-area">
-              <div class="avatar-preview" (click)="avatarInput.click()" [class.uploading]="avatarUploading">
-                @if ((avatarPreview || expert.avatar) && !avatarUploading) {
-                  <img [src]="avatarPreview || expert.avatar" alt="avatar" />
-                }
-                @if (!avatarPreview && !expert.avatar && !avatarUploading) {
-                  <div class="avatar-placeholder">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
-                    </svg>
-                  </div>
-                }
-                @if (avatarUploading) {
-                  <div class="avatar-loading">
-                    <div class="loading-spinner"></div>
-                    <span>Đang tải...</span>
-                  </div>
-                }
-                @if (!avatarUploading) {
-                  <div class="upload-overlay">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                    </svg>
-                    <span>Thay đổi ảnh</span>
-                  </div>
-                }
-              </div>
-              <input #avatarInput type="file" accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onAvatarChange($event)" style="display:none" [disabled]="avatarUploading" />
-              <div *ngIf="showCropper">
-                <div class="cropper-overlay"></div>
-                <div class="cropper-modal">
-                  <div class="cropper-header">Cắt & chỉnh ảnh đại diện</div>
-                  <image-cropper
-                    #imageCropper
-                    [imageChangedEvent]="imageChangedEvent"
-                    [maintainAspectRatio]="true"
-                    [aspectRatio]="1/1"
-                    [resizeToWidth]="256"
-                    format="png"
-                    (imageCropped)="onImageCropped($event)"
-                  ></image-cropper>
-                  <div class="cropper-actions">
-                    <button type="button" class="update-avatar-btn highlight" (click)="confirmCroppedAvatar()" [disabled]="!croppedImage">
-                      Xác nhận ảnh
-                    </button>
-                    <button type="button" class="update-avatar-btn" (click)="cancelCropper()" style="margin-left:10px;">Huỷ</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style="text-align:center; margin-top: 12px;">
-              @if (selectedAvatarFile && !avatarUploading && !showCropper) {
-                <button type="button" class="update-avatar-btn highlight" (click)="uploadAvatar()">Cập nhật ảnh đại diện</button>
-              }
-            </div>
-          </div>
+        <div class="login-prompt-content">
+          <h2>Đăng nhập để tiếp tục</h2>
+          <p>Bạn cần đăng nhập để có thể chỉnh sửa thông tin hồ sơ chuyên gia</p>
+          <button type="button" class="login-prompt-button" (click)="showLoginDialog()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10,17V14H3V10H10V7L15,12L10,17M10,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H10A2,2 0 0,1 8,20V18H10V20H19V4H10V6H8V4A2,2 0 0,1 10,2Z"/>
+            </svg>
+            Đăng nhập ngay
+          </button>
         </div>
-        <form class="edit-profile-form" (ngSubmit)="save()">
-          <div class="form-group">
-            <label>Họ tên</label>
-            <input type="text" [(ngModel)]="expert.fullName" name="fullName" required />
-          </div>
-          <div class="form-group">
-            <label>Số điện thoại</label>
-            <input type="text" [(ngModel)]="expert.phoneNumber" name="phoneNumber" required />
-          </div>
-          <div class="form-group">
-            <label>Giới tính</label>
-            <select [(ngModel)]="expert.gender" name="gender">
-              <option value="MALE">Nam</option>
-              <option value="FEMALE">Nữ</option>
-              <option value="OTHER">Khác</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Chuyên môn</label>
-            <input type="text" [(ngModel)]="expert.expertise" name="expertise" />
-          </div>
-          <div class="form-group">
-            <label>Giới thiệu bản thân</label>
-            <textarea [(ngModel)]="expert.bio" name="bio" rows="3"></textarea>
-          </div>
-          <div class="form-actions">
-            <button type="submit" [disabled]="saving">Lưu thay đổi</button>
-            <span class="save-message" *ngIf="saveMessage">{{ saveMessage }}</span>
-            <span class="save-error" *ngIf="saveError">{{ saveError }}</span>
-          </div>
-        </form>
       </div>
     </div>
-    <ng-template #loadingTpl>
-      <div class="loading-state">Đang tải thông tin...</div>
-    </ng-template>
+
+    <!-- Edit Profile Content -->
+    <div *ngIf="!loading && expert.id" class="edit-profile-content">
+      <!-- Avatar Section -->
+      <div class="avatar-section">
+        <div class="avatar-card">
+          <h3>Ảnh đại diện</h3>
+          <div class="avatar-upload-area">
+            <div class="avatar-preview" (click)="avatarInput.click()" [class.uploading]="avatarUploading">
+              @if ((avatarPreview || expert.avatar) && !avatarUploading) {
+                <img [src]="avatarPreview || expert.avatar" alt="avatar" />
+              }
+              @if (!avatarPreview && !expert.avatar && !avatarUploading) {
+                <div class="avatar-placeholder">
+                  <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                  </svg>
+                </div>
+              }
+              @if (avatarUploading) {
+                <div class="avatar-loading">
+                  <div class="loading-spinner"></div>
+                  <span>Đang tải...</span>
+                </div>
+              }
+              @if (!avatarUploading) {
+                <div class="upload-overlay">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
+                  <span>Thay đổi ảnh</span>
+                </div>
+              }
+            </div>
+            <input #avatarInput type="file" accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onAvatarChange($event)" style="display:none" [disabled]="avatarUploading" />
+            
+            <!-- Avatar Upload Button -->
+            <div *ngIf="selectedAvatarFile && !avatarUploading && !showCropper" class="avatar-upload-actions">
+              <button type="button" class="update-avatar-btn highlight" (click)="uploadAvatar()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+                Cập nhật ảnh đại diện
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Form -->
+      <div class="profile-form-section">
+        <div class="profile-form-card">
+          <h3>Thông tin cá nhân</h3>
+          <form class="edit-profile-form" (ngSubmit)="save()">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="fullName">Họ và tên <span class="required">*</span></label>
+                <input 
+                  type="text" 
+                  id="fullName"
+                  [(ngModel)]="expert.fullName" 
+                  name="fullName" 
+                  placeholder="Nhập họ và tên đầy đủ" 
+                  required 
+                  maxlength="100" />
+              </div>
+
+              <div class="form-group">
+                <label for="phoneNumber">Số điện thoại <span class="required">*</span></label>
+                <input 
+                  type="tel" 
+                  id="phoneNumber"
+                  [(ngModel)]="expert.phoneNumber" 
+                  name="phoneNumber" 
+                  placeholder="Nhập số điện thoại" 
+                  required 
+                  maxlength="11" />
+              </div>
+
+              <div class="form-group">
+                <label for="gender">Giới tính</label>
+                <select id="gender" [(ngModel)]="expert.gender" name="gender">
+                  <option value="MALE">Nam</option>
+                  <option value="FEMALE">Nữ</option>
+                  <option value="OTHER">Khác</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="livingEnvironment">Môi trường sống <span class="required">*</span></label>
+                <input 
+                  type="text" 
+                  id="livingEnvironment"
+                  [(ngModel)]="expert.livingEnvironment" 
+                  name="livingEnvironment" 
+                  placeholder="Ví dụ: Căn hộ, Nhà riêng, Văn phòng..." 
+                  required 
+                  maxlength="100" />
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="submit" class="save-btn" [disabled]="saving">
+                <svg *ngIf="!saving" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
+                </svg>
+                <div *ngIf="saving" class="save-spinner"></div>
+                {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+              </button>
+              
+              <!-- Messages -->
+              <div *ngIf="saveMessage" class="save-message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
+                </svg>
+                {{ saveMessage }}
+              </div>
+              
+              <div *ngIf="saveError" class="save-error">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M13,17H11V15H13V17M13,13H11V7H13V13Z"/>
+                </svg>
+                {{ saveError }}
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Cropper Modal -->
+    <div *ngIf="showCropper" class="cropper-overlay">
+      <div class="cropper-modal">
+        <div class="cropper-header">
+          <h3>Cắt & chỉnh ảnh đại diện</h3>
+          <button type="button" class="cropper-close" (click)="cancelCropper()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="cropper-content">
+          <image-cropper
+            #imageCropper
+            [imageChangedEvent]="imageChangedEvent"
+            [maintainAspectRatio]="true"
+            [aspectRatio]="1/1"
+            [resizeToWidth]="256"
+            format="png"
+            (imageCropped)="onImageCropped($event)"
+          ></image-cropper>
+        </div>
+        
+        <div class="cropper-actions">
+          <button type="button" class="cropper-btn secondary" (click)="cancelCropper()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+            </svg>
+            Huỷ
+          </button>
+          <button type="button" class="cropper-btn primary" (click)="confirmCroppedAvatar()" [disabled]="!croppedImage">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+            </svg>
+            Xác nhận ảnh
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -1,17 +1,93 @@
 <div class="view-expert-profile-page">
-  <div *ngIf="loading">Đang tải thông tin chuyên gia...</div>
-  <div *ngIf="error">{{ error }}</div>
-  <div *ngIf="expert && !loading">
-    <div class="profile-header">
-      <img *ngIf="expert.avatar" [src]="expert.avatar" class="profile-avatar" alt="avatar">
-      <div class="profile-info">
-        <h2>{{ expert.fullName }}</h2>
-        <div class="profile-username">@{{ expert.username }}</div>
-        <div class="profile-email">{{ expert.email }}</div>
-        <div class="profile-phone">SĐT: {{ expert.phoneNumber }}</div>
-        <div class="profile-gender">Giới tính: {{ expert.gender }}</div>
-        <div class="profile-bio" *ngIf="expert.bio">{{ expert.bio }}</div>
-        <div class="profile-expertise" *ngIf="expert.expertise">Chuyên môn: {{ expert.expertise }}</div>
+  <div class="view-profile-container">
+    <!-- Header -->
+    <div class="page-header">
+      <h1>HỒ SƠ CHUYÊN GIA</h1>
+      <p>Thông tin cá nhân và hồ sơ chuyên gia của bạn</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-state">
+      <div class="error-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M13,17H11V15H13V17M13,13H11V7H13V13Z"/>
+        </svg>
+      </div>
+      <h3>Không thể tải thông tin</h3>
+      <p>{{ error }}</p>
+      <button *ngIf="error.includes('đăng nhập')" type="button" class="action-btn primary" (click)="showLoginDialog()">
+        Đăng nhập ngay
+      </button>
+      <button *ngIf="!error.includes('đăng nhập')" type="button" class="action-btn primary" (click)="loadExpertProfile()">
+        Thử lại
+      </button>
+    </div>
+
+    <!-- Profile Content -->
+    <div *ngIf="expert && !loading" class="profile-content">
+      <!-- Avatar Section -->
+      <div class="avatar-section">
+        <div class="avatar-card">
+          <div class="avatar-container">
+            <img *ngIf="expert.avatar" [src]="expert.avatar" class="profile-avatar" alt="avatar">
+            <div *ngIf="!expert.avatar" class="avatar-placeholder">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="avatar-info">
+            <h2>{{ expert.fullName }}</h2>
+            <div class="username">@{{ expert.username }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Information -->
+      <div class="profile-info-section">
+        <div class="profile-info-card">
+          <h3>Thông tin cá nhân</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Họ và tên</label>
+              <div class="info-value">{{ expert.fullName || 'Chưa cập nhật' }}</div>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <div class="info-value">{{ expert.email || 'Chưa cập nhật' }}</div>
+            </div>
+            <div class="info-item">
+              <label>Số điện thoại</label>
+              <div class="info-value">{{ expert.phoneNumber || 'Chưa cập nhật' }}</div>
+            </div>
+            <div class="info-item">
+              <label>Giới tính</label>
+              <div class="info-value">{{ getGenderText(expert.gender) }}</div>
+            </div>
+            <div class="info-item full-width">
+              <label>Môi trường sống</label>
+              <div class="info-value">{{ expert.livingEnvironment || 'Chưa cập nhật' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-section">
+        <div class="action-card">
+          <button class="action-btn primary" (click)="editProfile()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+            </svg>
+            Chỉnh sửa hồ sơ
+          </button>
+        </div>
       </div>
     </div>
   </div>

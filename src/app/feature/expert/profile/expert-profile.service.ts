@@ -13,18 +13,16 @@ export interface ExpertProfile {
   phoneNumber: string;
   avatar: string | null;
   gender: string | null;
-  bio: string | null;
-  expertise: string | null;
+  livingEnvironment: string | null;
 }
 
 export interface UpdateExpertProfileRequest {
   id: number;
   fullName: string;
   phoneNumber: string;
-  bio: string;
-  expertise: string;
   avatar: string;
   gender: string;
+  livingEnvironment: string;
 }
 
 @Injectable({
