@@ -12,6 +12,7 @@ import { ToastService } from '../../../../shared/toast/toast.service';
 import { BaseAdminListComponent } from '../../shared/base-admin-list.component';
 import { AuthService } from '../../../../auth/auth.service';
 import { PlantOptionsService, PlantOption } from '../../../../shared/services/plant-options.service';
+import { AdminCreatePlantService, PlantCategory } from '../../plant-manager/create-plant/admin-create-plant.service';
 
 interface UpdatePlantRequest {
   scientificName: string;
@@ -109,6 +110,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   careDifficultyOptions: PlantOption[] = [];
   statusOptions: PlantOption[] = [];
   suitableLocationOptions: PlantOption[] = [];
+  categories: PlantCategory[] = [];
 
   private toast = inject(ToastService);
   private authService = inject(AuthService);
@@ -204,13 +206,15 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private zone: NgZone = inject(NgZone),
-    private plantOptionsService: PlantOptionsService
+    private plantOptionsService: PlantOptionsService,
+    private createPlantService: AdminCreatePlantService
   ) {
     super();
   }
 
   ngOnInit(): void {
     this.loadPlantOptions();
+    this.loadCategories();
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const plantId = params['plantId'];
       const reportId = params['reportId'];
@@ -791,5 +795,25 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     this.careDifficultyOptions = this.plantOptionsService.getCareDifficultyOptions();
     this.statusOptions = this.plantOptionsService.getStatusOptions();
     this.suitableLocationOptions = this.plantOptionsService.getSuitableLocationOptions();
+  }
+
+  private async loadCategories(): Promise<void> {
+    try {
+      const res = await this.createPlantService.getCategories();
+      if (res && Array.isArray((res as any).data)) {
+        this.categories = (res as any).data;
+      } else if (Array.isArray(res)) {
+        this.categories = res;
+      } else {
+        this.categories = [];
+      }
+      this.cdr.markForCheck();
+    } catch (error) {
+      this.toast.error('Không thể tải danh sách danh mục');
+      Promise.resolve().then(() => {
+        this.categories = [];
+        this.cdr.markForCheck();
+      });
+    }
   }
 }

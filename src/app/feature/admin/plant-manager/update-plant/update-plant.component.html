@@ -78,8 +78,13 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="categoryId">ID Danh mục *</label>
-        <input id="categoryId" type="number" [(ngModel)]="updateForm.categoryId" name="categoryId" required min="1" (ngModelChange)="onFieldChange()" />
+          <label for="categoryId">Danh mục *</label>
+          <select id="categoryId" [(ngModel)]="updateForm.categoryId" name="categoryId" required (ngModelChange)="onFieldChange()">
+            <option value="">-- Chọn danh mục --</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label for="status">Trạng thái *</label>
