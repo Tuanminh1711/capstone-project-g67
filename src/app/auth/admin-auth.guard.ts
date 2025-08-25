@@ -1,10 +1,15 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, CanActivateChild, Router, UrlTree, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthGuard implements CanActivate, CanActivateChild {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private toast: ToastService
+  ) {}
 
   canActivate(): boolean | UrlTree {
     return this.checkAdminOrLogin(arguments[0], arguments[1]);
@@ -16,7 +21,9 @@ export class AdminAuthGuard implements CanActivate, CanActivateChild {
 
   private checkAdminOrLogin(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const role = this.authService.getCurrentUserRole();
+    const isLoggedIn = this.authService.isLoggedIn();
     const url = state && state.url ? state.url : (this.router.url || '');
+    
     // Nếu đã đăng nhập (admin, staff, hoặc expert) mà vào /login-admin thì redirect về trang tương ứng
     if ((role === 'ADMIN' || role === 'STAFF') && url === '/login-admin') {
       return this.router.createUrlTree(['/admin']);
@@ -24,9 +31,16 @@ export class AdminAuthGuard implements CanActivate, CanActivateChild {
     if (role === 'EXPERT' && url === '/login-admin') {
       return this.router.createUrlTree(['/expert/welcome']);
     }
+    
     // Nếu chưa đăng nhập, chỉ cho phép vào /login-admin
-    if (!role && url === '/login-admin') {
-      return true;
+    if (!isLoggedIn || !role) {
+      if (url === '/login-admin') {
+        return true;
+      }
+      // Lưu URL hiện tại để redirect sau khi đăng nhập
+      sessionStorage.setItem('redirectAfterLogin', url);
+      this.toast.error('Vui lòng đăng nhập để truy cập khu vực Admin!');
+      return this.router.createUrlTree(['/login-admin']);
     }
     if (role === 'ADMIN') {
       return true;

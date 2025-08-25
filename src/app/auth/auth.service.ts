@@ -82,6 +82,9 @@ export class AuthService {
             this.cookieService.setAccessToken(response.accessToken);
           }
           // Không lưu refreshToken bằng JS, backend phải set cookie HttpOnly
+          
+          // Kiểm tra xem có cần redirect về trang cũ không
+          this.checkRedirectAfterLogin();
         })
     );
   }
@@ -260,6 +263,22 @@ export class AuthService {
     const token = this.cookieService.getCookie('auth_token');
     const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
     return this.http.get<any>(`${this.apiUrl}/user/profile`, Object.keys(headers).length ? { headers } : {});
+  }
+
+  /**
+   * Kiểm tra và redirect về trang cũ sau khi đăng nhập
+   */
+  private checkRedirectAfterLogin(): void {
+    const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+    if (redirectUrl) {
+      // Xóa redirect URL khỏi session storage
+      sessionStorage.removeItem('redirectAfterLogin');
+      
+      // Redirect về trang cũ
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 100);
+    }
   }
 
   loginAdmin(data: { username: string; password: string }) {

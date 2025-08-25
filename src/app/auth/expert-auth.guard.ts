@@ -1,10 +1,15 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, CanActivateChild, Router, UrlTree, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExpertAuthGuard implements CanActivate, CanActivateChild {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private toast: ToastService
+  ) {}
 
   canActivate(): boolean | UrlTree {
     return this.checkExpertOrLogin(arguments[0], arguments[1]);
@@ -16,9 +21,13 @@ export class ExpertAuthGuard implements CanActivate, CanActivateChild {
 
   private checkExpertOrLogin(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const role = this.authService.getCurrentUserRole();
+    const isLoggedIn = this.authService.isLoggedIn();
     
     // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập admin
-    if (!role) {
+    if (!isLoggedIn || !role) {
+      // Lưu URL hiện tại để redirect sau khi đăng nhập
+      sessionStorage.setItem('redirectAfterLogin', state.url);
+      this.toast.error('Vui lòng đăng nhập để truy cập khu vực Expert!');
       return this.router.createUrlTree(['/login-admin']);
     }
     

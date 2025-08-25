@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { authInterceptor } from './auth/auth.interceptor';
 import { expertOnlyInterceptor } from './auth/expert-only.interceptor';
+import { sessionInterceptor } from './auth/session.interceptor';
 import { FeatureModule } from './feature/feature.module';
 
 export const appConfig: ApplicationConfig = {
@@ -22,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor, expertOnlyInterceptor])
+      withInterceptors([authInterceptor, expertOnlyInterceptor, sessionInterceptor])
     ),
     provideAnimations(),
     MatDialogModule

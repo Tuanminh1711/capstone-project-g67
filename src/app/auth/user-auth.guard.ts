@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
-export class VipAuthGuard implements CanActivate, CanActivateChild {
+export class UserAuthGuard implements CanActivate, CanActivateChild {
   constructor(
     private authService: AuthService, 
     private router: Router,
@@ -12,14 +12,14 @@ export class VipAuthGuard implements CanActivate, CanActivateChild {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    return this.checkVipAccess(route, state);
+    return this.checkUserAccess(route, state);
   }
 
   canActivateChild(childRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    return this.checkVipAccess(childRoute, state);
+    return this.checkUserAccess(childRoute, state);
   }
 
-  private checkVipAccess(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
+  private checkUserAccess(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const role = this.authService.getCurrentUserRole();
     const isLoggedIn = this.authService.isLoggedIn();
 
@@ -27,24 +27,17 @@ export class VipAuthGuard implements CanActivate, CanActivateChild {
     if (!isLoggedIn) {
       // Lưu URL hiện tại để redirect sau khi đăng nhập
       sessionStorage.setItem('redirectAfterLogin', state.url);
-      this.toast.error('Vui lòng đăng nhập để truy cập tính năng VIP!');
+      this.toast.error('Vui lòng đăng nhập để truy cập trang này!');
       return this.router.createUrlTree(['/home']);
     }
 
-    // Chỉ cho phép VIP và EXPERT truy cập
-    if (role === 'VIP' || role === 'EXPERT') {
+    // Kiểm tra role
+    if (role === 'USER' || role === 'VIP' || role === 'EXPERT' || role === 'ADMIN' || role === 'STAFF') {
       return true;
     }
 
-    // Nếu không phải VIP hoặc EXPERT, từ chối truy cập
-    if (role === 'USER') {
-      this.toast.error('Tính năng này chỉ dành cho tài khoản VIP! Vui lòng nâng cấp tài khoản.');
-      // Chuyển hướng đến trang nâng cấp VIP
-      return this.router.createUrlTree(['/user/create-payment/vip-payment']);
-    }
-
-    // Các role khác
-    this.toast.error('Bạn không có quyền truy cập tính năng VIP!');
+    // Nếu không có role hợp lệ, từ chối truy cập
+    this.toast.error('Bạn không có quyền truy cập trang này!');
     return this.router.createUrlTree(['/home']);
   }
 }
