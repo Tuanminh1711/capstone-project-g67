@@ -67,7 +67,6 @@ export class NotificationBadgeComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(count => {
         this.unreadCount = count;
-        console.log('🔔 Notification badge updated:', count);
       });
   }
 

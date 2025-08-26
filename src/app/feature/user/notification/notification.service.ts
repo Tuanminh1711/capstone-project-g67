@@ -96,15 +96,11 @@ export class NotificationService {
     return this.http.get<any>(`${this.apiUrl}`, { params, headers })
       .pipe(
         map(response => {
-          console.log('🔍 Raw API response:', response);
           
           // Handle different response structures
           if (response && (response.status === 200 || response.code === 200) && response.data !== undefined) {
             const notificationPage = response.data as NotificationPage;
             const content = notificationPage.content || [];
-            
-            console.log('🔍 Parsed notification page:', notificationPage);
-            console.log('🔍 Content array:', content);
             
             // Cập nhật danh sách notifications
             this.notificationsSubject.next(content);
@@ -120,7 +116,6 @@ export class NotificationService {
             } as NotificationPage;
           } else if (response && Array.isArray(response)) {
             // Direct array response
-            console.log('🔍 Direct array response:', response);
             
             const mockPage: NotificationPage = {
               content: response,
@@ -138,7 +133,6 @@ export class NotificationService {
             return mockPage;
           } else {
             // Empty response
-            console.log('🔍 Empty response, returning empty page');
             
             const emptyPage: NotificationPage = {
               content: [],

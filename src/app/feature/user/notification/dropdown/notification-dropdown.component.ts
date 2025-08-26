@@ -78,44 +78,25 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
    * Load danh sách thông báo
    */
   private loadNotifications(): void {
-    // Ngăn infinite loop - chỉ load nếu chưa loading
     if (this.isLoading) {
-      console.log('⏳ Already loading, skipping...');
       return;
     }
 
-    console.log('🔄 Loading notifications...');
     this.isLoading = true;
-
-    // Timeout fallback để đảm bảo loading state luôn được reset
-    const loadingTimeout = setTimeout(() => {
-      if (this.isLoading) {
-        console.log('⏰ Loading timeout, resetting loading state');
-        this.isLoading = false;
-      }
-    }, 10000); // 10 giây timeout
 
     // Load cả unread count và danh sách thông báo
     this.notificationService.getUserNotifications(0, 10)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (notificationPage) => {
-          clearTimeout(loadingTimeout);
-          console.log('📥 Raw response:', notificationPage);
-          
           const allNotifications = notificationPage.content || [];
-          console.log('📥 All notifications:', allNotifications);
           
           // Hiển thị tất cả notifications (không filter theo status)
           this.notifications = allNotifications;
           
           this.isLoading = false;
-          
-          console.log('📋 Loaded notifications:', this.notifications.length, 'total');
-          console.log('📋 Final notifications data:', this.notifications);
         },
         error: (err) => {
-          clearTimeout(loadingTimeout);
           this.notifications = [];
           this.isLoading = false;
           if (err.message?.includes('not authenticated')) {
@@ -133,10 +114,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     
     // Khi mở dropdown, chỉ load dữ liệu nếu chưa có
     if (this.isOpen && this.notifications.length === 0) {
-      console.log('📋 Dropdown opened, loading notifications...');
       this.loadNotifications();
-    } else if (this.isOpen) {
-      console.log('📋 Dropdown opened, notifications already loaded');
     }
   }
 
@@ -243,7 +221,6 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   /* ========== Private Methods ========== */
 
   private refreshNotifications(): void {
-    console.log('🔄 Refreshing notifications...');
     this.loadNotifications();
   }
 

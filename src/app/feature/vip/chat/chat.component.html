@@ -34,17 +34,13 @@
           <div class="chat-name">Cộng đồng PlantCare</div>
           <div class="chat-preview">Phòng chat dành cho thành viên VIP</div>
         </div>
-  <!-- Đã xóa icon đang hoạt động -->
       </div>
     </div>
 
-    <!-- Experts Section -->
-    <div class="chat-section">
+    <!-- Experts Section - Chỉ hiển thị ở desktop -->
+    <div class="chat-section" *ngIf="!isMobile">
       <div class="section-header">
         <span class="section-title">Chuyên gia</span>
-        <button class="section-action" (click)="loadExperts()" title="Làm mới">
-          Làm mới
-        </button>
       </div>
       <div class="experts-list">
         <div class="chat-item expert-item" 
@@ -63,15 +59,12 @@
               Chuyên gia
             </div>
           </div>
-          <!-- Đã xóa icon đang hoạt động -->
         </div>
       </div>
     </div>
+  </div> <!-- End of messenger-sidebar -->
 
-  <!-- Đã xóa hoàn toàn phần Trò chuyện gần đây -->
-  </div>
-
-  <!-- Mobile Chat List View -->
+  <!-- Mobile Chat List View - Chỉ hiển thị khi mobile và không có chat view -->
   <div class="mobile-chat-list" *ngIf="isMobile && !showChatView">
     <div class="chat-list-header">
       <h1>Chats</h1>
@@ -90,9 +83,15 @@
         </div>
       </div>
 
-      <!-- Expert Chats -->
-      <div class="expert-list">
-        <div class="chat-category-item" *ngFor="let expert of experts" 
+      <!-- Expert Chats - Chỉ hiển thị khi mobile -->
+      <div class="expert-list" *ngIf="isMobile">
+        <div class="mobile-expert-header">
+          <span class="mobile-section-title">Chuyên gia ({{ experts.length }})</span>
+          <button class="mobile-debug-btn" (click)="checkDuplicateExperts()" title="Check Duplicates">
+            🔍
+          </button>
+        </div>
+        <div class="chat-category-item" *ngFor="let expert of experts; trackBy: trackExpertById" 
              (click)="startConversationWithExpert(expert)"
              (touchstart)="onTouchStart($event, expert)"
              (touchend)="onTouchEnd($event, expert)">
@@ -105,26 +104,12 @@
           </div>
           <div class="category-info">
             <div class="category-name">{{ expert.fullName || expert.username }}</div>
-            <div class="category-desc expert-badge">Chuyên gia</div>
+            <div class="category-desc expert-badge">Chuyên gia (ID: {{ expert.id }})</div>
           </div>
         </div>
       </div>
 
-      <!-- Recent Conversations -->
-      <div class="recent-conversations" *ngIf="conversations.length > 0">
-        <div class="chat-category-item" *ngFor="let conversation of conversations" 
-             (click)="selectConversation(conversation)"
-             (touchstart)="onTouchStartConversation($event, conversation)"
-             (touchend)="onTouchEndConversation($event, conversation)">
-          <div class="category-avatar">
-            {{ conversation.otherUsername.charAt(0).toUpperCase() }}
-          </div>
-          <div class="category-info">
-            <div class="category-name">{{ conversation.otherUsername }}</div>
-            <div class="category-desc">{{ conversation.lastMessage || 'Nhấn để bắt đầu trò chuyện' }}</div>
-          </div>
-        </div>
-      </div>
+      <!-- Recent Conversations - Đã bỏ hoàn toàn -->
     </div>
     
     <!-- Footer for chat list -->
@@ -156,7 +141,6 @@
           <div class="chat-status">{{ selectedConversation ? 'Chuyên gia' : 'Đang hoạt động' }}</div>
         </div>
       </div>
-
     </div>
 
     <!-- Desktop Chat Header -->
@@ -183,7 +167,6 @@
           </div>
         </div>
       </div>
-
     </div>
 
     <!-- Chat Messages Area -->
@@ -273,40 +256,37 @@
           </div>
         </div>
       </div>
+    </div>
 
-  <!-- Private Chat Messages: Đã có khối chat-messages, chỉ giữ lại 1 khối duy nhất cho private chat -->
-  <!-- ...existing code... -->
-
-            <!-- Unified Chat Input Area -->
-      <div class="chat-input-container" *ngIf="selectedConversation || !showPrivateChat || isMobile">
-        <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
-          <div class="input-wrapper modern-input-wrapper">
-            <textarea 
-              class="message-input modern-message-input" 
-              [(ngModel)]="newMessage" 
-              name="message"
-              [placeholder]="getInputPlaceholder()"
-              rows="1"
-              maxlength="250"
-              (keydown)="onEnterPress($event)"
-              #messageInput></textarea>
-            <button 
-              type="submit" 
-              class="send-button modern-send-button"
-              [class.active]="newMessage.trim().length > 0"
-              [disabled]="newMessage.trim().length === 0">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </div>
-        </form>
-        <div class="input-footer modern-input-footer">
-          <div class="char-counter" [class.warning]="newMessage.length > 200">
-            {{ newMessage.length }}/250
-          </div>
+    <!-- Chat Input Area -->
+    <div class="chat-input-container" *ngIf="selectedConversation || !showPrivateChat || isMobile">
+      <form class="chat-input-form" (ngSubmit)="sendMessage()" *ngIf="!loading">
+        <div class="input-wrapper modern-input-wrapper">
+          <textarea 
+            class="message-input modern-message-input" 
+            [(ngModel)]="newMessage" 
+            name="message"
+            [placeholder]="getInputPlaceholder()"
+            rows="1"
+            maxlength="250"
+            (keydown)="onEnterPress($event)"
+            #messageInput></textarea>
+          <button 
+            type="submit" 
+            class="send-button modern-send-button"
+            [class.active]="newMessage.trim().length > 0"
+            [disabled]="newMessage.trim().length === 0">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+      <div class="input-footer modern-input-footer">
+        <div class="char-counter" [class.warning]="newMessage.length > 200">
+          {{ newMessage.length }}/250
         </div>
       </div>
-      
-
-</div>
+    </div>
+  </div> <!-- End of messenger-main -->
+</div> <!-- End of messenger-container -->

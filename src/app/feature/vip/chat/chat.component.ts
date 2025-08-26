@@ -162,14 +162,31 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Method để cập nhật experts với thông tin thực từ API
   private updateExpertsWithRealInfo(): void {
-    this.experts.forEach(expert => {
+    console.log('🔄 Updating experts with real info...');
+    
+    // Chỉ update những expert chưa có thông tin đầy đủ
+    const expertsToUpdate = this.experts.filter(expert => 
+      expert.id > 0 && 
+      (!expert.fullName || expert.fullName === expert.username || !expert.avatarUrl)
+    );
+    
+    console.log(`📋 Found ${expertsToUpdate.length} experts to update`);
+    
+    expertsToUpdate.forEach(expert => {
       if (expert.id > 0) {
         this.getUserProfile(expert.id).then(userProfile => {
+          console.log(`✅ Updated expert ${expert.id}:`, {
+            oldName: expert.fullName,
+            newName: userProfile.fullName,
+            oldAvatar: expert.avatarUrl,
+            newAvatar: userProfile.avatarUrl
+          });
+          
           expert.fullName = userProfile.fullName;
           expert.avatarUrl = userProfile.avatarUrl;
           this.cdr.markForCheck();
         }).catch(error => {
-          console.warn(`Failed to get profile for expert ${expert.id}:`, error);
+          console.warn(`⚠️ Failed to get profile for expert ${expert.id}:`, error);
           this.cdr.markForCheck();
         });
       }
@@ -196,6 +213,107 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         });
       }
     });
+  }
+
+  // Method để kiểm tra duplicate experts chi tiết
+  public checkDuplicateExperts(): void {
+    console.log('🔍 Checking for duplicate experts...');
+    console.log('📱 Mobile view - Current experts array:', this.experts);
+    console.log('📱 Mobile view - Experts length:', this.experts.length);
+    console.log('💬 Mobile view - Current conversations array:', this.conversations);
+    console.log('💬 Mobile view - Conversations length:', this.conversations.length);
+    
+    const idMap = new Map<number, any[]>();
+    const usernameMap = new Map<string, any[]>();
+    
+    this.experts.forEach(expert => {
+      // Group by ID
+      if (!idMap.has(expert.id)) {
+        idMap.set(expert.id, []);
+      }
+      idMap.get(expert.id)!.push(expert);
+      
+      // Group by username
+      if (!usernameMap.has(expert.username)) {
+        usernameMap.set(expert.username, []);
+      }
+      usernameMap.get(expert.username)!.push(expert);
+    });
+    
+    // Check ID duplicates
+    idMap.forEach((experts, id) => {
+      if (experts.length > 1) {
+        console.warn(`⚠️ Duplicate ID ${id}:`, experts);
+      }
+    });
+    
+    // Check username duplicates
+    usernameMap.forEach((experts, username) => {
+      if (experts.length > 1) {
+        console.warn(`⚠️ Duplicate username "${username}":`, experts);
+      }
+    });
+    
+    console.log('📊 Summary:', {
+      totalExperts: this.experts.length,
+      totalConversations: this.conversations.length,
+      uniqueIDs: idMap.size,
+      uniqueUsernames: usernameMap.size,
+      experts: this.experts.map(e => ({ id: e.id, username: e.username, fullName: e.fullName })),
+      conversations: this.conversations.map(c => ({ 
+        otherUserId: c.otherUserId, 
+        otherUsername: c.otherUsername 
+      }))
+    });
+    
+    // Nếu có duplicate, gợi ý force clear
+    if (this.experts.length > usernameMap.size) {
+      console.warn('🚨 Duplicate experts detected! Consider using forceClearAndReloadExperts()');
+    }
+  }
+
+  // Method để track experts trong ngFor
+  public trackExpertById(index: number, expert: any): number {
+    return expert.id;
+  }
+
+  // Method để force clear và reload hoàn toàn experts
+  public forceClearAndReloadExperts(): void {
+    console.log('🔄 Force clearing and reloading experts...');
+    
+    // Clear hoàn toàn
+    this.experts = [];
+    this.userProfileCache.clear();
+    this.loading = false;
+    this.error = '';
+    
+    // Delay một chút để đảm bảo clear hoàn toàn
+    setTimeout(() => {
+      this.loadExperts();
+    }, 100);
+  }
+
+  // Method để force refresh experts (clear hoàn toàn và load lại)
+  public forceRefreshExperts(): void {
+    console.log('🔄 Force refreshing experts...');
+    
+    // Clear hoàn toàn
+    this.experts = [];
+    this.userProfileCache.clear();
+    this.loading = false;
+    this.error = '';
+    
+    // Load lại từ đầu
+    this.loadExperts();
+  }
+
+  // Debug method để kiểm tra trạng thái experts
+  public debugExperts(): void {
+    console.log('🔍 Current experts state:');
+    console.log('📊 Total experts:', this.experts.length);
+    console.log('📋 Experts details:', this.experts);
+    console.log('💾 Cache size:', this.userProfileCache.size);
+    console.log('🗂️ Cache keys:', Array.from(this.userProfileCache.keys()));
   }
 
   // Method để lấy avatar của conversation
@@ -955,11 +1073,57 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     
     this.chatService.getExperts().subscribe({
       next: (data) => {
-        this.experts = data.map(expert => ({
-          ...expert,
-          fullName: expert.username, // Placeholder, will be fetched from cache or API
-          avatarUrl: null // Placeholder, will be fetched from cache or API
-        }));
+        console.log('🔍 API Response - Total experts:', data.length);
+        console.log('🔍 API Response - Expert IDs:', data.map(e => e.id));
+        console.log('🔍 API Response - Expert usernames:', data.map(e => e.username));
+        
+        // Clear cache cũ và tạo danh sách mới
+        this.userProfileCache.clear();
+        
+        // Map data và loại bỏ duplicate theo ID VÀ username
+        const uniqueExperts = data.reduce((acc: any[], expert) => {
+          // Kiểm tra duplicate theo ID
+          const existingById = acc.find(e => e.id === expert.id);
+          if (existingById) {
+            console.warn(`⚠️ Duplicate expert found with ID ${expert.id}:`, {
+              existing: existingById,
+              new: expert
+            });
+            return acc; // Bỏ qua duplicate
+          }
+          
+          // Kiểm tra duplicate theo username (nếu ID khác nhau)
+          const existingByUsername = acc.find(e => e.username === expert.username);
+          if (existingByUsername) {
+            console.warn(`⚠️ Duplicate expert found with username "${expert.username}":`, {
+              existing: existingByUsername,
+              new: expert
+            });
+            // Nếu có username giống nhau, ưu tiên giữ lại expert có ID nhỏ hơn (thường là expert gốc)
+            if (expert.id < existingByUsername.id) {
+              // Thay thế expert cũ bằng expert mới (ID nhỏ hơn)
+              const index = acc.findIndex(e => e.id === existingByUsername.id);
+              acc[index] = {
+                ...expert,
+                fullName: expert.username,
+                avatarUrl: null
+              };
+            }
+            return acc; // Không thêm expert mới
+          }
+          
+          // Thêm expert mới
+          acc.push({
+            ...expert,
+            fullName: expert.username, // Placeholder, will be fetched from cache or API
+            avatarUrl: null // Placeholder, will be fetched from cache or API
+          });
+          return acc;
+        }, []);
+        
+        console.log('✅ After deduplication - Total experts:', uniqueExperts.length);
+        console.log('✅ After deduplication - Expert IDs:', uniqueExperts.map(e => e.id));
+        this.experts = uniqueExperts;
         this.loading = false;
         
         // Cập nhật experts với thông tin thực từ API
@@ -968,6 +1132,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.cdr.markForCheck();
       },
       error: (err) => {
+        console.error('❌ Error loading experts:', err);
         this.error = 'Không thể tải danh sách chuyên gia';
         this.loading = false;
         this.cdr.markForCheck();
