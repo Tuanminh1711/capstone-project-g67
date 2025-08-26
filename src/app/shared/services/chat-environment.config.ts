@@ -11,6 +11,7 @@ export interface ChatEnvironmentConfig {
     history: string;
     privateMessages: string;
     markRead: string;
+    userDetail: string; // Thêm endpoint cho user detail
   };
   
   // WebSocket Configuration
@@ -45,7 +46,8 @@ export const DEV_CHAT_CONFIG: ChatEnvironmentConfig = {
     experts: '/api/chat/mess/experts',
     history: '/api/chat/mess/history',
     privateMessages: '/api/chat/mess/private',
-    markRead: '/api/chat/mess/mark-read'
+    markRead: '/api/chat/mess/mark-read',
+    userDetail: '/api/admin/userdetail' // Sửa lại endpoint đúng
   },
   
   websocket: {
@@ -77,7 +79,8 @@ export const PROD_CHAT_CONFIG: ChatEnvironmentConfig = {
     experts: '/api/chat/mess/experts',
     history: '/api/chat/mess/history',
     privateMessages: '/api/chat/mess/private',
-    markRead: '/api/chat/mess/mark-read'
+    markRead: '/api/chat/mess/mark-read',
+    userDetail: '/api/admin/userdetail' // Thêm endpoint cho user detail
   },
   
   websocket: {

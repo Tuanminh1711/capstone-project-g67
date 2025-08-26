@@ -116,15 +116,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     return this.messagesSubject.value;
   }
 
-  // Method để lấy thông tin user từ API admin (chỉ lấy thông tin cần thiết)
+  // Method để lấy thông tin user từ API (sử dụng endpoint từ config)
   private getUserProfile(userId: number): Promise<UserProfile> {
     // Kiểm tra cache trước
     if (this.userProfileCache.has(userId)) {
       return Promise.resolve(this.userProfileCache.get(userId)!);
     }
     
-    // Gọi API admin để lấy thông tin user
-    const url = `http://localhost:8080/api/admin/userdetail/${userId}`;
+    // Sử dụng endpoint từ config thay vì hardcode
+    const url = `${this.chatService.currentConfig.environment.apiBaseUrl}${this.chatService.currentConfig.endpoints.userDetail}/${userId}`;
+    console.log('🔗 getUserProfile URL:', url);
+    
     return this.http.get<any>(url, { withCredentials: true })
       .toPromise()
       .then(response => {
