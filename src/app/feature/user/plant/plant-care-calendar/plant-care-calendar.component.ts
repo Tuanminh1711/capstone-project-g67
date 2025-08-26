@@ -105,7 +105,7 @@ export class PlantCareCalendarComponent implements OnInit {
 
     while (current.isSameOrBefore(endDate)) {
       this.calendarDays.push(current.clone());
-      current.add(1, 'day');
+      current = current.add(1, 'day'); // Fix: reassign to avoid mutating original
     }
   }
 
@@ -115,15 +115,25 @@ export class PlantCareCalendarComponent implements OnInit {
     this.loading = true;
     this.http.get<CareHistoryResponse>(`${environment.apiUrl}/plant-care/${this.userPlantId}/care-history?page=0&size=100`).subscribe({
       next: (response) => {
-        this.careHistory = response.content;
-        this.processCareData();
-        this.calculateStreaks();
+        if (response && response.content) {
+          this.careHistory = response.content;
+          this.processCareData();
+          this.calculateStreaks();
+        } else {
+          this.careHistory = [];
+          this.careStreaks = [];
+          this.monthCareData.clear();
+        }
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading care history:', error);
+        this.careHistory = [];
+        this.careStreaks = [];
+        this.monthCareData.clear();
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -132,7 +142,14 @@ export class PlantCareCalendarComponent implements OnInit {
     this.monthCareData.clear();
     
     this.careHistory.forEach(item => {
-      const careDate = moment(item.careDate);
+      // Validate careDate
+      if (!item.careDate || isNaN(item.careDate)) {
+        console.warn('Invalid careDate for item:', item);
+        return;
+      }
+      
+      // Convert timestamp to moment and handle timezone properly
+      const careDate = moment(item.careDate).utc().local();
       const dateKey = careDate.format('YYYY-MM-DD');
       const careTypeId = this.getCareTypeIdByName(item.careTypeName);
       
@@ -154,13 +171,21 @@ export class PlantCareCalendarComponent implements OnInit {
   }
 
   calculateStreaks() {
-    this.careStreaks = this.careTypes.map(type => {
-      const typeHistory = this.careHistory.filter(item => 
+    // Cache filtered data to improve performance
+    const typeHistoryMap = new Map<number, CareHistoryItem[]>();
+    
+    // Pre-filter data for each care type
+    this.careTypes.forEach(type => {
+      typeHistoryMap.set(type.id, this.careHistory.filter(item => 
         this.getCareTypeIdByName(item.careTypeName) === type.id
-      );
+      ));
+    });
+    
+    this.careStreaks = this.careTypes.map(type => {
+      const typeHistory = typeHistoryMap.get(type.id) || [];
       
       const sortedDates = typeHistory
-        .map(item => moment(item.careDate))
+        .map(item => moment(item.careDate).utc().local())
         .sort((a, b) => b.valueOf() - a.valueOf());
       
       const currentStreak = this.calculateCurrentStreak(sortedDates);
@@ -185,11 +210,14 @@ export class PlantCareCalendarComponent implements OnInit {
     if (dates.length === 0) return 0;
     
     let streak = 0;
-    let currentDate = moment().startOf('day');
-    let lastCareDate = dates[0];
+    const currentDate = moment().startOf('day');
+    const lastCareDate = dates[0].startOf('day');
     
-    // Nếu lần cuối chăm sóc không phải hôm nay hoặc hôm qua, streak = 0
-    if (currentDate.diff(lastCareDate, 'days') > 1) {
+    // Cho phép gap 1-2 ngày để streak thực tế hơn
+    const daysSinceLastCare = currentDate.diff(lastCareDate, 'days');
+    
+    // Nếu lần cuối chăm sóc quá lâu (hơn 3 ngày), streak = 0
+    if (daysSinceLastCare > 3) {
       return 0;
     }
     
@@ -203,8 +231,11 @@ export class PlantCareCalendarComponent implements OnInit {
       } else if (careDate.isAfter(expectedDate)) {
         // Bỏ qua ngày trong tương lai
         continue;
+      } else if (careDate.diff(expectedDate, 'days') <= 2) {
+        // Cho phép gap 1-2 ngày
+        streak++;
       } else {
-        // Gap trong streak, dừng lại
+        // Gap quá lớn, dừng streak
         break;
       }
     }
@@ -222,7 +253,12 @@ export class PlantCareCalendarComponent implements OnInit {
       const prevDate = dates[i - 1].startOf('day');
       const currDate = dates[i].startOf('day');
       
-      if (prevDate.diff(currDate, 'days') === 1) {
+      const dayDiff = prevDate.diff(currDate, 'days');
+      
+      // Cho phép gap 1-2 ngày trong longest streak
+      if (dayDiff <= 2 && dayDiff > 0) {
+        currentStreak++;
+      } else if (dayDiff === 1) {
         currentStreak++;
       } else {
         longestStreak = Math.max(longestStreak, currentStreak);
@@ -239,11 +275,17 @@ export class PlantCareCalendarComponent implements OnInit {
   }
 
   getCareTypesForDate(date: moment.Moment): number[] {
+    if (!date || !date.isValid()) {
+      return [];
+    }
     const dateKey = date.format('YYYY-MM-DD');
     return this.monthCareData.get(dateKey) || [];
   }
 
   getCareTypeColor(typeId: number): string {
+    if (typeId <= 0) {
+      return '#ccc';
+    }
     const careType = this.careTypes.find(type => type.id === typeId);
     return careType ? careType.color : '#ccc';
   }
@@ -296,16 +338,44 @@ export class PlantCareCalendarComponent implements OnInit {
   }
 
   getCareTypeName(id: number): string {
+    if (id <= 0) {
+      return 'Lịch nhắc';
+    }
     const careType = this.careTypes.find(type => type.id === id);
     return careType ? careType.name : 'Lịch nhắc';
   }
 
   getCareTypeIcon(id: number): string {
+    if (id <= 0) {
+      return 'fas fa-bell';
+    }
     const careType = this.careTypes.find(type => type.id === id);
     return careType ? careType.icon : 'fas fa-bell';
   }
 
   getTimeAgo(timestamp: number): string {
+    if (!timestamp || isNaN(timestamp)) {
+      return 'Không xác định';
+    }
     return moment(timestamp).fromNow();
+  }
+
+  // Cleanup method to prevent memory leaks
+  clearData(): void {
+    this.careHistory = [];
+    this.careStreaks = [];
+    this.calendarDays = [];
+    this.monthCareData.clear();
+  }
+
+  // Refresh data method
+  refreshData(): void {
+    this.clearData();
+    this.loadCareHistory();
+  }
+
+  // Validate date before processing
+  private isValidDate(timestamp: number): boolean {
+    return timestamp > 0 && !isNaN(timestamp);
   }
 }
