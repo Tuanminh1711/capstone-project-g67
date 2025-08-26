@@ -51,10 +51,14 @@
              *ngFor="let expert of experts" 
              (click)="startConversationWithExpert(expert); closeSidebarOnMobile()">
           <div class="chat-avatar expert-avatar">
-            {{ expert.username.charAt(0).toUpperCase() }}
+            <img *ngIf="expert.avatarUrl" 
+                 [src]="expert.avatarUrl" 
+                 [alt]="expert.fullName || expert.username"
+                 class="user-avatar">
+            <span *ngIf="!expert.avatarUrl">{{ (expert.fullName || expert.username).charAt(0).toUpperCase() }}</span>
           </div>
           <div class="chat-info">
-            <div class="chat-name">{{ expert.username }}</div>
+            <div class="chat-name">{{ expert.fullName || expert.username }}</div>
             <div class="chat-preview expert-badge">
               Chuyên gia
             </div>
@@ -93,10 +97,14 @@
              (touchstart)="onTouchStart($event, expert)"
              (touchend)="onTouchEnd($event, expert)">
           <div class="category-avatar expert-avatar">
-            {{ expert.username.charAt(0).toUpperCase() }}
+            <img *ngIf="expert.avatarUrl" 
+                 [src]="expert.avatarUrl" 
+                 [alt]="expert.fullName || expert.username"
+                 class="user-avatar">
+            <span *ngIf="!expert.avatarUrl">{{ (expert.fullName || expert.username).charAt(0).toUpperCase() }}</span>
           </div>
           <div class="category-info">
-            <div class="category-name">{{ expert.username }}</div>
+            <div class="category-name">{{ expert.fullName || expert.username }}</div>
             <div class="category-desc expert-badge">Chuyên gia</div>
           </div>
         </div>
@@ -134,7 +142,11 @@
       </button>
       <div class="chat-info">
         <div class="chat-avatar-small" *ngIf="selectedConversation">
-          {{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}
+          <img *ngIf="getConversationAvatar(selectedConversation)" 
+               [src]="getConversationAvatar(selectedConversation)" 
+               [alt]="selectedConversation.otherUsername"
+               class="user-avatar">
+          <span *ngIf="!getConversationAvatar(selectedConversation)">{{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}</span>
         </div>
         <div class="chat-avatar-small community-avatar" *ngIf="!showPrivateChat && !selectedConversation">
           <i class="fas fa-users"></i>
@@ -151,7 +163,11 @@
     <div class="chat-header" *ngIf="!isMobile && (selectedConversation || !showPrivateChat)">
       <div class="header-left">
         <div class="chat-avatar-header" *ngIf="selectedConversation">
-          {{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}
+          <img *ngIf="getConversationAvatar(selectedConversation)" 
+               [src]="getConversationAvatar(selectedConversation)" 
+               [alt]="selectedConversation.otherUsername"
+               class="user-avatar">
+          <span *ngIf="!getConversationAvatar(selectedConversation)">{{ selectedConversation.otherUsername.charAt(0).toUpperCase() }}</span>
         </div>
         <div class="chat-avatar-header community-avatar" *ngIf="!showPrivateChat && !selectedConversation">
           VIP

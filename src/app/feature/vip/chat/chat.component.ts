@@ -28,6 +28,26 @@ import { ConversationDTO } from './conversation.interface';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { FooterComponent } from '../../../shared/footer/footer.component';
 import { UnifiedChatService } from '../../../shared/services/unified-chat.service';
+import { JwtUserUtilService } from '../../../auth/jwt-user-util.service';
+
+// Interface cho thông tin user từ API admin (chỉ lấy thông tin cần thiết)
+interface UserProfile {
+  id: number;
+  username: string;
+  fullName: string;
+  avatarUrl: string | null;
+}
+
+// Cập nhật ExpertDTO để bao gồm avatar và fullName
+interface EnhancedExpertDTO extends ExpertDTO {
+  fullName?: string;
+  avatarUrl?: string | null;
+}
+
+// Cập nhật ConversationDTO để bao gồm avatar
+interface EnhancedConversationDTO extends ConversationDTO {
+  otherUserAvatar?: string | null;
+}
 
 @Component({
   selector: 'app-vip-chat',
@@ -65,7 +85,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   public typingUsers = new Set<string>();
   
   // Expert list
-  public experts: ExpertDTO[] = [];
+  public experts: EnhancedExpertDTO[] = [];
   public searchQuery = '';
   
   // View references
@@ -81,6 +101,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private wsPrivateSub?: Subscription;
   private wsTypingSub?: Subscription;
   
+  // Cache cho user profiles để tránh gọi API nhiều lần
+  private userProfileCache = new Map<number, UserProfile>();
+  
   // Track processed messages to avoid duplicates - REMOVED (giống expert)
   // private processedMessageKeys = new Set<string>();
 
@@ -93,6 +116,104 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     return this.messagesSubject.value;
   }
 
+  // Method để lấy thông tin user từ API admin (chỉ lấy thông tin cần thiết)
+  private getUserProfile(userId: number): Promise<UserProfile> {
+    // Kiểm tra cache trước
+    if (this.userProfileCache.has(userId)) {
+      return Promise.resolve(this.userProfileCache.get(userId)!);
+    }
+    
+    // Gọi API admin để lấy thông tin user
+    const url = `http://localhost:8080/api/admin/userdetail/${userId}`;
+    return this.http.get<any>(url, { withCredentials: true })
+      .toPromise()
+      .then(response => {
+        // Handle cả trường hợp response trực tiếp và response có field data
+        const profile = response?.data || response;
+        if (profile && profile.id) {
+          // Chỉ lấy thông tin cần thiết để tránh lộ thông tin nhạy cảm
+          const userProfile: UserProfile = {
+            id: profile.id,
+            username: profile.username || `user${userId}`,
+            fullName: profile.fullName || profile.username || `User ${userId}`,
+            avatarUrl: profile.avatarUrl || null
+          };
+          
+          // Cache thông tin user
+          this.userProfileCache.set(userId, userProfile);
+          return userProfile;
+        }
+        throw new Error('Invalid profile data');
+      })
+      .catch(error => {
+        // Log lỗi để debug (không log thông tin nhạy cảm)
+        console.warn(`Không thể lấy thông tin user ${userId}:`, error.status || 'Unknown error');
+        
+        // Trả về thông tin mặc định nếu có lỗi
+        const defaultProfile: UserProfile = {
+          id: userId,
+          username: `user${userId}`,
+          fullName: `User ${userId}`,
+          avatarUrl: null
+        };
+        return defaultProfile;
+      });
+  }
+
+  // Method để cập nhật experts với thông tin thực từ API
+  private updateExpertsWithRealInfo(): void {
+    this.experts.forEach(expert => {
+      if (expert.id > 0) {
+        this.getUserProfile(expert.id).then(userProfile => {
+          expert.fullName = userProfile.fullName;
+          expert.avatarUrl = userProfile.avatarUrl;
+          this.cdr.markForCheck();
+        }).catch(error => {
+          console.warn(`Failed to get profile for expert ${expert.id}:`, error);
+          this.cdr.markForCheck();
+        });
+      }
+    });
+  }
+
+  // Method để cập nhật conversations với thông tin user thực từ API
+  private updateConversationsWithRealInfo(): void {
+    const conversations = this.conversationsSubject.value;
+    conversations.forEach(conversation => {
+      if (conversation.otherUserId > 0) {
+        this.getUserProfile(conversation.otherUserId).then(userProfile => {
+          // Chỉ cập nhật nếu có thông tin thực từ API
+          if (userProfile.fullName !== `User ${conversation.otherUserId}`) {
+            conversation.otherUsername = userProfile.fullName;
+            // Thêm avatar vào conversation nếu cần
+            (conversation as any).otherUserAvatar = userProfile.avatarUrl;
+          }
+          this.cdr.markForCheck();
+        }).catch(error => {
+          console.warn(`Failed to get profile for conversation user ${conversation.otherUserId}:`, error);
+          // Nếu API thất bại, giữ nguyên thông tin có sẵn
+          this.cdr.markForCheck();
+        });
+      }
+    });
+  }
+
+  // Method để lấy avatar của conversation
+  public getConversationAvatar(conversation: ConversationDTO): string | null {
+    if (!conversation) return null;
+    
+    // Thử lấy avatar từ cache trước
+    if (conversation.otherUserId > 0) {
+      const cachedProfile = this.userProfileCache.get(conversation.otherUserId);
+      if (cachedProfile && cachedProfile.avatarUrl) {
+        return cachedProfile.avatarUrl;
+      }
+    }
+    
+    // Fallback về otherUserAvatar nếu có
+    return (conversation as any).otherUserAvatar || null;
+  }
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -101,7 +222,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private authService: AuthService,
     private urlService: UrlService,
     private chatService: ChatService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private jwtUserUtil: JwtUserUtilService
   ) {}
 
   ngOnInit(): void {
@@ -144,19 +266,24 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private async connectToUnifiedChat(): Promise<void> {
     try {
-      // Lấy token xác thực
-      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || undefined;
-      if (!token) {
-        this.error = 'Không tìm thấy token xác thực. Vui lòng đăng nhập lại.';
-        this.cdr.markForCheck();
-        return;
-      }
+      // Kiểm tra user đã đăng nhập chưa
       if (!this.currentUserId) {
         this.error = 'Không xác định được tài khoản. Vui lòng đăng nhập lại.';
         this.cdr.markForCheck();
         return;
       }
+
+      // Lấy token từ JwtUserUtilService thay vì localStorage
+      const token = this.jwtUserUtil.getAuthToken();
+      if (!token) {
+        this.error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+        this.cdr.markForCheck();
+        return;
+      }
+
+      // Thử kết nối với Unified Chat Service
       await this.unifiedChat.connect(this.currentUserId, token);
+      
       // Setup message subscriptions
       this.setupUnifiedChatSubscriptions();
       this.error = '';
@@ -494,13 +621,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: (data) => {
         this.conversationsSubject.next(data);
         this.loading = false;
+        
+        // Cập nhật conversations với thông tin user thực từ API
+        this.updateConversationsWithRealInfo();
+        
         this.cdr.markForCheck();
       },
-              error: (err) => {
-          this.error = 'Không thể tải danh sách trò chuyện';
-          this.loading = false;
-          this.cdr.markForCheck();
-        }
+      error: (err) => {
+        this.error = 'Không thể tải danh sách trò chuyện';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -578,7 +709,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       const newConversation: ConversationDTO = {
         conversationId: conversationId,
         otherUserId: expert.id,
-        otherUsername: expert.username,
+        otherUsername: (expert as EnhancedExpertDTO).fullName || expert.username,
         otherUserRole: expert.role,
         lastMessage: '',
         lastMessageTime: '',
@@ -676,13 +807,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  public get filteredExperts(): ExpertDTO[] {
+  public get filteredExperts(): EnhancedExpertDTO[] {
     if (!this.searchQuery.trim()) {
       return this.experts;
     }
     
     const query = this.searchQuery.toLowerCase();
     return this.experts.filter(expert => 
+      (expert.fullName && expert.fullName.toLowerCase().includes(query)) ||
       expert.username.toLowerCase().includes(query) ||
       expert.role.toLowerCase().includes(query)
     );
@@ -701,6 +833,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   public getAvatarUrl(message: ChatMessage): string {
+    // Thử lấy avatar thực từ cache nếu có
+    if (message.senderId) {
+      const cachedProfile = this.userProfileCache.get(message.senderId);
+      if (cachedProfile && cachedProfile.avatarUrl) {
+        return cachedProfile.avatarUrl;
+      }
+    }
+    
+    // Fallback về avatar mặc định
     return 'assets/image/default-avatar.png';
   }
 
@@ -726,6 +867,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     } else {
       if (this.selectedConversation && this.showPrivateChat) {
         return this.selectedConversation.otherUsername;
+      }
+      // Thử lấy tên thực từ cache nếu có
+      if (msg.senderId) {
+        const cachedProfile = this.userProfileCache.get(msg.senderId);
+        if (cachedProfile) {
+          return cachedProfile.fullName;
+        }
       }
       return `User ${msg.senderId}`;
     }
@@ -807,15 +955,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     
     this.chatService.getExperts().subscribe({
       next: (data) => {
-        this.experts = data;
+        this.experts = data.map(expert => ({
+          ...expert,
+          fullName: expert.username, // Placeholder, will be fetched from cache or API
+          avatarUrl: null // Placeholder, will be fetched from cache or API
+        }));
         this.loading = false;
+        
+        // Cập nhật experts với thông tin thực từ API
+        this.updateExpertsWithRealInfo();
+        
         this.cdr.markForCheck();
       },
-              error: (err) => {
-          this.error = 'Không thể tải danh sách chuyên gia';
-          this.loading = false;
-          this.cdr.markForCheck();
-        }
+      error: (err) => {
+        this.error = 'Không thể tải danh sách chuyên gia';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 

@@ -52,9 +52,9 @@ export const sessionInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, nex
       }
       
       // Xử lý lỗi 500 Internal Server Error
-      if (error.status >= 500) {
-        toast.error('Lỗi hệ thống. Vui lòng thử lại sau!');
-      }
+      // if (error.status >= 500) {
+      //   toast.error('Lỗi hệ thống. Vui lòng thử lại sau!');
+      // }
       
       return throwError(() => error);
     })

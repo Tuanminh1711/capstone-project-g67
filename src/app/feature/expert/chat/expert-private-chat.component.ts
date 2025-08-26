@@ -12,12 +12,24 @@ import { UrlService } from '../../../shared/services/url.service';
 import { ChatService } from '../../../shared/services/chat.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { UnifiedChatService } from '../../../shared/services/unified-chat.service';
+import { ConfigService } from '../../../shared/services/config.service';
+
+// Interface cho thông tin user từ API
+interface UserProfile {
+  id: number;
+  fullName: string;
+  avatar: string | null;
+  phoneNumber: string;
+  gender: string;
+  livingEnvironment: string;
+}
 
 export interface PrivateConversation {
   conversationId: string;
   otherUserId: number;
   otherUsername: string;
   otherUserRole: string;
+  otherUserAvatar: string | null;
   lastMessage: string;
   lastMessageTime: string;
   hasUnreadMessages: boolean;
@@ -70,6 +82,9 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy, AfterViewC
   // Selected conversation
   public selectedConversation: PrivateConversation | null = null;
   
+  // Cache cho user profiles để tránh gọi API nhiều lần
+  private userProfileCache = new Map<number, UserProfile>();
+  
   // Getters for template access
   get conversations(): PrivateConversation[] {
     return this.conversationsSubject.value;
@@ -112,17 +127,96 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy, AfterViewC
     }
   }
 
+  // Method để lấy thông tin user từ API
+  private getUserProfile(userId: number): Promise<UserProfile> {
+    // Kiểm tra cache trước
+    if (this.userProfileCache.has(userId)) {
+      return Promise.resolve(this.userProfileCache.get(userId)!);
+    }
+    
+    // Thử endpoint admin trước
+    return this.tryAdminEndpoint(userId)
+      .catch(() => {
+        // Nếu admin endpoint thất bại, thử endpoint public
+        return this.tryPublicEndpoint(userId);
+      });
+  }
+
+  // Thử endpoint admin để lấy thông tin user
+  private tryAdminEndpoint(userId: number): Promise<UserProfile> {
+    const url = this.configService.getFullUrl(`/api/admin/userdetail/${userId}`);
+    return this.http.get<any>(url, { withCredentials: true })
+      .toPromise()
+      .then(response => {
+        const profile = response?.data || response;
+        if (profile && profile.id) {
+          const userProfile: UserProfile = {
+            id: profile.id,
+            fullName: profile.fullName || profile.username || `User ${userId}`,
+            avatar: profile.avatar || null,
+            phoneNumber: profile.phoneNumber || '',
+            gender: profile.gender || '',
+            livingEnvironment: profile.livingEnvironment || ''
+          };
+          
+          this.userProfileCache.set(userId, userProfile);
+          return userProfile;
+        }
+        throw new Error('Invalid profile data');
+      });
+  }
+
+  // Thử endpoint public để lấy thông tin user cơ bản
+  private tryPublicEndpoint(userId: number): Promise<UserProfile> {
+    const url = this.configService.getFullUrl(`/api/users/${userId}/basic`);
+    return this.http.get<any>(url, { withCredentials: true })
+      .toPromise()
+      .then(response => {
+        const profile = response?.data || response;
+        if (profile && profile.id) {
+          const userProfile: UserProfile = {
+            id: profile.id,
+            fullName: profile.fullName || profile.username || `User ${userId}`,
+            avatar: profile.avatar || null,
+            phoneNumber: profile.phoneNumber || '',
+            gender: profile.gender || '',
+            livingEnvironment: profile.livingEnvironment || ''
+          };
+          
+          this.userProfileCache.set(userId, userProfile);
+          return userProfile;
+        }
+        throw new Error('Invalid profile data');
+      })
+      .catch(error => {
+        // Nếu cả hai endpoint đều thất bại, trả về thông tin mặc định
+        console.warn(`Không thể lấy thông tin user ${userId} từ cả admin và public endpoints:`, error.status || 'Unknown error');
+        
+        const defaultProfile: UserProfile = {
+          id: userId,
+          fullName: `User ${userId}`,
+          avatar: null,
+          phoneNumber: '',
+          gender: '',
+          livingEnvironment: ''
+        };
+        return defaultProfile;
+      });
+  }
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private expertChatStompService: ExpertChatStompService,
+    private unifiedChat: UnifiedChatService,
+    private chatService: ChatService,
+    private urlService: UrlService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
     private http: HttpClient,
-    private urlService: UrlService,
-    private chatService: ChatService,
-    private toastService: ToastService,
-    private unifiedChat: UnifiedChatService // Thay thế ExpertChatStompService
+    private configService: ConfigService
   ) {}
 
   ngOnInit(): void {
@@ -294,18 +388,23 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy, AfterViewC
     let conversation = conversations.find(c => c.conversationId === conversationId);
     
     if (!conversation) {
-      // Create new conversation
-      conversation = {
-        conversationId: conversationId,
-        otherUserId: otherUserId,
-        otherUsername: `User ${otherUserId}`,
-        otherUserRole: message.senderRole || 'VIP',
-        lastMessage: message.content,
-        lastMessageTime: message.timestamp || new Date().toISOString(),
-        hasUnreadMessages: true
-      };
-      const updatedConversations = [conversation, ...conversations];
-      this.conversationsSubject.next(updatedConversations);
+      // Tạo conversation mới với thông tin user thực từ API
+      this.getUserProfile(otherUserId).then(userProfile => {
+        const newConversation: PrivateConversation = {
+          conversationId: conversationId,
+          otherUserId: otherUserId,
+          otherUsername: userProfile.fullName,
+          otherUserRole: message.senderRole || 'VIP',
+          otherUserAvatar: userProfile.avatar,
+          lastMessage: message.content,
+          lastMessageTime: message.timestamp || new Date().toISOString(),
+          hasUnreadMessages: true
+        };
+        
+        const updatedConversations = [newConversation, ...conversations];
+        this.conversationsSubject.next(updatedConversations);
+        this.cdr.markForCheck();
+      });
     } else {
       // Update existing conversation
       const updatedConversations = conversations.map(c => 
@@ -338,6 +437,9 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy, AfterViewC
         this.conversationsSubject.next(conversations);
         this.loading = false;
         
+        // Cập nhật thông tin user thực cho tất cả conversations
+        this.updateUserProfilesForConversations(conversations);
+        
         // Force UI update
         this.cdr.detectChanges();
         
@@ -368,12 +470,29 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy, AfterViewC
         const conversations = data.map(conv => this.convertToPrivateConversation(conv));
         this.conversationsSubject.next(conversations);
         this.loading = false;
+        
+        // Cập nhật thông tin user thực cho tất cả conversations
+        this.updateUserProfilesForConversations(conversations);
+        
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.error = 'Không thể tải danh sách trò chuyện';
         this.loading = false;
         this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // Method để cập nhật thông tin user thực cho tất cả conversations
+  private updateUserProfilesForConversations(conversations: PrivateConversation[]): void {
+    conversations.forEach(conversation => {
+      if (conversation.otherUserId > 0) {
+        this.getUserProfile(conversation.otherUserId).then(userProfile => {
+          conversation.otherUsername = userProfile.fullName;
+          conversation.otherUserAvatar = userProfile.avatar;
+          this.cdr.markForCheck();
+        });
       }
     });
   }
@@ -739,15 +858,30 @@ export class ExpertPrivateChatComponent implements OnInit, OnDestroy, AfterViewC
    * Convert ConversationDTO to PrivateConversation
    */
   private convertToPrivateConversation(conv: any): PrivateConversation {
-    return {
+    const otherUserId = conv.otherUserId || 0;
+    
+    // Tạo conversation với thông tin cơ bản trước
+    const conversation: PrivateConversation = {
       conversationId: conv.conversationId || '',
-      otherUserId: conv.otherUserId || 0,
-      otherUsername: conv.otherUsername || '',
+      otherUserId: otherUserId,
+      otherUsername: conv.otherUsername || `User ${otherUserId}`,
       otherUserRole: conv.otherUserRole || '',
+      otherUserAvatar: null, // Sẽ được cập nhật sau
       lastMessage: conv.lastMessage || '',
       lastMessageTime: conv.lastMessageTime || '',
       hasUnreadMessages: conv.hasUnreadMessages || false
     };
+    
+    // Nếu có otherUserId, lấy thông tin user thực từ API
+    if (otherUserId > 0) {
+      this.getUserProfile(otherUserId).then(userProfile => {
+        conversation.otherUsername = userProfile.fullName;
+        conversation.otherUserAvatar = userProfile.avatar;
+        this.cdr.markForCheck();
+      });
+    }
+    
+    return conversation;
   }
 
   ngOnDestroy(): void {
