@@ -489,21 +489,22 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private processFormData(formValues: any): UpdatePlantRequest {
-    // Convert date to ISO 8601 format for backend
+    // Convert date to format compatible with java.sql.Timestamp
     let plantingDateFormatted: string;
     if (formValues.plantingDate) {
       const dateValue = formValues.plantingDate;
       let dateObj: Date;
       if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        // YYYY-MM-DD format from HTML date input
-        dateObj = new Date(dateValue + 'T00:00:00');
+        // YYYY-MM-DD format from HTML date input - create date in local timezone
+        const [year, month, day] = dateValue.split('-').map(Number);
+        dateObj = new Date(year, month - 1, day, 0, 0, 0, 0); // month is 0-indexed
       } else {
         dateObj = new Date(dateValue);
       }
       if (isNaN(dateObj.getTime())) {
         dateObj = new Date();
       }
-      // Format for java.sql.Timestamp: yyyy-MM-dd HH:mm:ss.SSS
+      // Format for java.sql.Timestamp: yyyy-MM-dd'T'HH:mm:ss.SSS
       plantingDateFormatted = this.formatToJavaTimestamp(dateObj);
     } else {
       const now = new Date();
@@ -514,7 +515,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       userPlantId: this.userPlantId!.toString().trim(),
       nickname: (formValues.nickname || '').toString().trim(),
       locationInHouse: (formValues.locationInHouse || '').toString().trim(),
-      plantingDate: plantingDateFormatted, // java.sql.Timestamp format for backend
+      plantingDate: plantingDateFormatted, // ISO 8601 format for backend
       reminderEnabled: Boolean(formValues.reminderEnabled)
     };
 
@@ -706,10 +707,11 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format Date to java.sql.Timestamp compatible string
-   * Format: yyyy-MM-dd HH:mm:ss.SSS
+   * Format Date to format compatible with java.sql.Timestamp
+   * Format: yyyy-MM-dd'T'HH:mm:ss.SSS (local timezone, no timezone indicator)
    */
   private formatToJavaTimestamp(date: Date): string {
+    // Format as ISO 8601 without timezone indicator to match backend expectation
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -718,7 +720,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     const seconds = String(date.getSeconds()).padStart(2, '0');
     const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
     
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 
   /**

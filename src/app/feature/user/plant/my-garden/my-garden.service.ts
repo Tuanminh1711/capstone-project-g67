@@ -58,7 +58,7 @@ export interface ApiResponse<T = any> {
 export interface UpdatePlantRequest {
   userPlantId: string;
   nickname: string;
-  plantingDate: string; // SQL timestamp format: YYYY-MM-DD HH:mm:ss.SSS
+  plantingDate: string; // Format: yyyy-MM-dd'T'HH:mm:ss.SSS (local timezone, no timezone indicator)
   locationInHouse: string;
   reminderEnabled: boolean;
 }

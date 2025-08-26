@@ -87,9 +87,6 @@
       <div class="expert-list" *ngIf="isMobile">
         <div class="mobile-expert-header">
           <span class="mobile-section-title">Chuyên gia ({{ experts.length }})</span>
-          <button class="mobile-debug-btn" (click)="checkDuplicateExperts()" title="Check Duplicates">
-            🔍
-          </button>
         </div>
         <div class="chat-category-item" *ngFor="let expert of experts; trackBy: trackExpertById" 
              (click)="startConversationWithExpert(expert)"
