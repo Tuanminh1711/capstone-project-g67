@@ -25,6 +25,7 @@ export class NotificationBadgeComponent implements OnInit, OnDestroy {
   unreadCount = 0;
   private destroy$ = new Subject<void>();
   private refreshTimer: any;
+  private handleChatMessage!: EventListener;
 
   constructor(
     private notificationService: NotificationService
@@ -36,6 +37,9 @@ export class NotificationBadgeComponent implements OnInit, OnDestroy {
     
     // Subscribe để cập nhật khi có thay đổi
     this.subscribeToUnreadCount();
+    
+    // Lắng nghe custom event từ chat service khi có tin nhắn mới
+    this.listenToChatMessages();
     
     // Tự động refresh nếu được bật
     if (this.autoRefresh) {
@@ -50,6 +54,9 @@ export class NotificationBadgeComponent implements OnInit, OnDestroy {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
     }
+    
+    // Remove event listener
+    window.removeEventListener('chatMessageReceived', this.handleChatMessage);
   }
 
   /**
@@ -98,5 +105,17 @@ export class NotificationBadgeComponent implements OnInit, OnDestroy {
    */
   public getCurrentCount(): number {
     return this.unreadCount;
+  }
+
+  /**
+   * Lắng nghe custom event từ chat service
+   */
+  private listenToChatMessages(): void {
+    this.handleChatMessage = (event: Event) => {
+      // Force refresh unread count khi có tin nhắn mới
+      this.notificationService.forceRefreshUnreadCount();
+    };
+    
+    window.addEventListener('chatMessageReceived', this.handleChatMessage);
   }
 }

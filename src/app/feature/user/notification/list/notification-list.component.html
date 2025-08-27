@@ -48,22 +48,24 @@
     <div *ngIf="!isLoading && !error && notifications.length > 0" class="notification-list">
       <div 
         *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
-        class="notification-item"
-        [class.unread]="!notification.isRead"
+  class="notification-item"
+  [class.unread]="isUnread(notification)"
         [class]="getNotificationClass(toNotificationType(notification.type))"
         (click)="onNotificationClick(notification)">
         <div class="notification-icon">
           <i [class]="getNotificationIcon(toNotificationType(notification.type))"></i>
         </div>
         <div class="notification-content">
-                     <div class="notification-header-item">
-             <h4 class="notification-title">{{ notification.title }}</h4>
-             <div class="notification-meta">
-               <span class="notification-time">{{ formatCreatedAt(notification.createdAt) }}</span>
-             </div>
-           </div>
-          <p class="notification-message">{{ notification.message }}</p>
-          <div class="notification-footer" *ngIf="!notification.isRead">
+          <div class="notification-header-item">
+            <h4 class="notification-title">{{ formatNotificationTitle(notification) }}</h4>
+            <div class="notification-meta">
+              <span class="notification-time">{{ formatCreatedAt(notification.createdAt) }}</span>
+            </div>
+          </div>
+          <p class="notification-message">
+            {{ formatNotificationContent(notification) }}
+          </p>
+          <div class="notification-footer" *ngIf="isUnread(notification)">
             <span class="unread-indicator">
               <i class="fas fa-circle"></i>
               Chưa đọc

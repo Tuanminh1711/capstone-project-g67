@@ -482,9 +482,179 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     });
   }
 
+  private updatePlantWithImages(updateData: UpdatePlantRequest): void {
+    // Đảm bảo plantingDate đúng chuẩn java.sql.Timestamp: yyyy-MM-dd HH:mm:ss.SSS
+    let plantingDate = updateData.plantingDate;
+    if (plantingDate) {
+      // Nếu có ký tự T, chuyển thành dấu cách
+      plantingDate = plantingDate.replace('T', ' ');
+      // Loại bỏ mọi ký tự Z, ] và khoảng trắng dư thừa
+      plantingDate = plantingDate.replace(/Z|\]/g, '').trim();
+    }
+
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    
+  
+    formData.append('userPlantId', updateData.userPlantId);
+    formData.append('nickname', updateData.nickname);
+    formData.append('plantingDate', plantingDate);
+    formData.append('locationInHouse', updateData.locationInHouse);
+    formData.append('reminderEnabled', updateData.reminderEnabled.toString());
+    
+  
+    formData.append('categoryId', '');
+    formData.append('careDifficulty', '');
+    formData.append('lightRequirement', '');
+    formData.append('waterRequirement', '');
+    formData.append('description', '');
+    formData.append('careInstructions', '');
+    formData.append('suitableLocation', '');
+    formData.append('commonDiseases', '');
+    
+    if (this.selectedImages && this.selectedImages.length > 0) {
+      this.selectedImages.forEach((image, index) => {
+        const fileName = image.name || `image_${index}.jpg`;
+        formData.append('images', image, fileName);
+        console.log(`Appending image: ${fileName}, size: ${this.formatFileSize(image.size)}`);
+      });
+    }
+    
+    
+  const endpoint = '/api/user-plants/update-with-images';
+    
+    // Gọi API với PUT method
+    this.http.put(endpoint, formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          // Chỉ cần response tồn tại hoặc HTTP status thành công là OK
+          if (
+            (response && (
+              response.status === 200 ||
+              response.statusCode === 200 ||
+              (typeof response.message === 'string' && (
+                response.message.toLowerCase().includes('success') ||
+                response.message.toLowerCase().includes('thành công') ||
+                response.message.toLowerCase().includes('updated')
+              ))
+            )) ||
+            response === undefined || response === null
+          ) {
+            this.handleSuccessfulUpdate();
+          } else {
+            this.handleUpdateError(`Phản hồi từ server: ${response?.message || 'Không rõ lỗi'}`);
+          }
+        },
+        error: (error: any) => {
+          console.error('Update error details:', {
+            status: error.status,
+            statusText: error.statusText,
+            error: error.error,
+            message: error.message,
+            url: error.url
+          });
+          
+          if (error.status === 400) {
+            // Lỗi validation từ backend
+            if (error.error?.message) {
+              this.handleUpdateError(`Lỗi validation: ${error.error.message}`);
+            } else {
+              this.handleUpdateError('Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.');
+            }
+          } else if (error.status === 401) {
+            this.handleUpdateError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+          } else if (error.status === 404) {
+            this.handleUpdateError('Không tìm thấy cây để cập nhật.');
+          } else if (error.status === 413) {
+            this.handleUpdateError('Kích thước ảnh quá lớn. Kích thước tối đa là 20MB.');
+          } else if (error.status === 500) {
+            this.handleUpdateError('Lỗi server. Vui lòng thử lại sau.');
+          } else {
+            this.handleUpdateError(this.extractErrorMessage(error));
+          }
+        }
+      });
+  }
+
+  private updatePlantWithImagesFallback(updateData: UpdatePlantRequest): void {
+    
+    // Thử cập nhật thông tin trước
+    this.updatePlantInfo(updateData);
+    
+    // Sau đó upload ảnh riêng
+    if (this.selectedImages && this.selectedImages.length > 0) {
+      this.uploadImagesSeparately();
+    }
+  }
+
+  private uploadImagesSeparately(): void {
+    
+    // Tạo FormData chỉ cho ảnh
+    const imageFormData = new FormData();
+    imageFormData.append('userPlantId', this.userPlantId!);
+    
+    this.selectedImages.forEach((image, index) => {
+      const fileName = image.name || `image_${index}.jpg`;
+      imageFormData.append('images', image, fileName);
+    });
+    
+    // Thử endpoint khác cho việc upload ảnh
+  const imageEndpoint = '/api/user-plants/upload-plant-image';
+    
+    this.http.post(imageEndpoint, imageFormData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.toastService.success('Cập nhật ảnh thành công!');
+          this.handleSuccessfulUpdate();
+        },
+        error: (error: any) => {
+          this.toastService.error('Không thể cập nhật ảnh. Vui lòng thử lại sau.');
+        }
+      });
+  }
+
+  private testEndpoint(): void {
+    
+    // Test endpoint chính
+    this.http.get('/api/user-plants/user-plant-detail/1')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+  }
+
+  private validateImagesBeforeUpload(): boolean {
+    if (!this.selectedImages || this.selectedImages.length === 0) {
+      return true; // Không có ảnh thì OK
+    }
+    
+    for (const image of this.selectedImages) {
+      // Kiểm tra file type
+      if (!image.type.startsWith('image/')) {
+        this.toastService.error(`File "${image.name}" không phải là ảnh hợp lệ.`);
+        return false;
+      }
+      
+      // Kiểm tra file size (20MB theo backend)
+      if (image.size > 20 * 1024 * 1024) {
+        this.toastService.error(`Ảnh "${image.name}" quá lớn. Kích thước tối đa là 20MB.`);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+
   onSubmit(): void {
     if (this.updateForm.invalid || !this.userPlantId) {
       this.markFormGroupTouched();
+      return;
+    }
+
+ 
+    if (!this.validateImagesBeforeUpload()) {
       return;
     }
 
@@ -492,8 +662,6 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     const formValues = this.updateForm.value;
-    
-    // Process and normalize data in component
     const processedData = this.processFormData(formValues);
 
     // Check if there are new images to upload
@@ -505,22 +673,26 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private processFormData(formValues: any): UpdatePlantRequest {
-    // Convert date to format compatible with java.sql.Timestamp
+    // CẢI THIỆN: Format date đúng với backend java.sql.Timestamp
     let plantingDateFormatted: string;
     if (formValues.plantingDate) {
       const dateValue = formValues.plantingDate;
       let dateObj: Date;
+      
       if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        // YYYY-MM-DD format from HTML date input - create date in local timezone
+        // YYYY-MM-DD format từ HTML date input
         const [year, month, day] = dateValue.split('-').map(Number);
-        dateObj = new Date(year, month - 1, day, 0, 0, 0, 0); // month is 0-indexed
+        dateObj = new Date(year, month - 1, day, 12, 0, 0, 0); // Set giữa trưa để tránh timezone issues
       } else {
         dateObj = new Date(dateValue);
       }
+      
       if (isNaN(dateObj.getTime())) {
         dateObj = new Date();
       }
-      // Format for java.sql.Timestamp: yyyy-MM-dd'T'HH:mm:ss.SSS
+      
+      // CẢI THIỆN: Format đúng với java.sql.Timestamp
+      // Format: "2025-08-10T17:00:00.000" (không có Z ở cuối)
       plantingDateFormatted = this.formatToJavaTimestamp(dateObj);
     } else {
       const now = new Date();
@@ -531,66 +703,11 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
       userPlantId: this.userPlantId!.toString().trim(),
       nickname: (formValues.nickname || '').toString().trim(),
       locationInHouse: (formValues.locationInHouse || '').toString().trim(),
-      plantingDate: plantingDateFormatted, // ISO 8601 format for backend
+      plantingDate: plantingDateFormatted, 
       reminderEnabled: Boolean(formValues.reminderEnabled)
     };
 
-    // Form data processed
     return processedData;
-  }
-
-  private updatePlantWithImages(updateData: UpdatePlantRequest): void {
-    // Create FormData for multipart/form-data request
-    const formData = new FormData();
-    
-    // Append all the form data fields according to UpdateUserPlantRequestDTO
-    formData.append('userPlantId', updateData.userPlantId);
-    formData.append('nickname', updateData.nickname);
-    formData.append('plantingDate', updateData.plantingDate);
-    formData.append('locationInHouse', updateData.locationInHouse);
-    formData.append('reminderEnabled', updateData.reminderEnabled.toString());
-    
-    // Append optional plant detail fields (empty strings for validation)
-    formData.append('categoryId', '');
-    formData.append('careDifficulty', '');
-    formData.append('lightRequirement', '');
-    formData.append('waterRequirement', '');
-    formData.append('description', '');
-    formData.append('careInstructions', '');
-    formData.append('suitableLocation', '');
-    formData.append('commonDiseases', '');
-    
-    // Append images if they exist
-    if (this.selectedImages && this.selectedImages.length > 0) {
-      this.selectedImages.forEach((image, index) => {
-        formData.append('images', image, image.name || `image_${index}.jpg`);
-      });
-    }
-    
-    // Gọi service method với FormData đã tạo
-    this.myGardenService.updateUserPlantWithImagesFormData(formData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
-            this.handleSuccessfulUpdate();
-          } else {
-            this.handleUpdateError('Phản hồi từ server không đúng định dạng');
-          }
-        },
-        error: (error: any) => {
-          this.handleUpdateError(this.extractErrorMessage(error));
-        }
-      });
-  }
-
-  private async uploadImagesAndUpdatePlant(updateData: UpdatePlantRequest): Promise<void> {
-    try {
-      // This method is now deprecated in favor of updatePlantWithImages
-      this.updatePlantWithImages(updateData);
-    } catch (error) {
-      this.handleUpdateError('Có lỗi xảy ra khi cập nhật thông tin cây');
-    }
   }
 
   private handleSuccessfulUpdate(): void {
@@ -754,8 +871,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
    * Format Date to format compatible with java.sql.Timestamp
    * Format: yyyy-MM-dd'T'HH:mm:ss.SSS (local timezone, no timezone indicator)
    */
-  private formatToJavaTimestamp(date: Date): string {
-    // Format as ISO 8601 without timezone indicator to match backend expectation
+   private formatToJavaTimestamp(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -764,6 +880,7 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     const seconds = String(date.getSeconds()).padStart(2, '0');
     const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
     
+
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 

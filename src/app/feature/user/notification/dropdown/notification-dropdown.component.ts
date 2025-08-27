@@ -41,6 +41,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   isLoading = false;
   notifications: Notification[] = [];
   unreadCount = 0;
+  hasNewChatMessage = false;
 
   private destroy$ = new Subject<void>();
 
@@ -51,10 +52,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe để cập nhật unread count
     this.subscribeToUnreadCount();
-    
-    // Load danh sách thông báo
     this.loadNotifications();
   }
 
@@ -63,20 +61,21 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Subscribe để cập nhật unread count
-   */
   private subscribeToUnreadCount(): void {
     this.notificationService.unreadCount$
       .pipe(takeUntil(this.destroy$))
       .subscribe(count => {
         this.unreadCount = count;
+        this.checkForChatMessages();
       });
   }
 
-  /**
-   * Load danh sách thông báo
-   */
+  private checkForChatMessages(): void {
+    this.hasNewChatMessage = this.notifications.some(n => 
+      n.title.includes('Tin nhắn mới') && n.status === 'UNREAD'
+    );
+  }
+
   private loadNotifications(): void {
     if (this.isLoading) {
       return;
@@ -84,16 +83,13 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    // Load cả unread count và danh sách thông báo
     this.notificationService.getUserNotifications(0, 10)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (notificationPage) => {
           const allNotifications = notificationPage.content || [];
-          
-          // Hiển thị tất cả notifications (không filter theo status)
           this.notifications = allNotifications;
-          
+          this.checkForChatMessages();
           this.isLoading = false;
         },
         error: (err) => {
@@ -107,31 +103,58 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
       });
   }
 
-  /* ========== Event Handlers ========== */
-
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
     
-    // Khi mở dropdown, chỉ load dữ liệu nếu chưa có
     if (this.isOpen && this.notifications.length === 0) {
       this.loadNotifications();
     }
   }
 
-  onNotificationClick(notification: Notification, event: Event): void {
-    event.stopPropagation();
-    this.markAsRead(notification, event);
+ onNotificationClick(notification: Notification): void {
+    // Chỉ đánh dấu đã đọc nếu chưa đọc (dựa vào status)
+    if (notification.status !== 'READ') {
+      this.notificationService.markAsRead(notification.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            notification.status = 'READ';
+            // this.cdr.detectChanges(); // Không cần detectChanges ở dropdown
+            
+            // CẢI THIỆN: Force refresh unread count để cập nhật badge
+            this.notificationService.forceRefreshUnreadCount();
+            
+            // CẢI THIỆN: Dispatch custom event để notification badge cập nhật
+            window.dispatchEvent(new CustomEvent('notificationRead', {
+              detail: { notificationId: notification.id }
+            }));
+          },
+          error: (error) => {
+            console.error('Error marking as read:', error);
+          }
+        });
+    }
 
+    // Ưu tiên điều hướng dựa vào link nếu có
     if (notification.link) {
-      let link = this.mapBackendLink(notification.link);
-      this.router.navigate([link]);
-      this.isOpen = false;
+      // Nếu là link ngoài (http/https), chuyển trang ngoài
+      if (/^https?:\/\//.test(notification.link)) {
+        window.location.href = notification.link;
+      } else {
+        // Nếu là route nội bộ, đảm bảo bắt đầu bằng '/'
+        const route = notification.link.startsWith('/') ? notification.link : '/' + notification.link;
+        this.router.navigate([route]);
+      }
       return;
     }
 
-    if (notification.relatedEntityId && notification.relatedEntityType) {
-      this.navigateToRelatedEntity(notification);
-      this.isOpen = false;
+    // Nếu không có link, fallback cho các loại chat/community
+    if (notification.title && notification.title.includes('Tin nhắn mới')) {
+      if (notification.title.includes('Community')) {
+        this.router.navigate(['/vip/chat/chat-community']);
+      } else if (notification.title.includes('từ')) {
+        this.router.navigate(['/vip/chat/chat-private']);
+      }
     }
   }
 
@@ -142,22 +165,29 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     }
   }
 
-  /* ========== Public Methods ========== */
-
-  markAsRead(notification: Notification, event: Event): void {
-    event.stopPropagation();
-    if (notification.status === 'READ') return;
-
-    this.notificationService.markAsRead(notification.id)
+  markAllAsRead(): void {
+    this.notificationService.markAllAsRead()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          notification.status = 'READ';
-          // Refresh lại danh sách
+          // CẢI THIỆN: Cập nhật trạng thái tất cả notifications
+          this.notifications.forEach(notification => {
+            notification.status = 'READ';
+          });
+          
+          // CẢI THIỆN: Force refresh unread count để cập nhật badge
+          this.notificationService.forceRefreshUnreadCount();
+          
+          // CẢI THIỆN: Dispatch custom event để notification badge cập nhật
+          window.dispatchEvent(new CustomEvent('allNotificationsRead'));
+          
+          // CẢI THIỆN: Reload notifications để cập nhật UI
           this.loadNotifications();
+          
+          // this.cdr.detectChanges(); // Không cần detectChanges ở dropdown
         },
-        error: (err) => {
-          console.error('Error marking notification as read:', err);
+        error: (error) => {
+          console.error('Error marking all as read:', error);
         }
       });
   }
@@ -218,12 +248,6 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     return notification.id;
   }
 
-  /* ========== Private Methods ========== */
-
-  private refreshNotifications(): void {
-    this.loadNotifications();
-  }
-
   private mapBackendLink(link: string): string {
     if (/^\/user-plants\/(\d+)$/.test(link)) {
       return link.replace(/^\/user-plants\/(\d+)$/, '/user/user-plant-detail/$1');
@@ -260,5 +284,50 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     return Object.values(NotificationType).includes(type as NotificationType)
       ? (type as NotificationType)
       : NotificationType.SYSTEM;
+  }
+
+  /**
+   * Format nội dung thông báo để hiển thị đẹp hơn
+   */
+  formatNotificationContent(notification: Notification): string {
+    if (notification.title.includes('Tin nhắn mới')) {
+      // Lấy tên người gửi từ message
+      const message = notification.message || '';
+      
+      // Nếu message có dạng "username: nội dung"
+      if (message.includes(':')) {
+        const parts = message.split(':');
+        if (parts.length >= 2) {
+          const sender = parts[0].trim();
+          const content = parts.slice(1).join(':').trim();
+          
+          // Map role names
+          let roleName = sender;
+          if (sender.toLowerCase() === 'expert') {
+            roleName = 'Chuyên gia';
+          } else if (sender.toLowerCase() === 'vip') {
+            roleName = 'VIP';
+          }
+          
+          return `${roleName}: "${content}"`;
+        }
+      }
+      
+      // Fallback: trả về message gốc
+      return message;
+    }
+    
+    // Các notification khác giữ nguyên
+    return notification.message;
+  }
+
+  /**
+   * Format title thông báo
+   */
+  formatNotificationTitle(notification: Notification): string {
+    if (notification.title.includes('Tin nhắn mới')) {
+      return 'Bạn có tin nhắn mới';
+    }
+    return notification.title;
   }
 }

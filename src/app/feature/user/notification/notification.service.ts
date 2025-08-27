@@ -241,23 +241,20 @@ export class NotificationService {
     return this.http.post<NotificationResponse>(`${this.apiUrl}/mark-all-read`, {}, { headers })
       .pipe(
         tap(response => {
-          if (response.code === 200) {
+          if (response.code === 200 || (response.message && response.message.includes('marked as read successfully'))) {
             // Cập nhật tất cả notification thành đã đọc
             const notifications = this.notificationsSubject.value;
-            
             const updatedNotifications = notifications.map(notif => ({ 
               ...notif, 
               status: 'READ' as const
             }));
-            
             this.notificationsSubject.next(updatedNotifications);
-            
             // Reset unread count về 0
             this.unreadCountSubject.next(0);
           }
         }),
         map(response => {
-          if (response.code === 200) {
+          if (response.code === 200 || (response.message && response.message.includes('marked as read successfully'))) {
             return response;
           } else {
             throw new Error(response.message);

@@ -92,6 +92,9 @@ export class ChatStompService {
             // Ensure chatType is set to PRIVATE for private messages
             data.chatType = 'PRIVATE';
             this.privateMessageSubject.next(data);
+            
+            // Cập nhật notification badge khi có tin nhắn mới
+            this.updateNotificationBadge();
           } catch (e) {
             this.errorSubject.next('Lỗi nhận dữ liệu chat riêng tư');
           }
@@ -214,4 +217,18 @@ export class ChatStompService {
   // Remove these methods as they're no longer needed
   // subscribeToPrivateMessages() and subscribeToConversation() are redundant
   // since we now handle subscriptions in onConnect
+
+  /**
+   * Cập nhật notification badge khi có tin nhắn mới
+   */
+  private updateNotificationBadge(): void {
+    // Emit event để các component khác có thể lắng nghe và cập nhật badge
+    // Có thể sử dụng localStorage hoặc sessionStorage để trigger update
+    localStorage.setItem('lastChatMessage', new Date().toISOString());
+    
+    // Dispatch custom event để notification badge component có thể lắng nghe
+    window.dispatchEvent(new CustomEvent('chatMessageReceived', {
+      detail: { timestamp: new Date().toISOString() }
+    }));
+  }
 }

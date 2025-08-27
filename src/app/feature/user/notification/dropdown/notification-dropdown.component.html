@@ -42,7 +42,7 @@
           <mat-list-item 
             class="dropdown-item custom-item"
             [ngClass]="getNotificationClass(toNotificationType(notification.type))"
-            (click)="onNotificationClick(notification, $event)"
+            (click)="onNotificationClick(notification)"
             style="background: transparent; color: #fff; cursor: pointer;">
             <div matListItemIcon class="item-icon">
               <mat-icon class="white-icon">
@@ -50,7 +50,18 @@
               </mat-icon>
             </div>
             <div matListItemTitle class="item-title">
-              {{ truncateText(notification.title, 40) }}
+              <ng-container *ngIf="notification.title && notification.title.includes('Tin nhắn mới trong Community')">
+                Tin nhắn mới trong Community
+              </ng-container>
+              <ng-container *ngIf="notification.title && notification.title.includes('Tin nhắn mới từ expert')">
+                Tin nhắn mới từ chuyên gia
+              </ng-container>
+              <ng-container *ngIf="notification.title && notification.title.includes('Tin nhắn mới từ phucexpert2')">
+                Tin nhắn mới từ phucexpert2
+              </ng-container>
+              <ng-container *ngIf="notification.title && !(notification.title.includes('Tin nhắn mới trong Community') || notification.title.includes('Tin nhắn mới từ expert') || notification.title.includes('Tin nhắn mới từ phucexpert2'))">
+                {{ truncateText(notification.title, 40) }}
+              </ng-container>
             </div>
             <div matListItemLine class="item-message">
               {{ truncateText(notification.message, 50) }}
