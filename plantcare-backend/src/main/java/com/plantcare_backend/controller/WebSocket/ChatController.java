@@ -73,7 +73,7 @@ public class ChatController {
             }
 
             Users sender = senderOpt.get();
-            String senderRoleName = sender.getRole().getRoleName().name(); // Load role ngay lập tức
+            String senderRoleName = sender.getRole().getRoleName().name();
             log.info("Sender found: {} with role: {}", sender.getUsername(), senderRoleName);
 
             // Validate role
@@ -117,6 +117,13 @@ public class ChatController {
 
                 log.info("Private message - Conversation ID: {}, Receiver: {}", conversationId, receiver.getUsername());
 
+                // THAY ĐỔI: Gọi sendChatNotification cho PRIVATE message
+                chatNotificationService.sendChatNotification(
+                        Long.valueOf(chatMessage.getSenderId()),
+                        Long.valueOf(chatMessage.getReceiverId()),
+                        chatMessage.getContent()
+                );
+
             } else {
                 // COMMUNITY MESSAGE (default)
                 entity = com.plantcare_backend.model.ChatMessage.builder()
@@ -130,17 +137,19 @@ public class ChatController {
                         .build();
 
                 log.info("Community message - No receiver, no conversation ID");
+
+                // THAY ĐỔI: Gọi sendCommunityChatNotification cho COMMUNITY message
+                chatNotificationService.sendCommunityChatNotification(
+                        Long.valueOf(chatMessage.getSenderId()),
+                        chatMessage.getContent());
             }
 
             chatMessageRepository.save(entity);
-            chatNotificationService.sendCommunityChatNotification(
-                    Long.valueOf(chatMessage.getSenderId()),
-                    chatMessage.getContent());
             log.info("Chat message saved with ID: {} and type: {}", entity.getMessageId(), entity.getChatType());
 
             // Set response data
             chatMessage.setTimestamp(entity.getSentAt().toInstant().toString());
-            chatMessage.setSenderRole(senderRoleName); // Sử dụng biến đã load
+            chatMessage.setSenderRole(senderRoleName);
 
             // Set conversationId và receiverId cho private messages
             if (entity.getChatType() == com.plantcare_backend.model.ChatMessage.ChatType.PRIVATE) {

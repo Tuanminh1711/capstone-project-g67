@@ -34,24 +34,25 @@ public class ChatNotificationServiceImpl implements ChatNotificationService {
             Users sender = userRepository.findById(senderId.intValue())
                     .orElseThrow(() -> new RuntimeException("Sender not found"));
 
-            // Tạo notification
+            // Tạo notification CHỈ cho receiver (PRIVATE message)
             String title = "Tin nhắn mới từ " + sender.getUsername();
             String message = messageContent.length() > 50 ?
                     messageContent.substring(0, 50) + "..." : messageContent;
             String link = "/chat/conversation/" + generateConversationId(senderId, receiverId);
 
+            // CHỈ tạo notification cho receiver
             notificationService.createNotification(
                     receiverId, title, message,
                     Notification.NotificationType.INFO, link
             );
 
-            // Gửi real-time notification qua WebSocket
+            // Gửi real-time notification qua WebSocket CHỈ cho receiver
             sendRealTimeNotification(receiverId, title, message, link);
 
-            log.info("Chat notification sent to user: {}", receiverId);
+            log.info("Private chat notification sent to user: {}", receiverId);
 
         } catch (Exception e) {
-            log.error("Error sending chat notification: {}", e.getMessage(), e);
+            log.error("Error sending private chat notification: {}", e.getMessage(), e);
         }
     }
 
@@ -97,7 +98,7 @@ public class ChatNotificationServiceImpl implements ChatNotificationService {
 
                     // Tạo notification
                     notificationService.createNotification((long)
-                            user.getId(), title, message,
+                                    user.getId(), title, message,
                             Notification.NotificationType.INFO, link
                     );
 
