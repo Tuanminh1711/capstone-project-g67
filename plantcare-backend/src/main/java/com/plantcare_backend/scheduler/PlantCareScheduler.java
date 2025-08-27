@@ -26,7 +26,7 @@ public class PlantCareScheduler {
     // Chạy mỗi giờ để kiểm tra reminders
     @Scheduled(cron = "0 * * * * ?")
     public void sendCareReminders() {
-        Date today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date today = new Date();
         LocalTime now = LocalTime.now();
 
         List<CareSchedule> dueSchedules = careScheduleRepository.findDueReminders(today, now);

@@ -76,7 +76,7 @@ public class PlantCareController {
 
     // Lấy lịch sử chăm sóc của một cây
     @GetMapping("/{userPlantId}/care-history")
-    public ResponseEntity<?> getCareHistory(
+    public ResponseEntity<Page<CareLogResponseDTO>> getCareHistory(
             @PathVariable Long userPlantId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
