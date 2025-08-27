@@ -7,6 +7,7 @@ import com.plantcare_backend.model.Role;
 import com.plantcare_backend.model.Users;
 import com.plantcare_backend.repository.ChatMessageRepository;
 import com.plantcare_backend.repository.UserRepository;
+import com.plantcare_backend.service.ChatNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -30,9 +31,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequestMapping("/api/chat/mess")
 public class ChatController {
-    private final UserRepository userRepository;
-    private final ChatMessageRepository chatMessageRepository;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ChatMessageRepository chatMessageRepository;
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+    @Autowired
+    private ChatNotificationService chatNotificationService;
 
     @Autowired
     public ChatController(UserRepository userRepository, ChatMessageRepository chatMessageRepository
@@ -251,6 +257,11 @@ public class ChatController {
                     .build();
 
             chatMessageRepository.save(entity);
+            chatNotificationService.sendChatNotification(
+                    Long.valueOf(chatMessage.getSenderId()),
+                    Long.valueOf(chatMessage.getReceiverId()),
+                    chatMessage.getContent()
+            );
             log.info("Private chat message saved with ID: {}", entity.getMessageId());
 
             // Set response data
