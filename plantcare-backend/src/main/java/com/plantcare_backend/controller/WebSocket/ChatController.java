@@ -66,7 +66,6 @@ public class ChatController {
                 throw new IllegalArgumentException("Message content too long (max 1000 characters)");
             }
 
-            // Sử dụng findByIdWithRole để load Role ngay lập tức
             Optional<Users> senderOpt = userRepository.findByIdWithRole(Long.valueOf(chatMessage.getSenderId()));
             if (senderOpt.isEmpty()) {
                 throw new IllegalArgumentException("Sender not found");
@@ -76,17 +75,14 @@ public class ChatController {
             String senderRoleName = sender.getRole().getRoleName().name();
             log.info("Sender found: {} with role: {}", sender.getUsername(), senderRoleName);
 
-            // Validate role
             if (!senderRoleName.equals(Role.RoleName.VIP.name()) &&
                     !senderRoleName.equals(Role.RoleName.EXPERT.name())) {
                 throw new AccessDeniedException("Chỉ tài khoản VIP hoặc Chuyên gia mới được chat.");
             }
 
-            // Xử lý theo chatType
             com.plantcare_backend.model.ChatMessage entity;
 
             if ("PRIVATE".equals(chatMessage.getChatType())) {
-                // PRIVATE MESSAGE
                 if (chatMessage.getReceiverId() == null) {
                     throw new IllegalArgumentException("Receiver ID cannot be null for private messages");
                 }
@@ -99,7 +95,6 @@ public class ChatController {
                 Users receiver = receiverOpt.get();
                 log.info("Receiver found: {}", receiver.getUsername());
 
-                // Tạo conversation ID nếu chưa có
                 String conversationId = chatMessage.getConversationId();
                 if (conversationId == null || conversationId.trim().isEmpty()) {
                     conversationId = generateConversationId(chatMessage.getSenderId(), chatMessage.getReceiverId());
@@ -117,7 +112,6 @@ public class ChatController {
 
                 log.info("Private message - Conversation ID: {}, Receiver: {}", conversationId, receiver.getUsername());
 
-                // THAY ĐỔI: Gọi sendChatNotification cho PRIVATE message
                 chatNotificationService.sendChatNotification(
                         Long.valueOf(chatMessage.getSenderId()),
                         Long.valueOf(chatMessage.getReceiverId()),
@@ -125,7 +119,6 @@ public class ChatController {
                 );
 
             } else {
-                // COMMUNITY MESSAGE (default)
                 entity = com.plantcare_backend.model.ChatMessage.builder()
                         .sender(sender)
                         .receiver(null)
@@ -138,7 +131,6 @@ public class ChatController {
 
                 log.info("Community message - No receiver, no conversation ID");
 
-                // THAY ĐỔI: Gọi sendCommunityChatNotification cho COMMUNITY message
                 chatNotificationService.sendCommunityChatNotification(
                         Long.valueOf(chatMessage.getSenderId()),
                         chatMessage.getContent());
@@ -147,11 +139,9 @@ public class ChatController {
             chatMessageRepository.save(entity);
             log.info("Chat message saved with ID: {} and type: {}", entity.getMessageId(), entity.getChatType());
 
-            // Set response data
             chatMessage.setTimestamp(entity.getSentAt().toInstant().toString());
             chatMessage.setSenderRole(senderRoleName);
 
-            // Set conversationId và receiverId cho private messages
             if (entity.getChatType() == com.plantcare_backend.model.ChatMessage.ChatType.PRIVATE) {
                 chatMessage.setConversationId(entity.getConversationId());
                 chatMessage.setReceiverId(entity.getReceiver().getId());

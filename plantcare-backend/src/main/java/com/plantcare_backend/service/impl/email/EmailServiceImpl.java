@@ -45,7 +45,7 @@ public class EmailServiceImpl implements EmailService {
             throw e;
         } catch (Exception e) {
             log.error("Failed to send reset code email to: {}", to, e);
-            throw new RuntimeException("Failed to send email: "+e.getMessage());
+            throw new RuntimeException("Failed to send email: " + e.getMessage());
         }
     }
 
@@ -123,6 +123,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    @Async("emailTaskExecutor")
     public void sendTicketNotificationEmail(List<String> adminEmails, SupportTicket ticket, String adminPanelUrl) {
         if (adminEmails == null || adminEmails.isEmpty()) {
             log.warn("Admin emails list is null or empty");
@@ -138,19 +139,24 @@ public class EmailServiceImpl implements EmailService {
                         "📋 Tiêu đề: %s\n" +
                         "👤 Người tạo: %s\n" +
                         "📅 Thời gian: %s\n" +
-                        "📝 Mô tả: %s\n\n" +
-                        "🔗 Link xử lý: %s/admin/support/tickets/%d\n\n" +
+                        "📝 Mô tả: %s\n\n" +45
                         "PlantCare Team",
                 ticket.getTitle(),
                 ticket.getUser().getUsername(),
                 ticket.getCreatedAt(),
                 ticket.getDescription(),
-                adminPanelUrl,
                 ticket.getTicketId()
         );
 
         for (String email : validEmails) {
-            sendEmailAsync(email, subject, content);
+            try {
+                sendEmailAsync(email, subject, content);
+                log.debug("✅ Email queued for admin: {}", email);
+            } catch (Exception e) {
+                log.error("❌ Failed to queue email for admin {}: {}", email, e.getMessage());
+            }
         }
+
+        log.info("✅ All {} emails queued for ticket #{}", validEmails.size(), ticket.getTicketId());
     }
 }

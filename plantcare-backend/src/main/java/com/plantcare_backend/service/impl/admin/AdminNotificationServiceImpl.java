@@ -8,6 +8,7 @@ import com.plantcare_backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public class AdminNotificationServiceImpl implements AdminNotificationService {
     private String adminPanelUrl;
 
     @Override
+    @Async("emailTaskExecutor")
     public void notifyNewTicket(SupportTicket ticket) {
         try {
             List<String> adminEmails = getAdminStaffEmails();

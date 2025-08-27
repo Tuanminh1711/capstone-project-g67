@@ -51,7 +51,13 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .build();
 
         SupportTicket savedTicket = supportTicketRepository.save(ticket);
-        adminNotificationService.notifyNewTicket(savedTicket);
+        try {
+            adminNotificationService.notifyNewTicket(savedTicket);
+            log.info("✅ Ticket notification queued for ticket #{}", savedTicket.getTicketId());
+        } catch (Exception e) {
+            log.error("❌ Failed to queue ticket notification for ticket #{}: {}",
+                    savedTicket.getTicketId(), e.getMessage());
+        }
         return savedTicket.getTicketId();
     }
 
