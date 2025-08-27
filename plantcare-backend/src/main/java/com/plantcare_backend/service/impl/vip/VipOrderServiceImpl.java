@@ -64,4 +64,10 @@ public class VipOrderServiceImpl implements VipOrderService {
 
         return order;
     }
+
+    @Override
+    public VipOrder findById(Integer orderId) {
+        return vipOrderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order không tồn tại: " + orderId));
+    }
 }
