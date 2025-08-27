@@ -12,6 +12,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +48,7 @@ public class EmailServiceImpl implements EmailService {
             throw e;
         } catch (Exception e) {
             log.error("Failed to send reset code email to: {}", to, e);
-            throw new RuntimeException("Failed to send email: "+e.getMessage());
+            throw new RuntimeException("Failed to send email: " + e.getMessage());
         }
     }
 
@@ -123,6 +126,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    @Async("emailTaskExecutor")
     public void sendTicketNotificationEmail(List<String> adminEmails, SupportTicket ticket, String adminPanelUrl) {
         if (adminEmails == null || adminEmails.isEmpty()) {
             log.warn("Admin emails list is null or empty");
@@ -132,6 +136,7 @@ public class EmailServiceImpl implements EmailService {
         List<String> validEmails = adminEmails.stream().filter(email -> email != null && !email.trim().isEmpty())
                 .collect(Collectors.toList());
         String subject = "🔔 Ticket mới: " + ticket.getTitle();
+        String formattedDateTime = formatDateTime(ticket.getCreatedAt());
         String content = String.format(
                 "Chào Admin/Staff,\n\n" +
                         "Có ticket mới được tạo:\n\n" +
@@ -139,18 +144,42 @@ public class EmailServiceImpl implements EmailService {
                         "👤 Người tạo: %s\n" +
                         "📅 Thời gian: %s\n" +
                         "📝 Mô tả: %s\n\n" +
-                        "🔗 Link xử lý: %s/admin/support/tickets/%d\n\n" +
                         "PlantCare Team",
                 ticket.getTitle(),
                 ticket.getUser().getUsername(),
-                ticket.getCreatedAt(),
+                formattedDateTime,
                 ticket.getDescription(),
-                adminPanelUrl,
                 ticket.getTicketId()
         );
 
         for (String email : validEmails) {
-            sendEmailAsync(email, subject, content);
+            try {
+                sendEmailAsync(email, subject, content);
+                log.debug("✅ Email queued for admin: {}", email);
+            } catch (Exception e) {
+                log.error("❌ Failed to queue email for admin {}: {}", email, e.getMessage());
+            }
+        }
+
+        log.info("✅ All {} emails queued for ticket #{}", validEmails.size(), ticket.getTicketId());
+    }
+
+    private String formatDateTime(java.sql.Timestamp timestamp) {
+        if (timestamp == null) {
+            return "Không xác định";
+        }
+
+        try {
+            // ✅ FORMAT 1: Ngày giờ Việt Nam đẹp
+            SimpleDateFormat vietnameseFormat = new SimpleDateFormat("dd/MM/yyyy 'lúc' HH:mm");
+            vietnameseFormat.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+
+            return vietnameseFormat.format(timestamp);
+
+        } catch (Exception e) {
+            // ✅ FALLBACK: Format mặc định nếu có lỗi
+            SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            return fallbackFormat.format(timestamp);
         }
     }
 }
