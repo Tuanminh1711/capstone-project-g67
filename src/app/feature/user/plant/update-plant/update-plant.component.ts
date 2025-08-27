@@ -13,13 +13,15 @@ import { AuthDialogService } from '../../../../auth/auth-dialog.service';
 import { environment } from '../../../../../environments/environment';
 import { PlantOptionsService, PlantOption } from '../../../../shared/services/plant-options.service';
 
+import { ChangeDetectionStrategy } from '@angular/core';
 @Component({
   selector: 'app-update-plant',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, TopNavigatorComponent],
   templateUrl: './update-plant.component.html',
   styleUrls: ['./update-plant.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpdatePlantComponent implements OnInit, OnDestroy {
   updateForm: FormGroup;
@@ -112,6 +114,17 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
     return imageUrls.length > 0 ? imageUrls : [];
   }
 
+  // Lấy 3 ảnh cuối cùng (ảnh mới nhất) để hiển thị
+  getLatestPlantImages(): string[] {
+    const allImages = this.getAllPlantImageUrls();
+    if (allImages.length === 0) {
+      return [];
+    }
+    
+    // Lấy 3 ảnh cuối cùng (ảnh mới nhất)
+    return allImages.slice(-3);
+  }
+
   // Xử lý lỗi ảnh
   onImageError(event: any): void {
     this.imageUrlService.onImageError(event);
@@ -126,37 +139,33 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
 
     // Clear previous selections and URLs
     this.clearImagePreviews();
-    this.selectedImages = [];
-    
-  const maxFileSize = 20 * 1024 * 1024; // 20MB
-    const maxImages = 5;
-    
-    for (let i = 0; i < Math.min(files.length, maxImages); i++) {
-      const file = files[i];
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        this.toastService.error(`File "${file.name}" không phải là ảnh hợp lệ.`);
-        continue;
+    // Update selectedImages in a microtask
+    setTimeout(() => {
+      this.selectedImages = [];
+      const maxFileSize = 20 * 1024 * 1024; // 20MB
+      const maxImages = 5;
+      for (let i = 0; i < Math.min(files.length, maxImages); i++) {
+        const file = files[i];
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          this.toastService.error(`File "${file.name}" không phải là ảnh hợp lệ.`);
+          continue;
+        }
+        // Validate file size
+        if (file.size > maxFileSize) {
+          this.toastService.error(`Ảnh "${file.name}" quá lớn. Kích thước tối đa là 20MB.`);
+          continue;
+        }
+        this.selectedImages.push(file);
+        // Create and cache blob URL
+        const previewUrl = URL.createObjectURL(file);
+        this.imagePreviewUrls.set(file, previewUrl);
       }
-      
-      // Validate file size
-      if (file.size > maxFileSize) {
-        this.toastService.error(`Ảnh "${file.name}" quá lớn. Kích thước tối đa là 20MB.`);
-        continue;
+      if (files.length > maxImages) {
+        this.toastService.warning(`Chỉ được chọn tối đa ${maxImages} ảnh.`);
       }
-      
-      this.selectedImages.push(file);
-      // Create and cache blob URL
-      const previewUrl = URL.createObjectURL(file);
-      this.imagePreviewUrls.set(file, previewUrl);
-    }
-    
-    if (files.length > maxImages) {
-      this.toastService.warning(`Chỉ được chọn tối đa ${maxImages} ảnh.`);
-    }
-    
-    // Selected images for update
+      this.cdr.markForCheck();
+    }, 0);
   }
 
   // Trigger file input click
@@ -180,16 +189,19 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   removeSelectedImage(index: number): void {
     if (index >= 0 && index < this.selectedImages.length) {
       const file = this.selectedImages[index];
-      
+
       // Revoke object URL to prevent memory leaks
       const previewUrl = this.imagePreviewUrls.get(file);
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
         this.imagePreviewUrls.delete(file);
       }
-      
+
       this.selectedImages.splice(index, 1);
-      // Image removed from selection
+      // Notify Angular of changes
+      setTimeout(() => {
+        this.cdr.markForCheck();
+      }, 0);
     }
   }
 
@@ -211,9 +223,13 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
         URL.revokeObjectURL(url);
       }
     });
-    
+
     this.selectedImages = [];
     this.imagePreviewUrls.clear();
+    // Notify Angular of changes
+    setTimeout(() => {
+      this.cdr.markForCheck();
+    }, 0);
     // All images cleared
   }
 
@@ -524,17 +540,45 @@ export class UpdatePlantComponent implements OnInit, OnDestroy {
   }
 
   private updatePlantWithImages(updateData: UpdatePlantRequest): void {
-    this.myGardenService.updateUserPlantWithImages(updateData, this.selectedImages)
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    // Append all the form data fields according to UpdateUserPlantRequestDTO
+    formData.append('userPlantId', updateData.userPlantId);
+    formData.append('nickname', updateData.nickname);
+    formData.append('plantingDate', updateData.plantingDate);
+    formData.append('locationInHouse', updateData.locationInHouse);
+    formData.append('reminderEnabled', updateData.reminderEnabled.toString());
+    
+    // Append optional plant detail fields (empty strings for validation)
+    formData.append('categoryId', '');
+    formData.append('careDifficulty', '');
+    formData.append('lightRequirement', '');
+    formData.append('waterRequirement', '');
+    formData.append('description', '');
+    formData.append('careInstructions', '');
+    formData.append('suitableLocation', '');
+    formData.append('commonDiseases', '');
+    
+    // Append images if they exist
+    if (this.selectedImages && this.selectedImages.length > 0) {
+      this.selectedImages.forEach((image, index) => {
+        formData.append('images', image, image.name || `image_${index}.jpg`);
+      });
+    }
+    
+    // Gọi service method với FormData đã tạo
+    this.myGardenService.updateUserPlantWithImagesFormData(formData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           if (response && (response.status === 200 || response.message?.includes('success') || response.message?.includes('thành công'))) {
             this.handleSuccessfulUpdate();
           } else {
             this.handleUpdateError('Phản hồi từ server không đúng định dạng');
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           this.handleUpdateError(this.extractErrorMessage(error));
         }
       });

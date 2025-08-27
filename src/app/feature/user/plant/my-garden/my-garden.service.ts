@@ -109,9 +109,11 @@ export class MyGardenService {
     formData.append('reminderEnabled', updateData.reminderEnabled.toString());
     
     // Add images as expected by @RequestParam("images") List<MultipartFile>
-    images.forEach((image, index) => {
-      formData.append('images', image, image.name);
-    });
+    if (images && images.length > 0) {
+      images.forEach((image, index) => {
+        formData.append('images', image, image.name);
+      });
+    }
     
     // Use the update-with-images endpoint as designed by backend
     const endpoint = `${this.baseUrl}/user-plants/update-with-images`;
@@ -120,6 +122,17 @@ export class MyGardenService {
       catchError(error => {
         // If the main endpoint fails, try fallback without images
         return this.updateUserPlant(updateData);
+      })
+    );
+  }
+
+  // Method mới để xử lý FormData trực tiếp
+  updateUserPlantWithImagesFormData(formData: FormData): Observable<ApiResponse> {
+    const endpoint = `${this.baseUrl}/user-plants/update-with-images`;
+    
+    return this.http.put<ApiResponse>(endpoint, formData).pipe(
+      catchError(error => {
+        throw error;
       })
     );
   }

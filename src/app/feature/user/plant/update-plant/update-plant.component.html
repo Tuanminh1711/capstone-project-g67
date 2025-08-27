@@ -44,7 +44,7 @@
               <div class="current-images" style="margin-bottom: 18px;">
                 @if (getAllPlantImageUrls().length > 0) {
                   <div class="plant-img-list">
-                    @for (img of getAllPlantImageUrls().slice(0, 3); track img) {
+                    @for (img of getLatestPlantImages(); track img) {
                       <img [src]="getImageUrl(img)" alt="Ảnh cây hiện tại" class="plant-img square-img" (error)="onImageError($event)" />
                     }
                   </div>
