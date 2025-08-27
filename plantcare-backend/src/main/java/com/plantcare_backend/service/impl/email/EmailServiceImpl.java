@@ -12,6 +12,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -133,17 +136,18 @@ public class EmailServiceImpl implements EmailService {
         List<String> validEmails = adminEmails.stream().filter(email -> email != null && !email.trim().isEmpty())
                 .collect(Collectors.toList());
         String subject = "🔔 Ticket mới: " + ticket.getTitle();
+        String formattedDateTime = formatDateTime(ticket.getCreatedAt());
         String content = String.format(
                 "Chào Admin/Staff,\n\n" +
                         "Có ticket mới được tạo:\n\n" +
                         "📋 Tiêu đề: %s\n" +
                         "👤 Người tạo: %s\n" +
                         "📅 Thời gian: %s\n" +
-                        "📝 Mô tả: %s\n\n" +45
+                        "📝 Mô tả: %s\n\n" +
                         "PlantCare Team",
                 ticket.getTitle(),
                 ticket.getUser().getUsername(),
-                ticket.getCreatedAt(),
+                formattedDateTime,
                 ticket.getDescription(),
                 ticket.getTicketId()
         );
@@ -158,5 +162,24 @@ public class EmailServiceImpl implements EmailService {
         }
 
         log.info("✅ All {} emails queued for ticket #{}", validEmails.size(), ticket.getTicketId());
+    }
+
+    private String formatDateTime(java.sql.Timestamp timestamp) {
+        if (timestamp == null) {
+            return "Không xác định";
+        }
+
+        try {
+            // ✅ FORMAT 1: Ngày giờ Việt Nam đẹp
+            SimpleDateFormat vietnameseFormat = new SimpleDateFormat("dd/MM/yyyy 'lúc' HH:mm");
+            vietnameseFormat.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+
+            return vietnameseFormat.format(timestamp);
+
+        } catch (Exception e) {
+            // ✅ FALLBACK: Format mặc định nếu có lỗi
+            SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            return fallbackFormat.format(timestamp);
+        }
     }
 }
