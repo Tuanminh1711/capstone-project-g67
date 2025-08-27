@@ -153,7 +153,8 @@
   <button type="button"
     (click)="onApprove()"
     [disabled]="!canApprove()"
-    [ngClass]="{'btn-disabled': !canApprove(), 'btn primary': canApprove(), 'btn primary disabled': !canApprove()}"
+    class="btn primary"
+    [ngClass]="{'btn-disabled': !canApprove()}"
     [title]="getApproveTooltip()">
     {{ isApproving ? 'Đang chấp nhận...' : 'Chấp nhận báo cáo' }}
   </button>

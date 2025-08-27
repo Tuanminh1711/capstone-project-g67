@@ -226,7 +226,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: () => {
         this.toast.success(`Đã nhận xử lý báo cáo #${reportId}`);
-        this.reloadReports();
+        this.router.navigate(['/admin/reports/detail', reportId]);
       },
       error: (err) => {
         this.toast.error((err as any)?.error?.message || 'Không thể nhận xử lý báo cáo. Vui lòng thử lại.');

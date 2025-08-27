@@ -1,3 +1,4 @@
+import { AfterViewInit } from '@angular/core';
 import { JwtUserUtilService } from '../../../../auth/jwt-user-util.service';
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -5,6 +6,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../../auth/auth.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { AdminAccountService } from '../../account-manager/account-list/admin-account.service';
 
 @Component({
   selector: 'app-admin-top-navigator',
@@ -13,13 +15,20 @@ import { filter } from 'rxjs/operators';
   templateUrl: './admin-top-navigator.component.html',
   styleUrls: ['./admin-top-navigator.component.scss']
 })
-export class AdminTopNavigatorComponent implements OnInit, OnDestroy {
+export class AdminTopNavigatorComponent implements OnInit, OnDestroy, AfterViewInit {
+  ngAfterViewInit() {
+    // Nếu displayName chưa có (do API trả về chậm hoặc lifecycle), gọi lại setDisplayName
+    if (!this.displayName) {
+      setTimeout(() => this.setDisplayName(), 0);
+    }
+  }
   @Input() sidebarOpen = true;
   @Output() sidebarToggle = new EventEmitter<void>();
 
-  username: string = '';
+  displayName: string = '';
   currentPageTitle: string = 'Dashboard';
   private routerSubscription?: Subscription;
+  currentUserId: string | null = null;
 
   // Map các route với title tương ứng (chỉ exact match, không có ID)
   private routeTitleMap: { [key: string]: string } = {
@@ -37,24 +46,50 @@ export class AdminTopNavigatorComponent implements OnInit, OnDestroy {
   };
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
-    private jwtUserUtil: JwtUserUtilService
-  ) {}
+  private router: Router,
+  private authService: AuthService,
+  private jwtUserUtil: JwtUserUtilService,
+  private accountService: AdminAccountService
+) {}
 
   ngOnInit() {
-    const info = this.jwtUserUtil.getTokenInfo();
-    this.username = info?.sub || info?.username || 'Admin';
-    
+    this.setDisplayName();
     // Lấy title của trang hiện tại
     this.updatePageTitle(this.router.url);
-    
-    // Lắng nghe thay đổi route để cập nhật title
+    // Lắng nghe thay đổi route để cập nhật title và luôn cập nhật displayName
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
+        this.setDisplayName();
         this.updatePageTitle(event.url);
       });
+  }
+
+  private setDisplayName() {
+    this.currentUserId = this.authService.getCurrentUserId();
+    if (this.currentUserId) {
+      const currentUserIdNum = Number(this.currentUserId);
+      this.accountService.searchAccounts('').subscribe(accounts => {
+        const me = accounts.find(acc => acc.id === currentUserIdNum);
+        if (me && me.fullName && me.role) {
+          this.displayName = `Chào ${me.role}: ${me.fullName}`;
+        } else if (me && me.fullName) {
+          this.displayName = `Chào: ${me.fullName}`;
+        } else {
+          const info = this.jwtUserUtil.getTokenInfo();
+          const username = info?.sub || info?.username || 'Admin';
+          this.displayName = `Chào: ${username}`;
+        }
+      }, () => {
+        const info = this.jwtUserUtil.getTokenInfo();
+        const username = info?.sub || info?.username || 'Admin';
+        this.displayName = `Chào: ${username}`;
+      });
+    } else {
+      const info = this.jwtUserUtil.getTokenInfo();
+      const username = info?.sub || info?.username || 'Admin';
+      this.displayName = `Chào: ${username}`;
+    }
   }
 
   ngOnDestroy() {

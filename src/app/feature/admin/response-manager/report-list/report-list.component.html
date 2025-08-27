@@ -48,7 +48,7 @@
         </td>
         <td>
           <div class="action-buttons" (click)="$event.stopPropagation()">
-            <button class="claim-btn"
+            <button class="btn btn-outline claim-btn"
                     [disabled]="['CLAIMED','APPROVED','REJECTED'].includes(report.status)"
                     *ngIf="getStatusText(report.status)"
                     (click)="claimReport(report.reportId)"
