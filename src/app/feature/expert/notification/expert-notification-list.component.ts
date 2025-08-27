@@ -15,6 +15,7 @@ import { environment } from '../../../../environments/environment';
 export class ExpertNotificationListComponent implements OnInit {
   notifications: any[] = [];
   isLoading = false;
+  hasUnreadNotifications = false;
   
   @Output() notificationStatusChanged = new EventEmitter<void>();
 
@@ -32,18 +33,21 @@ export class ExpertNotificationListComponent implements OnInit {
   showList(show: boolean) {
     if (show) {
       this.loadNotifications();
+    } else {
+      // Reset state khi đóng dropdown
+      this.notifications = [];
+      this.hasUnreadNotifications = false;
+      this.isLoading = false;
     }
   }
 
-    loadNotifications(): void {
+  loadNotifications(): void {
     this.isLoading = true;
     this.notifications = []; // Reset notifications before loading
     
     let url = '';
     if (environment.endpoints?.notifications) {
-      // Nếu endpoints.notifications đã bắt đầu bằng '/api', không cần ghép apiUrl nếu apiUrl cũng là '/api'
       if (environment.apiUrl && environment.endpoints.notifications.startsWith('/')) {
-        // Nếu apiUrl là '/api' hoặc kết thúc bằng '/api', tránh lặp
         if (environment.apiUrl === '/api' && environment.endpoints.notifications.startsWith('/api')) {
           url = environment.endpoints.notifications;
         } else if (environment.apiUrl.endsWith('/') && environment.endpoints.notifications.startsWith('/')) {
@@ -105,15 +109,37 @@ export class ExpertNotificationListComponent implements OnInit {
         
         this.notifications = notifications || [];
         this.isLoading = false;
+        this.updateUnreadStatus();
+        
         console.log('Parsed notifications:', this.notifications);
         console.log('Final notifications count:', this.notifications.length);
+        console.log('Has unread:', this.hasUnreadNotifications);
       },
       error: (error) => {
         console.error('Error loading notifications:', error);
         this.notifications = [];
         this.isLoading = false;
+        this.hasUnreadNotifications = false;
       }
     });
+  }
+
+  // Cập nhật trạng thái unread
+  private updateUnreadStatus(): void {
+    const previousUnreadStatus = this.hasUnreadNotifications;
+    this.hasUnreadNotifications = this.notifications.some(n => n.status !== 'READ');
+    
+    console.log('Unread status updated:', {
+      hasUnread: this.hasUnreadNotifications,
+      totalCount: this.notifications.length,
+      previousStatus: previousUnreadStatus
+    });
+    
+    // Emit event để parent component cập nhật badge nếu có thay đổi
+    if (previousUnreadStatus !== this.hasUnreadNotifications) {
+      this.notificationStatusChanged.emit();
+      console.log('Emitted notificationStatusChanged event');
+    }
   }
 
   onNotificationClick(notification: any): void {
@@ -168,22 +194,43 @@ export class ExpertNotificationListComponent implements OnInit {
   }
 
   private markAsRead(notificationId: number): void {
-    // Gọi API để đánh dấu đã đọc
-    const url = `${environment.apiUrl}/notifications/${notificationId}/read`;
+    // ✅ SỬA LẠI: Sử dụng endpoint đúng theo backend
+    const url = `${environment.apiUrl}/notifications/${notificationId}/mark-read`;
     
     console.log('Marking notification as read:', notificationId);
     console.log('API URL:', url);
     
-    this.http.patch<any>(url, {}).subscribe({
+    // ✅ SỬA LẠI: Sử dụng POST method theo backend
+    this.http.post<any>(url, {}).subscribe({
       next: (response) => {
-        console.log('Marked as read successfully:', response);
-        // Cập nhật trạng thái local
-        const notification = this.notifications.find(n => n.id === notificationId);
-        if (notification) {
-          notification.status = 'READ';
-          console.log('Updated local notification status to READ');
-          // Emit event để parent component cập nhật notification count
-          this.notificationStatusChanged.emit();
+        console.log('Mark as read response:', response);
+        
+        // ✅ SỬA LẠI: Kiểm tra response theo format của backend
+        if (response && (
+          response.code === 200 || 
+          response.status === 200 ||
+          (response.message && response.message.includes('marked as read successfully'))
+        )) {
+          console.log('Marked as read successfully');
+          
+          // Cập nhật trạng thái local
+          const notification = this.notifications.find(n => n.id === notificationId);
+          if (notification) {
+            notification.status = 'READ';
+            console.log('Updated local notification status to READ');
+            
+            // Cập nhật trạng thái unread và emit event
+            this.updateUnreadStatus();
+          }
+        } else {
+          console.warn('Unexpected response format:', response);
+          // Nếu response không đúng format, vẫn cập nhật local để UX tốt hơn
+          const notification = this.notifications.find(n => n.id === notificationId);
+          if (notification) {
+            notification.status = 'READ';
+            this.updateUnreadStatus();
+            console.log('Updated local status despite unexpected response format');
+          }
         }
       },
       error: (error) => {
@@ -194,17 +241,25 @@ export class ExpertNotificationListComponent implements OnInit {
           url: url
         });
         
-        // Thử endpoint khác nếu endpoint đầu tiên không hoạt động
+        // ✅ SỬA LẠI: Thử endpoint khác nếu endpoint đầu tiên không hoạt động
         if (error.status === 404) {
           console.log('Trying alternative endpoint...');
           this.tryAlternativeMarkAsRead(notificationId);
+        } else {
+          // Nếu lỗi khác, vẫn cập nhật local để UX tốt hơn
+          const notification = this.notifications.find(n => n.id === notificationId);
+          if (notification) {
+            notification.status = 'READ';
+            this.updateUnreadStatus();
+            console.log('Updated local status despite API error for better UX');
+          }
         }
       }
     });
   }
 
   private tryAlternativeMarkAsRead(notificationId: number): void {
-    // Thử endpoint khác
+    // ✅ SỬA LẠI: Thử endpoint khác với PUT method
     const alternativeUrl = `${environment.apiUrl}/notifications/${notificationId}`;
     
     this.http.put<any>(alternativeUrl, { status: 'READ' }).subscribe({
@@ -213,6 +268,7 @@ export class ExpertNotificationListComponent implements OnInit {
         const notification = this.notifications.find(n => n.id === notificationId);
         if (notification) {
           notification.status = 'READ';
+          this.updateUnreadStatus();
           this.notificationStatusChanged.emit();
         }
       },
@@ -222,7 +278,9 @@ export class ExpertNotificationListComponent implements OnInit {
         const notification = this.notifications.find(n => n.id === notificationId);
         if (notification) {
           notification.status = 'READ';
+          this.updateUnreadStatus();
           this.notificationStatusChanged.emit();
+          console.log('Updated local status despite both endpoints failing for better UX');
         }
       }
     });
@@ -232,3 +290,4 @@ export class ExpertNotificationListComponent implements OnInit {
     return notification && notification.id ? notification.id : index;
   }
 }
+

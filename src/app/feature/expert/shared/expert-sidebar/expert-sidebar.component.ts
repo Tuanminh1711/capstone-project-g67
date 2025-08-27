@@ -99,9 +99,9 @@ export class ExpertSidebarComponent implements OnInit, OnDestroy, AfterViewCheck
   /**
    * Gọi API /api/notifications để lấy số lượng thông báo chưa đọc
    */
-  private loadNotificationCountSimple(): void {
-    // Chỉ load nếu không đang hiển thị dropdown
-    if (this.showNotificationList) {
+  private loadNotificationCountSimple(forceRefresh: boolean = false): void {
+    // Chỉ load nếu không đang hiển thị dropdown hoặc force refresh
+    if (this.showNotificationList && !forceRefresh) {
       return;
     }
     
@@ -138,7 +138,7 @@ export class ExpertSidebarComponent implements OnInit, OnDestroy, AfterViewCheck
         // Chỉ update nếu count thay đổi
         if (this.notificationCount !== newCount) {
           this.notificationCount = newCount;
-          console.log('Notification count updated:', this.notificationCount);
+          console.log('Notification count updated from API:', this.notificationCount);
           console.log('Total notifications:', res?.data?.content?.length || 0);
           console.log('Unread count:', newCount);
           setTimeout(() => {
@@ -397,6 +397,22 @@ export class ExpertSidebarComponent implements OnInit, OnDestroy, AfterViewCheck
 
   // Thêm method để refresh notification count
   refreshNotificationCount(): void {
-    this.loadNotificationCountSimple();
+    console.log('Refreshing notification count...');
+    
+    // Nếu đang hiển thị dropdown, cập nhật count từ component con
+    if (this.showNotificationList && this.notiListComponent) {
+      // Lấy count từ component con
+      const unreadCount = this.notiListComponent.notifications.filter(n => n.status !== 'READ').length;
+      
+      // Cập nhật badge count
+      if (this.notificationCount !== unreadCount) {
+        this.notificationCount = unreadCount;
+        console.log('Notification count updated from component:', this.notificationCount);
+        this.cdr.detectChanges();
+      }
+    } else {
+      // Nếu không hiển thị dropdown, gọi API để refresh
+      this.loadNotificationCountSimple();
+    }
   }
 }

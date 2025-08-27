@@ -11,9 +11,16 @@
     <p>Không có thông báo nào</p>
   </div>
   
+  <!-- Thông báo khi có thông báo mới -->
+  <div *ngIf="hasUnreadNotifications && notifications.length > 0" class="new-notifications-alert">
+    <span class="alert-icon">🆕</span>
+    <span class="alert-text">Bạn có thông báo mới</span>
+  </div>
+  
   <ul *ngIf="!isLoading && notifications.length > 0" class="notification-list">
     <li *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
         [class.unread]="notification.status !== 'READ'" 
+        [class.new-notification]="notification.status !== 'READ'"
         (click)="onNotificationClick(notification)"
         class="notification-item">
       <div class="notification-content">
@@ -29,6 +36,8 @@
           </span>
           <span class="time">{{ formatTime(notification.createdAt) }}</span>
         </div>
+        <!-- Badge hiển thị trạng thái unread -->
+        <div *ngIf="notification.status !== 'READ'" class="unread-badge"></div>
       </div>
     </li>
   </ul>
