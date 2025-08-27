@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +48,9 @@ public interface UserRepository extends JpaRepository<Users, Integer>, JpaSpecif
 
     @Query("SELECT u FROM Users u WHERE u.role.roleName = 'EXPERT' AND u.status = 'ACTIVE'")
     List<Users> findAllExperts();
+
+    /**
+     * Tìm tất cả users có role VIP hoặc EXPERT
+     */
+    List<Users> findByRole_RoleNameIn(Collection<Role.RoleName> roleNames);
 }

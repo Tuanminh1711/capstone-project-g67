@@ -7,12 +7,7 @@ public interface ChatNotificationService {
     void sendChatNotification(Long senderId, Long receiverId, String messageContent);
 
     /**
-     * Gửi notification khi có conversation mới
+     * Gửi notification khi có tin nhắn community mới
      */
-    void sendNewConversationNotification(Long expertId, Long userId, String username);
-
-    /**
-     * Đánh dấu tin nhắn đã đọc và gửi notification
-     */
-    void markMessageAsReadAndNotify(Long messageId, Long userId);
+    void sendCommunityChatNotification(Long senderId, String messageContent);
 }
