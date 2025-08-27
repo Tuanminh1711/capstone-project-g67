@@ -82,7 +82,7 @@ public class EmailServiceImpl implements EmailService {
                 helper.setTo(to);
                 helper.setSubject(subject);
                 helper.setText(content, false);
-                helper.setFrom("nguyentahoang15012003@gmail.com");
+                helper.setFrom("hotrochamsoccaycanhtainha@gmail.com");
 
                 emailSender.send(message);
             }

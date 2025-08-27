@@ -44,12 +44,16 @@ public class CareScheduleServiceImpl implements CareScheduleService {
     public void setupCareSchedules(Long userPlantId, List<CareScheduleSetupRequestDTO> schedules) {
         UserPlants userPlant = userPlantRepository.findById(userPlantId)
                 .orElseThrow(() -> new ResourceNotFoundException("User plant not found"));
+
         for (CareScheduleSetupRequestDTO dto : schedules) {
             CareType careType = careTypeRepository.findById(dto.getCareTypeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Care type not found"));
+
             Optional<CareSchedule> existing = careScheduleRepository
                     .findByUserPlant_UserPlantIdAndCareType_CareTypeId(userPlantId, dto.getCareTypeId());
+
             if (existing.isPresent()) {
+                // Cập nhật schedule đã tồn tại
                 CareSchedule schedule = existing.get();
                 schedule.setReminderEnabled(dto.getEnabled());
                 schedule.setFrequencyDays(dto.getFrequencyDays());
@@ -78,7 +82,9 @@ public class CareScheduleServiceImpl implements CareScheduleService {
 
                 // Kiểm tra và gửi reminder ngay nếu schedule đã đến hạn
                 checkAndSendImmediateReminder(schedule);
+
             } else {
+                // Tạo schedule mới
                 CareSchedule schedule = CareSchedule.builder()
                         .userPlant(userPlant)
                         .careType(careType)
@@ -101,6 +107,23 @@ public class CareScheduleServiceImpl implements CareScheduleService {
                 checkAndSendImmediateReminder(schedule);
             }
         }
+    }
+
+    // Hàm calculateNextCareDate đã được sửa
+    private Date calculateNextCareDate(Date startDate, Integer frequencyDays) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(startDate);
+
+        // Cộng thêm số ngày
+        cal.add(Calendar.DAY_OF_MONTH, frequencyDays);
+
+        // LUÔN set giờ về 00:00:00 để tránh vấn đề so sánh
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return cal.getTime();
     }
 
     private void checkAndSendImmediateReminder(CareSchedule schedule) {
@@ -139,13 +162,6 @@ public class CareScheduleServiceImpl implements CareScheduleService {
                 }
             }
         }
-    }
-
-    private Date calculateNextCareDate(Date startDate, Integer frequencyDays) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(startDate);
-        cal.add(Calendar.DAY_OF_MONTH, frequencyDays);
-        return cal.getTime();
     }
 
     @Override
