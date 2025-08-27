@@ -6,6 +6,13 @@
         <span class="main-text">Plant Care</span>
         <span class="sub-text" [title]="'Chào mừng, ' + fullUserName">{{ currentUserName }}</span>
       </div>
+      <div class="sidebar-notification-badge" title="Thông báo mới" (click)="toggleNotificationList()">
+        <span class="notification-bell">🔔</span>
+        <span *ngIf="notificationCount > 0" class="notification-badge-count">{{ notificationCount > 99 ? '99+' : notificationCount }}</span>
+      </div>
+      <div *ngIf="showNotificationList" class="expert-notification-list-dropdown">
+        <app-expert-notification-list #notiList (notificationStatusChanged)="refreshNotificationCount()"></app-expert-notification-list>
+      </div>
     </div>
   </div>
 
@@ -25,7 +32,7 @@
           <span class="nav-icon">🔍</span>
           <span class="nav-text">Xem hồ sơ</span>
         </a>
-      </li>
+      </li> 
       <li class="nav-item">
         <a [routerLink]="['/expert/welcome']" class="nav-link" routerLinkActive="active">
           <span class="nav-icon">🏠</span>

@@ -1,0 +1,35 @@
+<div class="expert-notification-list">
+  <h3>Thông báo</h3>
+  
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    Đang tải thông báo...
+  </div>
+  
+  <div *ngIf="!isLoading && notifications.length === 0" class="empty">
+    <span class="empty-icon">🔔</span>
+    <p>Không có thông báo nào</p>
+  </div>
+  
+  <ul *ngIf="!isLoading && notifications.length > 0" class="notification-list">
+    <li *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
+        [class.unread]="notification.status !== 'READ'" 
+        (click)="onNotificationClick(notification)"
+        class="notification-item">
+      <div class="notification-content">
+        <span class="icon" [class.unread-icon]="notification.status !== 'READ'">
+          {{ notification.status !== 'READ' ? '🔔' : '✓' }}
+        </span>
+        <div class="notification-details">
+          <span class="title" [class.unread-title]="notification.status !== 'READ'">
+            {{ notification.title || 'Thông báo mới' }}
+          </span>
+          <span class="message" *ngIf="notification.message">
+            {{ notification.message }}
+          </span>
+          <span class="time">{{ formatTime(notification.createdAt) }}</span>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>

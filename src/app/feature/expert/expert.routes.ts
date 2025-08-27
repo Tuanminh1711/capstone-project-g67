@@ -57,6 +57,11 @@ export const expertRoutes: Routes = [
         path: 'reports',
         loadComponent: () => import('./reports/expert-reports.component').then(c => c.ExpertReportsComponent),
         title: 'Báo cáo thống kê'
+      },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./notifications/expert-notifications.component').then(c => c.ExpertNotificationsComponent),
+        title: 'Thông báo chuyên gia'
       }
     ]
   }
