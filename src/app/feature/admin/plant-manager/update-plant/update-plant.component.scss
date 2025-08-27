@@ -16,6 +16,67 @@
   margin-left: 2px;
   font-weight: bold;
 }
+
+// Combo box styling cho danh mục
+.category-combo-container {
+  position: relative;
+  width: 100%;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  
+  &:focus {
+    outline: none;
+    border-color: #43b06d;
+    box-shadow: 0 0 0 3px rgba(67, 176, 109, 0.1);
+  }
+}
+
+.form-text {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+// Checkbox group styling cho vị trí phù hợp
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #43b06d;
+  }
+  
+  label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    user-select: none;
+    
+    &:hover {
+      color: #43b06d;
+    }
+  }
+}
+
 .loading-section {
   text-align: center;
   margin: 32px 0;

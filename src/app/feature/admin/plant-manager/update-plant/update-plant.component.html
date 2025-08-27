@@ -79,12 +79,21 @@
       <div class="form-row">
         <div class="form-group">
           <label for="categoryId">Danh mục *</label>
-          <select id="categoryId" [(ngModel)]="updateForm.categoryId" name="categoryId" required (ngModelChange)="onFieldChange()">
-            <option value="">-- Chọn danh mục --</option>
-            <option *ngFor="let category of categories" [value]="category.id">
-              {{ category.name }}
-            </option>
-          </select>
+          <div class="category-combo-container">
+            <!-- Dropdown cho danh mục có sẵn -->
+            <select 
+              id="categoryId" 
+              [(ngModel)]="updateForm.categoryId" 
+              name="categoryId" 
+              required 
+              (ngModelChange)="onFieldChange()"
+              class="form-control">
+              <option value="">-- Chọn danh mục --</option>
+              <option *ngFor="let category of categories" [value]="category.id">
+                {{ category.name }}
+              </option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
           <label for="status">Trạng thái *</label>
@@ -115,11 +124,22 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="suitableLocation">Vị trí phù hợp</label>
-          <select id="suitableLocation" [(ngModel)]="updateForm.suitableLocation" name="suitableLocation" (ngModelChange)="onFieldChange()" required>
-            <option value="">-- Chọn vị trí phù hợp --</option>
-            <option *ngFor="let option of suitableLocationOptions" [value]="option.value">{{ option.label }}</option>
-          </select>
+          <label for="suitableLocation">Vị trí phù hợp *</label>
+          <div class="checkbox-group">
+            <div class="checkbox-item" *ngFor="let option of suitableLocationOptions">
+              <input 
+                type="checkbox" 
+                [id]="'location-' + option.value"
+                [value]="option.value"
+                [checked]="isLocationSelected(option.value)"
+                (change)="onLocationChange(option.value, $event)"
+              />
+              <label [for]="'location-' + option.value">{{ option.label }}</label>
+            </div>
+          </div>
+          <small class="form-text text-muted">
+            Chọn một hoặc nhiều vị trí phù hợp
+          </small>
         </div>
       </div>
       <div class="form-row">
@@ -143,7 +163,7 @@
       <div class="form-actions">
         <button type="button" (click)="resetForm()" [disabled]="isUpdating" class="btn ghost">Đặt lại</button>
         <button type="button" (click)="onCancel()" [disabled]="isUpdating" class="btn secondary">Hủy bỏ</button>
-        <button type="submit" [disabled]="!plantForm.valid || isUpdating" class="btn primary">
+        <button type="submit" [disabled]="isUpdating" class="btn primary">
           {{ isUpdating ? 'Đang cập nhật...' : 'Lưu thông tin' }}
         </button>
       </div>

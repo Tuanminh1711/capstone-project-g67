@@ -123,6 +123,9 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   suitableLocationOptions: PlantOption[] = [];
   categories: PlantCategory[] = [];
 
+  // Thêm biến để xử lý vị trí phù hợp (chọn nhiều)
+  selectedLocations: string[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -329,49 +332,72 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       status: plant.status || 'ACTIVE'
     };
     
+    // Khởi tạo selectedLocations từ suitableLocation
+    if (plant.suitableLocation) {
+      this.selectedLocations = plant.suitableLocation.split(',').map((loc: string) => loc.trim()).filter((loc: string) => loc);
+    } else {
+      this.selectedLocations = [];
+    }
+    
     this.toast.info('Thông tin cây đã được nạp vào form.');
   }
 
   onSubmit(): void {
+    console.log('Form submitted, checking validation...');
+    console.log('Current form data:', this.updateForm);
+    
     if (!this.validateForm()) {
       this.toast.error('Vui lòng điền đầy đủ thông tin bắt buộc.');
       return;
     }
+
+    // Submit form trực tiếp
+    console.log('Submitting form...');
+    this.submitForm();
+  }
+
+
+
+  // Method submit form gốc
+  private submitForm(): void {
+    console.log('Submitting form with data:', this.updateForm);
+    console.log('Category ID being sent:', this.updateForm.categoryId);
+    
     this.isUpdating = true;
     this.setError('');
     this.setSuccess('');
+    
     this.http.put<ApiResponse<Plant>>(`${this.baseUrl}/update-plant/${this.plantId}`, this.updateForm)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          console.log('Update response:', response);
           this.isUpdating = false;
           if (response && (response.success === true || response.status === 200)) {
-            this.zone.run(() => {
-              Promise.resolve().then(() => {
-                this.setSuccess('Cập nhật cây thành công!');
-                this.toast.success('Cập nhật cây thành công!');
-              });
-            });
+            // Sử dụng setTimeout với delay lớn hơn để tránh ExpressionChangedAfterItHasBeenCheckedError
+            setTimeout(() => {
+              this.setSuccess('Cập nhật cây thành công!');
+              this.toast.success('Cập nhật cây thành công!');
+            }, 100);
             setTimeout(() => {
               this.navigateBack();
             }, 1500);
           } else {
-            this.zone.run(() => {
-              Promise.resolve().then(() => {
-                this.setError(response.message || 'Cập nhật thất bại!');
-                this.toast.error(response.message || 'Cập nhật thất bại!');
-              });
-            });
+            // Sử dụng setTimeout với delay lớn hơn để tránh ExpressionChangedAfterItHasBeenCheckedError
+            setTimeout(() => {
+              this.setError(response.message || 'Cập nhật thất bại!');
+              this.toast.error(response.message || 'Cập nhật thất bại!');
+            }, 100);
           }
         },
-        error: () => {
+        error: (error) => {
+          console.error('Update error:', error);
           this.isUpdating = false;
-          this.zone.run(() => {
-            Promise.resolve().then(() => {
-              this.setError('Có lỗi xảy ra khi cập nhật!');
-              this.toast.error('Có lỗi xảy ra khi cập nhật!');
-            });
-          });
+          // Sử dụng setTimeout với delay lớn hơn để tránh ExpressionChangedAfterItHasBeenCheckedError
+          setTimeout(() => {
+            this.setError('Có lỗi xảy ra khi cập nhật!');
+            this.toast.error('Có lỗi xảy ra khi cập nhật!');
+          }, 100);
         }
       });
   }
@@ -379,19 +405,27 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   private validateForm(): boolean {
     // Require all fields, show toast if any is missing/invalid
     const f = this.updateForm;
+    
+    // Kiểm tra các field bắt buộc
     if (!f.commonName?.trim() ||
         !f.scientificName?.trim() ||
-        !f.categoryId || f.categoryId <= 0 ||
         !f.description?.trim() ||
         !f.careInstructions?.trim() ||
         !f.lightRequirement || !['LOW','MEDIUM','HIGH'].includes(f.lightRequirement) ||
         !f.waterRequirement || !['LOW','MEDIUM','HIGH'].includes(f.waterRequirement) ||
         !f.careDifficulty || !['EASY','MODERATE','DIFFICULT'].includes(f.careDifficulty) ||
-        !f.suitableLocation?.trim() ||
+        this.selectedLocations.length === 0 ||
         !f.commonDiseases?.trim() ||
         !f.status || !['ACTIVE','INACTIVE'].includes(f.status)) {
       return false;
     }
+
+    // Kiểm tra danh mục
+    if (!f.categoryId || f.categoryId <= 0) {
+      this.toast.error('Vui lòng chọn danh mục');
+      return false;
+    }
+
     return true;
   }
 
@@ -414,6 +448,10 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
   private hasFormChanges(): boolean {
     if (!this.plant) return false;
     
+    // So sánh vị trí phù hợp
+    const currentLocations = this.selectedLocations.join(', ');
+    const originalLocations = this.plant.suitableLocation || '';
+    
     return (
       this.updateForm.scientificName !== this.plant.scientificName ||
       this.updateForm.commonName !== this.plant.commonName ||
@@ -423,7 +461,7 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
       this.updateForm.lightRequirement !== this.plant.lightRequirement ||
       this.updateForm.waterRequirement !== this.plant.waterRequirement ||
       this.updateForm.careDifficulty !== this.plant.careDifficulty ||
-      this.updateForm.suitableLocation !== this.plant.suitableLocation ||
+      currentLocations !== originalLocations ||
       this.updateForm.commonDiseases !== this.plant.commonDiseases ||
       this.updateForm.status !== this.plant.status
     );
@@ -445,4 +483,28 @@ export class UpdatePlantComponent extends BaseAdminListComponent implements OnIn
     // Optionally, you can set a placeholder image
     // img.src = 'assets/images/plant-placeholder.png';
   }
+
+
+
+  // Methods để xử lý vị trí phù hợp (chọn nhiều)
+  isLocationSelected(locationValue: string): boolean {
+    return this.selectedLocations.includes(locationValue);
+  }
+
+  onLocationChange(locationValue: string, event: any): void {
+    if (event.target.checked) {
+      // Thêm vị trí mới
+      if (!this.selectedLocations.includes(locationValue)) {
+        this.selectedLocations.push(locationValue);
+      }
+    } else {
+      // Xóa vị trí
+      this.selectedLocations = this.selectedLocations.filter(loc => loc !== locationValue);
+    }
+    
+    // Cập nhật form với danh sách vị trí được chọn
+    this.updateForm.suitableLocation = this.selectedLocations.join(', ');
+    this.onFieldChange();
+  }
+
 }
