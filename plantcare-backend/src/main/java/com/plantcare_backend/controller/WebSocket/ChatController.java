@@ -42,7 +42,7 @@ public class ChatController {
 
     @Autowired
     public ChatController(UserRepository userRepository, ChatMessageRepository chatMessageRepository
-            ,SimpMessagingTemplate simpMessagingTemplate) {
+            , SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
@@ -133,6 +133,9 @@ public class ChatController {
             }
 
             chatMessageRepository.save(entity);
+            chatNotificationService.sendCommunityChatNotification(
+                    Long.valueOf(chatMessage.getSenderId()),
+                    chatMessage.getContent());
             log.info("Chat message saved with ID: {} and type: {}", entity.getMessageId(), entity.getChatType());
 
             // Set response data
