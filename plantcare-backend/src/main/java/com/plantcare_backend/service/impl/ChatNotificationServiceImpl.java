@@ -54,7 +54,7 @@ public class ChatNotificationServiceImpl implements ChatNotificationService {
             log.error("Error sending chat notification: {}", e.getMessage(), e);
         }
     }
-    .Autowired
+
     private void sendRealTimeNotification(Long userId, String title, String message, String link) {
         // Gửi notification qua WebSocket
         messagingTemplate.convertAndSendToUser(
