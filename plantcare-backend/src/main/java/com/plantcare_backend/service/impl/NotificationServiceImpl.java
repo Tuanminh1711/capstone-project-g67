@@ -20,7 +20,6 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private final NotificationRepository notificationRepository;
-
     @Autowired
     private final UserRepository userRepository;
 
